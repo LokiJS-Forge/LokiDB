@@ -1,0 +1,24 @@
+{
+    "docs": [
+        {
+            "location": "/",
+            "text": "GitHub\n\n\nWelcome to LokiJS2\n\n\nCommands\n\n\n\n\nmkdocs new [dir-name]\n - Create a new project.\n\n\nmkdocs serve\n - Start the live-reloading docs server.\n\n\nmkdocs build\n - Build the documentation site.\n\n\nmkdocs help\n - Print this help message.\n\n\n\n\nProject layout\n\n\nmkdocs.yml    # The configuration file.\ndocs/\n    index.md  # The documentation homepage.\n    ...       # Other markdown pages, images and other files.\n\n\n\n// Runnable code\nconsole.log(\niii\n);\nconsole.log(\nabc\n);\nconsole.log(123);\nconsole.log({a: 2});\nconsole.log(undefined)\nconsole.log(null)\nconsole.log(\n??\n)\nconsole.log($)\nconsole.log([]);\nconsole.log({a: [2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6,2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6]});\nconsole.error(\n123\n)\nconsole.error(\n123\n)\nconsole.error(\n123\n)\nconsole.error(\n123\n)\nconsole.error(\n123\n)\n\n\n\n\n\n/*\n * Demonstration of code folding\n */\nwindow.onload = function() {\n  var te = document.getElementById(\ncode\n);\n  var sc = document.getElementById(\nscript\n);\n  te.value = (sc.textContent || sc.innerText || sc.innerHTML).replace(/^\\s*/, \n);\n  sc.innerHTML = \n;\n  var te_html = document.getElementById(\ncode-html\n);\n  te_html.value = document.documentElement.innerHTML;\n  var te_python = document.getElementById(\ncode-python\n);\n  var te_markdown = document.getElementById(\ncode-markdown\n);\n  te_markdown.value = \n# Foo\\n## Bar\\n\\nblah blah\\n\\n## Baz\\n\\nblah blah\\n\\n# Quux\\n\\nblah blah\\n\n\n\n  window.editor = CodeMirror.fromTextArea(te, {\n    mode: \njavascript\n,\n    lineNumbers: true,\n    lineWrapping: true,\n    extraKeys: {\nCtrl-Q\n: function(cm){ cm.foldCode(cm.getCursor()); }},\n    foldGutter: true,\n    gutters: [\nCodeMirror-linenumbers\n, \nCodeMirror-foldgutter\n]\n  });\n  editor.foldCode(CodeMirror.Pos(13, 0));\n};",
+            "title": "Home"
+        },
+        {
+            "location": "/#welcome-to-lokijs2",
+            "text": "",
+            "title": "Welcome to LokiJS2"
+        },
+        {
+            "location": "/#commands",
+            "text": "mkdocs new [dir-name]  - Create a new project.  mkdocs serve  - Start the live-reloading docs server.  mkdocs build  - Build the documentation site.  mkdocs help  - Print this help message.",
+            "title": "Commands"
+        },
+        {
+            "location": "/#project-layout",
+            "text": "mkdocs.yml    # The configuration file.\ndocs/\n    index.md  # The documentation homepage.\n    ...       # Other markdown pages, images and other files.  // Runnable code\nconsole.log( iii );\nconsole.log( abc );\nconsole.log(123);\nconsole.log({a: 2});\nconsole.log(undefined)\nconsole.log(null)\nconsole.log( ?? )\nconsole.log($)\nconsole.log([]);\nconsole.log({a: [2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6,2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6]});\nconsole.error( 123 )\nconsole.error( 123 )\nconsole.error( 123 )\nconsole.error( 123 )\nconsole.error( 123 )  /*\n * Demonstration of code folding\n */\nwindow.onload = function() {\n  var te = document.getElementById( code );\n  var sc = document.getElementById( script );\n  te.value = (sc.textContent || sc.innerText || sc.innerHTML).replace(/^\\s*/,  );\n  sc.innerHTML =  ;\n  var te_html = document.getElementById( code-html );\n  te_html.value = document.documentElement.innerHTML;\n  var te_python = document.getElementById( code-python );\n  var te_markdown = document.getElementById( code-markdown );\n  te_markdown.value =  # Foo\\n## Bar\\n\\nblah blah\\n\\n## Baz\\n\\nblah blah\\n\\n# Quux\\n\\nblah blah\\n \n\n  window.editor = CodeMirror.fromTextArea(te, {\n    mode:  javascript ,\n    lineNumbers: true,\n    lineWrapping: true,\n    extraKeys: { Ctrl-Q : function(cm){ cm.foldCode(cm.getCursor()); }},\n    foldGutter: true,\n    gutters: [ CodeMirror-linenumbers ,  CodeMirror-foldgutter ]\n  });\n  editor.foldCode(CodeMirror.Pos(13, 0));\n};",
+            "title": "Project layout"
+        }
+    ]
+}
