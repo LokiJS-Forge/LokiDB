@@ -1,2 +1,8 @@
+# IDE
 .idea/
-node_modules/ 
+
+# NODE
+node_modules/
+
+# Tests
+coverage/
