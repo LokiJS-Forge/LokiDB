@@ -53,9 +53,11 @@ print("PUSH: " + IS_MASTER_TARGET);
 print("Tag: " + COMMIT_TAG);
 
 async function main() {
+  fetch_all();
   DO_DEPLOY = check_if_release_is_triggered();
 
   if (DO_DEPLOY) {
+
     make_release_branch();
     update_version();
   }
@@ -265,6 +267,12 @@ function generate_changelog() {
       preset: "angular"
     }).pipe(changelog_buffer);
   });
+}
+
+function fetch_all() {
+  run("git", ["config", "--replace-all", "remote.origin.fetch", "+refs/heads/*:refs/remotes/origin/*"]);
+  run("git", ["fetch"]);
+  run("git", ["fetch", "--tags"]);
 }
 
 function run(command, args = [], object = {}) {
