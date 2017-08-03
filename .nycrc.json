@@ -1,0 +1,12 @@
+{
+  "extension": [
+    ".js"
+  ],
+  "reporter": [
+    "lcov",
+    "text-summary",
+    "html",
+    "json"
+  ],
+  "report-dir": "./coverage/node/"
+}

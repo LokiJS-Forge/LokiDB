@@ -1,0 +1,52 @@
+{
+  "name": "@sample_test/lokijs-src",
+  "version": "2.0.0-beta.0",
+  "description": "Fast document oriented javascript in-memory database",
+  "author": "Various authors",
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint './src/**/*.js' './bench/**/*.bench.js' './spec/**/*.spec.js' -c config/eslintrc.js",
+    "lint:fix": "eslint --fix './src/**/*.js' './bench/**/*.bench.js' './spec/**/*.spec.js' -c config/eslintrc.js",
+    "test": "npm run test:web && npm run test:node",
+    "test:web": "karma start config/karma.config.js --single-run",
+    "test:node": "nyc jasmine --config='config/jasmine.json'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LokiJS-Forge/LokiJS2.git"
+  },
+  "keywords": [
+    "javascript",
+    "document-oriented",
+    "mmdb",
+    "database",
+    "json",
+    "lokijs",
+    "in-memory"
+  ],
+  "bugs": {
+    "url": "https://github.com/LokiJS-Forge/LokiJS2/issues"
+  },
+  "homepage": "https://lokijs-forge.github.io/LokiJS2",
+  "devDependencies": {
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.24.1",
+    "babel-register": "^6.24.1",
+    "conventional-changelog": "^1.1.4",
+    "coveralls": "^2.13.1",
+    "eslint": "^4.2.0",
+    "eslint-loader": "^1.9.0",
+    "istanbul-instrumenter-loader": "^2.0.0",
+    "jasmine": "^2.6.0",
+    "karma": "^1.7.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-coverage": "^1.1.1",
+    "karma-coverage-istanbul-reporter": "^1.3.0",
+    "karma-jasmine": "^1.1.0",
+    "karma-jasmine-matchers": "^3.7.0",
+    "karma-webpack": "^2.0.4",
+    "nyc": "^11.0.3",
+    "uglify-es": "^3.0.25",
+    "validate-commit-msg": "^2.14.0",
+    "webpack": "^3.3.0"
+  }
+}
