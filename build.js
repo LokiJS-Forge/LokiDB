@@ -7,17 +7,11 @@ const process = require("process");
 const stream = require("stream");
 const conventionalChangelog = require("conventional-changelog");
 
-process.argv.forEach((val, index) => {
-  console.log(`${index}: ${val}`);
-});
-
 const PACKAGES = [
-  "main",
-  "root"
+  "test",
 ];
 
 const ROOT_DIR = process.cwd();
-
 
 // Check git status.
 const IS_PULL_REQUEST = process.env.TRAVIS_PULL_REQUEST !== "false";
@@ -138,7 +132,7 @@ function build() {
   for (const PACKAGE of PACKAGES) {
 
     const SRC_DIR = `${ROOT_DIR}/packages/${PACKAGE}`;
-    const OUT_DIR = `${ROOT_DIR}/dist/package/${PACKAGE}`;
+    const OUT_DIR = `${ROOT_DIR}/dist/packages/${PACKAGE}`;
     const NPM_DIR = `${ROOT_DIR}/dist/packages-dist/${PACKAGE}`;
     const FILENAME = `${PACKAGE}.js`;
     const FILENAME_MINIFIED = `${PACKAGE}.min.js`;
