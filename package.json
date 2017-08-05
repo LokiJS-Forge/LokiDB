@@ -9,7 +9,7 @@
     "lint:fix": "eslint --fix './src/**/*.js' './bench/**/*.bench.js' './spec/**/*.spec.js' -c config/eslintrc.js",
     "test": "npm run test:web && npm run test:node",
     "test:web": "karma start config/karma.config.js --single-run",
-    "test:node": "nyc jasmine --config='config/jasmine.json'"
+    "test:node": "nyc --temp-directory coverage/node jasmine --config='config/jasmine.json'"
   },
   "repository": {
     "type": "git",
