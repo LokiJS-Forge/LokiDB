@@ -28,11 +28,10 @@ before_install:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
 
- # Run npm test always
 script:
-    - npm run lint
-    - npm test
+    - npm run lint || travis_terminate 1
+    - npm test || travis_terminate 1
+    - npm run build || travis_terminate 1
 
 after_success:
-  - nyc report --reporter=text-lcov | coveralls
-  - npm run build
+  - cat ./coverage/lcov.info | coveralls
