@@ -1,5 +1,5 @@
-import {LokiEventEmitter} from './event_emitter';
-import {Resultset} from './resultset';
+import {LokiEventEmitter} from "./event_emitter";
+import {Resultset} from "./resultset";
 
 /*
  applySortCriteria -> like Resultset::compoundsort
@@ -33,10 +33,10 @@ export class DynamicView extends LokiEventEmitter {
    * @param {number} [minRebuildInterval=1] - minimum rebuild interval (need clarification to docs here)
    */
   constructor(collection, name, {
-                persistent = false,
-                sortPriority = 'passive',
-                minRebuildInterval = 1
-              } = {}) {
+    persistent = false,
+    sortPriority = "passive",
+    minRebuildInterval = 1
+  } = {}) {
     super();
     this._collection = collection;
     this.name = name;
@@ -66,7 +66,7 @@ export class DynamicView extends LokiEventEmitter {
     // once we refactor transactions, i will tie in certain transactional events
 
     this.events = {
-      'rebuild': []
+      "rebuild": []
     };
   }
 
@@ -99,7 +99,7 @@ export class DynamicView extends LokiEventEmitter {
       fpl = this._filterPipeline.length;
       fpi = fpl;
       while (fpi--) {
-        if (this._filterPipeline[fpi].type === 'where') {
+        if (this._filterPipeline[fpi].type === "where") {
           if (fpi !== this._filterPipeline.length - 1) {
             this._filterPipeline[fpi] = this._filterPipeline[this._filterPipeline.length - 1];
           }
@@ -122,7 +122,7 @@ export class DynamicView extends LokiEventEmitter {
     this.data();
 
     // emit rebuild event in case user wants to be notified
-    this.emit('rebuild', this);
+    this.emit("rebuild", this);
 
     return this;
   }
@@ -139,7 +139,7 @@ export class DynamicView extends LokiEventEmitter {
   branchResultset(transform, parameters) {
     const rs = this._resultset.branch();
 
-    if (typeof transform === 'undefined') {
+    if (typeof transform === "undefined") {
       return rs;
     }
 
@@ -305,7 +305,7 @@ export class DynamicView extends LokiEventEmitter {
       // (a persistent view utilizing transactions which get rolled back), we already know the filter so not too bad.
       this._resultdata = this._resultset.data();
 
-      this.emit('rebuild', this);
+      this.emit("rebuild", this);
     }
 
     return this;
@@ -320,7 +320,7 @@ export class DynamicView extends LokiEventEmitter {
    * @returns {number}: index of the referenced filter in the pipeline; -1 if not found.
    */
   _indexOfFilterWithId(uid) {
-    if (typeof uid === 'string' || typeof uid === 'number') {
+    if (typeof uid === "string" || typeof uid === "number") {
       for (let idx = 0, len = this._filterPipeline.length; idx < len; idx += 1) {
         if (uid === this._filterPipeline[idx].uid) {
           return idx;
@@ -411,7 +411,7 @@ export class DynamicView extends LokiEventEmitter {
    */
   applyFind(query, uid) {
     this.applyFilter({
-      type: 'find',
+      type: "find",
       val: query,
       uid
     });
@@ -427,7 +427,7 @@ export class DynamicView extends LokiEventEmitter {
    */
   applyWhere(fun, uid) {
     this.applyFilter({
-      type: 'where',
+      type: "where",
       val: fun,
       uid
     });
@@ -495,7 +495,7 @@ export class DynamicView extends LokiEventEmitter {
     setTimeout(() => {
       if (this._rebuildPending) {
         this._rebuildPending = false;
-        this.emit('rebuild', this);
+        this.emit("rebuild", this);
       }
     }, this._minRebuildInterval);
   }
@@ -553,7 +553,7 @@ export class DynamicView extends LokiEventEmitter {
     }
 
     if (!options.suppressRebuildEvent) {
-      this.emit('rebuild', this);
+      this.emit("rebuild", this);
     }
   }
 

@@ -1,12 +1,12 @@
-import {LokiEventEmitter} from './event_emitter';
-import {UniqueIndex} from './unique_index';
-import {ExactIndex} from './exact_index';
-import {Resultset} from './resultset';
-import {DynamicView} from './dynamic_view';
-import {clone} from './clone';
-import {ltHelper, gtHelper, aeqHelper} from './helper';
-import {Loki} from './loki';
-import {copyProperties} from './utils';
+import {LokiEventEmitter} from "./event_emitter";
+import {UniqueIndex} from "./unique_index";
+import {ExactIndex} from "./exact_index";
+import {Resultset} from "./resultset";
+import {DynamicView} from "./dynamic_view";
+import {clone} from "./clone";
+import {ltHelper, gtHelper, aeqHelper} from "./helper";
+import {Loki} from "./loki";
+import {copyProperties} from "./utils";
 
 /*
  'isDeepProperty' is not defined              no-undef
@@ -24,7 +24,7 @@ import {copyProperties} from './utils';
  * General utils, including statistical functions
  */
 function isDeepProperty(field) {
-  return field.indexOf('.') !== -1;
+  return field.indexOf(".") !== -1;
 }
 
 function parseBase10(num) {
@@ -59,10 +59,10 @@ function standardDeviation(values) {
 
 function deepProperty(obj, property, isDeep) {
   if (isDeep === false) {
-		// pass without processing
+    // pass without processing
     return obj[property];
   }
-  const pieces = property.split('.');
+  const pieces = property.split(".");
   let root = obj;
   while (pieces.length > 0) {
     root = root[pieces.shift()];
@@ -94,10 +94,10 @@ export class Collection extends LokiEventEmitter {
    */
   constructor(name, options = {}) {
     super();
-		// the name of the collection
+    // the name of the collection
 
     this.name = name;
-		// the data held by the collection
+    // the data held by the collection
     this.data = [];
     this.idIndex = []; // index of id
     this.binaryIndices = {}; // user defined indexes
@@ -106,29 +106,29 @@ export class Collection extends LokiEventEmitter {
       exact: {}
     };
 
-		// unique contraints contain duplicate object references, so they are not persisted.
-		// we will keep track of properties which have unique contraint applied here, and regenerate on load
+    // unique contraints contain duplicate object references, so they are not persisted.
+    // we will keep track of properties which have unique contraint applied here, and regenerate on load
     this.uniqueNames = [];
 
-		// transforms will be used to store frequently used query chains as a series of steps
-		// which itself can be stored along with the database.
+    // transforms will be used to store frequently used query chains as a series of steps
+    // which itself can be stored along with the database.
     this.transforms = {};
 
-		// the object type of the collection
+    // the object type of the collection
     this.objType = name;
 
-		// in autosave scenarios we will use collection level dirty flags to determine whether save is needed.
-		// currently, if any collection is dirty we will autosave the whole database if autosave is configured.
-		// defaulting to true since this is called from addCollection and adding a collection should trigger save
+    // in autosave scenarios we will use collection level dirty flags to determine whether save is needed.
+    // currently, if any collection is dirty we will autosave the whole database if autosave is configured.
+    // defaulting to true since this is called from addCollection and adding a collection should trigger save
     this.dirty = true;
 
-		// private holders for cached data
+    // private holders for cached data
     this.cachedIndex = null;
     this.cachedBinaryIndex = null;
     this.cachedData = null;
 
-		/* OPTIONS */
-		// exact match and unique constraints
+    /* OPTIONS */
+    // exact match and unique constraints
     if (options.unique !== undefined) {
       if (!Array.isArray(options.unique)) {
         options.unique = [options.unique];
@@ -145,41 +145,41 @@ export class Collection extends LokiEventEmitter {
       });
     }
 
-		// Inverted index
+    // Inverted index
     this._fullTextSearch = null;
     if (Loki.FullTextSearch !== undefined) {
       this._fullTextSearch = options.fullTextSearch !== undefined
-				? new (Loki.FullTextSearch.FullTextSearch)(options.fullTextSearch) : null;
+        ? new (Loki.FullTextSearch.FullTextSearch)(options.fullTextSearch) : null;
     }
 
-		// if set to true we will optimally keep indices 'fresh' during insert/update/remove ops (never dirty/never needs rebuild)
-		// if you frequently intersperse insert/update/remove ops between find ops this will likely be significantly faster option.
+    // if set to true we will optimally keep indices 'fresh' during insert/update/remove ops (never dirty/never needs rebuild)
+    // if you frequently intersperse insert/update/remove ops between find ops this will likely be significantly faster option.
     this.adaptiveBinaryIndices = options.adaptiveBinaryIndices !== undefined ? options.adaptiveBinaryIndices : true;
 
-		// is collection transactional
+    // is collection transactional
     this.transactional = options.transactional !== undefined ? options.transactional : false;
 
-		// options to clone objects when inserting them
+    // options to clone objects when inserting them
     this.cloneObjects = options.clone !== undefined ? options.clone : false;
 
-		// default clone method (if enabled) is parse-stringify
+    // default clone method (if enabled) is parse-stringify
     this.cloneMethod = options.cloneMethod !== undefined ? options.cloneMethod : "parse-stringify";
 
-		// option to make event listeners async, default is sync
+    // option to make event listeners async, default is sync
     this.asyncListeners = options.asyncListeners !== undefined ? options.asyncListeners : false;
 
-		// disable track changes
+    // disable track changes
     this.disableChangesApi = options.disableChangesApi !== undefined ? options.disableChangesApi : true;
 
-		// option to observe objects and update them automatically, ignored if Object.observe is not supported
+    // option to observe objects and update them automatically, ignored if Object.observe is not supported
     this.autoupdate = options.autoupdate !== undefined ? options.autoupdate : false;
 
-		// by default, if you insert a document into a collection with binary indices, if those indexed properties contain
-		// a DateTime we will convert to epoch time format so that (across serializations) its value position will be the
-		// same 'after' serialization as it was 'before'.
+    // by default, if you insert a document into a collection with binary indices, if those indexed properties contain
+    // a DateTime we will convert to epoch time format so that (across serializations) its value position will be the
+    // same 'after' serialization as it was 'before'.
     this.serializableIndices = options.serializableIndices !== undefined ? options.serializableIndices : true;
 
-		//option to activate a cleaner daemon - clears "aged" documents at set intervals.
+    //option to activate a cleaner daemon - clears "aged" documents at set intervals.
     this.ttl = {
       age: null,
       ttlInterval: null,
@@ -187,38 +187,38 @@ export class Collection extends LokiEventEmitter {
     };
     this.setTTL(options.ttl || -1, options.ttlInterval);
 
-		// currentMaxId - change manually at your own peril!
+    // currentMaxId - change manually at your own peril!
     this.maxId = 0;
 
     this._dynamicViews = [];
 
-		// events
+    // events
     this.events = {
-      'insert': [],
-      'update': [],
-      'pre-insert': [],
-      'pre-update': [],
-      'close': [],
-      'flushbuffer': [],
-      'error': [],
-      'delete': [],
-      'warning': []
+      "insert": [],
+      "update": [],
+      "pre-insert": [],
+      "pre-update": [],
+      "close": [],
+      "flushbuffer": [],
+      "error": [],
+      "delete": [],
+      "warning": []
     };
 
-		// changes are tracked by collection and aggregated by the db
+    // changes are tracked by collection and aggregated by the db
     this.changes = [];
 
-		// initialize the id index
+    // initialize the id index
     this.ensureId();
     let indices = [];
-		// initialize optional user-supplied indices array ['age', 'lname', 'zip']
+    // initialize optional user-supplied indices array ['age', 'lname', 'zip']
     if (options && options.indices) {
-      if (Object.prototype.toString.call(options.indices) === '[object Array]') {
+      if (Object.prototype.toString.call(options.indices) === "[object Array]") {
         indices = options.indices;
-      } else if (typeof options.indices === 'string') {
+      } else if (typeof options.indices === "string") {
         indices = [options.indices];
       } else {
-        throw new TypeError('Indices needs to be a string or an array of strings');
+        throw new TypeError("Indices needs to be a string or an array of strings");
       }
     }
 
@@ -228,7 +228,7 @@ export class Collection extends LokiEventEmitter {
 
     function observerCallback(changes) {
 
-      const changedObjects = typeof Set === 'function' ? new Set() : [];
+      const changedObjects = typeof Set === "function" ? new Set() : [];
 
       if (!changedObjects.add)
         changedObjects.add = function (object) {
@@ -246,15 +246,14 @@ export class Collection extends LokiEventEmitter {
           return this.removeAutoUpdateObserver(object);
         try {
           this.update(object);
-        } catch (err) {
-        }
+        } catch (err) {/**/}
       });
     }
 
     this.observerCallback = observerCallback;
 
     const self = this;
-		/*
+    /*
 		 * This method creates a clone of the current status of an object and associates operation and collection name,
 		 * so the parent db can aggregate and generate a changes object for the entire db
 		 */
@@ -266,7 +265,7 @@ export class Collection extends LokiEventEmitter {
       });
     }
 
-		// clear all the changes
+    // clear all the changes
     function flushChanges() {
       self.changes = [];
     }
@@ -275,7 +274,7 @@ export class Collection extends LokiEventEmitter {
 
     this.flushChanges = flushChanges;
 
-		/**
+    /**
 		 * If the changes API is disabled make sure only metadata is added without re-evaluating everytime if the changesApi is enabled
 		 */
     function insertMeta(obj) {
@@ -286,7 +285,7 @@ export class Collection extends LokiEventEmitter {
         return;
       }
 
-			// if batch insert
+      // if batch insert
       if (Array.isArray(obj)) {
         len = obj.length;
 
@@ -302,7 +301,7 @@ export class Collection extends LokiEventEmitter {
         return;
       }
 
-			// single object
+      // single object
       if (!obj.meta) {
         obj.meta = {};
       }
@@ -320,11 +319,11 @@ export class Collection extends LokiEventEmitter {
     }
 
     function createInsertChange(obj) {
-      createChange(self.name, 'I', obj);
+      createChange(self.name, "I", obj);
     }
 
     function createUpdateChange(obj) {
-      createChange(self.name, 'U', obj);
+      createChange(self.name, "U", obj);
     }
 
     function insertMetaWithChange(obj) {
@@ -338,7 +337,7 @@ export class Collection extends LokiEventEmitter {
     }
 
 
-		/* assign correct handler based on ChangesAPI flag */
+    /* assign correct handler based on ChangesAPI flag */
     let insertHandler;
 
     let updateHandler;
@@ -354,27 +353,27 @@ export class Collection extends LokiEventEmitter {
       this.disableChangesApi = !enabled;
       setHandlers();
     };
-		/**
+    /**
 		 * built-in events
 		 */
-    this.on('insert', (obj) => {
+    this.on("insert", (obj) => {
       insertHandler(obj);
     });
 
-    this.on('update', (obj) => {
+    this.on("update", (obj) => {
       updateHandler(obj);
     });
 
-    this.on('delete', (obj) => {
+    this.on("delete", (obj) => {
       if (!this.disableChangesApi) {
-        createChange(this.name, 'R', obj);
+        createChange(this.name, "R", obj);
       }
     });
 
-    this.on('warning', (warning) => {
+    this.on("warning", (warning) => {
       this.console.warn(warning);
     });
-		// for de-serialization purposes
+    // for de-serialization purposes
     flushChanges();
 
     this.console = {
@@ -386,8 +385,8 @@ export class Collection extends LokiEventEmitter {
       },
     };
 
-		/* ------ STAGING API -------- */
-		/**
+    /* ------ STAGING API -------- */
+    /**
 		 * stages: a map of uniquely identified 'stages', which hold copies of objects to be
 		 * manipulated without affecting the data in the original collection
 		 */
@@ -448,7 +447,7 @@ export class Collection extends LokiEventEmitter {
       return collOptions.inflate;
     }
 
-		// load each element individually
+    // load each element individually
     let clen = obj.data.length;
     let j = 0;
     if (options && options[obj.name] !== undefined) {
@@ -467,7 +466,7 @@ export class Collection extends LokiEventEmitter {
       }
     }
 
-    coll.maxId = (typeof obj.maxId === 'undefined') ? 0 : obj.maxId;
+    coll.maxId = (typeof obj.maxId === "undefined") ? 0 : obj.maxId;
     coll.idIndex = obj.idIndex;
     if (obj.binaryIndices !== undefined) {
       coll.binaryIndices = obj.binaryIndices;
@@ -478,7 +477,7 @@ export class Collection extends LokiEventEmitter {
 
     coll.ensureId();
 
-		// regenerate unique indexes
+    // regenerate unique indexes
     coll.uniqueNames = [];
     if (obj.uniqueNames !== undefined) {
       coll.uniqueNames = obj.uniqueNames;
@@ -487,18 +486,18 @@ export class Collection extends LokiEventEmitter {
       }
     }
 
-		// in case they are loading a database created before we added dynamic views, handle undefined
+    // in case they are loading a database created before we added dynamic views, handle undefined
     if (obj._dynamicViews === undefined)
       return coll;
 
-		// reinflate DynamicViews and attached Resultsets
+    // reinflate DynamicViews and attached Resultsets
     for (let idx = 0; idx < obj._dynamicViews.length; idx++) {
       coll._dynamicViews.push(DynamicView.fromJSONObject(coll, obj._dynamicViews[idx]));
     }
 
-		// Upgrade Logic for binary index refactoring at version 1.5
+    // Upgrade Logic for binary index refactoring at version 1.5
     if (forceRebuild) {
-			// rebuild all indices
+      // rebuild all indices
       coll.ensureAllIndexes(true);
       coll.dirty = true;
     }
@@ -507,20 +506,20 @@ export class Collection extends LokiEventEmitter {
   }
 
   addAutoUpdateObserver(object) {
-    if (!this.autoupdate || typeof Object.observe !== 'function')
+    if (!this.autoupdate || typeof Object.observe !== "function")
       return;
 
-    Object.observe(object, this.observerCallback, ['add', 'update', 'delete', 'reconfigure', 'setPrototype']);
+    Object.observe(object, this.observerCallback, ["add", "update", "delete", "reconfigure", "setPrototype"]);
   }
 
   removeAutoUpdateObserver(object) {
-    if (!this.autoupdate || typeof Object.observe !== 'function')
+    if (!this.autoupdate || typeof Object.observe !== "function")
       return;
 
     Object.unobserve(object, this.observerCallback);
   }
 
-	/**
+  /**
 	 * Adds a named collection transform to the collection
 	 * @param {string} name - name to associate with transform
 	 * @param {array} transform - an array of transformation 'step' objects to save into the collection
@@ -534,7 +533,7 @@ export class Collection extends LokiEventEmitter {
     this.transforms[name] = transform;
   }
 
-	/**
+  /**
 	 * Updates a named collection transform to the collection
 	 * @param {string} name - name to associate with transform
 	 * @param {object} transform - a transformation object to save into collection
@@ -544,7 +543,7 @@ export class Collection extends LokiEventEmitter {
     this.transforms[name] = transform;
   }
 
-	/**
+  /**
 	 * Removes a named collection transform from the collection
 	 * @param {string} name - name of collection transform to remove
 	 * @memberof Collection
@@ -561,13 +560,13 @@ export class Collection extends LokiEventEmitter {
     for (k in template) {
       if (template[k] === undefined) continue;
       query.push((
-				obj = {},
-					obj[k] = template[k],
-					obj
-			));
+        obj = {},
+        obj[k] = template[k],
+        obj
+      ));
     }
     return {
-      '$and': query
+      "$and": query
     };
   }
 
@@ -579,7 +578,7 @@ export class Collection extends LokiEventEmitter {
     return this.find(this.byExample(template));
   }
 
-	/*----------------------------+
+  /*----------------------------+
 	 | TTL daemon                  |
 	 +----------------------------*/
   ttlDaemonFuncGen() {
@@ -606,11 +605,11 @@ export class Collection extends LokiEventEmitter {
     }
   }
 
-	/*----------------------------+
+  /*----------------------------+
 	 | INDEXING                    |
 	 +----------------------------*/
 
-	/**
+  /**
 	 * create a row filter that covers all documents in the collection
 	 */
   prepareFullDocIndex() {
@@ -622,7 +621,7 @@ export class Collection extends LokiEventEmitter {
     return indexes;
   }
 
-	/**
+  /**
 	 * Will allow reconfiguring certain collection options.
 	 * @param {boolean} options.adaptiveBinaryIndices - collection indices will be actively rebuilt rather than lazily
 	 * @memberof Collection
@@ -633,55 +632,55 @@ export class Collection extends LokiEventEmitter {
     if (options.adaptiveBinaryIndices !== undefined) {
       this.adaptiveBinaryIndices = options.adaptiveBinaryIndices;
 
-			// if switching to adaptive binary indices, make sure none are 'dirty'
+      // if switching to adaptive binary indices, make sure none are 'dirty'
       if (this.adaptiveBinaryIndices) {
         this.ensureAllIndexes();
       }
     }
   }
 
-	/**
+  /**
 	 * Ensure binary index on a certain field
 	 * @param {string} property - name of property to create binary index on
 	 * @param {boolean=} force - (Optional) flag indicating whether to construct index immediately
 	 * @memberof Collection
 	 */
   ensureIndex(property, force) {
-		// optional parameter to force rebuild whether flagged as dirty or not
-    if (typeof(force) === 'undefined') {
+    // optional parameter to force rebuild whether flagged as dirty or not
+    if (typeof(force) === "undefined") {
       force = false;
     }
 
     if (property === null || property === undefined) {
-      throw new Error('Attempting to set index without an associated property');
+      throw new Error("Attempting to set index without an associated property");
     }
 
     if (this.binaryIndices[property] && !force) {
       if (!this.binaryIndices[property].dirty) return;
     }
 
-		// if the index is already defined and we are using adaptiveBinaryIndices and we are not forcing a rebuild, return.
+    // if the index is already defined and we are using adaptiveBinaryIndices and we are not forcing a rebuild, return.
     if (this.adaptiveBinaryIndices === true && this.binaryIndices[property] !== undefined && !force) {
       return;
     }
 
     const index = {
-      'name': property,
-      'dirty': true,
-      'values': this.prepareFullDocIndex()
+      "name": property,
+      "dirty": true,
+      "values": this.prepareFullDocIndex()
     };
     this.binaryIndices[property] = index;
 
     const wrappedComparer =
-			(((p, data) => (a, b) => {
-  const objAp = data[a][p];
-  const objBp = data[b][p];
-  if (objAp !== objBp) {
-    if (ltHelper(objAp, objBp, false)) return -1;
-    if (gtHelper(objAp, objBp, false)) return 1;
-  }
-  return 0;
-}))(property, this.data);
+   (((p, data) => (a, b) => {
+     const objAp = data[a][p];
+     const objBp = data[b][p];
+     if (objAp !== objBp) {
+       if (ltHelper(objAp, objBp, false)) return -1;
+       if (gtHelper(objAp, objBp, false)) return 1;
+     }
+     return 0;
+   }))(property, this.data);
 
     index.values.sort(wrappedComparer);
     index.dirty = false;
@@ -704,13 +703,13 @@ export class Collection extends LokiEventEmitter {
   ensureUniqueIndex(field) {
     let index = this.constraints.unique[field];
     if (!index) {
-			// keep track of new unique index for regenerate after database (re)load.
+      // keep track of new unique index for regenerate after database (re)load.
       if (this.uniqueNames.indexOf(field) == -1) {
         this.uniqueNames.push(field);
       }
     }
 
-		// if index already existed, (re)loading it will likely cause collisions, rebuild always
+    // if index already existed, (re)loading it will likely cause collisions, rebuild always
     this.constraints.unique[field] = index = new UniqueIndex(field);
     this.data.forEach((obj) => {
       index.set(obj);
@@ -718,7 +717,7 @@ export class Collection extends LokiEventEmitter {
     return index;
   }
 
-	/**
+  /**
 	 * Ensure all binary indices
 	 */
   ensureAllIndexes(force) {
@@ -746,7 +745,7 @@ export class Collection extends LokiEventEmitter {
       this.binaryIndices[index].dirty = true;
   }
 
-	/**
+  /**
 	 * Quickly determine number of documents in collection (or query)
 	 * @param {object=} query - (optional) query object to count results of
 	 * @returns {number} number of documents in the collection
@@ -760,7 +759,7 @@ export class Collection extends LokiEventEmitter {
     return this.chain().find(query).filteredrows.length;
   }
 
-	/**
+  /**
 	 * Rebuild idIndex
 	 */
   ensureId() {
@@ -773,7 +772,7 @@ export class Collection extends LokiEventEmitter {
     }
   }
 
-	/**
+  /**
 	 * Add a dynamic view to the collection
 	 * @param {string} name - name of dynamic view to add
 	 * @param {object=} options - (optional) options to configure dynamic view with
@@ -790,7 +789,7 @@ export class Collection extends LokiEventEmitter {
     return dv;
   }
 
-	/**
+  /**
 	 * Remove a dynamic view from the collection
 	 * @param {string} name - name of dynamic view to remove
 	 * @memberof Collection
@@ -803,7 +802,7 @@ export class Collection extends LokiEventEmitter {
     }
   }
 
-	/**
+  /**
 	 * Look up dynamic view reference from within the collection
 	 * @param {string} name - name of dynamic view to retrieve reference of
 	 * @returns {DynamicView} A reference to the dynamic view with that name
@@ -819,7 +818,7 @@ export class Collection extends LokiEventEmitter {
     return null;
   }
 
-	/**
+  /**
 	 * Applies a 'mongo-like' find query object and passes all results to an update function.
 	 * For filter function querying you should migrate to [
 	 * Where()]{@link Collection#updateWhere}.
@@ -836,7 +835,7 @@ export class Collection extends LokiEventEmitter {
     }
   }
 
-	/**
+  /**
 	 * Applies a 'mongo-like' find query object removes all documents which match that filter.
 	 *
 	 * @param {object} filterObject - 'mongo-like' query object
@@ -846,7 +845,7 @@ export class Collection extends LokiEventEmitter {
     this.chain().find(filterObject).remove();
   }
 
-	/**
+  /**
 	 * Adds object(s) to collection, ensure object(s) have meta properties, clone it if necessary, etc.
 	 * @param {(object|array)} doc - the document (or array of documents) to be inserted
 	 * @returns {(object|array)} document or documents inserted
@@ -857,11 +856,11 @@ export class Collection extends LokiEventEmitter {
       return this.insertOne(doc);
     }
 
-		// holder to the clone of the object inserted if collections is set to clone objects
+    // holder to the clone of the object inserted if collections is set to clone objects
     let obj;
     let results = [];
 
-    this.emit('pre-insert', doc);
+    this.emit("pre-insert", doc);
     for (let i = 0, len = doc.length; i < len; i++) {
       obj = this.insertOne(doc[i], true);
       if (!obj) {
@@ -869,16 +868,16 @@ export class Collection extends LokiEventEmitter {
       }
       results.push(obj);
     }
-		// at the 'batch' level, if clone option is true then emitted docs are clones
-    this.emit('insert', results);
+    // at the 'batch' level, if clone option is true then emitted docs are clones
+    this.emit("insert", results);
 
-		// if clone option is set, clone return values
+    // if clone option is set, clone return values
     results = this.cloneObjects ? clone(results, this.cloneMethod) : results;
 
     return results.length === 1 ? results[0] : results;
   }
 
-	/**
+  /**
 	 * Adds a single object, ensures it has meta properties, clone it if necessary, etc.
 	 * @param {object} doc - the document to be inserted
 	 * @param {boolean} bulkInsert - quiet pre-insert and insert event emits
@@ -889,44 +888,44 @@ export class Collection extends LokiEventEmitter {
     let err = null;
     let returnObj;
 
-    if (typeof doc !== 'object') {
-      err = new TypeError('Document needs to be an object');
+    if (typeof doc !== "object") {
+      err = new TypeError("Document needs to be an object");
     } else if (doc === null) {
-      err = new TypeError('Object cannot be null');
+      err = new TypeError("Object cannot be null");
     }
 
     if (err !== null) {
-      this.emit('error', err);
+      this.emit("error", err);
       throw err;
     }
 
-		// if configured to clone, do so now... otherwise just use same obj reference
+    // if configured to clone, do so now... otherwise just use same obj reference
     const obj = this.cloneObjects ? clone(doc, this.cloneMethod) : doc;
 
-    if (typeof obj.meta === 'undefined') {
+    if (typeof obj.meta === "undefined") {
       obj.meta = {
         revision: 0,
         created: 0
       };
     }
 
-		// both 'pre-insert' and 'insert' events are passed internal data reference even when cloning
-		// insert needs internal reference because that is where loki itself listens to add meta
+    // both 'pre-insert' and 'insert' events are passed internal data reference even when cloning
+    // insert needs internal reference because that is where loki itself listens to add meta
     if (!bulkInsert) {
-      this.emit('pre-insert', obj);
+      this.emit("pre-insert", obj);
     }
     if (!this.add(obj)) {
       return undefined;
     }
 
-		// FullTextSearch TODO.
+    // FullTextSearch TODO.
     if (this._fullTextSearch !== null) {
       this._fullTextSearch.addDocument(doc);
     }
 
     returnObj = obj;
     if (!bulkInsert) {
-      this.emit('insert', obj);
+      this.emit("insert", obj);
       returnObj = this.cloneObjects ? clone(obj, this.cloneMethod) : obj;
     }
 
@@ -934,7 +933,7 @@ export class Collection extends LokiEventEmitter {
     return returnObj;
   }
 
-	/**
+  /**
 	 * Empties the collection.
 	 * @param {object=} options - configure clear behavior
 	 * @param {bool=} options.removeIndices - (default: false)
@@ -952,7 +951,7 @@ export class Collection extends LokiEventEmitter {
     this._dynamicViews = [];
     this.dirty = true;
 
-		// if removing indices entirely
+    // if removing indices entirely
     if (options.removeIndices === true) {
       this.binaryIndices = {};
 
@@ -962,29 +961,29 @@ export class Collection extends LokiEventEmitter {
       };
       this.uniqueNames = [];
     }
-		// clear indices but leave definitions in place
+    // clear indices but leave definitions in place
     else {
-			// clear binary indices
+      // clear binary indices
       const keys = Object.keys(this.binaryIndices);
       keys.forEach((biname) => {
         this.binaryIndices[biname].dirty = false;
         this.binaryIndices[biname].values = [];
       });
 
-			// clear entire unique indices definition
+      // clear entire unique indices definition
       this.constraints = {
         unique: {},
         exact: {}
       };
 
-			// add definitions back
+      // add definitions back
       this.uniqueNames.forEach((uiname) => {
         this.ensureUniqueIndex(uiname);
       });
     }
   }
 
-	/**
+  /**
 	 * Updates an object and notifies collection that the document has changed.
 	 * @param {object} doc - document to update within the collection
 	 * @memberof Collection
@@ -999,54 +998,54 @@ export class Collection extends LokiEventEmitter {
       return;
     }
 
-		// verify object is a properly formed document
+    // verify object is a properly formed document
     if (doc.$loki === undefined) {
-      throw new Error('Trying to update unsynced document. Please save the document first by using insert() or addMany()');
+      throw new Error("Trying to update unsynced document. Please save the document first by using insert() or addMany()");
     }
     try {
       this.startTransaction();
       const arr = this.get(doc.$loki, true);
 
-			// ref to existing obj
+      // ref to existing obj
       let oldInternal;
 
-			// ref to new internal obj
+      // ref to new internal obj
       let newInternal;
 
       let position;
 
       if (!arr) {
-        throw new Error('Trying to update a document not in collection.');
+        throw new Error("Trying to update a document not in collection.");
       }
 
       oldInternal = arr[0]; // -internal- obj ref
       position = arr[1]; // position in data array
 
-			// if configured to clone, do so now... otherwise just use same obj reference
+      // if configured to clone, do so now... otherwise just use same obj reference
       newInternal = this.cloneObjects ? clone(doc, this.cloneMethod) : doc;
 
-      this.emit('pre-update', doc);
+      this.emit("pre-update", doc);
 
       Object.keys(this.constraints.unique).forEach((key) => {
         this.constraints.unique[key].update(oldInternal, newInternal);
       });
 
-			// operate the update
+      // operate the update
       this.data[position] = newInternal;
 
       if (newInternal !== doc) {
         this.addAutoUpdateObserver(doc);
       }
 
-			// now that we can efficiently determine the data[] position of newly added document,
-			// submit it for all registered DynamicViews to evaluate for inclusion/exclusion
+      // now that we can efficiently determine the data[] position of newly added document,
+      // submit it for all registered DynamicViews to evaluate for inclusion/exclusion
       for (let idx = 0; idx < this._dynamicViews.length; idx++) {
         this._dynamicViews[idx].evaluateDocument(position, false);
       }
 
       let key;
       if (this.adaptiveBinaryIndices) {
-				// for each binary index defined in collection, immediately update rather than flag for lazy rebuild
+        // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
         const bIndices = this.binaryIndices;
         for (key in bIndices) {
           this.adaptiveBinaryIndexUpdate(position, key);
@@ -1056,9 +1055,9 @@ export class Collection extends LokiEventEmitter {
       }
 
       this.idIndex[position] = newInternal.$loki;
-			//this.flagBinaryIndexesDirty();
+      //this.flagBinaryIndexesDirty();
 
-			// FullTextSearch.
+      // FullTextSearch.
       if (this._fullTextSearch !== null) {
         this._fullTextSearch.updateDocument(doc);
       }
@@ -1066,32 +1065,32 @@ export class Collection extends LokiEventEmitter {
       this.commit();
       this.dirty = true; // for autosave scenarios
 
-      this.emit('update', doc, this.cloneObjects ? clone(oldInternal, this.cloneMethod) : null);
+      this.emit("update", doc, this.cloneObjects ? clone(oldInternal, this.cloneMethod) : null);
       return doc;
     } catch (err) {
       this.rollback();
       this.console.error(err.message);
-      this.emit('error', err);
+      this.emit("error", err);
       throw (err); // re-throw error so user does not think it succeeded
     }
   }
 
-	/**
+  /**
 	 * Add object to collection
 	 */
   add(obj) {
-		// if parameter isn't object exit with throw
-    if ('object' !== typeof obj) {
-      throw new TypeError('Object being added needs to be an object');
+    // if parameter isn't object exit with throw
+    if ("object" !== typeof obj) {
+      throw new TypeError("Object being added needs to be an object");
     }
-		// if object you are adding already has id column it is either already in the collection
-		// or the object is carrying its own 'id' property.  If it also has a meta property,
-		// then this is already in collection so throw error, otherwise rename to originalId and continue adding.
-    if (typeof(obj.$loki) !== 'undefined') {
-      throw new Error('Document is already in collection, please use update()');
+    // if object you are adding already has id column it is either already in the collection
+    // or the object is carrying its own 'id' property.  If it also has a meta property,
+    // then this is already in collection so throw error, otherwise rename to originalId and continue adding.
+    if (typeof(obj.$loki) !== "undefined") {
+      throw new Error("Document is already in collection, please use update()");
     }
 
-		/*
+    /*
 		 * try adding object to collection
 		 */
     try {
@@ -1113,23 +1112,23 @@ export class Collection extends LokiEventEmitter {
         }
       }
 
-			// add new obj id to idIndex
+      // add new obj id to idIndex
       this.idIndex.push(obj.$loki);
 
-			// add the object
+      // add the object
       this.data.push(obj);
 
       const addedPos = this.data.length - 1;
 
-			// now that we can efficiently determine the data[] position of newly added document,
-			// submit it for all registered DynamicViews to evaluate for inclusion/exclusion
+      // now that we can efficiently determine the data[] position of newly added document,
+      // submit it for all registered DynamicViews to evaluate for inclusion/exclusion
       const dvlen = this._dynamicViews.length;
       for (let i = 0; i < dvlen; i++) {
         this._dynamicViews[i].evaluateDocument(addedPos, true);
       }
 
       if (this.adaptiveBinaryIndices) {
-				// for each binary index defined in collection, immediately update rather than flag for lazy rebuild
+        // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
         const bIndices = this.binaryIndices;
         for (key in bIndices) {
           this.adaptiveBinaryIndexInsert(addedPos, key);
@@ -1145,12 +1144,12 @@ export class Collection extends LokiEventEmitter {
     } catch (err) {
       this.rollback();
       this.console.error(err.message);
-      this.emit('error', err);
+      this.emit("error", err);
       throw (err); // re-throw error so user does not think it succeeded
     }
   }
 
-	/**
+  /**
 	 * Applies a filter function and passes all results to an update function.
 	 *
 	 * @param {function} filterFunction - filter function whose results will execute update
@@ -1173,7 +1172,7 @@ export class Collection extends LokiEventEmitter {
     }
   }
 
-	/**
+  /**
 	 * Remove all documents matching supplied filter function.
 	 * For 'mongo-like' querying you should migrate to [findAndRemove()]{@link Collection#findAndRemove}.
 	 * @param {function|object} query - query object to filter on
@@ -1181,7 +1180,7 @@ export class Collection extends LokiEventEmitter {
 	 */
   removeWhere(query) {
     let list;
-    if (typeof query === 'function') {
+    if (typeof query === "function") {
       list = this.data.filter(query);
       this.remove(list);
     } else {
@@ -1193,18 +1192,18 @@ export class Collection extends LokiEventEmitter {
     this.remove(this.data.slice());
   }
 
-	/**
+  /**
 	 * Remove a document from the collection
 	 * @param {object} doc - document to remove from collection
 	 * @memberof Collection
 	 */
   remove(doc) {
-    if (typeof doc === 'number') {
+    if (typeof doc === "number") {
       doc = this.get(doc);
     }
 
-    if ('object' !== typeof doc) {
-      throw new Error('Parameter is not an object');
+    if ("object" !== typeof doc) {
+      throw new Error("Parameter is not an object");
     }
     if (Array.isArray(doc)) {
       let k = 0;
@@ -1216,7 +1215,7 @@ export class Collection extends LokiEventEmitter {
     }
 
     if (doc.$loki === undefined) {
-      throw new Error('Object is not a document stored in the collection');
+      throw new Error("Object is not a document stored in the collection");
     }
 
     try {
@@ -1224,21 +1223,21 @@ export class Collection extends LokiEventEmitter {
       const arr = this.get(doc.$loki, true);
 
       const // obj = arr[0],
-				position = arr[1];
+        position = arr[1];
 
       Object.keys(this.constraints.unique).forEach((key) => {
-        if (doc[key] !== null && typeof doc[key] !== 'undefined') {
+        if (doc[key] !== null && typeof doc[key] !== "undefined") {
           this.constraints.unique[key].remove(doc[key]);
         }
       });
-			// now that we can efficiently determine the data[] position of newly added document,
-			// submit it for all registered DynamicViews to remove
+      // now that we can efficiently determine the data[] position of newly added document,
+      // submit it for all registered DynamicViews to remove
       for (let idx = 0; idx < this._dynamicViews.length; idx++) {
         this._dynamicViews[idx].removeDocument(position);
       }
 
       if (this.adaptiveBinaryIndices) {
-				// for each binary index defined in collection, immediately update rather than flag for lazy rebuild
+        // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
         let key;
 
         const bIndices = this.binaryIndices;
@@ -1252,33 +1251,33 @@ export class Collection extends LokiEventEmitter {
       this.data.splice(position, 1);
       this.removeAutoUpdateObserver(doc);
 
-			// remove id from idIndex
+      // remove id from idIndex
       this.idIndex.splice(position, 1);
 
-			// FullTextSearch.
+      // FullTextSearch.
       if (this._fullTextSearch != null) {
         this._fullTextSearch.removeDocument(doc);
       }
 
       this.commit();
       this.dirty = true; // for autosave scenarios
-      this.emit('delete', arr[0]);
+      this.emit("delete", arr[0]);
       delete doc.$loki;
       delete doc.meta;
       return doc;
     } catch (err) {
       this.rollback();
       this.console.error(err.message);
-      this.emit('error', err);
+      this.emit("error", err);
       return null;
     }
   }
 
-	/*---------------------+
+  /*---------------------+
 	 | Finding methods     |
 	 +----------------------*/
 
-	/**
+  /**
 	 * Get by Id - faster than other methods because of the searching algorithm
 	 * @param {int} id - $loki id of document you want to retrieve
 	 * @param {boolean} returnPosition - if 'true' we will return [object, position]
@@ -1293,10 +1292,10 @@ export class Collection extends LokiEventEmitter {
     let min = 0;
     let mid = (min + max) >> 1;
 
-    id = typeof id === 'number' ? id : parseInt(id, 10);
+    id = typeof id === "number" ? id : parseInt(id, 10);
 
     if (isNaN(id)) {
-      throw new TypeError('Passed id is not an integer');
+      throw new TypeError("Passed id is not an integer");
     }
 
     while (data[min] < data[max]) {
@@ -1318,7 +1317,7 @@ export class Collection extends LokiEventEmitter {
     return null;
   }
 
-	/**
+  /**
 	 * Perform binary range lookup for the data[dataPosition][binaryIndexName] property value
 	 *    Since multiple documents may contain the same value (which the index is sorted on),
 	 *    we hone in on range and then linear scan range to find exact index array position.
@@ -1329,31 +1328,31 @@ export class Collection extends LokiEventEmitter {
     const val = this.data[dataPosition][binaryIndexName];
     const index = this.binaryIndices[binaryIndexName].values;
 
-		// i think calculateRange can probably be moved to collection
-		// as it doesn't seem to need resultset.  need to verify
-		//let rs = new Resultset(this, null, null);
+    // i think calculateRange can probably be moved to collection
+    // as it doesn't seem to need resultset.  need to verify
+    //let rs = new Resultset(this, null, null);
     const range = this.calculateRange("$eq", binaryIndexName, val);
 
     if (range[0] === 0 && range[1] === -1) {
-			// uhoh didn't find range
+      // uhoh didn't find range
       return null;
     }
 
     const min = range[0];
     const max = range[1];
 
-		// narrow down the sub-segment of index values
-		// where the indexed property value exactly matches our
-		// value and then linear scan to find exact -index- position
+    // narrow down the sub-segment of index values
+    // where the indexed property value exactly matches our
+    // value and then linear scan to find exact -index- position
     for (let idx = min; idx <= max; idx++) {
       if (index[idx] === dataPosition) return idx;
     }
 
-		// uhoh
+    // uhoh
     return null;
   }
 
-	/**
+  /**
 	 * Adaptively insert a selected item to the index.
 	 * @param {int} dataPosition : coll.data array index/position
 	 * @param {string} binaryIndexName : index to search for dataPosition in
@@ -1362,7 +1361,7 @@ export class Collection extends LokiEventEmitter {
     const index = this.binaryIndices[binaryIndexName].values;
     let val = this.data[dataPosition][binaryIndexName];
 
-		// If you are inserting a javascript Date value into a binary index, convert to epoch time
+    // If you are inserting a javascript Date value into a binary index, convert to epoch time
     if (this.serializableIndices === true && val instanceof Date) {
       this.data[dataPosition][binaryIndexName] = val.getTime();
       val = this.data[dataPosition][binaryIndexName];
@@ -1370,19 +1369,19 @@ export class Collection extends LokiEventEmitter {
 
     const idxPos = (index.length === 0) ? 0 : this.calculateRangeStart(binaryIndexName, val, true);
 
-		// insert new data index into our binary index at the proper sorted location for relevant property calculated by idxPos.
-		// doing this after adjusting dataPositions so no clash with previous item at that position.
+    // insert new data index into our binary index at the proper sorted location for relevant property calculated by idxPos.
+    // doing this after adjusting dataPositions so no clash with previous item at that position.
     this.binaryIndices[binaryIndexName].values.splice(idxPos, 0, dataPosition);
   }
 
-	/**
+  /**
 	 * Adaptively update a selected item within an index.
 	 * @param {int} dataPosition : coll.data array index/position
 	 * @param {string} binaryIndexName : index to search for dataPosition in
 	 */
   adaptiveBinaryIndexUpdate(dataPosition, binaryIndexName) {
-		// linear scan needed to find old position within index unless we optimize for clone scenarios later
-		// within (my) node 5.6.0, the following for() loop with strict compare is -much- faster than indexOf()
+    // linear scan needed to find old position within index unless we optimize for clone scenarios later
+    // within (my) node 5.6.0, the following for() loop with strict compare is -much- faster than indexOf()
     let idxPos;
 
     const index = this.binaryIndices[binaryIndexName].values;
@@ -1392,14 +1391,14 @@ export class Collection extends LokiEventEmitter {
       if (index[idxPos] === dataPosition) break;
     }
 
-		//let idxPos = this.binaryIndices[binaryIndexName].values.indexOf(dataPosition);
+    //let idxPos = this.binaryIndices[binaryIndexName].values.indexOf(dataPosition);
     this.binaryIndices[binaryIndexName].values.splice(idxPos, 1);
 
-		//this.adaptiveBinaryIndexRemove(dataPosition, binaryIndexName, true);
+    //this.adaptiveBinaryIndexRemove(dataPosition, binaryIndexName, true);
     this.adaptiveBinaryIndexInsert(dataPosition, binaryIndexName);
   }
 
-	/**
+  /**
 	 * Adaptively remove a selected item from the index.
 	 * @param {int} dataPosition : coll.data array index/position
 	 * @param {string} binaryIndexName : index to search for dataPosition in
@@ -1411,21 +1410,21 @@ export class Collection extends LokiEventEmitter {
     let idx;
 
     if (idxPos === null) {
-			// throw new Error('unable to determine binary index position');
+      // throw new Error('unable to determine binary index position');
       return null;
     }
 
-		// remove document from index
+    // remove document from index
     this.binaryIndices[binaryIndexName].values.splice(idxPos, 1);
 
-		// if we passed this optional flag parameter, we are calling from adaptiveBinaryIndexUpdate,
-		// in which case data positions stay the same.
+    // if we passed this optional flag parameter, we are calling from adaptiveBinaryIndexUpdate,
+    // in which case data positions stay the same.
     if (removedFromIndexOnly === true) {
       return;
     }
 
-		// since index stores data array positions, if we remove a document
-		// we need to adjust array positions -1 for all document positions greater than removed position
+    // since index stores data array positions, if we remove a document
+    // we need to adjust array positions -1 for all document positions greater than removed position
     len = index.length;
     for (idx = 0; idx < len; idx++) {
       if (index[idx] > dataPosition) {
@@ -1434,7 +1433,7 @@ export class Collection extends LokiEventEmitter {
     }
   }
 
-	/**
+  /**
 	 * Internal method used for index maintenance and indexed searching.
 	 * Calculates the beginning of an index range for a given value.
 	 * For index maintainance (adaptive:true), we will return a valid index position to insert to.
@@ -1459,10 +1458,7 @@ export class Collection extends LokiEventEmitter {
       return -1;
     }
 
-    const minVal = rcd[index[min]][prop];
-    const maxVal = rcd[index[max]][prop];
-
-		// hone in on start position of value
+    // hone in on start position of value
     while (min < max) {
       mid = (min + max) >> 1;
 
@@ -1475,21 +1471,21 @@ export class Collection extends LokiEventEmitter {
 
     const lbound = min;
 
-		// found it... return it
+    // found it... return it
     if (aeqHelper(val, rcd[index[lbound]][prop])) {
       return lbound;
     }
 
-		// if not in index and our value is less than the found one
+    // if not in index and our value is less than the found one
     if (ltHelper(val, rcd[index[lbound]][prop], false)) {
       return adaptive ? lbound : lbound - 1;
     }
 
-		// not in index and our value is greater than the found one
+    // not in index and our value is greater than the found one
     return adaptive ? lbound + 1 : lbound;
   }
 
-	/**
+  /**
 	 * Internal method used for indexed $between.  Given a prop (index name), and a value
 	 * (which may or may not yet exist) this will find the final position of that upper range value.
 	 */
@@ -1504,10 +1500,7 @@ export class Collection extends LokiEventEmitter {
       return -1;
     }
 
-    const minVal = rcd[index[min]][prop];
-    const maxVal = rcd[index[max]][prop];
-
-		// hone in on start position of value
+    // hone in on start position of value
     while (min < max) {
       mid = (min + max) >> 1;
 
@@ -1520,26 +1513,26 @@ export class Collection extends LokiEventEmitter {
 
     const ubound = max;
 
-		// only eq if last element in array is our val
+    // only eq if last element in array is our val
     if (aeqHelper(val, rcd[index[ubound]][prop])) {
       return ubound;
     }
 
-		// if not in index and our value is less than the found one
+    // if not in index and our value is less than the found one
     if (gtHelper(val, rcd[index[ubound]][prop], false)) {
       return ubound + 1;
     }
 
-		// either hole or first nonmatch
+    // either hole or first nonmatch
     if (aeqHelper(val, rcd[index[ubound - 1]][prop])) {
       return ubound - 1;
     }
 
-		// hole, so ubound if nearest gt than the val we were looking for
+    // hole, so ubound if nearest gt than the val we were looking for
     return ubound;
   }
 
-	/**
+  /**
 	 * calculateRange() - Binary Search utility method to find range/segment of values matching criteria.
 	 *    this is used for collection.find() and first find filter of resultset/dynview
 	 *    slightly different than get() binary search in that get() hones in on 1 value,
@@ -1554,13 +1547,11 @@ export class Collection extends LokiEventEmitter {
     const index = this.binaryIndices[prop].values;
     const min = 0;
     const max = index.length - 1;
-    const mid = 0;
     let lbound;
     let lval;
     let ubound;
-    let uval;
 
-		// when no documents are in collection, return empty range condition
+    // when no documents are in collection, return empty range condition
     if (rcd.length === 0) {
       return [0, -1];
     }
@@ -1568,65 +1559,65 @@ export class Collection extends LokiEventEmitter {
     const minVal = rcd[index[min]][prop];
     const maxVal = rcd[index[max]][prop];
 
-		// if value falls outside of our range return [0, -1] to designate no results
+    // if value falls outside of our range return [0, -1] to designate no results
     switch (op) {
-      case '$eq':
-      case '$aeq':
+      case "$eq":
+      case "$aeq":
         if (ltHelper(val, minVal, false) || gtHelper(val, maxVal, false)) {
           return [0, -1];
         }
         break;
-      case '$dteq':
+      case "$dteq":
         if (ltHelper(val, minVal, false) || gtHelper(val, maxVal, false)) {
           return [0, -1];
         }
         break;
-      case '$gt':
-				// none are within range
+      case "$gt":
+        // none are within range
         if (gtHelper(val, maxVal, true)) {
           return [0, -1];
         }
-				// all are within range
+        // all are within range
         if (gtHelper(minVal, val, false)) {
           return [min, max];
         }
         break;
-      case '$gte':
-				// none are within range
+      case "$gte":
+        // none are within range
         if (gtHelper(val, maxVal, false)) {
           return [0, -1];
         }
-				// all are within range
+        // all are within range
         if (gtHelper(minVal, val, true)) {
           return [min, max];
         }
         break;
-      case '$lt':
-				// none are within range
+      case "$lt":
+        // none are within range
         if (ltHelper(val, minVal, true)) {
           return [0, -1];
         }
-				// all are within range
+        // all are within range
         if (ltHelper(maxVal, val, false)) {
           return [min, max];
         }
         break;
-      case '$lte':
-				// none are within range
+      case "$lte":
+        // none are within range
         if (ltHelper(val, minVal, false)) {
           return [0, -1];
         }
-				// all are within range
+        // all are within range
         if (ltHelper(maxVal, val, true)) {
           return [min, max];
         }
         break;
-      case '$between':
-				// none are within range (low range is greater)
+      case "$between":
+        // none are within range (low range is greater)
         if (gtHelper(val[0], maxVal, false)) {
           return [0, -1];
         }
-				// none are within range (high range lower)
+        // none are within range (high range lower)
         if (ltHelper(val[1], minVal, false)) {
           return [0, -1];
         }
@@ -1643,12 +1634,12 @@ export class Collection extends LokiEventEmitter {
         if (ubound < lbound) return [0, -1];
 
         return ([lbound, ubound]);
-      case '$in':
+      case "$in": {
         const idxset = [];
         const segResult = [];
-				// query each value '$eq' operator and merge the seqment results.
+        // query each value '$eq' operator and merge the seqment results.
         for (let j = 0, len = val.length; j < len; j++) {
-          const seg = this.calculateRange('$eq', prop, val[j]);
+          const seg = this.calculateRange("$eq", prop, val[j]);
 
           for (let i = seg[0]; i <= seg[1]; i++) {
             if (idxset[i] === undefined) {
@@ -1658,15 +1649,16 @@ export class Collection extends LokiEventEmitter {
           }
         }
         return segResult;
+      }
     }
 
-		// determine lbound where needed
+    // determine lbound where needed
     switch (op) {
-      case '$eq':
-      case '$aeq':
-      case '$dteq':
-      case '$gte':
-      case '$lt':
+      case "$eq":
+      case "$aeq":
+      case "$dteq":
+      case "$gte":
+      case "$lt":
         lbound = this.calculateRangeStart(prop, val);
         lval = rcd[index[lbound]][prop];
         break;
@@ -1674,15 +1666,14 @@ export class Collection extends LokiEventEmitter {
         break;
     }
 
-		// determine ubound where needed
+    // determine ubound where needed
     switch (op) {
-      case '$eq':
-      case '$aeq':
-      case '$dteq':
-      case '$lte':
-      case '$gt':
+      case "$eq":
+      case "$aeq":
+      case "$dteq":
+      case "$lte":
+      case "$gt":
         ubound = this.calculateRangeEnd(prop, val);
-        uval = rcd[index[ubound]][prop];
         break;
       default:
         break;
@@ -1690,62 +1681,62 @@ export class Collection extends LokiEventEmitter {
 
 
     switch (op) {
-      case '$eq':
-      case '$aeq':
-      case '$dteq':
-				// if hole (not found)
-				//if (ltHelper(lval, val, false) || gtHelper(lval, val, false)) {
-				//  return [0, -1];
-				//}
+      case "$eq":
+      case "$aeq":
+      case "$dteq":
+        // if hole (not found)
+        //if (ltHelper(lval, val, false) || gtHelper(lval, val, false)) {
+        //  return [0, -1];
+        //}
         if (!aeqHelper(lval, val)) {
           return [0, -1];
         }
 
         return [lbound, ubound];
 
-			//case '$dteq':
-			// if hole (not found)
-			//  if (lval > val || lval < val) {
-			//    return [0, -1];
-			//  }
+        //case '$dteq':
+        // if hole (not found)
+        //  if (lval > val || lval < val) {
+        //    return [0, -1];
+        //  }
 
-			//  return [lbound, ubound];
+        //  return [lbound, ubound];
 
-      case '$gt':
-				// (an eqHelper would probably be better test)
-				// if hole (not found) ub position is already greater
+      case "$gt":
+        // (an eqHelper would probably be better test)
+        // if hole (not found) ub position is already greater
         if (!aeqHelper(rcd[index[ubound]][prop], val)) {
-					//if (gtHelper(rcd[index[ubound]][prop], val, false)) {
+          //if (gtHelper(rcd[index[ubound]][prop], val, false)) {
           return [ubound, max];
         }
-				// otherwise (found) so ubound is still equal, get next
+        // otherwise (found) so ubound is still equal, get next
         return [ubound + 1, max];
 
-      case '$gte':
-				// if hole (not found) lb position marks left outside of range
+      case "$gte":
+        // if hole (not found) lb position marks left outside of range
         if (!aeqHelper(rcd[index[lbound]][prop], val)) {
-					//if (ltHelper(rcd[index[lbound]][prop], val, false)) {
+          //if (ltHelper(rcd[index[lbound]][prop], val, false)) {
           return [lbound + 1, max];
         }
-				// otherwise (found) so lb is first position where its equal
+        // otherwise (found) so lb is first position where its equal
         return [lbound, max];
 
-      case '$lt':
-				// if hole (not found) position already is less than
+      case "$lt":
+        // if hole (not found) position already is less than
         if (!aeqHelper(rcd[index[lbound]][prop], val)) {
-					//if (ltHelper(rcd[index[lbound]][prop], val, false)) {
+          //if (ltHelper(rcd[index[lbound]][prop], val, false)) {
           return [min, lbound];
         }
-				// otherwise (found) so lb marks left inside of eq range, get previous
+        // otherwise (found) so lb marks left inside of eq range, get previous
         return [min, lbound - 1];
 
-      case '$lte':
-				// if hole (not found) ub position marks right outside so get previous
+      case "$lte":
+        // if hole (not found) ub position marks right outside so get previous
         if (!aeqHelper(rcd[index[ubound]][prop], val)) {
-					//if (gtHelper(rcd[index[ubound]][prop], val, false)) {
+          //if (gtHelper(rcd[index[ubound]][prop], val, false)) {
           return [min, ubound - 1];
         }
-				// otherwise (found) so ub is last position where its still equal
+        // otherwise (found) so ub is last position where its still equal
         return [min, ubound];
 
       default:
@@ -1753,7 +1744,7 @@ export class Collection extends LokiEventEmitter {
     }
   }
 
-	/**
+  /**
 	 * Retrieve doc by Unique index
 	 * @param {string} field - name of uniquely indexed property to use when doing lookup
 	 * @param {value} value - unique value to search for
@@ -1773,7 +1764,7 @@ export class Collection extends LokiEventEmitter {
     }
   }
 
-	/**
+  /**
 	 * Find one object by index property, by property equal to value
 	 * @param {object} query - query object used to perform search with
 	 * @returns {(object|null)} First matching document, or null if none
@@ -1782,7 +1773,7 @@ export class Collection extends LokiEventEmitter {
   findOne(query) {
     query = query || {};
 
-		// Instantiate Resultset and exec find op passing firstOnly = true param
+    // Instantiate Resultset and exec find op passing firstOnly = true param
     const result = this.chain().find(query, true).data();
 
     if (Array.isArray(result) && result.length === 0) {
@@ -1796,7 +1787,7 @@ export class Collection extends LokiEventEmitter {
     }
   }
 
-	/**
+  /**
 	 * Chain method, used for beginning a series of chained find() and/or view() operations
 	 * on a collection.
 	 *
@@ -1808,14 +1799,14 @@ export class Collection extends LokiEventEmitter {
   chain(transform, parameters) {
     const rs = new Resultset(this);
 
-    if (typeof transform === 'undefined') {
+    if (typeof transform === "undefined") {
       return rs;
     }
 
     return rs.transform(transform, parameters);
   }
 
-	/**
+  /**
 	 * Find method, api is similar to mongodb.
 	 * for more complex queries use [chain()]{@link Collection#chain} or [where()]{@link Collection#where}.
 	 * @example {@tutorial Query Examples}
@@ -1827,7 +1818,7 @@ export class Collection extends LokiEventEmitter {
     return this.chain().find(query).data();
   }
 
-	/**
+  /**
 	 * Find object by unindexed field by property equal to value,
 	 * simply iterates and returns the first element matching the query
 	 */
@@ -1843,39 +1834,39 @@ export class Collection extends LokiEventEmitter {
     return null;
   }
 
-	/**
+  /**
 	 * Transaction methods
 	 */
 
-	/** start the transation */
+  /** start the transation */
   startTransaction() {
     if (this.transactional) {
       this.cachedData = clone(this.data, this.cloneMethod);
       this.cachedIndex = this.idIndex;
       this.cachedBinaryIndex = this.binaryIndices;
 
-			// propagate startTransaction to dynamic views
+      // propagate startTransaction to dynamic views
       for (let idx = 0; idx < this._dynamicViews.length; idx++) {
         this._dynamicViews[idx].startTransaction();
       }
     }
   }
 
-	/** commit the transation */
+  /** commit the transation */
   commit() {
     if (this.transactional) {
       this.cachedData = null;
       this.cachedIndex = null;
       this.cachedBinaryIndex = null;
 
-			// propagate commit to dynamic views
+      // propagate commit to dynamic views
       for (let idx = 0; idx < this._dynamicViews.length; idx++) {
         this._dynamicViews[idx].commit();
       }
     }
   }
 
-	/** roll back the transation */
+  /** roll back the transation */
   rollback() {
     if (this.transactional) {
       if (this.cachedData !== null && this.cachedIndex !== null) {
@@ -1884,14 +1875,14 @@ export class Collection extends LokiEventEmitter {
         this.binaryIndices = this.cachedBinaryIndex;
       }
 
-			// propagate rollback to dynamic views
+      // propagate rollback to dynamic views
       for (let idx = 0; idx < this._dynamicViews.length; idx++) {
         this._dynamicViews[idx].rollback();
       }
     }
   }
 
-	/**
+  /**
 	 * Query the collection by supplying a javascript filter function.
 	 * @example
 	 * let results = coll.where(function(obj) {
@@ -1906,7 +1897,7 @@ export class Collection extends LokiEventEmitter {
     return this.chain().where(fun).data();
   }
 
-	/**
+  /**
 	 * Map Reduce operation
 	 *
 	 * @param {function} mapFunction - function to use as map function
@@ -1922,7 +1913,7 @@ export class Collection extends LokiEventEmitter {
     }
   }
 
-	/**
+  /**
 	 * Join two collections on specified properties
 	 *
 	 * @param {array} joinData - array of documents to 'join' to this collection
@@ -1933,18 +1924,18 @@ export class Collection extends LokiEventEmitter {
 	 * @memberof Collection
 	 */
   eqJoin(joinData, leftJoinProp, rightJoinProp, mapFun) {
-		// logic in Resultset class
+    // logic in Resultset class
     return new Resultset(this).eqJoin(joinData, leftJoinProp, rightJoinProp, mapFun);
   }
 
-	/* ------ STAGING API -------- */
-	/**
+  /* ------ STAGING API -------- */
+  /**
 	 * stages: a map of uniquely identified 'stages', which hold copies of objects to be
 	 * manipulated without affecting the data in the original collection
 	 */
 
 
-	/**
+  /**
 	 * (Staging API) create a stage and/or retrieve it
 	 * @memberof Collection
 	 */
@@ -1955,11 +1946,11 @@ export class Collection extends LokiEventEmitter {
     return this.stages[name];
   }
 
-	/**
+  /**
 	 * a collection of objects recording the changes applied through a commmitStage
 	 */
 
-	/**
+  /**
 	 * (Staging API) create a copy of an object and insert it into a stage
 	 * @memberof Collection
 	 */
@@ -1969,7 +1960,7 @@ export class Collection extends LokiEventEmitter {
     return copy;
   }
 
-	/**
+  /**
 	 * (Staging API) re-attach all objects to the original collection, so indexes and views can be rebuilt
 	 * then create a message to be inserted in the commitlog
 	 * @param {string} stageName - name of stage
@@ -1997,7 +1988,7 @@ export class Collection extends LokiEventEmitter {
     return;
   }
 
-	/**
+  /**
 	 * @memberof Collection
 	 */
   extract(field) {
@@ -2011,21 +2002,21 @@ export class Collection extends LokiEventEmitter {
     return result;
   }
 
-	/**
+  /**
 	 * @memberof Collection
 	 */
   max(field) {
     return Math.max.apply(null, this.extract(field));
   }
 
-	/**
+  /**
 	 * @memberof Collection
 	 */
   min(field) {
     return Math.min.apply(null, this.extract(field));
   }
 
-	/**
+  /**
 	 * @memberof Collection
 	 */
   maxRecord(field) {
@@ -2055,7 +2046,7 @@ export class Collection extends LokiEventEmitter {
     return result;
   }
 
-	/**
+  /**
 	 * @memberof Collection
 	 */
   minRecord(field) {
@@ -2085,14 +2076,14 @@ export class Collection extends LokiEventEmitter {
     return result;
   }
 
-	/**
+  /**
 	 * @memberof Collection
 	 */
   extractNumerical(field) {
     return this.extract(field).map(parseBase10).filter(Number).filter((n) => !(isNaN(n)));
   }
 
-	/**
+  /**
 	 * Calculates the average numerical value of a property
 	 *
 	 * @param {string} field - name of property in docs to average
@@ -2103,7 +2094,7 @@ export class Collection extends LokiEventEmitter {
     return average(this.extractNumerical(field));
   }
 
-	/**
+  /**
 	 * Calculate standard deviation of a field
 	 * @memberof Collection
 	 * @param {string} field
@@ -2112,7 +2103,7 @@ export class Collection extends LokiEventEmitter {
     return standardDeviation(this.extractNumerical(field));
   }
 
-	/**
+  /**
 	 * @memberof Collection
 	 * @param {string} field
 	 */
@@ -2142,7 +2133,7 @@ export class Collection extends LokiEventEmitter {
     return mode;
   }
 
-	/**
+  /**
 	 * @memberof Collection
 	 * @param {string} field - property name
 	 */

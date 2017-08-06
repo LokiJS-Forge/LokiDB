@@ -1,16 +1,13 @@
 /* global describe, it, expect */
-import {Loki as loki} from '../../src/loki';
+import {Loki as loki} from "../../src/loki";
 
-describe('typed', () => {
-  it('works', () => {
-    const db = new loki('test.json');
+describe("typed", () => {
+  it("works", () => {
+    const db = new loki("test.json");
     let users;
 
     function User(n) {
-      this.name = n || '';
-      this.log = function () {
-        console.log('Name: ' + this.name);
-      };
+      this.name = n || "";
     }
 
     const json = {
@@ -61,19 +58,19 @@ describe('typed', () => {
       "fs": {}
     };
 
-		// Loading only using proto:
+    // Loading only using proto:
     db.loadJSON(JSON.stringify(json), {
       users: {
         proto: User
       }
     });
 
-    users = db.getCollection('users');
+    users = db.getCollection("users");
 
     expect(users.get(1) instanceof User).toBe(true);
     expect(users.get(1).name).toBe("joe");
 
-		// Loading using proto and inflate:
+    // Loading using proto and inflate:
     db.loadJSON(JSON.stringify(json), {
       users: {
         proto: User,
@@ -85,13 +82,13 @@ describe('typed', () => {
       }
     });
 
-    users = db.getCollection('users');
+    users = db.getCollection("users");
 
     expect(users.get(1) instanceof User).toBe(true);
     expect(users.get(1).name).toBe("");
     expect(users.get(1).customInflater).toBe(true);
 
-		// Loading only using inflate:
+    // Loading only using inflate:
     db.loadJSON(JSON.stringify(json), {
       users: {
         inflate: function (src) {
@@ -106,7 +103,7 @@ describe('typed', () => {
       }
     });
 
-    users = db.getCollection('users');
+    users = db.getCollection("users");
 
     expect(users.get(1) instanceof User).toBe(false);
     expect(users.get(1).name).toBe(undefined);

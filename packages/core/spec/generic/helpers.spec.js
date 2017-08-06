@@ -1,59 +1,59 @@
-/* global describe, it, expect, beforeEach */
-import {LokiOps} from '../../src/resultset';
+/* global describe, beforeEach, it, expect, beforeEach */
+import {LokiOps} from "../../src/resultset";
 
-describe('Testing comparator helpers', () => {
+describe("Testing comparator helpers", () => {
 
   let ops;
   beforeEach(() => {
     ops = LokiOps;
   });
 
-  it('$eq works as expected', () => {
+  it("$eq works as expected", () => {
     expect(ops.$eq(true, true)).toEqual(true);
 
     expect(ops.$eq(true, false)).toEqual(false);
   });
 
-  it('$aeq works as expected', () => {
-    expect(ops.$aeq(4, '4')).toEqual(true);
+  it("$aeq works as expected", () => {
+    expect(ops.$aeq(4, "4")).toEqual(true);
     expect(ops.$aeq(4, 4)).toEqual(true);
     expect(ops.$aeq(3, 2)).toEqual(false);
-    expect(ops.$aeq(3, 'three')).toEqual(false);
-    expect(ops.$aeq('3', 3)).toEqual(true);
-    expect(ops.$aeq('1.23', 1.23)).toEqual(true);
+    expect(ops.$aeq(3, "three")).toEqual(false);
+    expect(ops.$aeq("3", 3)).toEqual(true);
+    expect(ops.$aeq("1.23", 1.23)).toEqual(true);
   });
 
-  it('$ne works as expected', () => {
+  it("$ne works as expected", () => {
     expect(ops.$ne(true, true)).toEqual(false);
 
     expect(ops.$ne(true, false)).toEqual(true);
   });
 
-  it('$in works as expected', () => {
+  it("$in works as expected", () => {
     expect(ops.$in(4, [1, 3, 4])).toEqual(true);
 
     expect(ops.$in(8, [1, 3, 4])).toEqual(false);
   });
 
-  it('$nin works as expected', () => {
+  it("$nin works as expected", () => {
     expect(ops.$nin(4, [1, 3, 4])).toEqual(false);
 
     expect(ops.$nin(8, [1, 3, 4])).toEqual(true);
   });
 
-  it('$gt works as expected', () => {
-		//Testing strategy:
-		// First, only the same type data will be compared,
-		// both with and without the third optional arg.
-		// This includes all primitives*.
-		//
-		// Then complex* values will be compared.
-		//
-		// Finally, some tests will be ran trying to compare
-		// values of different types.
-		//
-		// *Primitives: boolean, null, undefined, number, string
-		// *Complex: date
+  it("$gt works as expected", () => {
+    //Testing strategy:
+    // First, only the same type data will be compared,
+    // both with and without the third optional arg.
+    // This includes all primitives*.
+    //
+    // Then complex* values will be compared.
+    //
+    // Finally, some tests will be ran trying to compare
+    // values of different types.
+    //
+    // *Primitives: boolean, null, undefined, number, string
+    // *Complex: date
 
     expect(ops.$gt(false, false)).toEqual(false);
 
@@ -87,7 +87,7 @@ describe('Testing comparator helpers', () => {
 
     expect(ops.$gte(new Date(2015), new Date(2015))).toEqual(true);
 
-		// mixed type checking (or mixed falsy edge tests)
+    // mixed type checking (or mixed falsy edge tests)
     expect(ops.$gt("14", 12)).toEqual(true);
 
     expect(ops.$gt(12, "14")).toEqual(false);
@@ -109,19 +109,19 @@ describe('Testing comparator helpers', () => {
     expect(ops.$gt("", 12)).toEqual(false);
   });
 
-  it('$lt works as expected', () => {
-		//Testing strategy:
-		// First, only the same type data will be compared,
-		// both with and without the third optional arg.
-		// This includes all primitives*.
-		//
-		// Then complex* values will be compared.
-		//
-		// Finally, some tests will be ran trying to compare
-		// values of different types.
-		//
-		// *Primitives: boolean, null, undefined, number, string
-		// *Complex: date
+  it("$lt works as expected", () => {
+    //Testing strategy:
+    // First, only the same type data will be compared,
+    // both with and without the third optional arg.
+    // This includes all primitives*.
+    //
+    // Then complex* values will be compared.
+    //
+    // Finally, some tests will be ran trying to compare
+    // values of different types.
+    //
+    // *Primitives: boolean, null, undefined, number, string
+    // *Complex: date
 
     expect(ops.$lt(false, false)).toEqual(false);
 
@@ -155,7 +155,7 @@ describe('Testing comparator helpers', () => {
 
     expect(ops.$lte(new Date(2015), new Date(2015))).toEqual(true);
 
-		// mixed type checking (or mixed falsy edge tests)
+    // mixed type checking (or mixed falsy edge tests)
     expect(ops.$lt("12", 14)).toEqual(true);
 
     expect(ops.$lt(14, "12")).toEqual(false);

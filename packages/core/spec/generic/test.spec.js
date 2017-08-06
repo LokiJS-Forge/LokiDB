@@ -1,153 +1,123 @@
-/* global describe, it, expect, beforeEach */
-import {Loki as loki} from '../../src/loki';
+/* global describe, beforeEach, it, expect, beforeEach */
+import {Loki as loki} from "../../src/loki";
 
-
-const suite = {
-  assertEqual: function (message, actual, expected) {
-    expect(actual).toEqual(expected);
-  },
-
-  assertNotEqual: function (message, actual, expected) {
-    expect(actual).not.toEqual(expected);
-  },
-
-  assertStrictEqual: function (message, actual, expected) {
-    expect(actual).toBe(expected);
-  },
-
-  assertNotStrictEqual: function (message, actual, expected) {
-    expect(actual).not.toBe(expected);
-  },
-
-  assertThrows: function (message, fn) {
-    expect(fn).toThrow();
-  }
-};
-
-describe('loki', () => {
-  let db, users, jonas, testObject;
-
-  function docCompare(a, b) {
-    if (a.$loki < b.$loki) return -1;
-    if (a.$loki > b.$loki) return 1;
-
-    return 0;
-  }
+describe("loki", () => {
+  let db, users, testObject;
 
   beforeEach(() => {
-    db = new loki('test.json');
-    users = db.addCollection('user');
+    db = new loki("test.json");
+    users = db.addCollection("user");
 
     users.insert({
-      name: 'dave',
+      name: "dave",
       age: 25,
-      lang: 'English'
+      lang: "English"
     });
 
     users.insert({
-      name: 'joe',
+      name: "joe",
       age: 39,
-      lang: 'Italian'
+      lang: "Italian"
     });
 
-    jonas = users.insert({
-      name: 'jonas',
+    users.insert({
+      name: "jonas",
       age: 30,
-      lang: 'Swedish'
+      lang: "Swedish"
     });
   });
 
 
-  describe('core methods', () => {
-    it('works', () => {
-      const tdb = new loki('regextests');
-      const tcu = tdb.addCollection('user');
+  describe("core methods", () => {
+    it("works", () => {
+      const tdb = new loki("regextests");
+      const tcu = tdb.addCollection("user");
       tcu.insert({
-        name: 'abcd',
+        name: "abcd",
         age: 25,
-        lang: 'English'
+        lang: "English"
       });
 
       tcu.insert({
-        name: 'AbCd',
+        name: "AbCd",
         age: 39,
-        lang: 'Italian'
+        lang: "Italian"
       });
 
       tcu.insert({
-        name: 'acdb',
+        name: "acdb",
         age: 30,
-        lang: 'Swedish'
+        lang: "Swedish"
       });
 
       tcu.insert({
-        name: 'aBcD',
+        name: "aBcD",
         age: 30,
-        lang: 'Swedish'
+        lang: "Swedish"
       });
 
 
       // findOne()
       const j = users.findOne({
-        'name': 'jonas'
+        "name": "jonas"
       });
-      expect(j.name).toEqual('jonas');
+      expect(j.name).toEqual("jonas");
 
       // find()
       const result = users.find({
-        'age': {
-          '$gt': 29
+        "age": {
+          "$gt": 29
         }
       });
       expect(result.length).toEqual(2);
 
       // $regex test with raw regex
       expect(users.find({
-        'name': {
-          '$regex': /o/
+        "name": {
+          "$regex": /o/
         }
       }).length).toEqual(2);
 
       // case insensitive regex with array of ["pattern", "options"]
       expect(tcu.find({
-        'name': {
-          '$regex': ["abcd", "i"]
+        "name": {
+          "$regex": ["abcd", "i"]
         }
       }).length).toEqual(3);
 
       // regex with single encoded string pattern (no options)
       expect(tcu.find({
-        'name': {
-          '$regex': "cd"
+        "name": {
+          "$regex": "cd"
         }
       }).length).toEqual(2);
 
       // $contains
       expect(users.find({
-        'name': {
-          '$contains': "jo"
+        "name": {
+          "$contains": "jo"
         }
       }).length).toEqual(2);
 
       // $contains using array element
       expect(users.find({
-        'name': {
-          '$contains': ["jo"]
+        "name": {
+          "$contains": ["jo"]
         }
       }).length).toEqual(2);
 
 
       // $contains any with one value
       expect(users.find({
-        'name': {
-          '$containsAny': 'nas'
+        "name": {
+          "$containsAny": "nas"
         }
       }).length).toEqual(1);
 
       // $contains any with multiple values
       expect(users.find({
-        'name': {
-          '$containsAny': ['nas', 'dave']
+        "name": {
+          "$containsAny": ["nas", "dave"]
         }
       }).length).toEqual(2);
 
@@ -155,7 +125,7 @@ describe('loki', () => {
       // insert() : try inserting existing document (should fail), try adding doc with legacy id column
       const collectionLength = users.data.length;
       const objDave = users.findOne({
-        'name': 'dave'
+        "name": "dave"
       });
       let wasAdded = true;
       try {
@@ -164,14 +134,15 @@ describe('loki', () => {
         wasAdded = false;
       }
       expect(wasAdded).toEqual(false);
+      expect(collectionLength).toEqual(users.data.length);
 
       // our collections are not strongly typed so lets invent some object that has its 'own' id column
       let legacyObject = {
         id: 999,
-        first: 'aaa',
-        last: 'bbb',
-        city: 'pasadena',
-        state: 'ca'
+        first: "aaa",
+        last: "bbb",
+        city: "pasadena",
+        state: "ca"
       };
 
       wasAdded = true;
@@ -192,10 +163,10 @@ describe('loki', () => {
       // update()
       legacyObject = {
         id: 998,
-        first: 'aaa',
-        last: 'bbb',
-        city: 'pasadena',
-        state: 'ca'
+        first: "aaa",
+        last: "bbb",
+        city: "pasadena",
+        state: "ca"
       };
       let wasUpdated = true;
 
@@ -210,10 +181,10 @@ describe('loki', () => {
       const userCount1 = users.data.length;
 
       testObject = {
-        first: 'aaa',
-        last: 'bbb',
-        city: 'pasadena',
-        state: 'ca'
+        first: "aaa",
+        last: "bbb",
+        city: "pasadena",
+        state: "ca"
       };
 
       users.insert(testObject);
@@ -224,51 +195,51 @@ describe('loki', () => {
     });
   });
 
-  describe('dot notation', () => {
-    it('works', () => {
-      const dnc = db.addCollection('dncoll');
+  describe("dot notation", () => {
+    it("works", () => {
+      const dnc = db.addCollection("dncoll");
 
       dnc.insert({
-        first: 'aaa',
-        last: 'bbb',
+        first: "aaa",
+        last: "bbb",
         addr: {
-          street: '111 anystreet',
-          state: 'AS',
+          street: "111 anystreet",
+          state: "AS",
           zip: 12345
         }
       });
 
       dnc.insert({
-        first: 'ddd',
-        last: 'eee',
+        first: "ddd",
+        last: "eee",
         addr: {
-          street: '222 anystreet',
-          state: 'FF',
+          street: "222 anystreet",
+          state: "FF",
           zip: 32345
         }
       });
 
       // make sure it can handle case where top level property doesn't exist
       dnc.insert({
-        first: 'mmm',
-        last: 'nnn'
+        first: "mmm",
+        last: "nnn"
       });
 
       // make sure it can handle case where subscan property doesn't exist
       dnc.insert({
-        first: 'ooo',
-        last: 'ppp',
+        first: "ooo",
+        last: "ppp",
         addr: {
-          state: 'YY'
+          state: "YY"
         }
       });
 
       dnc.insert({
-        first: 'jjj',
-        last: 'kkk',
+        first: "jjj",
+        last: "kkk",
         addr: {
-          street: '777 anystreet',
-          state: 'WW',
+          street: "777 anystreet",
+          state: "WW",
           zip: 12345
         }
       });
@@ -283,7 +254,7 @@ describe('loki', () => {
 
       // test not notation using findOne
       const secObj = dnc.findOne({
-        "addr.state": 'FF'
+        "addr.state": "FF"
       });
 
       expect(secObj !== null).toBeTruthy();
@@ -295,9 +266,9 @@ describe('loki', () => {
 
   // We only support dot notation involving array when
   // the leaf property is the array.  This verifies that functionality
-  describe('dot notation across leaf object array', () => {
-    it('works', () => {
-      const dna = db.addCollection('dnacoll');
+  describe("dot notation across leaf object array", () => {
+    it("works", () => {
+      const dna = db.addCollection("dnacoll");
 
       dna.insert({
         id: 1,
@@ -343,21 +314,21 @@ describe('loki', () => {
         }]
       });
 
-      let results = dna.find({'children.someProperty': 33});
+      let results = dna.find({"children.someProperty": 33});
       expect(results.length).toEqual(1);
 
-      results = dna.find({'children.someProperty': 11});
+      results = dna.find({"children.someProperty": 11});
       expect(results.length).toEqual(2);
 
-      results = dna.find({'children.someProperty': 22});
+      results = dna.find({"children.someProperty": 22});
       expect(results.length).toEqual(2);
     });
   });
 
 
-  describe('dot notation terminating at leaf array', () => {
-    it('works', () => {
-      const dna = db.addCollection('dnacoll');
+  describe("dot notation terminating at leaf array", () => {
+    it("works", () => {
+      const dna = db.addCollection("dnacoll");
 
       dna.insert({
         "relations": {
@@ -378,16 +349,16 @@ describe('loki', () => {
       });
 
       const results = dna.find({
-        'relations.ids': {$contains: 379}
+        "relations.ids": {$contains: 379}
       });
 
       expect(results.length).toEqual(2);
     });
   });
 
-  describe('dot notation across child array', () => {
-    it('works', () => {
-      const dna = db.addCollection('dnacoll');
+  describe("dot notation across child array", () => {
+    it("works", () => {
+      const dna = db.addCollection("dnacoll");
 
       dna.insert({
         id: 1,
@@ -451,297 +422,297 @@ describe('loki', () => {
         }]
       });
 
-      let results = dna.find({'children.someArray.someProperty': 333});
+      let results = dna.find({"children.someArray.someProperty": 333});
       expect(results.length).toEqual(1);
 
-      results = dna.find({'children.someArray.someProperty': 111});
+      results = dna.find({"children.someArray.someProperty": 111});
       expect(results.length).toEqual(2);
 
-      results = dna.find({'children.someArray.someProperty': 222});
+      results = dna.find({"children.someArray.someProperty": 222});
       expect(results.length).toEqual(2);
 
-      results = dna.find({'$and': [{'id': 3}, {'children.someArray.someProperty': 222}]});
+      results = dna.find({"$and": [{"id": 3}, {"children.someArray.someProperty": 222}]});
       expect(results.length).toEqual(1);
 
-      results = dna.find({'$and': [{'id': 1}, {'children.someArray.someProperty': 222}]});
+      results = dna.find({"$and": [{"id": 1}, {"children.someArray.someProperty": 222}]});
       expect(results.length).toEqual(0);
 
-      results = dna.find({'$or': [{'id': 1}, {'children.someArray.someProperty': 222}]});
+      results = dna.find({"$or": [{"id": 1}, {"children.someArray.someProperty": 222}]});
       expect(results.length).toEqual(3);
     });
   });
 
-  describe('calculateRange', () => {
-    it('works', () => {
-      const eic = db.addCollection('eic');
-      eic.ensureIndex('testid');
+  describe("calculateRange", () => {
+    it("works", () => {
+      const eic = db.addCollection("eic");
+      eic.ensureIndex("testid");
 
       eic.insert({
-        'testid': 1,
-        'testString': 'hhh',
-        'testFloat': 5.2
+        "testid": 1,
+        "testString": "hhh",
+        "testFloat": 5.2
       }); //0
       eic.insert({
-        'testid': 1,
-        'testString': 'aaa',
-        'testFloat': 6.2
+        "testid": 1,
+        "testString": "aaa",
+        "testFloat": 6.2
       }); //1
       eic.insert({
-        'testid': 5,
-        'testString': 'zzz',
-        'testFloat': 7.2
+        "testid": 5,
+        "testString": "zzz",
+        "testFloat": 7.2
       }); //2
       eic.insert({
-        'testid': 6,
-        'testString': 'ggg',
-        'testFloat': 1.2
+        "testid": 6,
+        "testString": "ggg",
+        "testFloat": 1.2
       }); //3
       eic.insert({
-        'testid': 9,
-        'testString': 'www',
-        'testFloat': 8.2
+        "testid": 9,
+        "testString": "www",
+        "testFloat": 8.2
       }); //4
       eic.insert({
-        'testid': 11,
-        'testString': 'yyy',
-        'testFloat': 4.2
+        "testid": 11,
+        "testString": "yyy",
+        "testFloat": 4.2
       }); //5
       eic.insert({
-        'testid': 22,
-        'testString': 'yyz',
-        'testFloat': 9.2
+        "testid": 22,
+        "testString": "yyz",
+        "testFloat": 9.2
       }); //6
       eic.insert({
-        'testid': 23,
-        'testString': 'm',
-        'testFloat': 2.2
+        "testid": 23,
+        "testString": "m",
+        "testFloat": 2.2
       }); //7
 
       const rset = eic.chain();
       rset.find({
-        'testid': 1
+        "testid": 1
       }); // force index to be built
 
       // ranges are order of sequence in index not data array positions
 
-      let range = eic.calculateRange('$eq', 'testid', 22);
+      let range = eic.calculateRange("$eq", "testid", 22);
       expect(range).toEqual([6, 6]);
 
-      range = eic.calculateRange('$eq', 'testid', 1);
+      range = eic.calculateRange("$eq", "testid", 1);
       expect(range).toEqual([0, 1]);
 
-      range = eic.calculateRange('$eq', 'testid', 7);
+      range = eic.calculateRange("$eq", "testid", 7);
       expect(range).toEqual([0, -1]);
 
-      range = eic.calculateRange('$gte', 'testid', 23);
+      range = eic.calculateRange("$gte", "testid", 23);
       expect(range).toEqual([7, 7]);
 
       // reference this new record for future evaluations
       eic.insert({
-        'testid': 23,
-        'testString': 'bbb',
-        'testFloat': 1.9
+        "testid": 23,
+        "testString": "bbb",
+        "testFloat": 1.9
       });
 
       // test when all records are in range
-      range = eic.calculateRange('$lt', 'testid', 25);
+      range = eic.calculateRange("$lt", "testid", 25);
       expect(range).toEqual([0, 8]);
-      range = eic.calculateRange('$lte', 'testid', 25);
+      range = eic.calculateRange("$lte", "testid", 25);
       expect(range).toEqual([0, 8]);
-      range = eic.calculateRange('$gt', 'testid', 0);
+      range = eic.calculateRange("$gt", "testid", 0);
       expect(range).toEqual([0, 8]);
-      range = eic.calculateRange('$gte', 'testid', 0);
+      range = eic.calculateRange("$gte", "testid", 0);
       expect(range).toEqual([0, 8]);
 
-      range = eic.calculateRange('$gte', 'testid', 23);
+      range = eic.calculateRange("$gte", "testid", 23);
       expect(range).toEqual([7, 8]);
 
-      range = eic.calculateRange('$gte', 'testid', 24);
+      range = eic.calculateRange("$gte", "testid", 24);
       expect(range).toEqual([0, -1]);
 
-      range = eic.calculateRange('$lte', 'testid', 5);
+      range = eic.calculateRange("$lte", "testid", 5);
       expect(range).toEqual([0, 2]);
 
-      range = eic.calculateRange('$lte', 'testid', 1);
+      range = eic.calculateRange("$lte", "testid", 1);
       expect(range).toEqual([0, 1]);
 
-      range = eic.calculateRange('$lte', 'testid', -1);
+      range = eic.calculateRange("$lte", "testid", -1);
       expect(range).toEqual([0, -1]);
 
       // add another index on string property
-      eic.ensureIndex('testString');
+      eic.ensureIndex("testString");
       rset.find({
-        'testString': 'asdf'
+        "testString": "asdf"
       }); // force index to be built
 
-      range = eic.calculateRange('$lte', 'testString', 'ggg');
+      range = eic.calculateRange("$lte", "testString", "ggg");
       expect(range).toEqual([0, 2]); // includes record added in middle
 
-      range = eic.calculateRange('$gte', 'testString', 'm');
+      range = eic.calculateRange("$gte", "testString", "m");
       expect(range).toEqual([4, 8]); // offset by 1 because of record in middle
 
       // add some float range evaluations
-      eic.ensureIndex('testFloat');
+      eic.ensureIndex("testFloat");
       rset.find({
-        'testFloat': '1.1'
+        "testFloat": "1.1"
       }); // force index to be built
 
-      range = eic.calculateRange('$lte', 'testFloat', 1.2);
+      range = eic.calculateRange("$lte", "testFloat", 1.2);
       expect(range).toEqual([0, 0]);
 
-      range = eic.calculateRange('$eq', 'testFloat', 1.111);
+      range = eic.calculateRange("$eq", "testFloat", 1.111);
       expect(range).toEqual([0, -1]);
 
-      range = eic.calculateRange('$eq', 'testFloat', 8.2);
+      range = eic.calculateRange("$eq", "testFloat", 8.2);
       expect(range).toEqual([7, 7]); // 8th pos
 
-      range = eic.calculateRange('$gte', 'testFloat', 1.0);
+      range = eic.calculateRange("$gte", "testFloat", 1.0);
       expect(range).toEqual([0, 8]); // 8th pos
     });
   });
 
-  describe('lazy indexLifecycle', () => {
-    it('works', () => {
-      const ilc = db.addCollection('ilc', {
+  describe("lazy indexLifecycle", () => {
+    it("works", () => {
+      const ilc = db.addCollection("ilc", {
         adaptiveBinaryIndices: false
       });
 
-      let hasIdx = ilc.binaryIndices.hasOwnProperty('testid');
+      let hasIdx = ilc.binaryIndices.hasOwnProperty("testid");
       expect(hasIdx).toEqual(false);
 
-      ilc.ensureIndex('testid');
-      hasIdx = ilc.binaryIndices.hasOwnProperty('testid');
+      ilc.ensureIndex("testid");
+      hasIdx = ilc.binaryIndices.hasOwnProperty("testid");
       expect(hasIdx).toEqual(true);
       expect(ilc.binaryIndices.testid.dirty).toEqual(false);
       expect(ilc.binaryIndices.testid.values).toEqual([]);
 
       ilc.insert({
-        'testid': 5
+        "testid": 5
       });
       expect(ilc.binaryIndices.testid.dirty).toEqual(true);
       ilc.insert({
-        'testid': 8
+        "testid": 8
       });
       expect(ilc.binaryIndices.testid.values).toEqual([]);
       expect(ilc.binaryIndices.testid.dirty).toEqual(true);
 
       ilc.find({
-        'testid': 8
+        "testid": 8
       }); // should force index build
       expect(ilc.binaryIndices.testid.dirty).toEqual(false);
       expect(ilc.binaryIndices.testid.values.length).toEqual(2);
     });
   });
 
-  describe('indexes', () => {
-    it('works', () => {
-      const itc = db.addCollection('test', {
-        indices: ['testid']
+  describe("indexes", () => {
+    it("works", () => {
+      const itc = db.addCollection("test", {
+        indices: ["testid"]
       });
 
       itc.insert({
-        'testid': 1
+        "testid": 1
       });
       itc.insert({
-        'testid': 2
+        "testid": 2
       });
       itc.insert({
-        'testid': 5
+        "testid": 5
       });
       itc.insert({
-        'testid': 5
+        "testid": 5
       });
       itc.insert({
-        'testid': 9
+        "testid": 9
       });
       itc.insert({
-        'testid': 11
+        "testid": 11
       });
       itc.insert({
-        'testid': 22
+        "testid": 22
       });
       itc.insert({
-        'testid': 22
+        "testid": 22
       });
 
       // lte
       let results = itc.find({
-        'testid': {
-          '$lte': 1
+        "testid": {
+          "$lte": 1
         }
       });
       expect(results.length).toEqual(1);
 
       results = itc.find({
-        'testid': {
-          '$lte': 22
+        "testid": {
+          "$lte": 22
         }
       });
       expect(results.length).toEqual(8);
 
       // lt
       results = itc.find({
-        'testid': {
-          '$lt': 1
+        "testid": {
+          "$lt": 1
         }
       });
       expect(results.length).toEqual(0);
 
       results = itc.find({
-        'testid': {
-          '$lt': 22
+        "testid": {
+          "$lt": 22
         }
       });
       expect(results.length).toEqual(6);
 
       // eq
       results = itc.find({
-        'testid': {
-          '$eq': 22
+        "testid": {
+          "$eq": 22
         }
       });
       expect(results.length).toEqual(2);
 
       // gt
       results = itc.find({
-        'testid': {
-          '$gt': 22
+        "testid": {
+          "$gt": 22
         }
       });
       expect(results.length).toEqual(0);
 
       results = itc.find({
-        'testid': {
-          '$gt': 5
+        "testid": {
+          "$gt": 5
         }
       });
       expect(results.length).toEqual(4);
 
       // gte
       results = itc.find({
-        'testid': {
-          '$gte': 5
+        "testid": {
+          "$gte": 5
         }
       });
       expect(results.length).toEqual(6);
 
       results = itc.find({
-        'testid': {
-          '$gte': 10
+        "testid": {
+          "$gte": 10
         }
       });
       expect(results.length).toEqual(3);
     });
   });
 
-  describe('resultSet', () => {
-    it('works', () => {
+  describe("resultSet", () => {
+    it("works", () => {
       // Resultset find
       expect(users.chain().find({
-        'age': {
-          '$gte': 30
+        "age": {
+          "$gte": 30
         }
-      }).where((obj) => obj.lang === 'Swedish').data().length).toEqual(1);
+      }).where((obj) => obj.lang === "Swedish").data().length).toEqual(1);
 
       // Resultset offset
       expect(users.chain().offset(1).data().length).toEqual(users.data.length - 1);
@@ -751,336 +722,336 @@ describe('loki', () => {
     });
   });
 
-  describe('andOrOps', () => {
-    it('works', () => {
-      const eic = db.addCollection('eic');
+  describe("andOrOps", () => {
+    it("works", () => {
+      const eic = db.addCollection("eic");
 
       eic.insert({
-        'testid': 1,
-        'testString': 'hhh',
-        'testFloat': 5.2
+        "testid": 1,
+        "testString": "hhh",
+        "testFloat": 5.2
       }); //0
       eic.insert({
-        'testid': 1,
-        'testString': 'bbb',
-        'testFloat': 6.2
+        "testid": 1,
+        "testString": "bbb",
+        "testFloat": 6.2
       }); //1
       eic.insert({
-        'testid': 5,
-        'testString': 'zzz',
-        'testFloat': 7.2
+        "testid": 5,
+        "testString": "zzz",
+        "testFloat": 7.2
       }); //2
       eic.insert({
-        'testid': 6,
-        'testString': 'ggg',
-        'testFloat': 1.2
+        "testid": 6,
+        "testString": "ggg",
+        "testFloat": 1.2
       }); //3
       eic.insert({
-        'testid': 9,
-        'testString': 'www',
-        'testFloat': 8.2
+        "testid": 9,
+        "testString": "www",
+        "testFloat": 8.2
       }); //4
       eic.insert({
-        'testid': 11,
-        'testString': 'yyy',
-        'testFloat': 4.2
+        "testid": 11,
+        "testString": "yyy",
+        "testFloat": 4.2
       }); //5
       eic.insert({
-        'testid': 22,
-        'testString': 'bbb',
-        'testFloat': 9.2
+        "testid": 22,
+        "testString": "bbb",
+        "testFloat": 9.2
       }); //6
       eic.insert({
-        'testid': 23,
-        'testString': 'm',
-        'testFloat': 2.2
+        "testid": 23,
+        "testString": "m",
+        "testFloat": 2.2
       }); //7
 
       // coll.find explicit $and
       expect(eic.find({
-        '$and': [{
-          'testid': 1
+        "$and": [{
+          "testid": 1
         }, {
-          'testString': 'bbb'
+          "testString": "bbb"
         }]
       }).length).toEqual(1);
 
       // coll.find implicit '$and'
       expect(eic.find({
-        'testid': 1,
-        'testString': 'bbb'
+        "testid": 1,
+        "testString": "bbb"
       }).length).toEqual(1);
 
       // resultset.find explicit $and
       expect(eic.chain().find({
-        '$and': [{
-          'testid': 1
+        "$and": [{
+          "testid": 1
         }, {
-          'testString': 'bbb'
+          "testString": "bbb"
         }]
       }).data().length).toEqual(1);
 
       // resultset.find implicit $and
       expect(eic.chain().find({
-        'testid': 1,
-        'testString': 'bbb'
+        "testid": 1,
+        "testString": "bbb"
       }).data().length).toEqual(1);
 
       // resultset.find explicit operators
       expect(eic.chain().find({
-        '$and': [{
-          'testid': {
-            '$eq': 1
+        "$and": [{
+          "testid": {
+            "$eq": 1
           }
         }, {
-          'testFloat': {
-            '$gt': 6.0
+          "testFloat": {
+            "$gt": 6.0
           }
         }]
       }).data().length).toEqual(1);
 
       // coll.find $or
       expect(eic.find({
-        '$or': [{
-          'testid': 1
+        "$or": [{
+          "testid": 1
         }, {
-          'testString': 'bbb'
+          "testString": "bbb"
         }]
       }).length).toEqual(3);
 
       // resultset.find $or
       expect(eic.chain().find({
-        '$or': [{
-          'testid': 1
+        "$or": [{
+          "testid": 1
         }, {
-          'testString': 'bbb'
+          "testString": "bbb"
         }]
       }).data().length).toEqual(3);
 
       // resultset.find explicit operators
       expect(eic.chain().find({
-        '$or': [{
-          'testid': 1
+        "$or": [{
+          "testid": 1
         }, {
-          'testFloat': {
-            '$gt': 7.0
+          "testFloat": {
+            "$gt": 7.0
           }
         }]
       }).data().length).toEqual(5);
 
       // add index and repeat final test
-      eic.ensureIndex('testid');
+      eic.ensureIndex("testid");
 
       expect(eic.chain().find({
-        '$and': [{
-          'testid': {
-            '$eq': 1
+        "$and": [{
+          "testid": {
+            "$eq": 1
           }
         }, {
-          'testFloat': {
-            '$gt': 6.0
+          "testFloat": {
+            "$gt": 6.0
           }
         }]
       }).data().length).toEqual(1);
 
       expect(eic.chain().find({
-        '$or': [{
-          'testid': 1
+        "$or": [{
+          "testid": 1
         }, {
-          'testFloat': {
-            '$gt': 7.0
+          "testFloat": {
+            "$gt": 7.0
           }
         }]
       }).data().length).toEqual(5);
 
-      db.removeCollection('eic');
+      db.removeCollection("eic");
     });
   });
 
-  describe('findOne', () => {
-    it('works', () => {
-      const eic = db.addCollection('eic');
+  describe("findOne", () => {
+    it("works", () => {
+      const eic = db.addCollection("eic");
 
       eic.insert({
-        'testid': 1,
-        'testString': 'hhh',
-        'testFloat': 5.2
+        "testid": 1,
+        "testString": "hhh",
+        "testFloat": 5.2
       }); //0
       eic.insert({
-        'testid': 1,
-        'testString': 'bbb',
-        'testFloat': 6.2
+        "testid": 1,
+        "testString": "bbb",
+        "testFloat": 6.2
       }); //1
       eic.insert({
-        'testid': 5,
-        'testString': 'zzz',
-        'testFloat': 7.2
+        "testid": 5,
+        "testString": "zzz",
+        "testFloat": 7.2
       }); //2
 
       // coll.findOne return type
       expect(typeof eic.findOne({
-        'testid': 1
-      })).toEqual('object');
+        "testid": 1
+      })).toEqual("object");
 
       // coll.findOne return match
       expect(eic.findOne({
-        'testid': 5
+        "testid": 5
       }).testFloat).toEqual(7.2);
 
       // findOne with $and op
       expect(eic.findOne({
-        '$and': [{
-          'testid': 1
+        "$and": [{
+          "testid": 1
         }, {
-          'testString': 'bbb'
+          "testString": "bbb"
         }]
       }).testFloat, 6.2);
 
       expect(eic.findOne({
-        '$or': [{
-          'testid': 2
+        "$or": [{
+          "testid": 2
         }, {
-          'testString': 'zzz'
+          "testString": "zzz"
         }]
       }).testFloat).toEqual(7.2);
 
-      db.removeCollection('eic');
+      db.removeCollection("eic");
     });
   });
 
-  describe('resultset unfiltered simplesort works', () => {
-    it('works', () => {
-      const ssdb = new loki('sandbox.db');
+  describe("resultset unfiltered simplesort works", () => {
+    it("works", () => {
+      const ssdb = new loki("sandbox.db");
 
       // Add a collection to the database
-      const items = ssdb.addCollection('items', {indices: ['name']});
+      const items = ssdb.addCollection("items", {indices: ["name"]});
 
       // Add some documents to the collection
-      items.insert({name: 'mjolnir', owner: 'thor', maker: 'dwarves'});
-      items.insert({name: 'gungnir', owner: 'odin', maker: 'elves'});
-      items.insert({name: 'tyrfing', owner: 'svafrlami', maker: 'dwarves'});
-      items.insert({name: 'draupnir', owner: 'odin', maker: 'elves'});
+      items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
+      items.insert({name: "gungnir", owner: "odin", maker: "elves"});
+      items.insert({name: "tyrfing", owner: "svafrlami", maker: "dwarves"});
+      items.insert({name: "draupnir", owner: "odin", maker: "elves"});
 
       // simplesort without filters on prop with index should work
-      let results = items.chain().simplesort('name').data();
+      let results = items.chain().simplesort("name").data();
       expect(results.length).toEqual(4);
-      expect(results[0].name).toEqual('draupnir');
-      expect(results[1].name).toEqual('gungnir');
-      expect(results[2].name).toEqual('mjolnir');
-      expect(results[3].name).toEqual('tyrfing');
+      expect(results[0].name).toEqual("draupnir");
+      expect(results[1].name).toEqual("gungnir");
+      expect(results[2].name).toEqual("mjolnir");
+      expect(results[3].name).toEqual("tyrfing");
 
       // simplesort without filters on prop without index should work
-      results = items.chain().simplesort('owner').data();
+      results = items.chain().simplesort("owner").data();
       expect(results.length).toEqual(4);
-      expect(results[0].owner).toEqual('odin');
-      expect(results[1].owner).toEqual('odin');
-      expect(results[2].owner).toEqual('svafrlami');
-      expect(results[3].owner).toEqual('thor');
+      expect(results[0].owner).toEqual("odin");
+      expect(results[1].owner).toEqual("odin");
+      expect(results[2].owner).toEqual("svafrlami");
+      expect(results[3].owner).toEqual("thor");
     });
   });
 
-  describe('resultset data removeMeta works', () => {
-    it('works', () => {
-      const idb = new loki('sandbox.db');
+  describe("resultset data removeMeta works", () => {
+    it("works", () => {
+      const idb = new loki("sandbox.db");
 
       // Add a collection to the database
-      const items = idb.addCollection('items', {indices: ['owner']});
+      const items = idb.addCollection("items", {indices: ["owner"]});
 
       // Add some documents to the collection
-      items.insert({name: 'mjolnir', owner: 'thor', maker: 'dwarves'});
-      items.insert({name: 'gungnir', owner: 'odin', maker: 'elves'});
-      items.insert({name: 'tyrfing', owner: 'svafrlami', maker: 'dwarves'});
-      items.insert({name: 'draupnir', owner: 'odin', maker: 'elves'});
+      items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
+      items.insert({name: "gungnir", owner: "odin", maker: "elves"});
+      items.insert({name: "tyrfing", owner: "svafrlami", maker: "dwarves"});
+      items.insert({name: "draupnir", owner: "odin", maker: "elves"});
 
       // unfiltered with strip meta
       let result = items.chain().data({removeMeta: true});
       expect(result.length).toEqual(4);
-      expect(result[0].hasOwnProperty('$loki')).toEqual(false);
-      expect(result[0].hasOwnProperty('meta')).toEqual(false);
-      expect(result[1].hasOwnProperty('$loki')).toEqual(false);
-      expect(result[1].hasOwnProperty('meta')).toEqual(false);
-      expect(result[2].hasOwnProperty('$loki')).toEqual(false);
-      expect(result[2].hasOwnProperty('meta')).toEqual(false);
-      expect(result[3].hasOwnProperty('$loki')).toEqual(false);
-      expect(result[3].hasOwnProperty('meta')).toEqual(false);
+      expect(result[0].hasOwnProperty("$loki")).toEqual(false);
+      expect(result[0].hasOwnProperty("meta")).toEqual(false);
+      expect(result[1].hasOwnProperty("$loki")).toEqual(false);
+      expect(result[1].hasOwnProperty("meta")).toEqual(false);
+      expect(result[2].hasOwnProperty("$loki")).toEqual(false);
+      expect(result[2].hasOwnProperty("meta")).toEqual(false);
+      expect(result[3].hasOwnProperty("$loki")).toEqual(false);
+      expect(result[3].hasOwnProperty("meta")).toEqual(false);
 
       // indexed sort with strip meta
-      result = items.chain().simplesort('owner').limit(2).data({removeMeta: true});
+      result = items.chain().simplesort("owner").limit(2).data({removeMeta: true});
       expect(result.length).toEqual(2);
-      expect(result[0].owner).toEqual('odin');
-      expect(result[0].hasOwnProperty('$loki')).toEqual(false);
-      expect(result[0].hasOwnProperty('meta')).toEqual(false);
-      expect(result[1].owner).toEqual('odin');
-      expect(result[1].hasOwnProperty('$loki')).toEqual(false);
-      expect(result[1].hasOwnProperty('meta')).toEqual(false);
+      expect(result[0].owner).toEqual("odin");
+      expect(result[0].hasOwnProperty("$loki")).toEqual(false);
+      expect(result[0].hasOwnProperty("meta")).toEqual(false);
+      expect(result[1].owner).toEqual("odin");
+      expect(result[1].hasOwnProperty("$loki")).toEqual(false);
+      expect(result[1].hasOwnProperty("meta")).toEqual(false);
 
       // unindexed find strip meta
-      result = items.chain().find({maker: 'elves'}).data({removeMeta: true});
+      result = items.chain().find({maker: "elves"}).data({removeMeta: true});
       expect(result.length).toEqual(2);
-      expect(result[0].maker).toEqual('elves');
-      expect(result[0].hasOwnProperty('$loki')).toEqual(false);
-      expect(result[0].hasOwnProperty('meta')).toEqual(false);
-      expect(result[1].maker).toEqual('elves');
-      expect(result[1].hasOwnProperty('$loki')).toEqual(false);
-      expect(result[1].hasOwnProperty('meta')).toEqual(false);
+      expect(result[0].maker).toEqual("elves");
+      expect(result[0].hasOwnProperty("$loki")).toEqual(false);
+      expect(result[0].hasOwnProperty("meta")).toEqual(false);
+      expect(result[1].maker).toEqual("elves");
+      expect(result[1].hasOwnProperty("$loki")).toEqual(false);
+      expect(result[1].hasOwnProperty("meta")).toEqual(false);
 
       // now try unfiltered without strip meta and ensure loki and meta are present
       result = items.chain().data();
       expect(result.length).toEqual(4);
-      expect(result[0].hasOwnProperty('$loki')).toEqual(true);
-      expect(result[0].hasOwnProperty('meta')).toEqual(true);
-      expect(result[1].hasOwnProperty('$loki')).toEqual(true);
-      expect(result[1].hasOwnProperty('meta')).toEqual(true);
-      expect(result[2].hasOwnProperty('$loki')).toEqual(true);
-      expect(result[2].hasOwnProperty('meta')).toEqual(true);
-      expect(result[3].hasOwnProperty('$loki')).toEqual(true);
-      expect(result[3].hasOwnProperty('meta')).toEqual(true);
+      expect(result[0].hasOwnProperty("$loki")).toEqual(true);
+      expect(result[0].hasOwnProperty("meta")).toEqual(true);
+      expect(result[1].hasOwnProperty("$loki")).toEqual(true);
+      expect(result[1].hasOwnProperty("meta")).toEqual(true);
+      expect(result[2].hasOwnProperty("$loki")).toEqual(true);
+      expect(result[2].hasOwnProperty("meta")).toEqual(true);
+      expect(result[3].hasOwnProperty("$loki")).toEqual(true);
+      expect(result[3].hasOwnProperty("meta")).toEqual(true);
 
       // now try without strip meta and ensure loki and meta are present
-      result = items.chain().simplesort('owner').limit(2).data();
+      result = items.chain().simplesort("owner").limit(2).data();
       expect(result.length).toEqual(2);
-      expect(result[0].owner).toEqual('odin');
-      expect(result[0].hasOwnProperty('$loki')).toEqual(true);
-      expect(result[0].hasOwnProperty('meta')).toEqual(true);
-      expect(result[1].owner).toEqual('odin');
-      expect(result[1].hasOwnProperty('$loki')).toEqual(true);
-      expect(result[1].hasOwnProperty('meta')).toEqual(true);
+      expect(result[0].owner).toEqual("odin");
+      expect(result[0].hasOwnProperty("$loki")).toEqual(true);
+      expect(result[0].hasOwnProperty("meta")).toEqual(true);
+      expect(result[1].owner).toEqual("odin");
+      expect(result[1].hasOwnProperty("$loki")).toEqual(true);
+      expect(result[1].hasOwnProperty("meta")).toEqual(true);
 
       // unindexed find strip meta
-      result = items.chain().find({maker: 'elves'}).data();
+      result = items.chain().find({maker: "elves"}).data();
       expect(result.length).toEqual(2);
-      expect(result[0].maker).toEqual('elves');
-      expect(result[0].hasOwnProperty('$loki')).toEqual(true);
-      expect(result[0].hasOwnProperty('meta')).toEqual(true);
-      expect(result[1].maker).toEqual('elves');
-      expect(result[1].hasOwnProperty('$loki')).toEqual(true);
-      expect(result[1].hasOwnProperty('meta')).toEqual(true);
+      expect(result[0].maker).toEqual("elves");
+      expect(result[0].hasOwnProperty("$loki")).toEqual(true);
+      expect(result[0].hasOwnProperty("meta")).toEqual(true);
+      expect(result[1].maker).toEqual("elves");
+      expect(result[1].hasOwnProperty("$loki")).toEqual(true);
+      expect(result[1].hasOwnProperty("meta")).toEqual(true);
     });
   });
 
-  describe('chained removes', () => {
-    it('works', () => {
-      const rsc = db.addCollection('rsc');
+  describe("chained removes", () => {
+    it("works", () => {
+      const rsc = db.addCollection("rsc");
 
       rsc.insert({
-        'testid': 1,
-        'testString': 'hhh',
-        'testFloat': 5.2
+        "testid": 1,
+        "testString": "hhh",
+        "testFloat": 5.2
       });
       rsc.insert({
-        'testid': 1,
-        'testString': 'bbb',
-        'testFloat': 6.2
+        "testid": 1,
+        "testString": "bbb",
+        "testFloat": 6.2
       });
       rsc.insert({
-        'testid': 2,
-        'testString': 'ccc',
-        'testFloat': 6.2
+        "testid": 2,
+        "testString": "ccc",
+        "testFloat": 6.2
       });
       rsc.insert({
-        'testid': 5,
-        'testString': 'zzz',
-        'testFloat': 7.2
+        "testid": 5,
+        "testString": "zzz",
+        "testFloat": 7.2
       });
 
       const docCount = rsc.find().length;
@@ -1097,11 +1068,11 @@ describe('loki', () => {
       expect(rsc.chain().data().length).toEqual(2);
 
       // now fetch and retain all remaining documents
-      const results = rsc.chain().simplesort('testString').data();
+      const results = rsc.chain().simplesort("testString").data();
 
       // make sure its the documents we expect
-      expect(results[0].testString).toEqual('hhh');
-      expect(results[1].testString).toEqual('zzz');
+      expect(results[0].testString).toEqual("hhh");
+      expect(results[1].testString).toEqual("zzz");
     });
   });
 

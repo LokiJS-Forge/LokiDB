@@ -13,14 +13,14 @@ function resolveTransformObject(subObj, params, depth) {
   let prop;
   let pname;
 
-  if (typeof depth !== 'number') {
+  if (typeof depth !== "number") {
     depth = 0;
   }
 
   if (++depth >= 10) return subObj;
 
   for (prop in subObj) {
-    if (typeof subObj[prop] === 'string' && subObj[prop].indexOf("[%lktxp]") === 0) {
+    if (typeof subObj[prop] === "string" && subObj[prop].indexOf("[%lktxp]") === 0) {
       pname = subObj[prop].substring(8);
       if (params[pname] !== undefined) {
         subObj[prop] = params[pname];
@@ -38,11 +38,11 @@ export function resolveTransformParams(transform, params) {
   let clonedStep;
   const resolvedTransform = [];
 
-  if (typeof params === 'undefined') return transform;
+  if (typeof params === "undefined") return transform;
 
-	// iterate all steps in the transform array
+  // iterate all steps in the transform array
   for (idx = 0; idx < transform.length; idx++) {
-		// clone transform so our scan and replace can operate directly on cloned transform
+    // clone transform so our scan and replace can operate directly on cloned transform
     clonedStep = JSON.parse(JSON.stringify(transform[idx]));
     resolvedTransform.push(resolveTransformObject(clonedStep, params));
   }

@@ -1,45 +1,44 @@
-/* global describe, it, expect */
-import {Loki as loki} from '../../src/loki';
+/* global describe, beforeEach, it, expect */
+import {Loki as loki} from "../../src/loki";
 
-describe('Staging and commits', () => {
-  let db, directors, films;
+describe("Staging and commits", () => {
+  let db, directors;
 
   beforeEach(() => {
-    db = new loki('testJoins', {
+    db = new loki("testJoins", {
       persistenceMethod: null
     });
-    directors = db.addCollection('directors');
-    films = db.addCollection('films');
+    directors = db.addCollection("directors");
 
     directors.insert([{
-      name: 'Martin Scorsese',
+      name: "Martin Scorsese",
       directorId: 1
     }, {
-      name: 'Francis Ford Coppola',
+      name: "Francis Ford Coppola",
       directorId: 2
     }, {
-      name: 'Steven Spielberg',
+      name: "Steven Spielberg",
       directorId: 3
     }, {
-      name: 'Quentin Tarantino',
+      name: "Quentin Tarantino",
       directorId: 4
     }]);
   });
 
-  it('work', () => {
+  it("work", () => {
 
-    const stageName = 'tentative directors', newDirectorsName = 'Joel and Ethan Cohen',
-      message = 'Edited Cohen brothers name';
+    const stageName = "tentative directors", newDirectorsName = "Joel and Ethan Cohen",
+      message = "Edited Cohen brothers name";
 
     const cohen = directors.insert({
-      name: 'Cohen Brothers',
+      name: "Cohen Brothers",
       directorId: 5
     });
     const new_cohen = directors.stage(stageName, cohen);
     new_cohen.name = newDirectorsName;
-    expect(cohen.name).toEqual('Cohen Brothers');
+    expect(cohen.name).toEqual("Cohen Brothers");
     directors.commitStage(stageName, message);
-    expect(directors.get(cohen.$loki).name).toEqual('Joel and Ethan Cohen');
+    expect(directors.get(cohen.$loki).name).toEqual("Joel and Ethan Cohen");
     expect(directors.commitLog[0].message).toEqual(message);
   });
 });

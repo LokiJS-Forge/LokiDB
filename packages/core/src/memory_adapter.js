@@ -23,7 +23,7 @@ export class LokiMemoryAdapter {
     }
   }
 
-	/**
+  /**
 	 * Loads a serialized database from its in-memory store.
 	 * (Loki persistence adapter interface function)
 	 *
@@ -54,7 +54,7 @@ export class LokiMemoryAdapter {
     }
   }
 
-	/**
+  /**
 	 * Saves a serialized database to its in-memory store.
 	 * (Loki persistence adapter interface function)
 	 *
@@ -66,7 +66,7 @@ export class LokiMemoryAdapter {
     let saveCount;
 
     if (this.options.asyncResponses) {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         setTimeout(() => {
           saveCount = (this.hashStore[dbname] !== undefined ? this.hashStore[dbname].savecount : 0);
 
@@ -92,7 +92,7 @@ export class LokiMemoryAdapter {
     }
   }
 
-	/**
+  /**
 	 * Deletes a database from its in-memory store.
 	 *
 	 * @param {string} dbname - name of the database (filename/keyname)

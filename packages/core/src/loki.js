@@ -1,9 +1,9 @@
-import {LokiEventEmitter} from './event_emitter';
+import {LokiEventEmitter} from "./event_emitter";
 
 //import {LokiMemoryAdapter} from './memory_adapter';
 //import {LokiFsAdapter} from './fs_adapter';
 //import {LokiLocalStorageAdapter} from './local_storage_adapter';
-import {Collection} from './collection';
+import {Collection} from "./collection";
 
 /*
  'LokiFsAdapter' is not defined                 no-undef	x
@@ -32,81 +32,81 @@ export class Loki extends LokiEventEmitter {
 
   constructor(filename, options) {
     super();
-    this.filename = filename || 'loki.db';
+    this.filename = filename || "loki.db";
     this.collections = [];
 
-		// persist version of code which created the database to the database.
-		// could use for upgrade scenarios
+    // persist version of code which created the database to the database.
+    // could use for upgrade scenarios
     this.databaseVersion = 1.5;
     this.engineVersion = 1.5;
 
-		// autosave support (disabled by default)
-		// pass autosave: true, autosaveInterval: 6000 in options to set 6 second autosave
+    // autosave support (disabled by default)
+    // pass autosave: true, autosaveInterval: 6000 in options to set 6 second autosave
     this.autosave = false;
     this.autosaveInterval = 5000;
     this.autosaveHandle = null;
     this._throttledSaves = true;
 
     this.options = {
-      serializationMethod: options && options.serializationMethod !== undefined ? options.serializationMethod : 'normal',
-      destructureDelimiter: options && options.destructureDelimiter !== undefined ? options.destructureDelimiter : '$<\n'
+      serializationMethod: options && options.serializationMethod !== undefined ? options.serializationMethod : "normal",
+      destructureDelimiter: options && options.destructureDelimiter !== undefined ? options.destructureDelimiter : "$<\n"
     };
 
-		// currently keeping persistenceMethod and persistenceAdapter as loki level properties that
-		// will not or cannot be deserialized.  You are required to configure persistence every time
-		// you instantiate a loki object (or use default environment detection) in order to load the database anyways.
+    // currently keeping persistenceMethod and persistenceAdapter as loki level properties that
+    // will not or cannot be deserialized.  You are required to configure persistence every time
+    // you instantiate a loki object (or use default environment detection) in order to load the database anyways.
 
-		// persistenceMethod could be 'fs', 'localStorage', or 'adapter'
-		// this is optional option param, otherwise environment detection will be used
-		// if user passes their own adapter we will force this method to 'adapter' later, so no need to pass method option.
+    // persistenceMethod could be 'fs', 'localStorage', or 'adapter'
+    // this is optional option param, otherwise environment detection will be used
+    // if user passes their own adapter we will force this method to 'adapter' later, so no need to pass method option.
     this.persistenceMethod = null;
 
-		// retain reference to optional (non-serializable) persistenceAdapter 'instance'
+    // retain reference to optional (non-serializable) persistenceAdapter 'instance'
     this.persistenceAdapter = null;
 
-		// flags used to throttle saves
+    // flags used to throttle saves
     this._throttledSaveRunning = null;
     this._throttledSavePending = null;
 
-		// enable console output if verbose flag is set (disabled by default)
+    // enable console output if verbose flag is set (disabled by default)
     this.verbose = options && options.verbose !== undefined ? options.verbose : false;
 
     this.events = {
-      'init': [],
-      'loaded': [],
-      'flushChanges': [],
-      'close': [],
-      'changes': [],
-      'warning': []
+      "init": [],
+      "loaded": [],
+      "flushChanges": [],
+      "close": [],
+      "changes": [],
+      "warning": []
     };
 
     const getENV = () => {
-      if (typeof global !== 'undefined' && (global.android || global.NSObject)) {
-				// If no adapter is set use the default nativescript adapter
+      if (typeof global !== "undefined" && (global.android || global.NSObject)) {
+        // If no adapter is set use the default nativescript adapter
         if (!options.adapter) {
-					//let LokiNativescriptAdapter = require('./loki-nativescript-adapter');
-					//options.adapter=new LokiNativescriptAdapter();
+          //let LokiNativescriptAdapter = require('./loki-nativescript-adapter');
+          //options.adapter=new LokiNativescriptAdapter();
         }
-        return 'NATIVESCRIPT'; //nativescript
+        return "NATIVESCRIPT"; //nativescript
       }
 
-      const isNode = typeof global !== "undefined" && ({}).toString.call(global) === '[object global]';
+      const isNode = typeof global !== "undefined" && ({}).toString.call(global) === "[object global]";
 
       if (isNode) {
         if (global.window) {
-          return 'NODEJS'; //node-webkit
+          return "NODEJS"; //node-webkit
         } else {
-          return 'NODEJS';
+          return "NODEJS";
         }
       }
 
-      const isBrowser = typeof window !== 'undefined' && ({}).toString.call(window) === '[object Window]';
+      const isBrowser = typeof window !== "undefined" && ({}).toString.call(window) === "[object Window]";
 
-      if (typeof document !== 'undefined') {
-        if (document.URL.indexOf('http://') === -1 && document.URL.indexOf('https://') === -1) {
-          return 'CORDOVA';
+      if (typeof document !== "undefined") {
+        if (document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) {
+          return "CORDOVA";
         }
-        return 'BROWSER';
+        return "BROWSER";
       }
 
       if (!isBrowser) {
@@ -114,20 +114,20 @@ export class Loki extends LokiEventEmitter {
       }
     };
 
-		// refactor event environment detection due to invalid detection for browser environments.
-		// if they do not specify an options.env we want to detect env rather than default to nodejs.
-		// currently keeping two properties for similar thing (options.env and options.persistenceMethod)
-		//   might want to review whether we can consolidate.
+    // refactor event environment detection due to invalid detection for browser environments.
+    // if they do not specify an options.env we want to detect env rather than default to nodejs.
+    // currently keeping two properties for similar thing (options.env and options.persistenceMethod)
+    //   might want to review whether we can consolidate.
     if (options && options.env !== undefined) {
       this.ENV = options.env;
     } else {
       this.ENV = getENV();
     }
 
-    this.on('init', this.clearChanges);
+    this.on("init", this.clearChanges);
   }
 
-	/**
+  /**
 	 * configures options related to database persistence.
 	 *
 	 * @param {object} options - configuration options to apply to loki db object
@@ -144,10 +144,10 @@ export class Loki extends LokiEventEmitter {
 	 */
   initializePersistence(options = {}) {
     const defaultPersistence = {
-      'NODEJS': 'fs',
-      'BROWSER': 'localStorage',
-      'CORDOVA': 'localStorage',
-      'MEMORY': 'memory'
+      "NODEJS": "fs",
+      "BROWSER": "localStorage",
+      "CORDOVA": "localStorage",
+      "MEMORY": "memory"
     };
 
     const persistenceMethods = {
@@ -159,35 +159,35 @@ export class Loki extends LokiEventEmitter {
     this.options = options;
 
     this.persistenceMethod = null;
-		// retain reference to optional persistence adapter 'instance'
-		// currently keeping outside options because it can't be serialized
+    // retain reference to optional persistence adapter 'instance'
+    // currently keeping outside options because it can't be serialized
     this.persistenceAdapter = null;
 
-		// process the options
+    // process the options
     if (this.options.persistenceMethod !== undefined) {
-			// check if the specified persistence method is known
-      if (typeof(persistenceMethods[this.options.persistenceMethod]) === 'function') {
+      // check if the specified persistence method is known
+      if (typeof(persistenceMethods[this.options.persistenceMethod]) === "function") {
         this.persistenceMethod = this.options.persistenceMethod;
         this.persistenceAdapter = new persistenceMethods[this.options.persistenceMethod]();
       }
-			// should be throw an error here, or just fall back to defaults ??
+      // should be throw an error here, or just fall back to defaults ??
     }
 
-		// ensure defaults exists for options which were not set
+    // ensure defaults exists for options which were not set
     if (this.options.serializationMethod === undefined) {
-      this.options.serializationMethod = 'normal';
+      this.options.serializationMethod = "normal";
     }
 
-		// ensure passed or default option exists
+    // ensure passed or default option exists
     if (this.options.destructureDelimiter === undefined) {
-      this.options.destructureDelimiter = '$<\n';
+      this.options.destructureDelimiter = "$<\n";
     }
 
 
 
-		// if user passes adapter, set persistence mode to adapter and retain persistence adapter instance
+    // if user passes adapter, set persistence mode to adapter and retain persistence adapter instance
     if (this.options.adapter !== undefined) {
-      this.persistenceMethod = 'adapter';
+      this.persistenceMethod = "adapter";
       this.persistenceAdapter = this.options.adapter;
     }
 
@@ -212,7 +212,7 @@ export class Loki extends LokiEventEmitter {
 
     let loaded;
 
-		// if they want to load database on loki instantiation, now is a good time to load... after adapter set and before possible autosave initiation
+    // if they want to load database on loki instantiation, now is a good time to load... after adapter set and before possible autosave initiation
     if (this.options.autoload) {
       loaded = this.loadDatabase(this.options.inflate);
     } else {
@@ -226,24 +226,24 @@ export class Loki extends LokiEventEmitter {
     });
   }
 
-	/**
+  /**
 	 * Copies 'this' database into a new Loki instance. Object references are shared to make lightweight.
 	 *
 	 * @param {object} options - apply or override collection level settings
 	 * @param {bool} options.removeNonSerializable - nulls properties not safe for serialization.
 	 */
   copy(options = {}) {
-		// in case running in an environment without accurate environment detection, pass 'NA'
+    // in case running in an environment without accurate environment detection, pass 'NA'
     const databaseCopy = new Loki(this.filename, {env: "NA"});
     let clen;
     let idx;
 
-		// currently inverting and letting loadJSONObject do most of the work
+    // currently inverting and letting loadJSONObject do most of the work
     databaseCopy.loadJSONObject(this, {
       retainDirtyFlags: true
     });
 
-		// since our toJSON is not invoked for reference database adapters, this will let us mimic
+    // since our toJSON is not invoked for reference database adapters, this will let us mimic
     if (options.removeNonSerializable !== undefined && options.removeNonSerializable === true) {
       databaseCopy.autosaveHandle = null;
       databaseCopy.persistenceAdapter = null;
@@ -258,7 +258,7 @@ export class Loki extends LokiEventEmitter {
     return databaseCopy;
   }
 
-	/**
+  /**
 	 * Adds a collection to the database.
 	 * @param {string} name - name of collection to add
 	 * @param {object=} options - (optional) options to configure collection with.
@@ -285,12 +285,12 @@ export class Loki extends LokiEventEmitter {
 
   loadCollection(collection) {
     if (!collection.name) {
-      throw new Error('Collection must have a name property to be loaded');
+      throw new Error("Collection must have a name property to be loaded");
     }
     this.collections.push(collection);
   }
 
-	/**
+  /**
 	 * Retrieves reference to a collection by name.
 	 * @param {string} collectionName - name of collection to look up
 	 * @returns {Collection} Reference to collection in database by that name, or null if not found
@@ -305,8 +305,8 @@ export class Loki extends LokiEventEmitter {
       }
     }
 
-		// no such collection
-    this.emit('warning', 'collection ' + collectionName + ' not found');
+    // no such collection
+    this.emit("warning", "collection " + collectionName + " not found");
     return null;
   }
 
@@ -324,7 +324,7 @@ export class Loki extends LokiEventEmitter {
     return colls;
   }
 
-	/**
+  /**
 	 * Removes a collection from the database.
 	 * @param {string} collectionName - name of collection to remove
 	 */
@@ -351,7 +351,7 @@ export class Loki extends LokiEventEmitter {
     return this.name;
   }
 
-	/**
+  /**
 	 * Serialize database to a string which can be loaded via {@link Loki#loadJSON}
 	 *
 	 * @returns {string} Stringified representation of the loki database.
@@ -373,7 +373,7 @@ export class Loki extends LokiEventEmitter {
     }
   }
 
-	// alias of serialize
+  // alias of serialize
   toJSON() {
     return {
       ENV: this.ENV,
@@ -392,7 +392,7 @@ export class Loki extends LokiEventEmitter {
     };
   }
 
-	/**
+  /**
 	 * Destructured JSON serialization routine to allow alternate serialization methods.
 	 * Internally, Loki supports destructuring via loki "serializationMethod' option and
 	 * the optional LokiPartitioningAdapter class. It is also available if you wish to do
@@ -426,7 +426,7 @@ export class Loki extends LokiEventEmitter {
       options.delimiter = this.options.destructureDelimiter;
     }
 
-		// 'partitioned' along with 'partition' of 0 or greater is a request for single collection serialization
+    // 'partitioned' along with 'partition' of 0 or greater is a request for single collection serialization
     if (options.partitioned === true && options.partition !== undefined && options.partition >= 0) {
       return this.serializeCollection({
         delimited: options.delimited,
@@ -435,7 +435,7 @@ export class Loki extends LokiEventEmitter {
       });
     }
 
-		// not just an individual collection, so we will need to serialize db container via shallow copy
+    // not just an individual collection, so we will need to serialize db container via shallow copy
     dbcopy = new Loki(this.filename);
     dbcopy.loadJSONObject(this);
 
@@ -443,23 +443,23 @@ export class Loki extends LokiEventEmitter {
       dbcopy.collections[idx].data = [];
     }
 
-		// if we -only- wanted the db container portion, return it now
+    // if we -only- wanted the db container portion, return it now
     if (options.partitioned === true && options.partition === -1) {
-			// since we are deconstructing, override serializationMethod to normal for here
+      // since we are deconstructing, override serializationMethod to normal for here
       return dbcopy.serialize({
         serializationMethod: "normal"
       });
     }
 
-		// at this point we must be deconstructing the entire database
-		// start by pushing db serialization into first array element
+    // at this point we must be deconstructing the entire database
+    // start by pushing db serialization into first array element
     reconstruct.push(dbcopy.serialize({
       serializationMethod: "normal"
     }));
 
     dbcopy = null;
 
-		// push collection data into subsequent elements
+    // push collection data into subsequent elements
     for (idx = 0; idx < this.collections.length; idx++) {
       result = this.serializeCollection({
         delimited: options.delimited,
@@ -467,15 +467,15 @@ export class Loki extends LokiEventEmitter {
         collectionIndex: idx
       });
 
-			// NDA : Non-Delimited Array : one iterable concatenated array with empty string collection partitions
+      // NDA : Non-Delimited Array : one iterable concatenated array with empty string collection partitions
       if (options.partitioned === false && options.delimited === false) {
         if (!Array.isArray(result)) {
           throw new Error("a nondelimited, non partitioned collection serialization did not return an expected array");
         }
 
-				// Array.concat would probably duplicate memory overhead for copying strings.
-				// Instead copy each individually, and clear old value after each copy.
-				// Hopefully this will allow g.c. to reduce memory pressure, if needed.
+        // Array.concat would probably duplicate memory overhead for copying strings.
+        // Instead copy each individually, and clear old value after each copy.
+        // Hopefully this will allow g.c. to reduce memory pressure, if needed.
         resultlen = result.length;
 
         for (sidx = 0; sidx < resultlen; sidx++) {
@@ -489,33 +489,33 @@ export class Loki extends LokiEventEmitter {
       }
     }
 
-		// Reconstruct / present results according to four combinations : D, DA, NDA, NDAA
+    // Reconstruct / present results according to four combinations : D, DA, NDA, NDAA
     if (options.partitioned) {
-			// DA : Delimited Array of strings [0] db [1] collection [n] collection { partitioned: true, delimited: true }
-			// useful for simple future adaptations of existing persistence adapters to save collections separately
+      // DA : Delimited Array of strings [0] db [1] collection [n] collection { partitioned: true, delimited: true }
+      // useful for simple future adaptations of existing persistence adapters to save collections separately
       if (options.delimited) {
         return reconstruct;
       }
-			// NDAA : Non-Delimited Array with subArrays. db at [0] and collection subarrays at [n] { partitioned: true, delimited : false }
-			// This format might be the most versatile for 'rolling your own' partitioned sync or save.
-			// Memory overhead can be reduced by specifying a specific partition, but at this code path they did not, so its all.
+      // NDAA : Non-Delimited Array with subArrays. db at [0] and collection subarrays at [n] { partitioned: true, delimited : false }
+      // This format might be the most versatile for 'rolling your own' partitioned sync or save.
+      // Memory overhead can be reduced by specifying a specific partition, but at this code path they did not, so its all.
       else {
         return reconstruct;
       }
     } else {
-			// D : one big Delimited string { partitioned: false, delimited : true }
-			// This is the method Loki will use internally if 'destructured'.
-			// Little memory overhead improvements but does not require multiple asynchronous adapter call scheduling
+      // D : one big Delimited string { partitioned: false, delimited : true }
+      // This is the method Loki will use internally if 'destructured'.
+      // Little memory overhead improvements but does not require multiple asynchronous adapter call scheduling
       if (options.delimited) {
-				// indicate no more collections
+        // indicate no more collections
         reconstruct.push("");
 
         return reconstruct.join(options.delimiter);
       }
-			// NDA : Non-Delimited Array : one iterable array with empty string collection partitions { partitioned: false, delimited: false }
-			// This format might be best candidate for custom synchronous syncs or saves
+      // NDA : Non-Delimited Array : one iterable array with empty string collection partitions { partitioned: false, delimited: false }
+      // This format might be best candidate for custom synchronous syncs or saves
       else {
-				// indicate no more collections
+        // indicate no more collections
         reconstruct.push("");
 
         return reconstruct;
@@ -523,7 +523,7 @@ export class Loki extends LokiEventEmitter {
     }
   }
 
-	/**
+  /**
 	 * Utility method to serialize a collection in a 'destructured' format
 	 *
 	 * @param {object} options - used to determine output of method
@@ -554,19 +554,19 @@ export class Loki extends LokiEventEmitter {
       resultlines.push(JSON.stringify(this.collections[options.collectionIndex].data[docidx]));
     }
 
-		// D and DA
+    // D and DA
     if (options.delimited) {
-			// indicate no more documents in collection (via empty delimited string)
+      // indicate no more documents in collection (via empty delimited string)
       resultlines.push("");
 
       return resultlines.join(options.delimiter);
     } else {
-			// NDAA and NDA
+      // NDAA and NDA
       return resultlines;
     }
   }
 
-	/**
+  /**
 	 * Destructured JSON deserialization routine to minimize memory overhead.
 	 * Internally, Loki supports destructuring via loki "serializationMethod' option and
 	 * the optional LokiPartitioningAdapter class. It is also available if you wish to do
@@ -585,12 +585,10 @@ export class Loki extends LokiEventEmitter {
     let workarray = [];
     let len;
     let cdb;
-    let idx;
     let collIndex = 0;
     let collCount;
     let lineIndex = 1;
     let done = false;
-    let currLine;
     let currObject;
 
     if (options.partitioned === undefined) {
@@ -605,40 +603,40 @@ export class Loki extends LokiEventEmitter {
       options.delimiter = this.options.destructureDelimiter;
     }
 
-		// Partitioned
-		// DA : Delimited Array of strings [0] db [1] collection [n] collection { partitioned: true, delimited: true }
-		// NDAA : Non-Delimited Array with subArrays. db at [0] and collection subarrays at [n] { partitioned: true, delimited : false }
-		// -or- single partition
+    // Partitioned
+    // DA : Delimited Array of strings [0] db [1] collection [n] collection { partitioned: true, delimited: true }
+    // NDAA : Non-Delimited Array with subArrays. db at [0] and collection subarrays at [n] { partitioned: true, delimited : false }
+    // -or- single partition
     if (options.partitioned) {
-			// handle single partition
+      // handle single partition
       if (options.partition !== undefined) {
-				// db only
+        // db only
         if (options.partition === -1) {
           cdb = JSON.parse(destructuredSource[0]);
 
           return cdb;
         }
 
-				// single collection, return doc array
+        // single collection, return doc array
         return this.deserializeCollection(destructuredSource[options.partition + 1], options);
       }
 
-			// Otherwise we are restoring an entire partitioned db
+      // Otherwise we are restoring an entire partitioned db
       cdb = JSON.parse(destructuredSource[0]);
       collCount = cdb.collections.length;
       for (collIndex = 0; collIndex < collCount; collIndex++) {
-				// attach each collection docarray to container collection data, add 1 to collection array index since db is at 0
+        // attach each collection docarray to container collection data, add 1 to collection array index since db is at 0
         cdb.collections[collIndex].data = this.deserializeCollection(destructuredSource[collIndex + 1], options);
       }
 
       return cdb;
     }
 
-		// Non-Partitioned
-		// D : one big Delimited string { partitioned: false, delimited : true }
-		// NDA : Non-Delimited Array : one iterable array with empty string collection partitions { partitioned: false, delimited: false }
+    // Non-Partitioned
+    // D : one big Delimited string { partitioned: false, delimited : true }
+    // NDA : Non-Delimited Array : one iterable array with empty string collection partitions { partitioned: false, delimited: false }
 
-		// D
+    // D
     if (options.delimited) {
       workarray = destructuredSource.split(options.delimiter);
       destructuredSource = null; // lower memory pressure
@@ -648,22 +646,20 @@ export class Loki extends LokiEventEmitter {
         return null;
       }
     }
-		// NDA
+    // NDA
     else {
       workarray = destructuredSource;
     }
 
-		// first line is database and collection shells
+    // first line is database and collection shells
     cdb = JSON.parse(workarray[0]);
     collCount = cdb.collections.length;
     workarray[0] = null;
 
     while (!done) {
-      currLine = workarray[lineIndex];
-
-			// empty string indicates either end of collection or end of file
+      // empty string indicates either end of collection or end of file
       if (workarray[lineIndex] === "") {
-				// if no more collections to load into, we are done
+        // if no more collections to load into, we are done
         if (++collIndex > collCount) {
           done = true;
         }
@@ -672,14 +668,14 @@ export class Loki extends LokiEventEmitter {
         cdb.collections[collIndex].data.push(currObject);
       }
 
-			// lower memory pressure and advance iterator
+      // lower memory pressure and advance iterator
       workarray[lineIndex++] = null;
     }
 
     return cdb;
   }
 
-	/**
+  /**
 	 * Deserializes a destructured collection.
 	 *
 	 * @param {string|Array} destructuredSource - destructured representation of collection to inflate
@@ -721,7 +717,7 @@ export class Loki extends LokiEventEmitter {
     return workarray;
   }
 
-	/**
+  /**
 	 * Inflates a loki database from a serialized JSON string
 	 *
 	 * @param {string} serializedDb - a serialized loki database string
@@ -732,7 +728,7 @@ export class Loki extends LokiEventEmitter {
     if (serializedDb.length === 0) {
       dbObject = {};
     } else {
-			// using option defined in instantiated db not what was in serialized db
+      // using option defined in instantiated db not what was in serialized db
       switch (this.options.serializationMethod) {
         case "normal":
         case "pretty":
@@ -749,7 +745,7 @@ export class Loki extends LokiEventEmitter {
     this.loadJSONObject(dbObject, options);
   }
 
-	/**
+  /**
 	 * Inflates a loki database from a JS object
 	 *
 	 * @param {object} dbObject - a serialized loki database string
@@ -764,11 +760,11 @@ export class Loki extends LokiEventEmitter {
 
     for (let i = 0; i < len; ++i) {
       this.collections.push(Collection.fromJSONObject(dbObject.collections[i],
-				options, dbObject.databaseVersion < 1.5));
+        options, dbObject.databaseVersion < 1.5));
     }
   }
 
-	/**
+  /**
 	 * Emits the close event. In autosave scenarios, if the database is dirty, this will save and disable timer.
 	 * Does not actually destroy the db.
 	 *
@@ -776,11 +772,11 @@ export class Loki extends LokiEventEmitter {
 	 */
   close() {
     let saved;
-		// for autosave scenarios, we will let close perform final save (if dirty)
-		// For web use, you might call from window.onbeforeunload to shutdown database, saving pending changes
+    // for autosave scenarios, we will let close perform final save (if dirty)
+    // For web use, you might call from window.onbeforeunload to shutdown database, saving pending changes
     if (this.autosave) {
       this.autosaveDisable();
-			// Check if collections are dirty.
+      // Check if collections are dirty.
       for (let idx = 0; idx < this.collections.length; idx++) {
         if (this.collections[idx].dirty) {
           saved = this.saveDatabase();
@@ -790,20 +786,20 @@ export class Loki extends LokiEventEmitter {
     }
 
     return Promise.resolve(saved).then(() => {
-      this.emit('close');
+      this.emit("close");
     });
   }
 
-	/**-------------------------+
+  /**-------------------------+
 	 | Changes API               |
 	 +--------------------------*/
 
-	/**
+  /**
 	 * The Changes API enables the tracking the changes occurred in the collections since the beginning of the session,
 	 * so it's possible to create a differential dataset for synchronization purposes (possibly to a remote db)
 	 */
 
-	/**
+  /**
 	 * (Changes API) : takes all the changes stored in each
 	 * collection and creates a single array for the entire database. If an array of names
 	 * of collections is passed then only the included collections will be tracked.
@@ -828,7 +824,7 @@ export class Loki extends LokiEventEmitter {
     return changes;
   }
 
-	/**
+  /**
 	 * (Changes API) - stringify changes for network transmission
 	 * @returns {string} string representation of the changes
 	 */
@@ -836,7 +832,7 @@ export class Loki extends LokiEventEmitter {
     return JSON.stringify(this.generateChangesNotification(collectionNamesArray));
   }
 
-	/**
+  /**
 	 * (Changes API) : clears all the changes in all collections.
 	 */
   clearChanges() {
@@ -847,7 +843,7 @@ export class Loki extends LokiEventEmitter {
     });
   }
 
-	/**
+  /**
 	 * Wait for throttledSaves to complete and invoke your callback when drained or duration is met.
 	 *
 	 * @param {object=} options - configuration options
@@ -876,11 +872,11 @@ export class Loki extends LokiEventEmitter {
       options.started = (new Date()).getTime();
     }
 
-		// if save is pending
+    // if save is pending
     if (this._throttledSaves && this._throttledSaveRunning !== null) {
-			// if we want to wait until we are in a state where there are no pending saves at all
+      // if we want to wait until we are in a state where there are no pending saves at all
       if (options.recursiveWait) {
-				// queue the following meta callback for when it completes
+        // queue the following meta callback for when it completes
         return Promise.resolve(Promise.all([this._throttledSaveRunning, this._throttledSavePending])).then(() => {
           if (this._throttledSaveRunning !== null || this._throttledSavePending !== null) {
             if (options.recursiveWaitLimit && (now - options.started > options.recursiveWaitLimitDuration)) {
@@ -892,50 +888,50 @@ export class Loki extends LokiEventEmitter {
           }
         });
       }
-			// just notify when current queue is depleted
+      // just notify when current queue is depleted
       else {
         return Promise.resolve(this._throttledSaveRunning);
       }
     }
-		// no save pending, just callback
+    // no save pending, just callback
     else {
       return Promise.resolve();
     }
   }
 
-	/**
+  /**
 	 * Internal load logic, decoupled from throttling/contention logic
 	 *
 	 * @param {object} options - an object containing inflation options for each collection
 	 * @returns {Promise} a Promise that resolves after the database is loaded
 	 */
   _loadDatabase(options = {}) {
-		// the persistenceAdapter should be present if all is ok, but check to be sure.
+    // the persistenceAdapter should be present if all is ok, but check to be sure.
     if (this.persistenceAdapter === null) {
-      return Promise.reject(new Error('persistenceAdapter not configured'));
+      return Promise.reject(new Error("persistenceAdapter not configured"));
     }
 
     return Promise.resolve(this.persistenceAdapter.loadDatabase(this.filename))
-			.then((dbString) => {
-  if (typeof (dbString) === 'string') {
-    this.loadJSON(dbString, options);
-    this.emit('load', this);
-  } else {
-					// if adapter has returned an js object (other than null or error) attempt to load from JSON object
-    if (typeof (dbString) === "object" && dbString !== null && !(dbString instanceof Error)) {
-      this.loadJSONObject(dbString, options);
-      this.emit('load', this);
-    } else {
-      if (dbString instanceof Error)
-        throw dbString;
+      .then((dbString) => {
+        if (typeof (dbString) === "string") {
+          this.loadJSON(dbString, options);
+          this.emit("load", this);
+        } else {
+          // if adapter has returned an js object (other than null or error) attempt to load from JSON object
+          if (typeof (dbString) === "object" && dbString !== null && !(dbString instanceof Error)) {
+            this.loadJSONObject(dbString, options);
+            this.emit("load", this);
+          } else {
+            if (dbString instanceof Error)
+              throw dbString;
 
-      throw new TypeError('The persistence adapter did not load a serialized DB string or object.');
-    }
-  }
-});
+            throw new TypeError("The persistence adapter did not load a serialized DB string or object.");
+          }
+        }
+      });
   }
 
-	/**
+  /**
 	 * Handles loading from file system, local storage, or adapter (indexeddb)
 	 *    This method utilizes loki configuration options (if provided) to determine which
 	 *    persistence method to use, or environment detection (if configuration was not provided).
@@ -948,16 +944,16 @@ export class Loki extends LokiEventEmitter {
 	 * @returns {Promise} a Promise that resolves after the database is loaded
 	 */
   loadDatabase(options) {
-		// if throttling disabled, just call internal
+    // if throttling disabled, just call internal
     if (!this._throttledSaves) {
       return this._loadDatabase(options);
     }
 
-		// try to drain any pending saves in the queue to lock it for loading
+    // try to drain any pending saves in the queue to lock it for loading
     return this.throttledSaveDrain(options).then(() => {
-			// pause/throttle saving until loading is done
+      // pause/throttle saving until loading is done
       this._throttledSaveRunning = this._loadDatabase(options).then(() => {
-				// now that we are finished loading, if no saves were throttled, disable flag
+        // now that we are finished loading, if no saves were throttled, disable flag
         this._throttledSaveRunning = null;
       });
       return this._throttledSaveRunning;
@@ -967,25 +963,25 @@ export class Loki extends LokiEventEmitter {
   }
 
   _saveDatabase() {
-		// the persistenceAdapter should be present if all is ok, but check to be sure.
+    // the persistenceAdapter should be present if all is ok, but check to be sure.
     if (this.persistenceAdapter === null) {
-      return Promise.reject(new Error('persistenceAdapter not configured'));
+      return Promise.reject(new Error("persistenceAdapter not configured"));
     }
 
     let saved;
 
-		// check if the adapter is requesting (and supports) a 'reference' mode export
+    // check if the adapter is requesting (and supports) a 'reference' mode export
     if (this.persistenceAdapter.mode === "reference" && typeof this.persistenceAdapter.exportDatabase === "function") {
-			// filename may seem redundant but loadDatabase will need to expect this same filename
+      // filename may seem redundant but loadDatabase will need to expect this same filename
       saved = this.persistenceAdapter.exportDatabase(this.filename, this.copy({removeNonSerializable: true}));
     }
-		// otherwise just pass the serialized database to adapter
+    // otherwise just pass the serialized database to adapter
     else {
       saved = this.persistenceAdapter.saveDatabase(this.filename, this.serialize());
     }
 
     return Promise.resolve(saved).then(() => {
-			// Set all collection not dirty.
+      // Set all collection not dirty.
       for (let idx = 0; idx < this.collections.length; idx++) {
         this.collections[idx].dirty = false;
       }
@@ -993,7 +989,7 @@ export class Loki extends LokiEventEmitter {
     });
   }
 
-	/**
+  /**
 	 * Handles saving to file system, local storage, or adapter (indexeddb)
 	 *    This method utilizes loki configuration options (if provided) to determine which
 	 *    persistence method to use, or environment detection (if configuration was not provided).
@@ -1005,9 +1001,9 @@ export class Loki extends LokiEventEmitter {
       return this._saveDatabase();
     }
 
-		// if the db save is currently running, a new promise for a next db save is created
-		// all calls to save db will get this new promise which will be processed right after
-		// the current db save is finished
+    // if the db save is currently running, a new promise for a next db save is created
+    // all calls to save db will get this new promise which will be processed right after
+    // the current db save is finished
     if (this._throttledSaveRunning !== null && this._throttledSavePending === null) {
       this._throttledSavePending = Promise.resolve(this._throttledSaveRunning).then(() => {
         this._throttledSaveRunning = null;
@@ -1025,21 +1021,21 @@ export class Loki extends LokiEventEmitter {
     return this._throttledSaveRunning;
   }
 
-	/**
+  /**
 	 * Handles deleting a database from file system, local storage, or adapter (indexeddb)
 	 *
 	 * @returns {Promise} a Promise that resolves after the database is deleted
 	 */
   deleteDatabase() {
-		// the persistenceAdapter should be present if all is ok, but check to be sure.
+    // the persistenceAdapter should be present if all is ok, but check to be sure.
     if (this.persistenceAdapter === null) {
-      return Promise.reject(new Error('persistenceAdapter not configured'));
+      return Promise.reject(new Error("persistenceAdapter not configured"));
     }
 
     return Promise.resolve(this.persistenceAdapter.deleteDatabase(this.filename));
   }
 
-	/**
+  /**
 	 * autosaveEnable - begin a javascript interval to periodically save the database.
 	 *
 	 */
@@ -1063,7 +1059,7 @@ export class Loki extends LokiEventEmitter {
     }, this.autosaveInterval);
   }
 
-	/**
+  /**
 	 * autosaveDisable - stop the autosave interval timer.
 	 *
 	 */

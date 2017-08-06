@@ -1,6 +1,5 @@
 {
   "name": "@sample_test/core",
-  "version": "0.0.0-PLACEHOLDER",
   "description": "Fast document oriented javascript in-memory database",
   "author": "Various authors",
   "license": "MIT",

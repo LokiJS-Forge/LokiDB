@@ -1,4 +1,4 @@
-import {Loki} from './loki';
+import {Loki} from "./loki";
 
 export {
   Loki

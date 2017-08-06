@@ -15,9 +15,9 @@ export function aeqHelper(prop1, prop2) {
 
   if (prop1 === prop2) return true;
 
-	// 'falsy' and Boolean handling
+  // 'falsy' and Boolean handling
   if (!prop1 || !prop2 || prop1 === true || prop2 === true || prop1 !== prop1 || prop2 !== prop2) {
-		// dates and NaN conditions (typed dates before serialization)
+    // dates and NaN conditions (typed dates before serialization)
     switch (prop1) {
       case undefined:
         t1 = 1;
@@ -60,22 +60,22 @@ export function aeqHelper(prop1, prop2) {
         break;
     }
 
-		// one or both is edge case
+    // one or both is edge case
     if (t1 !== 9 || t2 !== 9) {
       return (t1 === t2);
     }
   }
 
-	// Handle 'Number-like' comparisons
+  // Handle 'Number-like' comparisons
   cv1 = Number(prop1);
   cv2 = Number(prop2);
 
-	// if one or both are 'number-like'...
+  // if one or both are 'number-like'...
   if (cv1 === cv1 || cv2 === cv2) {
     return (cv1 === cv2);
   }
 
-	// not strict equal nor less than nor gt so must be mixed types, convert to string and use that to compare
+  // not strict equal nor less than nor gt so must be mixed types, convert to string and use that to compare
   cv1 = prop1.toString();
   cv2 = prop2.toString();
 
@@ -93,8 +93,8 @@ export function ltHelper(prop1, prop2, equal) {
   let t1;
   let t2;
 
-	// if one of the params is falsy or strictly true or not equal to itself
-	// 0, 0.0, "", NaN, null, undefined, not defined, false, true
+  // if one of the params is falsy or strictly true or not equal to itself
+  // 0, 0.0, "", NaN, null, undefined, not defined, false, true
   if (!prop1 || !prop2 || prop1 === true || prop2 === true || prop1 !== prop1 || prop2 !== prop2) {
     switch (prop1) {
       case undefined:
@@ -112,7 +112,7 @@ export function ltHelper(prop1, prop2, equal) {
       case "":
         t1 = 5;
         break;
-			// if strict equal probably 0 so sort higher, otherwise probably NaN so sort lower than even null
+        // if strict equal probably 0 so sort higher, otherwise probably NaN so sort lower than even null
       default:
         t1 = (prop1 === prop1) ? 9 : 0;
         break;
@@ -139,13 +139,13 @@ export function ltHelper(prop1, prop2, equal) {
         break;
     }
 
-		// one or both is edge case
+    // one or both is edge case
     if (t1 !== 9 || t2 !== 9) {
       return (t1 === t2) ? equal : (t1 < t2);
     }
   }
 
-	// if both are numbers (string encoded or not), compare as numbers
+  // if both are numbers (string encoded or not), compare as numbers
   cv1 = Number(prop1);
   cv2 = Number(prop2);
 
@@ -167,7 +167,7 @@ export function ltHelper(prop1, prop2, equal) {
   if (prop1 > prop2) return false;
   if (prop1 == prop2) return equal;
 
-	// not strict equal nor less than nor gt so must be mixed types, convert to string and use that to compare
+  // not strict equal nor less than nor gt so must be mixed types, convert to string and use that to compare
   cv1 = prop1.toString();
   cv2 = prop2.toString();
 
@@ -188,7 +188,7 @@ export function gtHelper(prop1, prop2, equal) {
   let t1;
   let t2;
 
-	// 'falsy' and Boolean handling
+  // 'falsy' and Boolean handling
   if (!prop1 || !prop2 || prop1 === true || prop2 === true || prop1 !== prop1 || prop2 !== prop2) {
     switch (prop1) {
       case undefined:
@@ -206,7 +206,7 @@ export function gtHelper(prop1, prop2, equal) {
       case "":
         t1 = 5;
         break;
-			// NaN 0
+        // NaN 0
       default:
         t1 = (prop1 === prop1) ? 9 : 0;
         break;
@@ -233,13 +233,13 @@ export function gtHelper(prop1, prop2, equal) {
         break;
     }
 
-		// one or both is edge case
+    // one or both is edge case
     if (t1 !== 9 || t2 !== 9) {
       return (t1 === t2) ? equal : (t1 > t2);
     }
   }
 
-	// if both are numbers (string encoded or not), compare as numbers
+  // if both are numbers (string encoded or not), compare as numbers
   cv1 = Number(prop1);
   cv2 = Number(prop2);
   if (cv1 === cv1 && cv2 === cv2) {
@@ -260,8 +260,8 @@ export function gtHelper(prop1, prop2, equal) {
   if (prop1 < prop2) return false;
   if (prop1 == prop2) return equal;
 
-	// not strict equal nor less than nor gt so must be dates or mixed types
-	// convert to string and use that to compare
+  // not strict equal nor less than nor gt so must be dates or mixed types
+  // convert to string and use that to compare
   cv1 = prop1.toString();
   cv2 = prop2.toString();
 
@@ -276,7 +276,7 @@ export function gtHelper(prop1, prop2, equal) {
   return false;
 }
 
-function sortHelper(prop1, prop2, desc) {
+export function sortHelper(prop1, prop2, desc) {
   if (aeqHelper(prop1, prop2)) return 0;
 
   if (ltHelper(prop1, prop2, false)) {
@@ -287,6 +287,6 @@ function sortHelper(prop1, prop2, desc) {
     return (desc) ? (-1) : (1);
   }
 
-	// not lt, not gt so implied equality-- date compatible
+  // not lt, not gt so implied equality-- date compatible
   return 0;
 }

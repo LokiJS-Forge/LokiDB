@@ -1,9 +1,10 @@
+/* global jQuery */
 export function clone(data, method) {
   if (data === null || data === undefined) {
     return null;
   }
 
-  const cloneMethod = method || 'parse-stringify';
+  const cloneMethod = method || "parse-stringify";
   let cloned;
 
   switch (cloneMethod) {
@@ -14,14 +15,14 @@ export function clone(data, method) {
       cloned = jQuery.extend(true, {}, data);
       break;
     case "shallow":
-			// more compatible method for older browsers
+      // more compatible method for older browsers
       cloned = data.prototype ? Object.create(data.prototype) : {};
       Object.keys(data).map((i) => {
         cloned[i] = data[i];
       });
       break;
     case "shallow-assign":
-			// should be supported by newer environments/browsers
+      // should be supported by newer environments/browsers
       cloned = data.prototype ? Object.create(data.prototype) : {};
       Object.assign(cloned, data);
       break;
