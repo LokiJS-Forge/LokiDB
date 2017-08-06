@@ -7,12 +7,12 @@ module.exports = function (config) {
     browsers: ["Chrome"],
     files: [
       {pattern: "../packages/*/spec/generic/**/*.spec.js", watched: false},
+      {pattern: "../packages/*/spec/web/**/*.spec.js", watched: false},
     ],
     preprocessors: {
-      // source files, that you wanna generate coverage for
-      // do not include tests or libraries
-      // (these files will be instrumented by Istanbul)
+      "../packages/*/src/**/*.spec.js": ["webpack"],
       "../packages/*/spec/generic/**/*.spec.js": ["webpack"],
+      "../packages/*/spec/web/**/*.spec.js": ["webpack"],
     },
 
     // coverage reporter generates the coverage
@@ -36,12 +36,10 @@ module.exports = function (config) {
               {
                 loader: "istanbul-instrumenter-loader",
                 options: {
-                  esModules: true,
-                  debug: true
+                  esModules: true
                 }
               },
-            ],
-            include: new RegExp(path.resolve("packages") + "/.+?/src/.+.js")
+            ]
           }
         ]
       }
