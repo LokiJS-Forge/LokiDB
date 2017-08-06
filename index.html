@@ -57,14 +57,6 @@
             
     <li class="toctree-l2"><a href="#welcome-to-lokijs2">Welcome to LokiJS2</a></li>
     
-        <ul>
-        
-            <li><a class="toctree-l3" href="#commands">Commands</a></li>
-        
-            <li><a class="toctree-l3" href="#project-layout">Project layout</a></li>
-        
-        </ul>
-    
 
     </ul>
 	    </li>
@@ -104,25 +96,9 @@
           <div role="main">
             <div class="section">
               
-                <p><a href="http://github.com/lokijs-forge/lokijs2/issues" target="_blank"><img alt="Github Issues" src="https://img.shields.io/github/issues/lokijs-forge/lokijs2.svg" /></a></p>
-<div style="float: right">
-</div>
-
-<p><a class="  github-button" href="https://github.com/lokijs-forge/lokijs2" data-style="mega" data-count-href="/lokijs-forge/lokijs2/stargazers" data-count-api="/repos/lokijs-forge/lokijs2#stargazers_count" data-count-aria-label="# stargazers on GitHub" aria-label="Star lokijs-forge/lokijs2 on GitHub">GitHub</a></p>
+                <p><a href="https://travis-ci.org/LokiJS-Forge/LokiJS2"><img alt="Build Status" src="https://travis-ci.org/LokiJS-Forge/LokiJS2.svg?branch=master" /></a>
+<a href="https://coveralls.io/github/LokiJS-Forge/LokiJS2?branch=feature%2Fadd_build_system"><img alt="Coverage Status" src="https://coveralls.io/repos/github/LokiJS-Forge/LokiJS2/badge.svg?branch=feature%2Fadd_build_system" /></a></p>
 <h1 id="welcome-to-lokijs2">Welcome to LokiJS2</h1>
-<h2 id="commands">Commands</h2>
-<ul>
-<li><code>mkdocs new [dir-name]</code> - Create a new project.</li>
-<li><code>mkdocs serve</code> - Start the live-reloading docs server.</li>
-<li><code>mkdocs build</code> - Build the documentation site.</li>
-<li><code>mkdocs help</code> - Print this help message.</li>
-</ul>
-<h2 id="project-layout">Project layout</h2>
-<pre><code>mkdocs.yml    # The configuration file.
-docs/
-    index.md  # The documentation homepage.
-    ...       # Other markdown pages, images and other files.
-</code></pre>
 <pre><code class="javascript">// Runnable code
 console.log(&quot;iii&quot;);
 console.log(&quot;abc&quot;);
@@ -142,32 +118,9 @@ console.error(&quot;123&quot;)
 
 </code></pre>
 
-<pre><code class="javascript">/*
- * Demonstration of code folding
- */
-window.onload = function() {
-  var te = document.getElementById(&quot;code&quot;);
-  var sc = document.getElementById(&quot;script&quot;);
-  te.value = (sc.textContent || sc.innerText || sc.innerHTML).replace(/^\s*/, &quot;&quot;);
-  sc.innerHTML = &quot;&quot;;
-  var te_html = document.getElementById(&quot;code-html&quot;);
-  te_html.value = document.documentElement.innerHTML;
-  var te_python = document.getElementById(&quot;code-python&quot;);
-  var te_markdown = document.getElementById(&quot;code-markdown&quot;);
-  te_markdown.value = &quot;# Foo\n## Bar\n\nblah blah\n\n## Baz\n\nblah blah\n\n# Quux\n\nblah blah\n&quot;
-
-  window.editor = CodeMirror.fromTextArea(te, {
-    mode: &quot;javascript&quot;,
-    lineNumbers: true,
-    lineWrapping: true,
-    extraKeys: {&quot;Ctrl-Q&quot;: function(cm){ cm.foldCode(cm.getCursor()); }},
-    foldGutter: true,
-    gutters: [&quot;CodeMirror-linenumbers&quot;, &quot;CodeMirror-foldgutter&quot;]
-  });
-  editor.foldCode(CodeMirror.Pos(13, 0));
-};
-
-
+<pre><code class="javascript">// Not runnable code
+test = i + 1;
+nothing.call();
 </code></pre>
               
             </div>
@@ -218,5 +171,5 @@ window.onload = function() {
 
 <!--
 MkDocs version : 0.16.3
-Build Date UTC : 2017-07-15 14:54:39
+Build Date UTC : 2017-08-06 08:43:07
 -->

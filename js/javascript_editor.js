@@ -131,7 +131,7 @@ class JavascriptEditor {
 
     // Run code.
     try {
-      eval(this._editor_window.getValue());
+      eval("(() => {" + this._editor_window.getValue() + "})()");
     } catch (e) {
       console.error(e);
     }
