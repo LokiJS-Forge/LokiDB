@@ -1,9 +1,9 @@
 /* global describe, it, expect */
-import {g} from "../../src/index";
+import {node_func} from "../../src/index";
 
-describe("autoupdate", () => {
-  it("auto updates inserted documents", () => {
-    expect(g()).toEqual(1);
+describe("test", () => {
+  it("node", () => {
+    expect(node_func()).toEqual(200);
   });
 });
 

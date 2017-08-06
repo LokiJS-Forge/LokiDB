@@ -1,18 +1,11 @@
 export function func() {
-  let i = 20;
-  return i * 20;
+  return 100;
 }
 
-export function g() {
-  return 1;
+export function node_func() {
+  return 200;
 }
 
-/*module.exports = {
- func: function () {
- if (false) {
-
- }
- return 2;
- }
- };
- */
+export function web_func() {
+  return 300;
+}
