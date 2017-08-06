@@ -32,7 +32,7 @@ before_install:
 script:
     - npm run lint
     - npm test
-    - node build.js
 
 after_success:
   - nyc report --reporter=text-lcov | coveralls
+  - npm run build

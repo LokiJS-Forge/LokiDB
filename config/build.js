@@ -44,30 +44,31 @@ const CHANGELOG = {
   }
 };
 
-
 let DO_DEPLOY = false;
 let VERSION = "0.0.0.0";
-
-print("PR: " + IS_PULL_REQUEST);
-print("PUSH: " + IS_MASTER_TARGET);
-print("Tag: " + COMMIT_TAG);
+let CURRENT_COMMIT;
+let RELEASE_BRANCH = "";
+const RELEASE_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 
 async function main() {
   fetch_all();
   DO_DEPLOY = check_if_release_is_triggered();
 
   if (DO_DEPLOY) {
-
-    make_release_branch();
+    print("! Deploy !");
     update_version();
   }
-
-  VERSION = require("./package.json").version;
+  VERSION = require("./../package.json").version + ` (${CURRENT_COMMIT})`;
 
   build();
 
   if (DO_DEPLOY) {
+    RELEASE_BRANCH = "Release " + VERSION;
+
     await update_changelog();
+    push();
+
+    await delay_release();
 
     await npm_login();
     npm_publish();
@@ -82,33 +83,33 @@ main().then(() => {
   process.exit(1);
 });
 
-function make_release_branch() {
-}
-
 function update_version() {
-  run("npm", ["version", "patch", "--no-git-tag-version"]);
+  const version_skip = COMMIT_TAG.match(/Release\s+(.+)/);
+  run("npm", ["version", version_skip, "--no-git-tag-version"]);
 }
 
-function merge() {
-  const RELEASE = "RELEASE";
-
-  run("git", ["fetch"]);
-  run("git", ["checkout", "-b", RELEASE, "origin/master"]);
-
+function push() {
+  run("git", ["checkout", "-b", RELEASE_BRANCH]);
   run("git", ["add", "."]);
   run("git", ["commit", "-m", `Release ${VERSION}`]);
   run("git", ["remote", "set-url", "origin", `https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git`]);
+  run("git", ["push"]);
+}
 
+function merge() {
   run("git", ["checkout", "master"]);
-  run("git", ["merge", RELEASE]);
+  run("git", ["merge", RELEASE_BRANCH]);
 
   run("git", ["push", "origin", `:refs/tags/${COMMIT_TAG}`]);
   run("git", ["tag", VERSION]);
 
   run("git", ["push"]);
   run("git", ["tag", "-d", COMMIT_TAG]);
-  run("git", ["branch", "-d", RELEASE]);
   run("git", ["push", "--tags"]);
+
+  // Remove release branch.
+  run("git", ["branch", "-d", RELEASE_BRANCH]);
+  run("git", ["push", "origin", "--delete", RELEASE_BRANCH]);
 
   print("====== Create GitHub release documentation");
 
@@ -166,12 +167,13 @@ function build() {
 
 function check_if_release_is_triggered() {
   if (!IS_PULL_REQUEST && !IS_MASTER_TARGET && COMMIT_TAG.startsWith("Release")) {
-    run("git", ["fetch", "origin"]);
+    // Safe current commit.
     run("git", ["checkout", "master"]);
     // Check if head has the same tag.
-    if (run("git", ["describe", "--tags", "--always"])[1].toString() === COMMIT_TAG + "\n") {
-      return true;
-    }
+    const is_release = run("git", ["describe", "--tags", "--always"])[1].toString() === COMMIT_TAG;
+    // Go back to current commit.
+    run("git", ["checkout", CURRENT_COMMIT]);
+    return is_release;
   }
   return false;
 }
@@ -269,10 +271,28 @@ function generate_changelog() {
   });
 }
 
+function delay_release() {
+  // Delay the release to cancel.
+  const current_time = new Date().getTime();
+  return new Promise(function (resolve) {
+    function echo() {
+      print(".", "");
+      if (current_time + RELEASE_TIMEOUT >= new Date().getTime()) {
+        setTimeout(echo, 600);
+      } else {
+        resolve();
+      }
+    }
+
+    echo();
+  });
+}
+
 function fetch_all() {
   run("git", ["config", "--replace-all", "remote.origin.fetch", "+refs/heads/*:refs/remotes/origin/*"]);
   run("git", ["fetch"]);
   run("git", ["fetch", "--tags"]);
+  CURRENT_COMMIT = run("git", ["rev-parse", "HEAD"])[1].toString().slice(0, -1);
 }
 
 function run(command, args = [], object = {}) {
@@ -292,10 +312,10 @@ function make_dir(path) {
   run("mkdir", ["-p", path]);
 }
 
-function print(txt) {
-  process.stdout.write(txt + "\n");
+function print(txt, lb = "\n") {
+  process.stdout.write(txt + lb);
 }
 
-function print_error(txt) {
-  process.stderr.write(txt + "\n");
+function print_error(txt, lb = "\n") {
+  process.stderr.write(txt + lb);
 }
