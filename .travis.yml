@@ -34,4 +34,4 @@ script:
     - npm run build || travis_terminate 1
 
 after_success:
-  - cat coverage/lcof.info | coveralls
+  - cat ./coverage/lcov.info | coveralls
