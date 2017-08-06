@@ -7,9 +7,10 @@
   "scripts": {
     "lint": "eslint './packages/**/*.js' -c config/eslintrc.js",
     "lint:fix": "eslint --fix './packages/**/*.js' -c config/eslintrc.js",
-    "test": "npm run test:web && npm run test:node",
+    "test": "npm run test:web && npm run test:node && npm run coverage",
     "test:web": "karma start config/karma.config.js --single-run",
     "test:node": "nyc --temp-directory coverage/node jasmine --config='config/jasmine.json'",
+    "coverage": "istanbul report html lcov json text-summary",
     "build": "node config/build.js"
   },
   "repository": {
@@ -34,9 +35,9 @@
     "babel-register": "^6.24.1",
     "conventional-changelog": "^1.1.4",
     "coveralls": "^2.13.1",
-    "eslint": "^4.2.0",
+    "eslint": "^4.4.0",
     "eslint-loader": "^1.9.0",
-    "istanbul-instrumenter-loader": "^2.0.0",
+    "istanbul-instrumenter-loader": "^3.0.0",
     "jasmine": "^2.6.0",
     "karma": "^1.7.0",
     "karma-chrome-launcher": "^2.2.0",
