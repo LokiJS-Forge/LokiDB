@@ -5,11 +5,12 @@
   "author": "Various authors",
   "license": "MIT",
   "scripts": {
-    "lint": "eslint './src/**/*.js' './bench/**/*.bench.js' './spec/**/*.spec.js' -c config/eslintrc.js",
-    "lint:fix": "eslint --fix './src/**/*.js' './bench/**/*.bench.js' './spec/**/*.spec.js' -c config/eslintrc.js",
+    "lint": "eslint './packages/**/*.js' -c config/eslintrc.js",
+    "lint:fix": "eslint --fix './packages/**/*.js' -c config/eslintrc.js",
     "test": "npm run test:web && npm run test:node",
     "test:web": "karma start config/karma.config.js --single-run",
-    "test:node": "nyc --temp-directory coverage/node jasmine --config='config/jasmine.json'"
+    "test:node": "nyc --temp-directory coverage/node jasmine --config='config/jasmine.json'",
+    "build": "node config/build.js"
   },
   "repository": {
     "type": "git",
