@@ -1,0 +1,33 @@
+.jse-editor {
+  display: block;
+  position: relative;
+  border: 1px solid #d5d5d5;
+  font-size: 91.1%;
+}
+
+.jse-button {
+  margin: 5px;
+  flex: 1;
+  font-size: 12px;
+}
+
+.jse-output {
+  padding: 10px 10px 10px 15px;
+  font-size: 11px;
+  font-family: monaco, monospace;
+  max-height: 15em;
+  border-top: 1px solid #d5d5d5;
+  background: transparent;
+  overflow-y: scroll;
+}
+
+.jse-output span {
+  display: block;
+}
+
+.jse-output-log {
+}
+
+.jse-output-error {
+  color: red;
+}

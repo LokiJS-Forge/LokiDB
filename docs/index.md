@@ -1,17 +1,30 @@
-# Welcome to MkDocs
+[![Build Status](https://travis-ci.org/LokiJS-Forge/LokiJS2.svg?branch=master)](https://travis-ci.org/LokiJS-Forge/LokiJS2)
+[![Coverage Status](https://coveralls.io/repos/github/LokiJS-Forge/LokiJS2/badge.svg?branch=feature%2Fadd_build_system)](https://coveralls.io/github/LokiJS-Forge/LokiJS2?branch=feature%2Fadd_build_system)
 
-For full documentation visit [mkdocs.org](http://mkdocs.org).
+# Welcome to LokiJS2
 
-## Commands
+```javascript
+// Runnable code
+console.log("iii");
+console.log("abc");
+console.log(123);
+console.log({a: 2});
+console.log(undefined)
+console.log(null)
+console.log("??")
+console.log($)
+console.log([]);
+console.log({a: [2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6,2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6]});
+console.error("123")
+console.error("123")
+console.error("123")
+console.error("123")
+console.error("123")
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs help` - Print this help message.
+```
 
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+```javascript
+// Not runnable code
+test = i + 1;
+nothing.call();
+```
