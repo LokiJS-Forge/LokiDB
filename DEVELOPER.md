@@ -1,11 +1,13 @@
+<!-- This page is a modified version of [Angular](https://github.com/angular/angular/blob/master/docs/DEVELOPER.md). -->
+
 # Building and testing LokiJS
 
 This document describes how to set up your development environment to build and test LokiJS.
 
 * [Prerequisite software](#prerequisite-software)
 * [Running tests](#running-tests)
-* [Formatting your source code](#formatting-code)
-* [Building](#building)
+* [Formatting your source code](#formatting-your-source-code)
+* [Building LokiJS](#building-lokijs)
 
 See the [contribution guidelines][contribution] if you'd like to contribute to LokiJS.
 
@@ -53,17 +55,13 @@ You can automatically format your code by running:
 $ npm run lint:fix
 ```
 
-## Building
+## Building LokiJS
 
-To build LokiJS a linux like shell is needed.
+To build LokiJS, run:
 
 ``` shell
 $ npm run build
 ```
-
-#### Note
-
-This page is a modified version of [Angular](https://github.com/angular/angular/blob/master/docs/DEVELOPER.md)
 
 [eslint]: https://eslint.org/
 [contribution]: https://github.com/LokiJS-Forge/LokiJS2/blob/master/CONTRIBUTING.md

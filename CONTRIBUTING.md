@@ -1,3 +1,5 @@
+<!-- This page is a modified version of [Angular's CONTRIBUTING.md](https://github.com/angular/angular/blob/master/CONTRIBUTING.md). -->
+
 # Contributing to LokiJS
 
 We would love for you to contribute to LokiJS and help make it even better than it is
@@ -158,16 +160,12 @@ reference GitHub issues that this commit **Closes**.
 
 **Breaking Changes** should start with the word `BREAKING CHANGE:` with a space or two newlines. The rest of the commit message is then used for this.
 
-#### Note
-
-This page is a modified version of [Angular's CONTRIBUTING.md](https://github.com/angular/angular/blob/master/CONTRIBUTING.md).
-
 [coc]: https://github.com/LokiJS-Forge/LokiJS2/blob/master/CODE_OF_CONDUCT.md
-[dev-doc]: https://github.com/LokiJS-Forge/LokiJS2/blob/master/docs/DEVELOPER.md
+[dev-doc]: https://github.com/LokiJS-Forge/LokiJS2/blob/master/DEVELOPER.md
 [github]: https://github.com/LokiJS-Forge/LokiJS2
 [new-issue]: https://github.com/LokiJS-Forge/LokiJS2/issues/new
 [pulls]: https://github.com/LokiJS-Forge/LokiJS2/pulls
 [commit]: https://github.com/LokiJS-Forge/LokiJS2/commits/master
 [gitter]: https://gitter.im/techfort/LokiJS
 [plunker]: http://plnkr.co/edit
-[stackoverflow]: http://stackoverflow.com/questions/tagged/lokijs
+[stackoverflow]: http://stackoverflow.com/questions/tagged/lokijs?sort=newest
