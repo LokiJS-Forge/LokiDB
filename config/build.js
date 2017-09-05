@@ -8,7 +8,7 @@ const stream = require("stream");
 const conventionalChangelog = require("conventional-changelog");
 
 const PACKAGES = [
-  "test",
+  "loki",
 ];
 
 const ROOT_DIR = process.cwd();
@@ -137,13 +137,17 @@ function build() {
     const SRC_DIR = `${ROOT_DIR}/packages/${PACKAGE}`;
     const OUT_DIR = `${ROOT_DIR}/dist/packages/${PACKAGE}`;
     const NPM_DIR = `${ROOT_DIR}/dist/packages-dist/${PACKAGE}`;
-    const FILENAME = `${PACKAGE}.js`;
-    const FILENAME_MINIFIED = `${PACKAGE}.min.js`;
+    const FILENAME = `lokijs.${PACKAGE}.js`;
+    const FILENAME_MINIFIED = `lokijs.${PACKAGE}.min.js`;
 
     print(`======      [${PACKAGE}]: PACKING    =====`);
     remove_dir(OUT_DIR);
 
-    run("webpack", ["--config=config/webpack.config.js", `--entry=${SRC_DIR}/src/index.js`, `--output-library=${PACKAGE}`, `--output-path=${OUT_DIR}`, `--output-filename=${FILENAME}`]);
+    run("webpack", [`--config=${SRC_DIR}/webpack.config.js`, `--output-path=${OUT_DIR}`]);
+
+    // Update UMD script tag export to use default.
+    run("sed", ["-i", "-E", "s/(exports\\[.+\\] = factory\\(\\));/\\1.default;/", OUT_DIR + "/" + FILENAME]);
+    run("sed", ["-i", "-E", "s/(root\\[.+\\] = factory\\(\\));/\\1.default;/", OUT_DIR + "/" + FILENAME]);
 
     print(`======      [${PACKAGE}]: BUNDLING   =====`);
     remove_dir(NPM_DIR);
