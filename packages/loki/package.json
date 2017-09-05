@@ -1,5 +1,5 @@
 {
-  "name": "@sample_test/core",
+  "name": "@lokijs/loki",
   "description": "Fast document oriented javascript in-memory database",
   "author": "Various authors",
   "license": "MIT",
@@ -7,5 +7,5 @@
     "type": "git",
     "url": "https://github.com/LokiJS-Forge/LokiJS2.git"
   },
-  "main": "loki.core.js"
+  "main": "lokijs.loki.js"
 }

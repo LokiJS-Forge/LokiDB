@@ -50,5 +50,8 @@
     "uglify-es": "^3.0.25",
     "validate-commit-msg": "^2.14.0",
     "webpack": "^3.3.0"
+  },
+  "dependencies": {
+    "requirejs": "^2.3.5"
   }
 }
