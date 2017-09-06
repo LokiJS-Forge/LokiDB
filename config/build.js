@@ -44,35 +44,40 @@ const CHANGELOG = {
   }
 };
 
-let DO_DEPLOY = false;
+let DO_RELEASE = false;
 let VERSION = "0.0.0.0";
 let CURRENT_COMMIT;
 let RELEASE_BRANCH = "";
 const RELEASE_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 
 async function main() {
-  fetch_all();
-  DO_DEPLOY = check_if_release_is_triggered();
+  try {
+    fetch_all();
+    DO_RELEASE = check_if_release_is_triggered();
 
-  if (DO_DEPLOY) {
-    print("! Deploy !");
-    update_version();
-  }
-  VERSION = require("./../package.json").version + ` (${CURRENT_COMMIT})`;
+    if (DO_RELEASE) {
+      print("! Release !");
+      update_version();
+    }
+    VERSION = require("./../package.json").version;
 
-  build();
+    build();
 
-  if (DO_DEPLOY) {
-    RELEASE_BRANCH = "Release " + VERSION;
+    if (DO_RELEASE) {
+      RELEASE_BRANCH = "Releasing_" + VERSION;
 
-    await update_changelog();
-    push();
+      await update_changelog();
+      push();
 
-    await delay_release();
+      await delay_release();
 
-    await npm_login();
-    npm_publish();
-    merge();
+      await npm_login();
+      npm_publish();
+      merge();
+    }
+  } catch (e) {
+    print_error(e.message);
+    process.exit(1);
   }
 }
 
@@ -84,7 +89,7 @@ main().then(() => {
 });
 
 function update_version() {
-  const version_skip = COMMIT_TAG.match(/Release\s+(.+)/);
+  const version_skip = COMMIT_TAG.match(/Release_(.+)/)[1];
   run("npm", ["version", version_skip, "--no-git-tag-version"]);
 }
 
@@ -93,7 +98,7 @@ function push() {
   run("git", ["add", "."]);
   run("git", ["commit", "-m", `Release ${VERSION}`]);
   run("git", ["remote", "set-url", "origin", `https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git`]);
-  run("git", ["push"]);
+  run("git", ["push", "--set-upstream", "origin", RELEASE_BRANCH]);
 }
 
 function merge() {
@@ -130,7 +135,7 @@ function merge() {
 function build() {
   const UGLIFYJS = `${ROOT_DIR}/node_modules/uglify-es/bin/uglifyjs`;
 
-  print(`====== BUILDING: Version ${VERSION}`);
+  print(`====== BUILDING: Version ${VERSION} (${CURRENT_COMMIT})`);
 
   for (const PACKAGE of PACKAGES) {
 
@@ -159,7 +164,7 @@ function build() {
     print(`======      [${PACKAGE}]: MINIFY     =====`);
     run(UGLIFYJS, [`${OUT_DIR}/${FILENAME}`, "--output", `${OUT_DIR}/${FILENAME_MINIFIED}`]);
 
-    if (DO_DEPLOY) {
+    if (DO_RELEASE) {
       print(`======      [${PACKAGE}]: VERSIONING =====`);
       const data = fs.readFileSync(`${NPM_DIR}/package.json`);
       let json = JSON.parse(data);
@@ -174,7 +179,7 @@ function check_if_release_is_triggered() {
     // Safe current commit.
     run("git", ["checkout", "master"]);
     // Check if head has the same tag.
-    const is_release = run("git", ["describe", "--tags", "--always"])[1].toString() === COMMIT_TAG;
+    const is_release = run("git", ["describe", "--tags", "--always"])[1].toString() === COMMIT_TAG + "\n";
     // Go back to current commit.
     run("git", ["checkout", CURRENT_COMMIT]);
     return is_release;
@@ -277,13 +282,15 @@ function generate_changelog() {
 
 function delay_release() {
   // Delay the release to cancel.
+  print("Delayed release for " + (RELEASE_TIMEOUT / 60000) + " minutes.");
   const current_time = new Date().getTime();
   return new Promise(function (resolve) {
     function echo() {
       print(".", "");
       if (current_time + RELEASE_TIMEOUT >= new Date().getTime()) {
-        setTimeout(echo, 600);
+        setTimeout(echo, 60000);
       } else {
+        print("");
         resolve();
       }
     }
