@@ -1,7 +1,7 @@
 language: node_js
 node_js:
     - "8"
-
+group: deprecated-2017Q3
 env:
     global:
         - GIT_NAME: Travis CI
@@ -11,9 +11,6 @@ env:
 sudo: required
 dist: trusty
 
-before_script:
-  - pip install mkdocs
-
 addons:
   code_climate:
     repo_token: ${CODE_CLIMATE_TOKEN}
@@ -22,8 +19,11 @@ addons:
     - google-chrome
     packages:
     - google-chrome-stable
+    - python3
+    - python3-pip
 
 before_install:
+  - pip3 install mkdocs
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
