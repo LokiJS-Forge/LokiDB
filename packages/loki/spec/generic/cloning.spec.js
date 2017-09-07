@@ -1,11 +1,11 @@
-/* global describe, beforeEach, it, expect, beforeEach */
+/* global describe, beforeEach, it, expect */
 import {Loki as loki} from "../../src/loki";
 
 describe("cloning behavior", () => {
   let db, items;
 
   beforeEach(() => {
-    db = new loki("cloningDisabled"),
+    db = new loki("cloningDisabled");
     items = db.addCollection("items");
 
     items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
@@ -25,7 +25,6 @@ describe("cloning behavior", () => {
       mj.maker = "the dwarves";
 
       const mj2 = items.findOne({name: "mjolnir"});
-
       expect(mj2.maker).toBe("the dwarves");
     });
   });
@@ -42,7 +41,6 @@ describe("cloning behavior", () => {
       insObject.name = "mewmew";
 
       const result = citems.findOne({"owner": "thor"});
-
       expect(result.name).toBe("mjolnir");
     });
   });
@@ -86,7 +84,6 @@ describe("cloning behavior", () => {
       mj.maker = "the dwarves";
 
       const mj2 = citems.find({name: "mjolnir"})[0];
-
       expect(mj2.maker).toBe("dwarves");
     });
   });
@@ -134,7 +131,6 @@ describe("cloning behavior", () => {
       mj.maker = "the dwarves";
 
       const mj2 = citems.where((obj) => obj.name === "mjolnir")[0];
-
       expect(mj2.maker).toBe("dwarves");
     });
   });
@@ -201,7 +197,6 @@ describe("cloning behavior", () => {
       mj.maker = "the dwarves";
 
       const mj2 = citems.findOne({name: "mjolnir"});
-
       expect(mj2.maker).toBe("dwarves");
     });
   });
@@ -217,10 +212,7 @@ describe("cloning behavior", () => {
       mj.maker = "the dwarves";
 
       const mj2 = items.findOne({name: "mjolnir"});
-
       expect(mj2.maker).toBe("dwarves");
     });
   });
-
-
 });
