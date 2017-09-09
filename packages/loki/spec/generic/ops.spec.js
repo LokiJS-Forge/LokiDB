@@ -1,4 +1,4 @@
-/* global describe, beforeEach, it, expect, beforeEach */
+/* global describe, beforeEach, it, expect */
 import {Loki as loki} from "../../src/loki";
 import {LokiOps} from "../../src/resultset";
 

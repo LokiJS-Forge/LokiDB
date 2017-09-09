@@ -10,7 +10,6 @@ module.exports = function (config) {
       {pattern: "../packages/*/spec/web/**/*.spec.js", watched: false},
     ],
     preprocessors: {
-      "../packages/*/src/**/*.spec.js": ["webpack"],
       "../packages/*/spec/generic/**/*.spec.js": ["webpack"],
       "../packages/*/spec/web/**/*.spec.js": ["webpack"],
     },

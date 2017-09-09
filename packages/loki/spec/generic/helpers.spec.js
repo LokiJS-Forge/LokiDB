@@ -1,4 +1,4 @@
-/* global describe, beforeEach, it, expect, beforeEach */
+/* global describe, beforeEach, it, expect */
 import {LokiOps} from "../../src/resultset";
 
 describe("Testing comparator helpers", () => {

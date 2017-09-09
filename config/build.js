@@ -9,6 +9,7 @@ const conventionalChangelog = require("conventional-changelog");
 
 const PACKAGES = [
   "loki",
+  "partitioning-adapter"
 ];
 
 const ROOT_DIR = process.cwd();
@@ -150,9 +151,11 @@ function build() {
 
     run("webpack", [`--config=${SRC_DIR}/webpack.config.js`, `--output-path=${OUT_DIR}`]);
 
-    // Update UMD script tag export to use default.
-    run("sed", ["-i", "-E", "s/(exports\\[.+\\] = factory\\(\\));/\\1.default;/", OUT_DIR + "/" + FILENAME]);
-    run("sed", ["-i", "-E", "s/(root\\[.+\\] = factory\\(\\));/\\1.default;/", OUT_DIR + "/" + FILENAME]);
+    // Update script tag export of UMD to use default module export.
+    // Get line number of script tag.
+    const ln = run("grep", ["-n", "root\\[.*] = factory(", OUT_DIR + "/" + FILENAME])[1].toString().match(/(\d+).*/)[1];
+    run("sed", ["-i", "-E", `${ln}s/;/.default;/`, OUT_DIR + "/" + FILENAME]);
+    run("sed", ["-i", "-E", `${ln}s/@lokijs\\/(.)([\\w_-\\.]*)/\\u\\1\\2/g`, OUT_DIR + "/" + FILENAME]);
 
     print(`======      [${PACKAGE}]: BUNDLING   =====`);
     remove_dir(NPM_DIR);
@@ -164,13 +167,19 @@ function build() {
     print(`======      [${PACKAGE}]: MINIFY     =====`);
     run(UGLIFYJS, [`${OUT_DIR}/${FILENAME}`, "--output", `${OUT_DIR}/${FILENAME_MINIFIED}`]);
 
-    if (DO_RELEASE) {
-      print(`======      [${PACKAGE}]: VERSIONING =====`);
-      const data = fs.readFileSync(`${NPM_DIR}/package.json`);
-      let json = JSON.parse(data);
-      json.version = VERSION;
-      fs.writeFileSync(`/${NPM_DIR}/package.json`, JSON.stringify(json, null, 2));
+    print(`======      [${PACKAGE}]: VERSIONING =====`);
+    const data = fs.readFileSync(`${NPM_DIR}/package.json`);
+    let json = JSON.parse(data);
+    json.version = VERSION;
+    // Update version of other needed LokiJS packages
+    if (json.dependencies) {
+      for (let pack of Object.keys(json.dependencies)) {
+        if (pack.startsWith("@lokijs/")) {
+          json.dependencies[pack] = VERSION;
+        }
+      }
     }
+    fs.writeFileSync(`/${NPM_DIR}/package.json`, JSON.stringify(json, null, 2));
   }
 }
 
