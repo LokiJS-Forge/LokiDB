@@ -11,6 +11,7 @@ const PACKAGES = [
   "loki",
   "partitioning-adapter",
   "local-storage",
+  "indexed-storage",
   "fs-storage"
 ];
 

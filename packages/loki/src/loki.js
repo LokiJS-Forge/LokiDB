@@ -138,7 +138,7 @@ export class Loki extends LokiEventEmitter {
     const persistenceMethods = {
       "fs": Loki["LokiFSStorage"],
       "local-storage": Loki["LokiLocalStorage"],
-      "indexed-db": Loki["LokiIndexedDBStorage"]
+      "indexed-db": Loki["LokiIndexedStorage"]
     };
 
     this.options.persistenceMethod = persistenceMethod;
