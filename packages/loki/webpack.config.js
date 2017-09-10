@@ -6,9 +6,8 @@ module.exports = {
   entry: path.join(__dirname, "src", "index.js"),
   output: {
     filename: "lokijs.loki.js",
-    library: "Loki",
-    libraryTarget: "umd",
-    umdNamedDefine: false
+    library: "@lokijs/loki",
+    libraryTarget: "umd"
   },
   module: {
     loaders: [
