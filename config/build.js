@@ -152,10 +152,22 @@ function build() {
     run("webpack", [`--config=${SRC_DIR}/webpack.config.js`, `--output-path=${OUT_DIR}`]);
 
     // Update script tag export of UMD to use default module export.
+    // Get script tag export.
+    let script = run("grep", ["-n", "root\\[.*] = factory(", OUT_DIR + "/" + FILENAME])[1].toString();
+    let library_name = script.match(/root\["@lokijs\/(.+?)"/)[1];
+    // Transform library name to Loki<LibraryName>.
+    let simple_name = library_name.replace(/(?:-|^)([a-z])/ig, ( all, letter ) => {
+      return letter.toUpperCase();
+    });
+    if (!simple_name.startsWith("Loki")) {
+      simple_name = "Loki" + simple_name;
+    }
+
     // Get line number of script tag.
-    const ln = run("grep", ["-n", "root\\[.*] = factory(", OUT_DIR + "/" + FILENAME])[1].toString().match(/(\d+).*/)[1];
-    run("sed", ["-i", "-E", `${ln}s/;/.default;/`, OUT_DIR + "/" + FILENAME]);
-    run("sed", ["-i", "-E", `${ln}s/@lokijs\\/(.)([\\w_-\\.]*)/\\u\\1\\2/g`, OUT_DIR + "/" + FILENAME]);
+    const ln = script.match(/(\d+).*/)[1];
+    // Add simple name as default export.
+    run("sed", ["-i", "-E",
+      `${ln}s/;/;root["${simple_name}"] = root["@lokijs\\/${library_name}"].default;/`, OUT_DIR + "/" + FILENAME]);
 
     print(`======      [${PACKAGE}]: BUNDLING   =====`);
     remove_dir(NPM_DIR);
