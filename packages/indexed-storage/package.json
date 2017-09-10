@@ -1,0 +1,14 @@
+{
+  "name": "@lokijs/indexed-storage",
+  "description": "A persistence adapter which persists to web browser's indexed db storage.",
+  "author": "Various authors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LokiJS-Forge/LokiJS2.git"
+  },
+  "main": "lokijs.indexed-storage.js",
+  "dependencies": {
+    "@lokijs/loki": "0"
+  }
+}

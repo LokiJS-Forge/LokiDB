@@ -138,6 +138,7 @@ The following is the list of supported scopes:
 * **loki**: The LokiJS database.
 * **partitioning-adapter**: The partitioning adapter.
 * **local-storage**: The local storage adapter.
+* **indexed-storage**: The indexed db storage adapter.
 * **fs-storage**: The file system storage adapter.
 * **fts**: A full text search for the database.
 
