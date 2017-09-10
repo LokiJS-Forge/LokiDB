@@ -10,7 +10,8 @@ const conventionalChangelog = require("conventional-changelog");
 const PACKAGES = [
   "loki",
   "partitioning-adapter",
-  "local-storage"
+  "local-storage",
+  "fs-storage"
 ];
 
 const ROOT_DIR = process.cwd();

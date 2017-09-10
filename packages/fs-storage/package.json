@@ -1,0 +1,14 @@
+{
+  "name": "@lokijs/fs-storage",
+  "description": "A persistence adapter which persists to node fs module storage.",
+  "author": "Various authors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LokiJS-Forge/LokiJS2.git"
+  },
+  "main": "lokijs.fs-storage.js",
+  "dependencies": {
+    "@lokijs/loki": "0"
+  }
+}
