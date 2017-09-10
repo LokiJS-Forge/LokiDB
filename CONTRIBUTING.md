@@ -137,6 +137,7 @@ The following is the list of supported scopes:
 
 * **loki**: The LokiJS database.
 * **partitioning-adapter**: The partitioning adapter.
+* **local-storage**: The local storage adapter.
 * **fts**: A full text search for the database.
 
 There are currently a few exceptions to the "use package name" rule:
