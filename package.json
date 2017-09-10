@@ -31,24 +31,24 @@
   },
   "homepage": "https://lokijs-forge.github.io/LokiJS2",
   "devDependencies": {
-    "babel-plugin-transform-es2015-modules-commonjs": "^6.24.1",
-    "babel-register": "^6.24.1",
-    "conventional-changelog": "^1.1.4",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
+    "babel-register": "^6.26.0",
+    "conventional-changelog": "^1.1.5",
     "coveralls": "^2.13.1",
-    "eslint": "^4.4.0",
+    "eslint": "^4.6.1",
     "eslint-loader": "^1.9.0",
     "istanbul-instrumenter-loader": "^3.0.0",
-    "jasmine": "^2.6.0",
-    "karma": "^1.7.0",
+    "jasmine": "^2.8.0",
+    "karma": "^1.7.1",
     "karma-chrome-launcher": "^2.2.0",
     "karma-coverage": "^1.1.1",
     "karma-coverage-istanbul-reporter": "^1.3.0",
     "karma-jasmine": "^1.1.0",
     "karma-jasmine-matchers": "^3.7.0",
     "karma-webpack": "^2.0.4",
-    "nyc": "^11.0.3",
-    "uglify-es": "^3.0.25",
+    "nyc": "^11.2.1",
+    "uglify-es": "^3.0.28",
     "validate-commit-msg": "^2.14.0",
-    "webpack": "^3.3.0"
+    "webpack": "^3.5.6"
   }
 }
