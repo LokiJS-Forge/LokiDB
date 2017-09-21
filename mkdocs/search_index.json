@@ -2,12 +2,12 @@
     "docs": [
         {
             "location": "/",
-            "text": "Welcome to LokiJS2\n\n\n// Runnable code\nconsole.log(\niii\n);\nconsole.log(\nabc\n);\nconsole.log(123);\nconsole.log({a: 2});\nconsole.log(undefined)\nconsole.log(null)\nconsole.log(\n??\n)\nconsole.log($)\nconsole.log([]);\nconsole.log({a: [2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6,2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6]});\nconsole.error(\n123\n)\nconsole.error(\n123\n)\nconsole.error(\n123\n)\nconsole.error(\n123\n)\nconsole.error(\n123\n)\n\n\n\n\n\n// Not runnable code\ntest = i + 1;\nnothing.call();",
+            "text": "Welcome to LokiJS2\n\n\n// Runnable code\nconsole.log(\"iii\");\nconsole.log(\"abc\");\nconsole.log(123);\nconsole.log({a: 2});\nconsole.log(undefined)\nconsole.log(null)\nconsole.log(\"??\")\nconsole.log($)\nconsole.log([]);\nconsole.log({a: [2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6,2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6]});\nconsole.error(\"123\")\nconsole.error(\"123\")\nconsole.error(\"123\")\nconsole.error(\"123\")\nconsole.error(\"123\")\n\n\n\n\n\n// Not runnable code\ntest = i + 1;\nnothing.call();",
             "title": "Home"
         },
         {
             "location": "/#welcome-to-lokijs2",
-            "text": "// Runnable code\nconsole.log( iii );\nconsole.log( abc );\nconsole.log(123);\nconsole.log({a: 2});\nconsole.log(undefined)\nconsole.log(null)\nconsole.log( ?? )\nconsole.log($)\nconsole.log([]);\nconsole.log({a: [2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6,2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6]});\nconsole.error( 123 )\nconsole.error( 123 )\nconsole.error( 123 )\nconsole.error( 123 )\nconsole.error( 123 )  // Not runnable code\ntest = i + 1;\nnothing.call();",
+            "text": "// Runnable code\nconsole.log(\"iii\");\nconsole.log(\"abc\");\nconsole.log(123);\nconsole.log({a: 2});\nconsole.log(undefined)\nconsole.log(null)\nconsole.log(\"??\")\nconsole.log($)\nconsole.log([]);\nconsole.log({a: [2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6,2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6]});\nconsole.error(\"123\")\nconsole.error(\"123\")\nconsole.error(\"123\")\nconsole.error(\"123\")\nconsole.error(\"123\")  // Not runnable code\ntest = i + 1;\nnothing.call();",
             "title": "Welcome to LokiJS2"
         }
     ]
