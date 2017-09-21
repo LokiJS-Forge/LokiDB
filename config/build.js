@@ -170,7 +170,7 @@ function build() {
     const ln = script.match(/(\d+).*/)[1];
     // Add simple name as default export.
     run("sed", ["-i", "-E",
-      `${ln}s/;/;root["${simple_name}"] = root["@lokijs\\/${library_name}"].default;/`, OUT_DIR + "/" + FILENAME]);
+      `${ln}s/(.+);/{\\1; root["${simple_name}"] = root["@lokijs\\/${library_name}"].default;}/`, OUT_DIR + "/" + FILENAME]);
 
     print(`======      [${PACKAGE}]: BUNDLING   =====`);
     remove_dir(NPM_DIR);
