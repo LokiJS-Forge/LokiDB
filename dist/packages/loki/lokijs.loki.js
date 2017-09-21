@@ -6,7 +6,7 @@
 	else if(typeof exports === 'object')
 		exports["@lokijs/loki"] = factory();
 	else
-		root["@lokijs/loki"] = factory();root["Loki"] = root["@lokijs/loki"].default;
+{		root["@lokijs/loki"] = factory(); root["Loki"] = root["@lokijs/loki"].default;}
 })(this, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -70,7 +70,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 7);
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -189,13 +189,10 @@ class LokiEventEmitter {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__event_emitter__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__collection__ = __webpack_require__(2);
 
-
-//import {LokiMemoryAdapter} from './memory_adapter';
-//import {LokiFsAdapter} from './fs_adapter';
-//import {LokiLocalStorageAdapter} from './local_storage_adapter';
 
 
 /*
@@ -1241,10 +1238,12 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
     }
   }
 }
-/* harmony export (immutable) */ __webpack_exports__["a"] = Loki;
+/* harmony export (immutable) */ __webpack_exports__["Loki"] = Loki;
 
 
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(8)))
+/* harmony default export */ __webpack_exports__["default"] = (Loki);
+
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(7)))
 
 /***/ }),
 /* 2 */
@@ -1252,10 +1251,10 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__event_emitter__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__unique_index__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__exact_index__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__unique_index__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__exact_index__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__resultset__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__dynamic_view__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__dynamic_view__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__clone__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__helper__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__loki__ = __webpack_require__(1);
@@ -1409,9 +1408,9 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
 
     // Inverted index
     this._fullTextSearch = null;
-    if (__WEBPACK_IMPORTED_MODULE_7__loki__["a" /* Loki */].FullTextSearch !== undefined) {
+    if (__WEBPACK_IMPORTED_MODULE_7__loki__["Loki"].FullTextSearch !== undefined) {
       this._fullTextSearch = options.fullTextSearch !== undefined
-        ? new (__WEBPACK_IMPORTED_MODULE_7__loki__["a" /* Loki */].FullTextSearch.FullTextSearch)(options.fullTextSearch) : null;
+        ? new (__WEBPACK_IMPORTED_MODULE_7__loki__["Loki"].FullTextSearch.FullTextSearch)(options.fullTextSearch) : null;
     }
 
     // if set to true we will optimally keep indices 'fresh' during insert/update/remove ops (never dirty/never needs rebuild)
@@ -5022,21 +5021,6 @@ function sortHelper(prop1, prop2, desc) {
 
 /***/ }),
 /* 7 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__loki__ = __webpack_require__(1);
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Loki", function() { return __WEBPACK_IMPORTED_MODULE_0__loki__["a"]; });
-
-
-
-
-/* harmony default export */ __webpack_exports__["default"] = (__WEBPACK_IMPORTED_MODULE_0__loki__["a" /* Loki */]);
-
-
-/***/ }),
-/* 8 */
 /***/ (function(module, exports) {
 
 var g;
@@ -5063,7 +5047,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5131,7 +5115,7 @@ class UniqueIndex {
 
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5179,7 +5163,7 @@ class ExactIndex {
 
 
 /***/ }),
-/* 11 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";

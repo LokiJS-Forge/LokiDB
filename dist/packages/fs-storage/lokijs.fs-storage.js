@@ -6,7 +6,7 @@
 	else if(typeof exports === 'object')
 		exports["@lokijs/fs-storage"] = factory(require("@lokijs/loki"), require("fs"));
 	else
-		root["@lokijs/fs-storage"] = factory(root["@lokijs/loki"], root["fs"]);root["LokiFsStorage"] = root["@lokijs/fs-storage"].default;
+{		root["@lokijs/fs-storage"] = factory(root["@lokijs/loki"], root["fs"]); root["LokiFsStorage"] = root["@lokijs/fs-storage"].default;}
 })(this, function(__WEBPACK_EXTERNAL_MODULE_1__, __WEBPACK_EXTERNAL_MODULE_2__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache

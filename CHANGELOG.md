@@ -1,3 +1,10 @@
+<a name="2.0.0-beta.2"></a>
+# [2.0.0-beta.2](https://github.com/LokiJS-Forge/LokiJS2/compare/2.0.0-beta.1...2.0.0-beta.2) (2017-09-21)
+
+
+
+
+
 <a name="2.0.0-beta.1"></a>
 # 2.0.0-beta.1 (2017-09-21)
 

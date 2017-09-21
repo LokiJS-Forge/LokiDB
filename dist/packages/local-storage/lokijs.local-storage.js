@@ -6,7 +6,7 @@
 	else if(typeof exports === 'object')
 		exports["@lokijs/local-storage"] = factory(require("@lokijs/loki"));
 	else
-		root["@lokijs/local-storage"] = factory(root["@lokijs/loki"]);root["LokiLocalStorage"] = root["@lokijs/local-storage"].default;
+{		root["@lokijs/local-storage"] = factory(root["@lokijs/loki"]); root["LokiLocalStorage"] = root["@lokijs/local-storage"].default;}
 })(this, function(__WEBPACK_EXTERNAL_MODULE_1__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
