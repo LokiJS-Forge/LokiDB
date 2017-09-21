@@ -1,8 +1,4 @@
 import {LokiEventEmitter} from "./event_emitter";
-
-//import {LokiMemoryAdapter} from './memory_adapter';
-//import {LokiFsAdapter} from './fs_adapter';
-//import {LokiLocalStorageAdapter} from './local_storage_adapter';
 import {Collection} from "./collection";
 
 /*
@@ -1048,3 +1044,5 @@ export class Loki extends LokiEventEmitter {
     }
   }
 }
+
+export default Loki;
