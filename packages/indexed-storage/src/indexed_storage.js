@@ -8,6 +8,8 @@ import {Loki} from "../../loki/src/loki";
  adapter.saveDatabase("UserDatabase", JSON.stringify(myDb));
  adapter.loadDatabase("UserDatabase"); // will log the serialized db to console
  adapter.deleteDatabase("UserDatabase");
+
+ Should usercallback be still used?
  */
 
 /**

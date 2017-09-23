@@ -2,7 +2,7 @@
 import {Loki} from "../../../loki/src/loki";
 import {LokiFSStorage} from "../../src/fs_storage";
 
-describe("testing persistence adapter", function () {
+describe("testing fs storage", function () {
   it("LokiFSStorage", function (done) {
     const db = new Loki("myTestApp");
 
@@ -10,27 +10,26 @@ describe("testing persistence adapter", function () {
     db.initializePersistence(adapter)
       .then(() => {
         db.addCollection("myColl").insert({name: "Hello World"});
-        return db.saveDatabase().then(() => {
-          const db2 = new Loki("myTestApp");
-          return db2.initializePersistence(adapter)
-            .then(() => {
-              return db2.loadDatabase()
-                .then(() => {
-                  expect(db2.getCollection("myColl").find()[0].name).toEqual("Hello World");
-                });
-            });
-        });
+        return db.saveDatabase();
+      })
+      .then(() => {
+        const db2 = new Loki("myTestApp");
+        return db2.initializePersistence(adapter)
+          .then(() => {
+            return db2.loadDatabase();
+          }).then(() => {
+            expect(db2.getCollection("myColl").find()[0].name).toEqual("Hello World");
+          });
       })
       .then(() => {
         const db3 = new Loki("other");
         return db3.initializePersistence(adapter)
           .then(() => {
-            return db3.loadDatabase()
-              .then(() => {
-                expect(false).toEqual(true);
-              }, () => {
-                expect(true).toEqual(true);
-              });
+            return db3.loadDatabase();
+          }).then(() => {
+            expect(false).toEqual(true);
+          }, () => {
+            expect(true).toEqual(true);
           });
       })
       .then(() => {
