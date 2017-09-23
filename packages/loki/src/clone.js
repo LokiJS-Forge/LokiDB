@@ -16,14 +16,14 @@ export function clone(data, method) {
       break;
     case "shallow":
       // more compatible method for older browsers
-      cloned = data.prototype ? Object.create(data.prototype) : {};
+      cloned = Object.create(data.constructor.prototype);
       Object.keys(data).map((i) => {
         cloned[i] = data[i];
       });
       break;
     case "shallow-assign":
       // should be supported by newer environments/browsers
-      cloned = data.prototype ? Object.create(data.prototype) : {};
+      cloned = Object.create(data.constructor.prototype);
       Object.assign(cloned, data);
       break;
     default:

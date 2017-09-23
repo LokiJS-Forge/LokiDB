@@ -1,3 +1,4 @@
+[![NPM Status](https://img.shields.io/npm/v/@lokijs/loki.svg)](https://www.npmjs.com/package/@lokijs/loki)
 [![Build Status](https://travis-ci.org/LokiJS-Forge/LokiJS2.svg?branch=master)](https://travis-ci.org/LokiJS-Forge/LokiJS2)
 [![Coverage Status](https://coveralls.io/repos/github/LokiJS-Forge/LokiJS2/badge.svg?branch=master)](https://coveralls.io/github/LokiJS-Forge/LokiJS2?branch=master)
 
