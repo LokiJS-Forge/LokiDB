@@ -85,6 +85,7 @@ export class Collection extends LokiEventEmitter {
    * @param {boolean} [options.adaptiveBinaryIndices=true] - collection indices will be actively rebuilt rather than lazily
    * @param {boolean} [options.asyncListeners=false] - whether listeners are invoked asynchronously
    * @param {boolean} [options.disableChangesApi=true] - set to false to enable Changes API
+   * @param {boolean} [options.disableDeltaChangesApi=true] - set to false to enable Delta Changes API (requires Changes API, forces cloning)
    * @param {boolean} [options.autoupdate=false] - use Object.observe to update objects automatically
    * @param {boolean} [options.clone=false] - specify whether inserts and queries clone to/from user
    * @param {boolean} [options.serializableIndices =true[]] - converts date values on binary indexed property values are serializable
@@ -170,6 +171,12 @@ export class Collection extends LokiEventEmitter {
 
     // disable track changes
     this.disableChangesApi = options.disableChangesApi !== undefined ? options.disableChangesApi : true;
+
+    // disable delta update object style on changes
+    this.disableDeltaChangesApi = options.disableDeltaChangesApi !== undefined ? options.disableDeltaChangesApi : true;
+    if (this.disableChangesApi) {
+      this.disableDeltaChangesApi = true;
+    }
 
     // option to observe objects and update them automatically, ignored if Object.observe is not supported
     this.autoupdate = options.autoupdate !== undefined ? options.autoupdate : false;
@@ -258,13 +265,53 @@ export class Collection extends LokiEventEmitter {
      * This method creates a clone of the current status of an object and associates operation and collection name,
      * so the parent db can aggregate and generate a changes object for the entire db
      */
-    function createChange(name, op, obj) {
+    function createChange(name, op, obj, old) {
       self.changes.push({
         name,
         operation: op,
-        obj: JSON.parse(JSON.stringify(obj))
+        obj: op === 'U' && !self.disableDeltaChangesApi ? getChangeDelta(obj, old) : JSON.parse(JSON.stringify(obj))
       });
     }
+
+    //Compare changed object (which is a forced clone) with existing object and return the delta
+    function getChangeDelta(obj, old) {
+      if (old) {
+        return getObjectDelta(old, obj);
+      }
+      else {
+        return JSON.parse(JSON.stringify(obj));
+      }
+    }
+
+    this.getChangeDelta = getChangeDelta;
+
+    function getObjectDelta(oldObject, newObject) {
+      const propertyNames = newObject !== null && typeof newObject === 'object' ? Object.keys(newObject) : null;
+      if (propertyNames && propertyNames.length && ['string', 'boolean', 'number'].indexOf(typeof(newObject)) < 0) {
+        const delta = {};
+        for (let i = 0; i < propertyNames.length; i++) {
+          const propertyName = propertyNames[i];
+          if (newObject.hasOwnProperty(propertyName)) {
+            if (!oldObject.hasOwnProperty(propertyName) || self.uniqueNames.indexOf(propertyName) >= 0 || propertyName === '$loki' || propertyName === 'meta') {
+              delta[propertyName] = newObject[propertyName];
+            }
+            else {
+              const propertyDelta = getObjectDelta(oldObject[propertyName], newObject[propertyName]);
+              if (typeof propertyDelta !== "undefined" && propertyDelta !== {}) {
+                delta[propertyName] = propertyDelta;
+              }
+            }
+          }
+        }
+        return Object.keys(delta).length === 0 ? undefined : delta;
+      }
+      else {
+        return oldObject === newObject ? undefined : newObject;
+      }
+    }
+
+    this.getObjectDelta = getObjectDelta;
+
 
     // clear all the changes
     function flushChanges() {
@@ -323,8 +370,8 @@ export class Collection extends LokiEventEmitter {
       createChange(self.name, "I", obj);
     }
 
-    function createUpdateChange(obj) {
-      createChange(self.name, "U", obj);
+    function createUpdateChange(obj, old) {
+      createChange(self.name, "U", obj, old);
     }
 
     function insertMetaWithChange(obj) {
@@ -332,9 +379,9 @@ export class Collection extends LokiEventEmitter {
       createInsertChange(obj);
     }
 
-    function updateMetaWithChange(obj) {
+    function updateMetaWithChange(obj, old) {
       updateMeta(obj);
-      createUpdateChange(obj);
+      createUpdateChange(obj, old);
     }
 
 
@@ -352,6 +399,9 @@ export class Collection extends LokiEventEmitter {
 
     this.setChangesApi = (enabled) => {
       this.disableChangesApi = !enabled;
+      if (!enabled) {
+        self.disableDeltaChangesApi = false;
+      }
       setHandlers();
     };
     /**
@@ -361,8 +411,8 @@ export class Collection extends LokiEventEmitter {
       insertHandler(obj);
     });
 
-    this.on("update", (obj) => {
-      updateHandler(obj);
+    this.on("update", (obj, old) => {
+      updateHandler(obj, old);
     });
 
     this.on("delete", (obj) => {
@@ -418,7 +468,10 @@ export class Collection extends LokiEventEmitter {
   }
 
   static fromJSONObject(obj, options, forceRebuild) {
-    let coll = new Collection(obj.name, {disableChangesApi: obj.disableChangesApi});
+    let coll = new Collection(obj.name, {
+      disableChangesApi: obj.disableChangesApi,
+      disableDeltaChangesApi: obj.disableDeltaChangesApi
+    });
 
     coll.adaptiveBinaryIndices = obj.adaptiveBinaryIndices !== undefined ? (obj.adaptiveBinaryIndices === true) : false;
     coll.transactional = obj.transactional;
@@ -567,8 +620,8 @@ export class Collection extends LokiEventEmitter {
       if (template[k] === undefined) continue;
       query.push((
         obj = {},
-        obj[k] = template[k],
-        obj
+          obj[k] = template[k],
+          obj
       ));
     }
     return {
@@ -1016,7 +1069,7 @@ export class Collection extends LokiEventEmitter {
       position = arr[1]; // position in data array
 
       // if configured to clone, do so now... otherwise just use same obj reference
-      newInternal = this.cloneObjects ? clone(doc, this.cloneMethod) : doc;
+      newInternal = this.cloneObjects  || !this.disableDeltaChangesApi ? clone(doc, this.cloneMethod) : doc;
 
       this.emit("pre-update", doc);
 
@@ -1059,7 +1112,7 @@ export class Collection extends LokiEventEmitter {
       this.commit();
       this.dirty = true; // for autosave scenarios
 
-      this.emit("update", doc, this.cloneObjects ? clone(oldInternal, this.cloneMethod) : null);
+      this.emit("update", doc, this.cloneObjects  || !this.disableDeltaChangesApi ? clone(oldInternal, this.cloneMethod) : null);
       return doc;
     } catch (err) {
       this.rollback();

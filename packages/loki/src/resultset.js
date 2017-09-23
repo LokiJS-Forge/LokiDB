@@ -976,6 +976,12 @@ export class Resultset {
       forceCloneMethod = "shallow";
     }
 
+    // if collection has delta changes active, then force clones and use 'parse-stringify' for effective change tracking of nested objects
+    if (!this.collection.disableDeltaChangesApi) {
+      forceClones = true;
+      forceCloneMethod = 'parse-stringify';
+    }
+
     // if this has no filters applied, just return collection.data
     if (!this.filterInitialized) {
       if (this.filteredrows.length === 0) {
