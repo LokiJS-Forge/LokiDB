@@ -3,6 +3,20 @@ import {Loki as loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
 
 describe("collection", () => {
+  it('collection rename works', function() {
+    const db = new loki('test.db');
+    const coll = db.addCollection('coll1');
+
+    let result = db.getCollection('coll1');
+    expect(result.name).toEqual('coll1');
+
+    db.renameCollection('coll1', 'coll2');
+    result = db.getCollection('coll1');
+    expect(result).toBeNull();
+    result = db.getCollection('coll2');
+    expect(result.name).toEqual('coll2');
+  });
+
   it("works", () => {
     // function SubclassedCollection() {
     // 	Collection.apply(this, Array.prototype.slice.call(arguments));

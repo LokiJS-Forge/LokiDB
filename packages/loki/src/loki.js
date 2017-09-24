@@ -283,6 +283,20 @@ export class Loki extends LokiEventEmitter {
     return null;
   }
 
+  /**
+   * Renames an existing loki collection
+   * @param {string} oldName - name of collection to rename
+   * @param {string} newName - new name of collection
+   * @returns {Collection} reference to the newly renamed collection
+   */
+  renameCollection(oldName, newName) {
+    let coll = this.getCollection(oldName);
+    if (coll) {
+      coll.name = newName;
+    }
+    return coll;
+  };
+
   listCollections() {
     let i = this.collections.length;
     const colls = [];
