@@ -224,10 +224,23 @@ function compoundeval(properties, obj1, obj2) {
   let res = 0;
   let prop;
   let field;
+  let val1, val2, arr;
   for (let i = 0, len = properties.length; i < len; i++) {
     prop = properties[i];
     field = prop[0];
-    res = sortHelper(obj1[field], obj2[field], prop[1]);
+    if (~field.indexOf('.')) {
+      arr = field.split('.');
+      val1 = arr.reduce((obj, i) => {
+        return obj && obj[i] || undefined;
+      }, obj1);
+      val2 = arr.reduce((obj, i) => {
+        return obj && obj[i] || undefined;
+      }, obj2);
+    } else {
+      val1 = obj1[field];
+      val2 = obj2[field];
+    }
+    res = sortHelper(val1, val2, prop[1]);
     if (res !== 0) {
       return res;
     }
@@ -514,8 +527,22 @@ export class Resultset {
       }
     }
 
-    const wrappedComparer =
-      (((prop, desc, data) => (a, b) => sortHelper(data[a][prop], data[b][prop], desc)))(propname, isdesc, this.collection.data);
+    const wrappedComparer = ((prop, desc, data) => (a, b) => {
+      let val1, val2, arr;
+      if (~prop.indexOf('.')) {
+        arr = prop.split('.');
+        val1 = arr.reduce(function (obj, i) {
+          return obj && obj[i] || undefined;
+        }, data[a]);
+        val2 = arr.reduce(function (obj, i) {
+          return obj && obj[i] || undefined;
+        }, data[b]);
+      } else {
+        val1 = data[a][prop];
+        val2 = data[b][prop];
+      }
+      return sortHelper(val1, val2, desc);
+    })(propname, isdesc, this.collection.data);
 
     this.filteredrows.sort(wrappedComparer);
 

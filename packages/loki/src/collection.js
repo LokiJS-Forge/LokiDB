@@ -729,12 +729,20 @@ export class Collection extends LokiEventEmitter {
     this.binaryIndices[property] = index;
 
     const wrappedComparer =
-      (((p, data) => (a, b) => {
-        const objAp = data[a][p];
-        const objBp = data[b][p];
-        if (objAp !== objBp) {
-          if (ltHelper(objAp, objBp, false)) return -1;
-          if (gtHelper(objAp, objBp, false)) return 1;
+      (((prop, data) => (a, b) => {
+        let val1, val2, arr;
+        if (~prop.indexOf('.')) {
+          arr = prop.split('.');
+          val1 = arr.reduce(function(obj, i) { return obj && obj[i] || undefined; }, data[a]);
+          val2 = arr.reduce(function(obj, i) { return obj && obj[i] || undefined; }, data[b]);
+        } else {
+          val1 = data[a][prop];
+          val2 = data[b][prop];
+        }
+
+        if (val1 !== val2) {
+          if (ltHelper(val1, val2, false)) return -1;
+          if (gtHelper(val1, val2, false)) return 1;
         }
         return 0;
       }))(property, this.data);

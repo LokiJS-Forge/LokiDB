@@ -7,7 +7,7 @@ describe("sorting and indexing", () => {
 
   beforeEach(() => {
     db = new loki("sortingIndexingTest"),
-    items = db.addCollection("items");
+      items = db.addCollection("items");
 
     items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
     items.insert({name: "gungnir", owner: "odin", maker: "elves"});
@@ -60,6 +60,23 @@ describe("sorting and indexing", () => {
       expect(results[1].a).toBe(7);
       expect(results[2].a).toBe(4);
       expect(results[3].a).toBe(3);
+    });
+  });
+
+  describe('resultset simplesort on nested properties', () => {
+    it('works', function () {
+      const rss = db.addCollection('rssort');
+
+      rss.insert({foo: {a: 4, b: 2}});
+      rss.insert({foo: {a: 7, b: 1}});
+      rss.insert({foo: {a: 3, b: 4}});
+      rss.insert({foo: {a: 9, b: 5}});
+
+      const results = rss.chain().simplesort('foo.a').data();
+      expect(results[0].foo.a).toBe(3);
+      expect(results[1].foo.a).toBe(4);
+      expect(results[2].foo.a).toBe(7);
+      expect(results[3].foo.a).toBe(9);
     });
   });
 
@@ -124,6 +141,30 @@ describe("sorting and indexing", () => {
       expect(result[2].a).toEqual(2);
 
       result = coll.chain().compoundsort(["b", ["c", true]]).data();
+      expect(result.length).toEqual(3);
+      expect(result[0].a).toEqual(5);
+      expect(result[1].a).toEqual(2);
+      expect(result[2].a).toEqual(1);
+    });
+  });
+
+  describe('resultset compoundsort on nested properties works correctly', () => {
+    it('works', function () {
+      const db = new loki('test.db');
+      const coll = db.addCollection('coll');
+
+      coll.insert([{a: 1, z: {y: {b: 9, c: 'first'}}}, {a: 5, z: {y: {b: 7, c: 'second'}}}, {
+        a: 2,
+        z: {y: {b: 9, c: 'third'}}
+      }]);
+
+      let result = coll.chain().compoundsort(['z.y.b', 'z.y.c']).data();
+      expect(result.length).toEqual(3);
+      expect(result[0].a).toEqual(5);
+      expect(result[1].a).toEqual(1);
+      expect(result[2].a).toEqual(2);
+
+      result = coll.chain().compoundsort(['z.y.b', ['z.y.c', true]]).data();
       expect(result.length).toEqual(3);
       expect(result[0].a).toEqual(5);
       expect(result[1].a).toEqual(2);
