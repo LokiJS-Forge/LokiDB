@@ -30,7 +30,7 @@ describe("testing fs storage", function () {
             expect(false).toEqual(true);
           }, () => {
             expect(true).toEqual(true);
-          })
+          });
       })
       .then(() => {
         return db.deleteDatabase();

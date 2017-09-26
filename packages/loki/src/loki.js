@@ -295,7 +295,7 @@ export class Loki extends LokiEventEmitter {
       coll.name = newName;
     }
     return coll;
-  };
+  }
 
   listCollections() {
     let i = this.collections.length;

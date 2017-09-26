@@ -228,8 +228,8 @@ function compoundeval(properties, obj1, obj2) {
   for (let i = 0, len = properties.length; i < len; i++) {
     prop = properties[i];
     field = prop[0];
-    if (~field.indexOf('.')) {
-      arr = field.split('.');
+    if (~field.indexOf(".")) {
+      arr = field.split(".");
       val1 = arr.reduce((obj, i) => {
         return obj && obj[i] || undefined;
       }, obj1);
@@ -529,8 +529,8 @@ export class Resultset {
 
     const wrappedComparer = ((prop, desc, data) => (a, b) => {
       let val1, val2, arr;
-      if (~prop.indexOf('.')) {
-        arr = prop.split('.');
+      if (~prop.indexOf(".")) {
+        arr = prop.split(".");
         val1 = arr.reduce(function (obj, i) {
           return obj && obj[i] || undefined;
         }, data[a]);
@@ -1006,7 +1006,7 @@ export class Resultset {
     // if collection has delta changes active, then force clones and use 'parse-stringify' for effective change tracking of nested objects
     if (!this.collection.disableDeltaChangesApi) {
       forceClones = true;
-      forceCloneMethod = 'parse-stringify';
+      forceCloneMethod = "parse-stringify";
     }
 
     // if this has no filters applied, just return collection.data

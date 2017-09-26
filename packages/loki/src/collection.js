@@ -269,7 +269,7 @@ export class Collection extends LokiEventEmitter {
       self.changes.push({
         name,
         operation: op,
-        obj: op === 'U' && !self.disableDeltaChangesApi ? getChangeDelta(obj, old) : JSON.parse(JSON.stringify(obj))
+        obj: op === "U" && !self.disableDeltaChangesApi ? getChangeDelta(obj, old) : JSON.parse(JSON.stringify(obj))
       });
     }
 
@@ -286,13 +286,13 @@ export class Collection extends LokiEventEmitter {
     this.getChangeDelta = getChangeDelta;
 
     function getObjectDelta(oldObject, newObject) {
-      const propertyNames = newObject !== null && typeof newObject === 'object' ? Object.keys(newObject) : null;
-      if (propertyNames && propertyNames.length && ['string', 'boolean', 'number'].indexOf(typeof(newObject)) < 0) {
+      const propertyNames = newObject !== null && typeof newObject === "object" ? Object.keys(newObject) : null;
+      if (propertyNames && propertyNames.length && ["string", "boolean", "number"].indexOf(typeof(newObject)) < 0) {
         const delta = {};
         for (let i = 0; i < propertyNames.length; i++) {
           const propertyName = propertyNames[i];
           if (newObject.hasOwnProperty(propertyName)) {
-            if (!oldObject.hasOwnProperty(propertyName) || self.uniqueNames.indexOf(propertyName) >= 0 || propertyName === '$loki' || propertyName === 'meta') {
+            if (!oldObject.hasOwnProperty(propertyName) || self.uniqueNames.indexOf(propertyName) >= 0 || propertyName === "$loki" || propertyName === "meta") {
               delta[propertyName] = newObject[propertyName];
             }
             else {
@@ -620,8 +620,8 @@ export class Collection extends LokiEventEmitter {
       if (template[k] === undefined) continue;
       query.push((
         obj = {},
-          obj[k] = template[k],
-          obj
+        obj[k] = template[k],
+        obj
       ));
     }
     return {
@@ -731,8 +731,8 @@ export class Collection extends LokiEventEmitter {
     const wrappedComparer =
       (((prop, data) => (a, b) => {
         let val1, val2, arr;
-        if (~prop.indexOf('.')) {
-          arr = prop.split('.');
+        if (~prop.indexOf(".")) {
+          arr = prop.split(".");
           val1 = arr.reduce(function(obj, i) { return obj && obj[i] || undefined; }, data[a]);
           val2 = arr.reduce(function(obj, i) { return obj && obj[i] || undefined; }, data[b]);
         } else {

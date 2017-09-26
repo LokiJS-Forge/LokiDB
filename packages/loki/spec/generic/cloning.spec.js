@@ -65,24 +65,24 @@ describe("cloning behavior", () => {
     });
   });
 
-  describe('cloning method "shallow" save prototype', function () {
-    it('works', () => {
+  describe("cloning method \"shallow\" save prototype", function () {
+    it("works", () => {
       function Item(name, owner, maker) {
         this.name = name;
         this.owner = owner;
         this.maker = maker;
       }
 
-      const cdb = new loki('clonetest');
-      const citems = cdb.addCollection('items', {clone: true, cloneMethod: "shallow"});
-      const oldObject = new Item('mjolnir', 'thor', 'dwarves');
+      const cdb = new loki("clonetest");
+      const citems = cdb.addCollection("items", {clone: true, cloneMethod: "shallow"});
+      const oldObject = new Item("mjolnir", "thor", "dwarves");
       const insObject = citems.insert(oldObject);
 
       // cant' have either of these polluting our collection
-      oldObject.name = 'mewmew';
-      insObject.name = 'mewmew';
+      oldObject.name = "mewmew";
+      insObject.name = "mewmew";
 
-      const result = citems.findOne({'owner': 'thor'});
+      const result = citems.findOne({"owner": "thor"});
       expect(result instanceof Item).toBe(true);
       expect(result.name).toBe("mjolnir");
     });
