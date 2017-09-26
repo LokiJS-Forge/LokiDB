@@ -224,10 +224,23 @@ function compoundeval(properties, obj1, obj2) {
   let res = 0;
   let prop;
   let field;
+  let val1, val2, arr;
   for (let i = 0, len = properties.length; i < len; i++) {
     prop = properties[i];
     field = prop[0];
-    res = sortHelper(obj1[field], obj2[field], prop[1]);
+    if (~field.indexOf(".")) {
+      arr = field.split(".");
+      val1 = arr.reduce((obj, i) => {
+        return obj && obj[i] || undefined;
+      }, obj1);
+      val2 = arr.reduce((obj, i) => {
+        return obj && obj[i] || undefined;
+      }, obj2);
+    } else {
+      val1 = obj1[field];
+      val2 = obj2[field];
+    }
+    res = sortHelper(val1, val2, prop[1]);
     if (res !== 0) {
       return res;
     }
@@ -286,7 +299,6 @@ export class Resultset {
   /**
    * Constructor.
    * @param {Collection} collection - the collection which this Resultset will query against
-   * @returns {Resultset}
    */
   constructor(collection) {
     // retain reference to collection we are querying against
@@ -379,8 +391,8 @@ export class Resultset {
   /**
    * transform() - executes a named collection transform or raw array of transform steps against the resultset.
    *
-   * @param transform {(string|array)} - name of collection transform or raw transform array
-   * @param parameters {object=} - (Optional) object property hash of parameters, if the transform requires them.
+   * @param {(string|array)} transform - name of collection transform or raw transform array
+   * @param {object} [parameters=] - object property hash of parameters, if the transform requires them.
    * @returns {Resultset} either (this) resultset or a clone of of this resultset (depending on steps)
    */
   transform(transform, parameters) {
@@ -485,7 +497,7 @@ export class Resultset {
    *    Sorting based on the same lt/gt helper functions used for binary indices.
    *
    * @param {string} propname - name of property to sort by.
-   * @param {bool=} isdesc - (Optional) If true, the property will be sorted in descending order
+   * @param {boolean} isdesc - (Optional) If true, the property will be sorted in descending order
    * @returns {Resultset} Reference to this resultset, sorted, for future chain operations.
    */
   simplesort(propname, isdesc) {
@@ -515,8 +527,22 @@ export class Resultset {
       }
     }
 
-    const wrappedComparer =
-      (((prop, desc, data) => (a, b) => sortHelper(data[a][prop], data[b][prop], desc)))(propname, isdesc, this.collection.data);
+    const wrappedComparer = ((prop, desc, data) => (a, b) => {
+      let val1, val2, arr;
+      if (~prop.indexOf(".")) {
+        arr = prop.split(".");
+        val1 = arr.reduce(function (obj, i) {
+          return obj && obj[i] || undefined;
+        }, data[a]);
+        val2 = arr.reduce(function (obj, i) {
+          return obj && obj[i] || undefined;
+        }, data[b]);
+      } else {
+        val1 = data[a][prop];
+        val2 = data[b][prop];
+      }
+      return sortHelper(val1, val2, desc);
+    })(propname, isdesc, this.collection.data);
 
     this.filteredrows.sort(wrappedComparer);
 
@@ -647,7 +673,7 @@ export class Resultset {
    * Used for querying via a mongo-style query object.
    *
    * @param {object} query - A mongo-style query object used for filtering current results.
-   * @param {boolean=} firstOnly - (Optional) Used by collection.findOne()
+   * @param {boolean} firstOnly - (Optional) Used by collection.findOne()
    * @returns {Resultset} this resultset for further chain ops.
    */
   find(query, firstOnly) {
@@ -977,6 +1003,12 @@ export class Resultset {
       forceCloneMethod = "shallow";
     }
 
+    // if collection has delta changes active, then force clones and use 'parse-stringify' for effective change tracking of nested objects
+    if (!this.collection.disableDeltaChangesApi) {
+      forceClones = true;
+      forceCloneMethod = "parse-stringify";
+    }
+
     // if this has no filters applied, just return collection.data
     if (!this.filterInitialized) {
       if (this.filteredrows.length === 0) {
@@ -1096,7 +1128,7 @@ export class Resultset {
    * @param {Array} joinData - Data array to join to.
    * @param {(string|function)} leftJoinKey - Property name in this result set to join on or a function to produce a value to join on
    * @param {(string|function)} rightJoinKey - Property name in the joinData to join on or a function to produce a value to join on
-   * @param {function=} mapFun - (Optional) A function that receives each matching pair and maps them into output objects - function(left,right){return joinedObject}
+   * @param {function} [mapFun=] - a function that receives each matching pair and maps them into output objects - function(left,right){return joinedObject}
    * @returns {Resultset} A resultset with data in the format [{left: leftObj, right: rightObj}]
    */
   eqJoin(joinData, leftJoinKey, rightJoinKey, mapFun) {

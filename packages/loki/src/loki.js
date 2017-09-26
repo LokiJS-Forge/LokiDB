@@ -203,7 +203,7 @@ export class Loki extends LokiEventEmitter {
    * Copies 'this' database into a new Loki instance. Object references are shared to make lightweight.
    *
    * @param {object} options - apply or override collection level settings
-   * @param {bool} options.removeNonSerializable - nulls properties not safe for serialization.
+   * @param {boolean} options.removeNonSerializable - nulls properties not safe for serialization.
    */
   copy(options = {}) {
     // in case running in an environment without accurate environment detection, pass 'NA'
@@ -234,15 +234,15 @@ export class Loki extends LokiEventEmitter {
   /**
    * Adds a collection to the database.
    * @param {string} name - name of collection to add
-   * @param {object=} options - (optional) options to configure collection with.
-   * @param {string[]} options.unique - array of property names to define unique constraints for
-   * @param {string[]} options.exact - array of property names to define exact constraints for
-   * @param {string[]} options.indices - array property names to define binary indexes for
-   * @param {boolean} options.asyncListeners - default is false
-   * @param {boolean} options.disableChangesApi - default is true
-   * @param {boolean} options.autoupdate - use Object.observe to update objects automatically (default: false)
-   * @param {boolean} options.clone - specify whether inserts and queries clone to/from user
-   * @param {string} options.cloneMethod - 'parse-stringify' (default), 'jquery-extend-deep', 'shallow'
+   * @param {object} [options={}] - options to configure collection with.
+   * @param {array} [options.unique=[]] - array of property names to define unique constraints for
+   * @param {array} [options.exact=[]] - array of property names to define exact constraints for
+   * @param {array} [options.indices=[]] - array property names to define binary indexes for
+   * @param {boolean} [options.asyncListeners=false] - whether listeners are called asynchronously
+   * @param {boolean} [options.disableChangesApi=true] - set to false to enable Changes Api
+   * @param {boolean} [options.autoupdate=false] - use Object.observe to update objects automatically
+   * @param {boolean} [options.clone=false] - specify whether inserts and queries clone to/from user
+   * @param {string} [options.cloneMethod='parse-stringify'] - 'parse-stringify', 'jquery-extend-deep', 'shallow, 'shallow-assign'
    * @param {int} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
    * @returns {Collection} a reference to the collection which was just added
    */
@@ -281,6 +281,20 @@ export class Loki extends LokiEventEmitter {
     // no such collection
     this.emit("warning", "collection " + collectionName + " not found");
     return null;
+  }
+
+  /**
+   * Renames an existing loki collection
+   * @param {string} oldName - name of collection to rename
+   * @param {string} newName - new name of collection
+   * @returns {Collection} reference to the newly renamed collection
+   */
+  renameCollection(oldName, newName) {
+    let coll = this.getCollection(oldName);
+    if (coll) {
+      coll.name = newName;
+    }
+    return coll;
   }
 
   listCollections() {
@@ -366,16 +380,16 @@ export class Loki extends LokiEventEmitter {
   }
 
   /**
-   * Destructured JSON serialization routine to allow alternate serialization methods.
+   * Database level destructured JSON serialization routine to allow alternate serialization methods.
    * Internally, Loki supports destructuring via loki "serializationMethod' option and
    * the optional LokiPartitioningAdapter class. It is also available if you wish to do
    * your own structured persistence or data exchange.
    *
-   * @param {object=} options - output format options for use externally to loki
-   * @param {bool=} options.partitioned - (default: false) whether db and each collection are separate
-   * @param {int=} options.partition - can be used to only output an individual collection or db (-1)
-   * @param {bool=} options.delimited - (default: true) whether subitems are delimited or subarrays
-   * @param {string=} options.delimiter - override default delimiter
+   * @param {object} options - output format options for use externally to loki
+   * @param {boolean} [options.partitioned=false] - whether db and each collection are separate
+   * @param {int} options.partition - can be used to only output an individual collection or db (-1)
+   * @param {boolean} [options.delimited=true] - whether subitems are delimited or subarrays
+   * @param {string} options.delimiter - override default delimiter
    *
    * @returns {string|Array} A custom, restructured aggregation of independent serializations.
    */
@@ -497,11 +511,11 @@ export class Loki extends LokiEventEmitter {
   }
 
   /**
-   * Utility method to serialize a collection in a 'destructured' format
+   * Collection level utility method to serialize a collection in a 'destructured' format
    *
    * @param {object} options - used to determine output of method
-   * @param {int=} options.delimited - whether to return single delimited string or an array
-   * @param {string=} options.delimiter - (optional) if delimited, this is delimiter to use
+   * @param {int} options.delimited - whether to return single delimited string or an array
+   * @param {string} options.delimiter - (optional) if delimited, this is delimiter to use
    * @param {int} options.collectionIndex -  specify which collection to serialize data for
    *
    * @returns {string|array} A custom, restructured aggregation of independent serializations for a single collection.
@@ -540,17 +554,17 @@ export class Loki extends LokiEventEmitter {
   }
 
   /**
-   * Destructured JSON deserialization routine to minimize memory overhead.
+   * Database level destructured JSON deserialization routine to minimize memory overhead.
    * Internally, Loki supports destructuring via loki "serializationMethod' option and
    * the optional LokiPartitioningAdapter class. It is also available if you wish to do
    * your own structured persistence or data exchange.
    *
    * @param {string|array} destructuredSource - destructured json or array to deserialize from
-   * @param {object=} options - source format options
-   * @param {bool=} options.partitioned - (default: false) whether db and each collection are separate
-   * @param {int=} options.partition - can be used to deserialize only a single partition
-   * @param {bool=} options.delimited - (default: true) whether subitems are delimited or subarrays
-   * @param {string=} options.delimiter - override default delimiter
+   * @param {object} options - source format options
+   * @param {boolean} [options.partitioned=false] - whether db and each collection are separate
+   * @param {int} options.partition - can be used to deserialize only a single partition
+   * @param {boolean} [options.delimited=true] - whether subitems are delimited or subarrays
+   * @param {string} options.delimiter - override default delimiter
    *
    * @returns {object|array} An object representation of the deserialized database, not yet applied to 'this' db or document array
    */
@@ -649,12 +663,12 @@ export class Loki extends LokiEventEmitter {
   }
 
   /**
-   * Deserializes a destructured collection.
+   * Collection level utility function to deserializes a destructured collection.
    *
    * @param {string|Array} destructuredSource - destructured representation of collection to inflate
    * @param {object} options - used to describe format of destructuredSource input
-   * @param {int} options.delimited - whether source is delimited string or an array
-   * @param {string} options.delimiter - (optional) if delimited, this is delimiter to use
+   * @param {int} [options.delimited=false] - whether source is delimited string or an array
+   * @param {string} options.delimiter - if delimited, this is delimiter to use (if other than default)
    *
    * @returns {Array} an array of documents to attach to collection.data.
    */
@@ -695,6 +709,7 @@ export class Loki extends LokiEventEmitter {
    *
    * @param {string} serializedDb - a serialized loki database string
    * @param {object} options - apply or override collection level settings
+   * @param {boolean} options.retainDirtyFlags - whether collection dirty flags will be preserved
    */
   loadJSON(serializedDb, options) {
     let dbObject;
@@ -723,7 +738,7 @@ export class Loki extends LokiEventEmitter {
    *
    * @param {object} dbObject - a serialized loki database string
    * @param {object} options - apply or override collection level settings
-   * @param {bool?} options.retainDirtyFlags - whether collection dirty flags will be preserved
+   * @param {boolean} options.retainDirtyFlags - whether collection dirty flags will be preserved
    */
   loadJSONObject(dbObject, options = {}) {
     const len = dbObject.collections ? dbObject.collections.length : 0;
@@ -777,7 +792,7 @@ export class Loki extends LokiEventEmitter {
    * collection and creates a single array for the entire database. If an array of names
    * of collections is passed then only the included collections will be tracked.
    *
-   * @param {Array=} optional array of collection names. No arg means all collections are processed.
+   * @param {Array} [arrayOfCollectionNames=] - array of collection names. No arg means all collections are processed.
    * @returns {Array} array of changes
    * @see private method createChange() in Collection
    */
@@ -819,10 +834,10 @@ export class Loki extends LokiEventEmitter {
   /**
    * Wait for throttledSaves to complete and invoke your callback when drained or duration is met.
    *
-   * @param {object=} options - configuration options
-   * @param {boolean} options.recursiveWait - (default: true) if after queue is drained, another save was kicked off, wait for it
-   * @param {bool} options.recursiveWaitLimit - (default: false) limit our recursive waiting to a duration
-   * @param {int} options.recursiveWaitLimitDelay - (default: 2000) cutoff in ms to stop recursively re-draining
+   * @param {object} options - configuration options
+   * @param {boolean} [options.recursiveWait=true] - if after queue is drained, another save was kicked off, wait for it
+   * @param {boolean} [options.recursiveWaitLimit=false] - limit our recursive waiting to a duration
+   * @param {number} [options.recursiveWaitLimitDelay=2000] - cutoff in ms to stop recursively re-draining
    * @returns {Promise} a Promise that resolves when save queue is drained, it is passed a sucess parameter value
    */
   throttledSaveDrain(options = {}) {
@@ -905,15 +920,17 @@ export class Loki extends LokiEventEmitter {
   }
 
   /**
-   * Handles loading from file system, local storage, or adapter (indexeddb)
+   * Handles manually loading from an adapter storage (such as fs-storage)
    *    This method utilizes loki configuration options (if provided) to determine which
    *    persistence method to use, or environment detection (if configuration was not provided).
    *    To avoid contention with any throttledSaves, we will drain the save queue first.
    *
-   * @param {object} options - if throttling saves and loads, this controls how we drain save queue before loading
-   * @param {boolean} options.recursiveWait - (default: true) wait recursively until no saves are queued
-   * @param {bool} options.recursiveWaitLimit - (default: false) limit our recursive waiting to a duration
-   * @param {int} options.recursiveWaitLimitDelay - (default: 2000) cutoff in ms to stop recursively re-draining
+   * If you are configured with autosave, you do not need to call this method yourself.
+   *
+   * @param {object} [options={}] - if throttling saves and loads, this controls how we drain save queue before loading
+   * @param {boolean} [options.recursiveWait=true] wait recursively until no saves are queued
+   * @param {boolean} [options.recursiveWaitLimit=false] limit our recursive waiting to a duration
+   * @param {int} [options.recursiveWaitLimitDelay=2000] cutoff in ms to stop recursively re-draining
    * @returns {Promise} a Promise that resolves after the database is loaded
    */
   loadDatabase(options) {
@@ -963,9 +980,11 @@ export class Loki extends LokiEventEmitter {
   }
 
   /**
-   * Handles saving to file system, local storage, or adapter (indexeddb)
+   * Handles manually saving to an adapter storage (such as fs-storage)
    *    This method utilizes loki configuration options (if provided) to determine which
    *    persistence method to use, or environment detection (if configuration was not provided).
+   *
+   * If you are configured with autosave, you do not need to call this method yourself.
    *
    * @returns {Promise} a Promise that resolves after the database is persisted
    */

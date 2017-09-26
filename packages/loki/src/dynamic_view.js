@@ -71,7 +71,7 @@ export class DynamicView extends LokiEventEmitter {
   }
 
   /**
-   * rematerialize() - intended for use immediately after deserialization (loading)
+   * Internally used immediately after deserialization (loading)
    *    This will clear out and reapply filterPipeline ops, recreating the view.
    *    Since where filters do not persist correctly, this method allows
    *    restoring the view to state where user can re-apply those where filters.
@@ -80,7 +80,7 @@ export class DynamicView extends LokiEventEmitter {
    * @returns {DynamicView} This dynamic view for further chained ops.
    * @fires DynamicView.rebuild
    */
-  rematerialize({removeWhereFilters = undefined}) {
+  _rematerialize({removeWhereFilters = undefined}) {
     let fpl;
     let fpi;
     let idx;
@@ -133,7 +133,7 @@ export class DynamicView extends LokiEventEmitter {
    *    so your branched query should be immediately resolved and not held for future evaluation.
    *
    * @param {(string|array=)} transform - Optional name of collection transform, or an array of transform steps
-   * @param {object=} parameters - optional parameters (if optional transform requires them)
+   * @param {object} parameters - optional parameters (if optional transform requires them)
    * @returns {Resultset} A copy of the internal resultset for branched queries.
    */
   branchResultset(transform, parameters) {
@@ -174,7 +174,7 @@ export class DynamicView extends LokiEventEmitter {
     dv._sortDirty = obj._sortDirty;
     dv._resultset.filteredrows = obj._resultset.filteredrows;
     dv._resultset.filterInitialized = obj._resultset.filterInitialized;
-    dv.rematerialize({
+    dv._rematerialize({
       removeWhereFilters: true
     });
     return dv;
@@ -183,7 +183,7 @@ export class DynamicView extends LokiEventEmitter {
   /**
    * removeFilters() - Used to clear pipeline and reset dynamic view to initial state.
    *     Existing options should be retained.
-   * @param {boolean=} queueSortPhase - (default: false) if true we will async rebuild view (maybe set default to true in future?)
+   * @param {boolean} queueSortPhase - (default: false) if true we will async rebuild view (maybe set default to true in future?)
    */
   removeFilters({queueSortPhase = false} = {}) {
     this._rebuildPending = false;
@@ -234,7 +234,7 @@ export class DynamicView extends LokiEventEmitter {
    * dv.applySimpleSort("name");
    *
    * @param {string} propname - Name of property by which to sort.
-   * @param {boolean=} isdesc - (Optional) If true, the sort will be in descending order.
+   * @param {boolean} isdesc - (Optional) If true, the sort will be in descending order.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
   applySimpleSort(propname, isdesc) {
@@ -406,7 +406,7 @@ export class DynamicView extends LokiEventEmitter {
    * applyFind() - Adds or updates a mongo-style query option in the DynamicView filter pipeline
    *
    * @param {object} query - A mongo-style query object to apply to pipeline
-   * @param {(string|number)=} uid - Optional: The unique ID of this filter, to reference it in the future.
+   * @param {(string|number)} uid - Optional: The unique ID of this filter, to reference it in the future.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
   applyFind(query, uid) {
@@ -422,7 +422,7 @@ export class DynamicView extends LokiEventEmitter {
    * applyWhere() - Adds or updates a javascript filter function in the DynamicView filter pipeline
    *
    * @param {function} fun - A javascript filter function to apply to pipeline
-   * @param {(string|number)=} uid - Optional: The unique ID of this filter, to reference it in the future.
+   * @param {(string|number)} uid - Optional: The unique ID of this filter, to reference it in the future.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
   applyWhere(fun, uid) {
@@ -468,18 +468,25 @@ export class DynamicView extends LokiEventEmitter {
   }
 
   /**
-   * data() - resolves and pending filtering and sorting, then returns document array as result.
+   * Resolves and pending filtering and sorting, then returns document array as result.
+   *
+   * @param {object} options - optional parameters to pass to resultset.data() if non-persistent
+   * @param {boolean} options.forceClones - Allows forcing the return of cloned objects even when
+   *        the collection is not configured for clone object.
+   * @param {string} options.forceCloneMethod - Allows overriding the default or collection specified cloning method.
+   *        Possible values include 'parse-stringify', 'jquery-extend-deep', 'shallow', 'shallow-assign'
+   * @param {boolean} options.removeMeta - Will force clones and strip $loki and meta properties from documents
    *
    * @returns {array} An array of documents representing the current DynamicView contents.
    */
-  data() {
+  data(options) {
     // using final sort phase as 'catch all' for a few use cases which require full rebuild
     if (this._sortDirty || this._resultsdirty) {
       this.performSortPhase({
         suppressRebuildEvent: true
       });
     }
-    return (this._persistent) ? (this._resultdata) : (this._resultset.data());
+    return (this._persistent) ? (this._resultdata) : (this._resultset.data(options));
   }
 
   /**
@@ -562,7 +569,7 @@ export class DynamicView extends LokiEventEmitter {
    *    Called by : collection.insert() and collection.update().
    *
    * @param {int} objIndex - index of document to (re)run through filter pipeline.
-   * @param {bool} isNew - true if the document was just added to the collection.
+   * @param {boolean} isNew - true if the document was just added to the collection.
    */
   evaluateDocument(objIndex, isNew) {
     // if no filter applied yet, the result 'set' should remain 'everything'
