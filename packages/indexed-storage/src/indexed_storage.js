@@ -19,7 +19,7 @@ import {Loki} from "../../loki/src/loki";
  */
 export class LokiIndexedStorage {
   /**
-   * @param {string} appname - (Optional) Application name context can be used to distinguish subdomains, "loki" by default
+   * @param {string} [appname=loki] - Application name context can be used to distinguish subdomains, "loki" by default
    */
   constructor(appname = "loki") {
     this.app = appname;
@@ -36,7 +36,6 @@ export class LokiIndexedStorage {
 	 * Used to check if adapter is available
 	 *
 	 * @returns {boolean} true if indexeddb is available, false if not.
-	 * @memberof LokiIndexedAdapter
 	 */
   checkAvailability() {
     if (typeof indexedDB !== "undefined" && indexedDB) return true;
@@ -57,7 +56,6 @@ export class LokiIndexedStorage {
 	 *
 	 * @param {string} dbname - the name of the database to retrieve.
 	 * @returns {Promise} a Promise that resolves after the database was loaded
-	 * @memberof LokiIndexedAdapter
 	 */
   loadDatabase(dbname) {
     const appName = this.app;
@@ -103,7 +101,6 @@ export class LokiIndexedStorage {
 	 * @param {string} dbname - the name to give the serialized database within the catalog.
 	 * @param {string} dbstring - the serialized db string to save.
 	 * @returns {Promise} a Promise that resolves after the database was persisted
-	 * @memberof LokiIndexedAdapter
 	 */
   saveDatabase(dbname, dbstring) {
     const appName = this.app;
@@ -159,7 +156,6 @@ export class LokiIndexedStorage {
 	 *
 	 * @param {string} dbname - the name of the database to delete from the catalog.
 	 * @returns {Promise} a Promise that resolves after the database was deleted
-	 * @memberof LokiIndexedAdapter
 	 */
   deleteDatabase(dbname) {
     const appName = this.app;
@@ -200,7 +196,6 @@ export class LokiIndexedStorage {
 	 * This utility method does not (yet) guarantee async deletions will be completed before returning
 	 *
 	 * @param {string} dbname - the base filename which container, partitions, or pages are derived
-	 * @memberof LokiIndexedAdapter
 	 */
   deleteDatabasePartitions(dbname) {
     this.getDatabaseList((result) => {
@@ -224,7 +219,6 @@ export class LokiIndexedStorage {
 	 * });
 	 *
 	 * @param {function} callback - should accept array of database names in the catalog for current app.
-	 * @memberof LokiIndexedAdapter
 	 */
   getDatabaseList(callback) {
     const appName = this.app;
@@ -269,7 +263,6 @@ export class LokiIndexedStorage {
 	 * Allows retrieval of list of all keys in catalog along with size
 	 *
 	 * @param {function} callback - (Optional) callback to accept result array.
-	 * @memberof LokiIndexedAdapter
 	 */
   getCatalogSummary(callback) {
     const adapter = this;

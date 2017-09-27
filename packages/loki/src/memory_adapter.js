@@ -2,9 +2,9 @@
  * In in-memory persistence adapter for an in-memory database.
  * This simple 'key/value' adapter is intended for unit testing and diagnostics.
  *
- * @param {object=} options - memory adapter options
- * @param {boolean} options.asyncResponses - whether callbacks are invoked asynchronously (default: false)
- * @param {int} options.asyncTimeout - timeout in ms to queue callbacks (default: 50)
+ * @param {object} options - memory adapter options
+ * @param {boolean} [options.asyncResponses=false] - whether callbacks are invoked asynchronously (default: false)
+ * @param {int} [options.asyncTimeout=50] - timeout in ms to queue callbacks (default: 50)
  *
  * @constructor LokiMemoryAdapter
  */
@@ -29,7 +29,6 @@ export class LokiMemoryAdapter {
 	 *
 	 * @param {string} dbname - name of the database (filename/keyname)
 	 * @returns {Promise} a Promise that resolves after the database was loaded
-	 * @memberof LokiMemoryAdapter
 	 */
   loadDatabase(dbname) {
     if (this.options.asyncResponses) {
@@ -60,7 +59,6 @@ export class LokiMemoryAdapter {
 	 *
 	 * @param {string} dbname - name of the database (filename/keyname)
 	 * @returns {Promise} a Promise that resolves after the database was persisted
-	 * @memberof LokiMemoryAdapter
 	 */
   saveDatabase(dbname, dbstring) {
     let saveCount;
@@ -97,7 +95,6 @@ export class LokiMemoryAdapter {
 	 *
 	 * @param {string} dbname - name of the database (filename/keyname)
 	 * @returns {Promise} a Promise that resolves after the database was deleted
-	 * @memberof LokiMemoryAdapter
 	 */
   deleteDatabase(dbname) {
     if (this.hashStore[dbname] !== undefined) {

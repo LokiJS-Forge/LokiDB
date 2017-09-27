@@ -79,7 +79,7 @@ describe("dynamicviews", () => {
       expect(dv.data().length).toEqual(2);
       expect(dv._filterPipeline.length).toEqual(2);
 
-      dv.rematerialize({removeWhereFilters: true});
+      dv._rematerialize({removeWhereFilters: true});
       expect(dv.data().length).toEqual(2);
       expect(dv._filterPipeline.length).toEqual(1);
     });

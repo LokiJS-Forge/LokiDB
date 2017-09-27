@@ -9,7 +9,6 @@ export class LokiFSStorage {
    * loadDatabase() - Load data from file, will throw an error if the file does not exist
    * @param {string} dbname - the filename of the database to load
    * @returns {Promise} a Promise that resolves after the database was loaded
-   * @memberof LokiFsAdapter
    */
   loadDatabase(dbname) {
     return new Promise((resolve, reject) => {
@@ -36,7 +35,6 @@ export class LokiFSStorage {
    * might want to expand this to avoid dataloss on partial save
    * @param {string} dbname - the filename of the database to load
    * @returns {Promise} a Promise that resolves after the database was persisted
-   * @memberof LokiFsAdapter
    */
   saveDatabase(dbname, dbstring) {
     const tmpdbname = dbname + "~";
@@ -63,7 +61,6 @@ export class LokiFSStorage {
    * file can't be deleted
    * @param {string} dbname - the filename of the database to delete
    * @returns {Promise} a Promise that resolves after the database was deleted
-   * @memberof LokiFsAdapter
    */
   deleteDatabase(dbname) {
     return new Promise((resolve, reject) => {
