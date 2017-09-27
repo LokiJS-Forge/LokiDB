@@ -54,7 +54,7 @@ export class LokiEventEmitter {
 	 * with the option of passing optional parameters which are going to be processed by the callback
 	 * provided signatures match (i.e. if passing emit(event, arg0, arg1) the listener should take two parameters)
 	 * @param {string} eventName - the name of the event
-	 * @param {object=} data - optional object passed with the event
+	 * @param {object} data - optional object passed with the event
 	 */
   emit(eventName, data) {
     if (eventName && this.events[eventName]) {

@@ -46,7 +46,6 @@ export class LokiPartitioningAdapter {
 	 *
 	 * @param {string} dbname - name of the database (filename/keyname)
 	 * @returns {Promise} a Promise that resolves after the database was loaded
-	 * @memberof LokiMemoryAdapter
 	 */
   loadDatabase(dbname) {
     this._dbname = dbname;
@@ -159,7 +158,6 @@ export class LokiPartitioningAdapter {
 	 * @param {object} dbref - reference to database which we will partition and save.
 	 * @returns {Promise} a Promise that resolves after the database was deleted
 	 *
-	 * @memberof LokiPartitioningAdapter
 	 */
   exportDatabase(dbname, dbref) {
     let idx;

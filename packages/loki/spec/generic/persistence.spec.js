@@ -412,7 +412,7 @@ describe("async adapter tests", () => {
   });
 
   it("verify throttledSaveDrain with duration timeout works", (done) => {
-    const mem = new LokiMemoryAdapter({asyncResponses: true, asyncTimeout: 100});
+    const mem = new LokiMemoryAdapter({asyncResponses: true, asyncTimeout: 200});
     const db = new Loki("sandbox.db");
     db.initializePersistence({adapter: mem});
 
@@ -426,40 +426,38 @@ describe("async adapter tests", () => {
     const another = db.addCollection("another");
     const ai = another.insert({a: 1, b: 2});
 
-    // this should immediately kick off the first save (~100ms)
+    // this should immediately kick off the first save (~200ms)
     db.saveDatabase();
-
     // now queue up a sequence to be run one after the other, at ~50ms each (~300ms total) when first completes
     ai.b = 3;
     another.update(ai);
-    db.saveDatabase(() => {
+
+    db.saveDatabase().then(() => {
       tyr.owner = "arngrim";
       items.update(tyr);
 
-      db.saveDatabase(() => {
-        drau.maker = "dwarves";
-        items.update(drau);
+      return db.saveDatabase();
+    }).then(() => {
+      drau.maker = "dwarves";
+      items.update(drau);
 
-        db.saveDatabase();
-      });
+      return db.saveDatabase();
     });
 
-    expect(db.throttledSaveRunning).not.toEqual(null);
-    expect(db.throttledSavePending).not.toEqual(null);
+    expect(db._throttledSaveRunning).not.toEqual(null);
+    expect(db._throttledSavePending).not.toEqual(null);
 
     // we want this to fail so above they should be bootstrapping several
     // saves which take about 400ms to complete.
-    // The full drain can take one save/callback cycle longer than duration (~100ms).
+    // The full drain can take one save/callback cycle longer than duration (~200ms).
     db.throttledSaveDrain({recursiveWaitLimit: true, recursiveWaitLimitDuration: 200})
       .then(() => {
-        expect(true).toEqual(true);
-      }, () => {
         expect(true).toEqual(false);
+        done();
+      }, () => {
+        expect(true).toEqual(true);
+        done();
       });
-
-    setTimeout(() => {
-      done();
-    }, 600);
   });
 
   it("verify throttled async throttles", (done) => {
@@ -543,8 +541,8 @@ describe("async adapter tests", () => {
       });
     });
 
-    expect(db.throttledSaveRunning).not.toEqual(null);
-    expect(db.throttledSavePending).not.toEqual(null);
+    expect(db._throttledSaveRunning).not.toEqual(null);
+    expect(db._throttledSavePending).not.toEqual(null);
 
     // at this point, several rounds of saves should be triggered...
     // a load at this scope (possibly simulating script run from different code path)
