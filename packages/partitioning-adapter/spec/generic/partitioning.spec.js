@@ -66,8 +66,10 @@ describe("partitioning adapter", () => {
   it("verify partioning adapter with paging mode enabled works", (done) => {
     const mem = new LokiMemoryAdapter();
 
-    // we will use an exceptionally low page size (128bytes) to test with small dataset
-    const adapter = new LokiPartitioningAdapter(mem, {paging: true, pageSize: 128});
+    // we will use an exceptionally low page size (64bytes) to test with small dataset
+    // every object will serialize to over 64bytes so that is not a hard limit but when
+    // we exceed that we will stop adding to page (so for this test 1 doc per page)
+    const adapter = new LokiPartitioningAdapter(mem, {paging: true, pageSize: 64});
 
     const db = new Loki("sandbox.db");
     let db2;
@@ -87,15 +89,19 @@ describe("partitioning adapter", () => {
     // for purposes of our memory adapter it is pretty much synchronous
     db.saveDatabase().then(() => {
       // should have partitioned the data
-      expect(Object.keys(mem.hashStore).length).toEqual(4);
+      expect(Object.keys(mem.hashStore).length).toEqual(6);
       expect(mem.hashStore.hasOwnProperty("sandbox.db")).toEqual(true);
       expect(mem.hashStore.hasOwnProperty("sandbox.db.0.0")).toEqual(true);
       expect(mem.hashStore.hasOwnProperty("sandbox.db.0.1")).toEqual(true);
+      expect(mem.hashStore.hasOwnProperty("sandbox.db.0.2")).toEqual(true);
+      expect(mem.hashStore.hasOwnProperty("sandbox.db.0.3")).toEqual(true);
       expect(mem.hashStore.hasOwnProperty("sandbox.db.1.0")).toEqual(true);
       // all partitions should have been saved once each
       expect(mem.hashStore["sandbox.db"].savecount).toEqual(1);
       expect(mem.hashStore["sandbox.db.0.0"].savecount).toEqual(1);
       expect(mem.hashStore["sandbox.db.0.1"].savecount).toEqual(1);
+      expect(mem.hashStore["sandbox.db.0.2"].savecount).toEqual(1);
+      expect(mem.hashStore["sandbox.db.0.3"].savecount).toEqual(1);
       expect(mem.hashStore["sandbox.db.1.0"].savecount).toEqual(1);
 
       // so let's go ahead and update one of our collections to make it dirty
@@ -109,7 +115,8 @@ describe("partitioning adapter", () => {
       expect(mem.hashStore["sandbox.db"].savecount).toEqual(2);
       // we didn't change this
       expect(mem.hashStore["sandbox.db.0.0"].savecount).toEqual(1);
-      expect(mem.hashStore["sandbox.db.0.0"].savecount).toEqual(1);
+      expect(mem.hashStore["sandbox.db.0.2"].savecount).toEqual(1);
+      expect(mem.hashStore["sandbox.db.0.3"].savecount).toEqual(1);
       // we updated this collection so it should have been saved again
       expect(mem.hashStore["sandbox.db.1.0"].savecount).toEqual(2);
 
@@ -121,7 +128,9 @@ describe("partitioning adapter", () => {
     }).then(() => {
       expect(mem.hashStore["sandbox.db"].savecount).toEqual(3);
       expect(mem.hashStore["sandbox.db.0.0"].savecount).toEqual(2);
-      expect(mem.hashStore["sandbox.db.0.0"].savecount).toEqual(2);
+      expect(mem.hashStore["sandbox.db.0.1"].savecount).toEqual(2);
+      expect(mem.hashStore["sandbox.db.0.2"].savecount).toEqual(2);
+      expect(mem.hashStore["sandbox.db.0.3"].savecount).toEqual(2);
       expect(mem.hashStore["sandbox.db.1.0"].savecount).toEqual(2);
 
       // ok now lets load from it
@@ -141,7 +150,9 @@ describe("partitioning adapter", () => {
     }).then(() => {
       expect(mem.hashStore["sandbox.db"].savecount).toEqual(4);
       expect(mem.hashStore["sandbox.db.0.0"].savecount).toEqual(2);
-      expect(mem.hashStore["sandbox.db.0.0"].savecount).toEqual(2);
+      expect(mem.hashStore["sandbox.db.0.1"].savecount).toEqual(2);
+      expect(mem.hashStore["sandbox.db.0.2"].savecount).toEqual(2);
+      expect(mem.hashStore["sandbox.db.0.3"].savecount).toEqual(2);
       expect(mem.hashStore["sandbox.db.1.0"].savecount).toEqual(2);
       expect(mem.hashStore["sandbox.db.2.0"].savecount).toEqual(1);
 
