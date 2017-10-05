@@ -31,6 +31,20 @@ describe("collection", () => {
     expect(coll.data.length).toEqual(1);
   });
 
+  it("collection rename works", function () {
+    const db = new loki("test.db");
+    db.addCollection("coll1");
+
+    let result = db.getCollection("coll1");
+    expect(result.name).toEqual("coll1");
+
+    db.renameCollection("coll1", "coll2");
+    result = db.getCollection("coll1");
+    expect(result).toBeNull();
+    result = db.getCollection("coll2");
+    expect(result.name).toEqual("coll2");
+  });
+
   it("findAndUpdate works", () => {
     const db = new loki("test.db");
     const coll = db.addCollection("testcoll");
