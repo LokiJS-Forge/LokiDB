@@ -445,7 +445,7 @@ export class Resultset {
           rs = rs.map(step.value);
           break;
         case "eqJoin":
-          rs = rs.eqJoin(step.joinData, step.leftJoinKey, step.rightJoinKey, step.mapFun);
+          rs = rs.eqJoin(step.joinData, step.leftJoinKey, step.rightJoinKey, step.mapFun, step.dataOptions);
           break;
         // following cases break chain by returning array data so make any of these last in transform steps
         case "mapReduce":
@@ -1125,13 +1125,14 @@ export class Resultset {
   /**
    * eqJoin() - Left joining two sets of data. Join keys can be defined or calculated properties
    * eqJoin expects the right join key values to be unique.  Otherwise left data will be joined on the last joinData object with that key
-   * @param {Array} joinData - Data array to join to.
+   * @param {Array|Resultset|Collection} joinData - Data array to join to.
    * @param {(string|function)} leftJoinKey - Property name in this result set to join on or a function to produce a value to join on
    * @param {(string|function)} rightJoinKey - Property name in the joinData to join on or a function to produce a value to join on
    * @param {function} [mapFun=] - a function that receives each matching pair and maps them into output objects - function(left,right){return joinedObject}
+   * @param {object} dataOptions - optional options to apply to data() calls for left and right sides
    * @returns {Resultset} A resultset with data in the format [{left: leftObj, right: rightObj}]
    */
-  eqJoin(joinData, leftJoinKey, rightJoinKey, mapFun) {
+  eqJoin(joinData, leftJoinKey, rightJoinKey, mapFun, dataOptions) {
     let leftData = [];
     let leftDataLength;
     let rightData = [];
@@ -1143,12 +1144,14 @@ export class Resultset {
     let joinMap = {};
 
     //get the left data
-    leftData = this.data();
+    leftData = this.data(dataOptions);
     leftDataLength = leftData.length;
 
     //get the right data
-    if (joinData instanceof Resultset) {
-      rightData = joinData.data();
+    if (joinData instanceof Collection) {
+      rightData = joinData.chain().data(dataOptions);
+    } else if (joinData instanceof Resultset) {
+      rightData = joinData.data(dataOptions);
     } else if (Array.isArray(joinData)) {
       rightData = joinData;
     } else {
