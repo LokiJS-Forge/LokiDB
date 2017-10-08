@@ -14,18 +14,8 @@ module.exports = {
     "../../loki/src/loki": "@lokijs/loki",
     "fs": "fs"
   },
-  resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.jsx']
-  },
   module: {
     loaders: [
-      {
-        test: /(\.ts)$/,
-        loader: "awesome-typescript-loader",
-        options: {
-          configFileName: path.join("config", "tsconfig.json")
-        }
-      },
       {
         test: /(\.js)$/,
         loader: "eslint-loader",
