@@ -23,5 +23,6 @@ module.exports = {
       "always"
     ],
     "arrow-parens": [2, "always"],
+    "no-constant-condition": 0
   }
 };

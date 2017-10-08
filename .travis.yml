@@ -19,15 +19,16 @@ addons:
     - google-chrome
     packages:
     - google-chrome-stable
+    - oracle-java8-set-default
     - python3
     - python3-pip
 
 before_install:
+  - curl -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.4.0.deb && sudo dpkg -i --force-confnew elasticsearch-5.4.0.deb && sudo service elasticsearch start
   - pip3 install mkdocs
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
-
 script:
     - npm run lint || travis_terminate 1
     - npm test || travis_terminate 1

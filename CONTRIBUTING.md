@@ -140,7 +140,7 @@ The following is the list of supported scopes:
 * **local-storage**: The local storage adapter.
 * **indexed-storage**: The indexed db storage adapter.
 * **fs-storage**: The file system storage adapter.
-* **fts**: A full text search for the database.
+* **full-text-search**: The full text search engine.
 
 There are currently a few exceptions to the "use package name" rule:
 

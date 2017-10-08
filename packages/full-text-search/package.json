@@ -1,0 +1,14 @@
+{
+  "name": "@lokijs/full-text-search",
+  "description": "A full text search engine.",
+  "author": "Various authors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LokiJS-Forge/LokiJS2.git"
+  },
+  "main": "lokijs.full-text-search.js",
+  "optionalDependencies": {
+    "@lokijs/loki": "0"
+  }
+}

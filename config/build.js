@@ -8,11 +8,12 @@ const stream = require("stream");
 const conventionalChangelog = require("conventional-changelog");
 
 const PACKAGES = [
-  "loki",
-  "partitioning-adapter",
-  "local-storage",
-  "indexed-storage",
-  "fs-storage"
+  // "loki",
+  // "partitioning-adapter",
+  // "local-storage",
+  // "indexed-storage",
+  // "fs-storage",
+  "full-text-search"
 ];
 
 const ROOT_DIR = process.cwd();
@@ -191,6 +192,13 @@ function build() {
       for (let pack of Object.keys(json.dependencies)) {
         if (pack.startsWith("@lokijs/")) {
           json.dependencies[pack] = VERSION;
+        }
+      }
+    }
+    if (json.optionalDependencies) {
+      for (let pack of Object.keys(json.optionalDependencies)) {
+        if (pack.startsWith("@lokijs/")) {
+          json.optionalDependencies[pack] = VERSION;
         }
       }
     }
