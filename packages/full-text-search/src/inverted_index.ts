@@ -6,19 +6,27 @@ import {Tokenizer} from "./tokenizer";
  * @param {boolean} [options.store=true] - inverted index will be stored at serialization rather than rebuilt on load.
  */
 export class InvertedIndex {
+  private _store: boolean;
+  private _optimizeChanges: boolean;
+  private _tokenizer: Tokenizer;
+  private _docCount: number = 0;
+  private _docStore: object = {};
+  private _totalFieldLength: number = 0;
+  private _root: InvertedIndex.Index = {};
+
   /**
    * @param {boolean} store
    * @param {boolean} optimizeChanges
    * @param {Tokenizer} tokenizer
    */
-  constructor({store = true, optimizeChanges = true, tokenizer = new Tokenizer} = {}) {
-    this._store = store;
-    this._optimizeChanges = optimizeChanges;
-    this._tokenizer = tokenizer;
-    this._docCount = 0;
-    this._docStore = {};
-    this._totalFieldLength = 0;
-    this._root = {};
+  constructor(options: InvertedIndex.FieldOption = {}) {
+    (
+      {
+        store: this._store = true,
+        optimizeChanges: this._optimizeChanges = true,
+        tokenizer: this._tokenizer = new Tokenizer()
+      } = options
+    );
   }
 
   get store() {
@@ -47,10 +55,10 @@ export class InvertedIndex {
 
   /**
    * Adds defined fields of a document to the inverted index.
-   * @param {object} field - the field to add
+   * @param {string} field - the field to add
    * @param {number} docId - the doc id of the field
    */
-  insert(field, docId) {
+  insert(field: string, docId: number) {
     if (this._docStore[docId] !== undefined) {
       throw Error("Field already added.");
     }
@@ -62,7 +70,7 @@ export class InvertedIndex {
     let fieldTokens = this._tokenizer.tokenize(field);
     this._totalFieldLength += fieldTokens.length;
 
-    let termRefs = [];
+    let termRefs: any[] = [];
     this._docStore[docId] = {fieldLength: fieldTokens.length};
     if (this._optimizeChanges) {
       Object.defineProperties(this._docStore[docId], {
@@ -115,7 +123,7 @@ export class InvertedIndex {
    * Removes all relevant terms of a document from the inverted index.
    * @param {number} docId - the document.
    */
-  remove(docId) {
+  remove(docId: number) {
     if (this._docStore[docId] === undefined) {
       return;
     }
@@ -175,7 +183,7 @@ export class InvertedIndex {
     } else {
       // Iterate over the whole inverted index and remove the document.
       // Delete branch if not needed anymore.
-      let recursive = (root) => {
+      let recursive = (root: InvertedIndex.Index) => {
         let keys = Object.keys(root);
         for (let i = 0; i < keys.length; i++) {
           let key = keys[i];
@@ -212,7 +220,7 @@ export class InvertedIndex {
    * @param {number} start - the position of the term string to start from
    * @return {object} - The term index or null if the term is not in the term tree.
    */
-  static getTermIndex(term, root, start = 0) {
+  static getTermIndex(term: string, root: InvertedIndex.Index, start: number = 0) {
     if (start >= term.length) {
       return null;
     }
@@ -230,7 +238,7 @@ export class InvertedIndex {
    * @param {object} root - the term index to start from
    * @return {Array} - array with term indices and extension
    */
-  static getNextTermIndex(root) {
+  static getNextTermIndex(root: InvertedIndex.Index) {
     let termIndices = [];
     let keys = Object.keys(root);
     for (let i = 0; i < keys.length; i++) {
@@ -246,8 +254,8 @@ export class InvertedIndex {
    * @param {object} root - the term index to start from
    * @returns {Array} - Array with term indices and extension
    */
-  static extendTermIndex(root) {
-    let termIndices = [];
+  static extendTermIndex(root: InvertedIndex.Index) {
+    let termIndices: any[] = [];
     let stack = [root];
     let treeStack = [""];
     do {
@@ -292,19 +300,21 @@ export class InvertedIndex {
    * @param {Object.<string, function>|Tokenizer} funcTok[undefined] - the depending functions with labels
    *  or an equivalent tokenizer
    */
-  static fromJSONObject(serialized, funcTok = undefined) {
+  static fromJSONObject(serialized: InvertedIndex.Serialization, funcTok: any = undefined) {
     let dbObject = serialized;
     let invIdx = new InvertedIndex({
       store: dbObject._store,
       optimizeChanges: dbObject._optimizeChanges,
-      tokenizer: Tokenizer.fromJSONObject(dbObject._tokenizer, funcTok)
+      //todo: tokenizer: Tokenizer.fromJSONObject(dbObject._tokenizer, funcTok)
     });
-    invIdx._docCount = dbObject._docCount;
-    invIdx._docStore = dbObject._docStore;
-    invIdx._totalFieldLength = dbObject._totalFieldLength;
-    invIdx._root = dbObject._root;
+    if (invIdx._store) {
+      invIdx._docCount = dbObject._docCount;
+      invIdx._docStore = dbObject._docStore;
+      invIdx._totalFieldLength = dbObject._totalFieldLength;
+      invIdx._root = dbObject._root;
+    }
 
-    let regenerate = (index, parent) => {
+    const regenerate = (index: InvertedIndex.Index, parent: InvertedIndex.Index) => {
       // Set parent.
       if (parent !== null) {
         Object.defineProperties(index, {
@@ -313,15 +323,15 @@ export class InvertedIndex {
       }
 
       // Iterate over all keys.
-      let keys = Object.keys(index);
+      const keys = Object.keys(index);
       for (let i = 0; i < keys.length; i++) {
         // Found term, save in document store.
         if (keys[i] === "dc") {
           // Get documents of term.
-          let docIds = Object.keys(index.dc);
+          const docIds = Object.keys(index.dc);
           for (let j = 0; j < docIds.length; j++) {
             // Get document store at specific document/field.
-            let ref = invIdx._docStore[docIds[j]];
+            const ref = invIdx._docStore[docIds[j]];
             if (ref.termRefs === undefined) {
               Object.defineProperties(ref, {
                 termRefs: {enumerable: false, configurable: true, writable: true, value: []}
@@ -342,5 +352,28 @@ export class InvertedIndex {
     }
 
     return invIdx;
+  }
+}
+
+export namespace InvertedIndex {
+  export interface FieldOption {
+    store?: boolean;
+    optimizeChanges?: boolean;
+    tokenizer?: Tokenizer;
+  }
+
+  export interface Index {
+    dc?: object,
+    df?: number
+  }
+
+  export interface Serialization {
+    _store: boolean;
+    _optimizeChanges: boolean;
+    _tokenizer: Tokenizer.Serialization;
+    _docCount?: number;
+    _docStore?: object;
+    _totalFieldLength?: number;
+    _root?: Index;
   }
 }

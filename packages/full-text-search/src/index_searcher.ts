@@ -1,19 +1,25 @@
 import {Scorer} from "./scorer";
 import {InvertedIndex} from "./inverted_index";
-import {QueryBuilder} from "./queries";
+import {QueryBuilder} from "./query_builder";
+import {Dictionary} from "./full_text_search";
+
+type Tree = any;
 
 export class IndexSearcher {
+  private _invIdxs: Dictionary<InvertedIndex>;
+  private _docs: any;
+  private _scorer: Scorer;
+
   /**
-   *
    * @param {object} invIdxs
    */
-  constructor(invIdxs, docs) {
+  constructor(invIdxs: Dictionary<InvertedIndex>, docs: any) {
     this._invIdxs = invIdxs;
     this._docs = docs;
     this._scorer = new Scorer(this._invIdxs);
   }
 
-  search(query) {
+  search(query: any) {
     let docResults = this._recursive(query.query, true);
 
     // Final scoring.
@@ -28,7 +34,7 @@ export class IndexSearcher {
     this._scorer.setDirty();
   }
 
-  _recursive(query, doScoring) {
+  _recursive(query: any, doScoring: boolean) {
     let docResults = {};
     let boost = query.boost !== undefined ? query.boost : 1;
     let fieldName = query.field !== undefined ? query.field : null;
@@ -145,8 +151,8 @@ export class IndexSearcher {
       case "prefix": {
         let termIdx = InvertedIndex.getTermIndex(query.value, root);
         if (termIdx !== null) {
-          termIdx = InvertedIndex.extendTermIndex(termIdx);
-          for (let i = 0; i < termIdx.length; i++) {
+          const termIdxs = InvertedIndex.extendTermIndex(termIdx);
+          for (let i = 0; i < termIdxs.length; i++) {
             this._scorer.prepare(fieldName, boost, termIdx[i].index, doScoring && enableScoring, docResults, query.value + termIdx[i].term);
           }
         }
@@ -205,7 +211,7 @@ export class IndexSearcher {
     return docResults;
   }
 
-  _getUnique(values, doScoring, docResults) {
+  _getUnique(values: any[], doScoring: boolean, docResults: any) {
     if (values.length === 0) {
       return docResults;
     }
@@ -229,7 +235,7 @@ export class IndexSearcher {
     return docResults;
   }
 
-  _getAll(values, doScoring) {
+  _getAll(values: any[], doScoring: boolean) {
     let docResults = {};
     for (let i = 0; i < values.length; i++) {
       let currDocs = this._recursive(values[i], doScoring);
@@ -248,7 +254,11 @@ export class IndexSearcher {
 
 
 class FuzzySearch {
-  constructor(query) {
+  private _fuzzy: string;
+  private _fuzziness: number | string;
+  private _prefixLength: number;
+
+  constructor(query: any) {
     this._fuzzy = query.value;
     this._fuzziness = query.fuzziness !== undefined ? query.fuzziness : "AUTO";
     if (this._fuzziness === "AUTO") {
@@ -268,7 +278,7 @@ class FuzzySearch {
    *           Milot Mirdita: https://github.com/milot-mirdita
    *           Toni Neubert:  https://github.com/Viatorus/
    */
-  levenshtein_distance(a, b) {
+  static levenshtein_distance(a: string, b: string) {
     if (a.length === 0) return b.length;
     if (b.length === 0) return a.length;
     let tmp;
@@ -319,13 +329,13 @@ class FuzzySearch {
    * @param {number} [maxDistance=2] - maximal edit distance between terms
    * @returns {Array} - array with all matching term indices.
    */
-  search(root) {
+  search(index: Tree) {
     // Todo: Include levenshtein to reduce similar iterations.
     // Tree tokens at same depth share same row until depth (should works if recursive).
     // Pregenerate tree token ?
     // var treeToken = Array(token.length + maxDistance);
 
-    let start = root;
+    let start = index;
     let pre = this._fuzzy.slice(0, this._prefixLength);
     let fuzzy = this._fuzzy;
     if (this._prefixLength !== 0) {
@@ -337,7 +347,7 @@ class FuzzySearch {
     }
     if (fuzzy.length === 0) {
       // Return if prefixLength == this._fuzzy length.
-      return [{term: this._fuzziness, index: start, boost: 1}];
+      return [{term: "", index: start, boost: 1}];
     }
 
     let similarTokens = [];
@@ -345,17 +355,17 @@ class FuzzySearch {
     let stack = [start];
     let treeStack = [""];
     do {
-      let root = stack.pop();
+      let index = stack.pop();
       let treeTerms = treeStack.pop();
 
       // Compare tokens if they are in near distance.
-      if (root.df !== undefined && Math.abs(fuzzy.length - treeTerms.length) <= this._fuzziness) {
-        const distance = this.levenshtein_distance(fuzzy, treeTerms);
+      if (index.df !== undefined && Math.abs(fuzzy.length - treeTerms.length) <= this._fuzziness) {
+        const distance = FuzzySearch.levenshtein_distance(fuzzy, treeTerms);
         if (distance <= this._fuzziness) {
           let term = pre + treeTerms;
           // Calculate boost.
           let boost = 1 - distance / Math.min(term.length, this._fuzzy.length);
-          similarTokens.push({term, index: root, boost});
+          similarTokens.push({term, index: index, boost});
         }
       }
 
@@ -363,10 +373,10 @@ class FuzzySearch {
       // If token from tree is not longer than maximal distance.
       if (treeTerms.length - fuzzy.length <= this._fuzziness) {
         // Iterate over all subtrees.
-        let keys = Object.keys(root);
+        let keys = Object.keys(index);
         for (let i = 0; i < keys.length; i++) {
           if (keys[i].length === 1) {
-            stack.push(root[keys[i]]);
+            stack.push(index[keys[i]]);
             treeStack.push(treeTerms + keys[i]);
           }
         }
@@ -378,8 +388,10 @@ class FuzzySearch {
 }
 
 class WildcardSearch {
+  private _wildcard: string;
+  private _result: any[];
 
-  constructor(query) {
+  constructor(query: any) {
     this._wildcard = query.value;
     this._result = [];
   }
@@ -389,7 +401,7 @@ class WildcardSearch {
    * @param {string} query - a wild card query to match.
    * @returns {Array} - array with all matching term indices.
    */
-  search(root) {
+  search(root: Tree) {
     // Todo: Need an implementation for star operator in the middle.
     this._result = [];
     this._recursive(root);
@@ -398,53 +410,53 @@ class WildcardSearch {
 
   /**
    *
-   * @param root
+   * @param res_idx
    * @param idx
    * @param term
    * @param escaped
    * @private
    */
-  _recursive(root, idx = 0, term = "", escaped = false) {
-    if (root === null) {
+  _recursive(index: Tree, idx: number = 0, term: string = "", escaped: boolean = false) {
+    if (index === null) {
       return;
     }
 
     if (idx === this._wildcard.length) {
-      if (root.df !== undefined) {
-        this._result.push({index: root, term});
+      if (index.df !== undefined) {
+        this._result.push({index: index, term});
       }
       return;
     }
 
     if (!escaped && this._wildcard[idx] === "\\") {
-      this._recursive(root, idx + 1, term, true);
+      this._recursive(index, idx + 1, term, true);
     } else if (!escaped && this._wildcard[idx] === "?") {
-      let others = InvertedIndex.getNextTermIndex(root);
+      let others = InvertedIndex.getNextTermIndex(index);
       for (let i = 0; i < others.length; i++) {
         this._recursive(others[i].index, idx + 1, term + others[i].term);
       }
     } else if (!escaped && this._wildcard[idx] === "*") {
       // Check if asterisk is last wildcard character
       if (idx + 1 === this._wildcard.length) {
-        let all = InvertedIndex.extendTermIndex(root);
+        const all = InvertedIndex.extendTermIndex(index);
         for (let i = 0; i < all.length; i++) {
           this._recursive(all[i].index, idx + 1, term + all[i].term);
         }
         return;
       }
       // Iterate over the whole tree.
-      this._recursive(root, idx + 1, term);
-      let roots = [{index: root, term: ""}];
+      this._recursive(index, idx + 1, term);
+      const indices = [{index: index, term: ""}];
       do {
-        root = roots.pop();
-        let others = InvertedIndex.getNextTermIndex(root.index);
+        const index = indices.pop();
+        let others = InvertedIndex.getNextTermIndex(index.index);
         for (let i = 0; i < others.length; i++) {
-          this._recursive(others[i].index, idx + 1, term + root.term + others[i].term);
-          roots.push({index: others[i].index, term: root.term + others[i].term});
+          this._recursive(others[i].index, idx + 1, term + index.term + others[i].term);
+          indices.push({index: others[i].index, term: index.term + others[i].term});
         }
-      } while (roots.length !== 0);
+      } while (indices.length !== 0);
     } else {
-      this._recursive(InvertedIndex.getTermIndex(this._wildcard[idx], root), idx + 1, term + this._wildcard[idx]);
+      this._recursive(InvertedIndex.getTermIndex(this._wildcard[idx], index), idx + 1, term + this._wildcard[idx]);
     }
   }
 }

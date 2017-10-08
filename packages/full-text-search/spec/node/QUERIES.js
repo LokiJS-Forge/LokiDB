@@ -1,4 +1,4 @@
-import {QueryBuilder as QB} from "../../src/queries";
+import {QueryBuilder as QB} from "../../src/query_builder";
 
 const FIELD_NAME_1 = "msg";
 

@@ -1,7 +1,17 @@
 import {InvertedIndex} from "./inverted_index";
 import {IndexSearcher} from "./index_searcher";
+import {Tokenizer} from "./tokenizer";
+
+export interface Dictionary<T> {
+  [Key: string]: T;
+}
 
 export class FullTextSearch {
+  private _id: string;
+  private _docs: Set<any>;
+  private _idxSearcher: IndexSearcher;
+  private _invIdxs: Dictionary<InvertedIndex> = {};
+
   /**
    * Initialize the full text search for the given fields.
    * @param {object[]} fields - the field options
@@ -13,12 +23,7 @@ export class FullTextSearch {
    * @param {Tokenizer=Tokenizer} fields.tokenizer - the tokenizer of the field
    * @param {string=$loki} id - the property name of the document index
    */
-  constructor(fields, {id = "$loki"} = {}) {
-    if (fields === undefined) {
-      throw new SyntaxError("Fields needs to be defined!");
-    }
-
-    this._invIdxs = {};
+  constructor(fields: FullTextSearch.FieldOption[] = [], id = "$loki") {
     // Create inverted indices for each field.
     for (let i = 0; i < fields.length; i++) {
       let field = fields[i];
@@ -29,7 +34,7 @@ export class FullTextSearch {
     this._idxSearcher = new IndexSearcher(this._invIdxs, this._docs);
   }
 
-  addDocument(doc) {
+  addDocument(doc: any) {
     if (doc[this._id] === undefined) {
       throw new Error("Document is not stored in the collection.");
     }
@@ -45,7 +50,7 @@ export class FullTextSearch {
     this.setDirty();
   }
 
-  removeDocument(doc) {
+  removeDocument(doc: any) {
     if (doc[this._id] === undefined) {
       throw new Error("Document is not stored in the collection.");
     }
@@ -59,12 +64,12 @@ export class FullTextSearch {
     this.setDirty();
   }
 
-  updateDocument(doc) {
+  updateDocument(doc: any) {
     this.removeDocument(doc);
     this.addDocument(doc);
   }
 
-  search(query) {
+  search(query: any) {
     return this._idxSearcher.search(query);
   }
 
@@ -77,13 +82,12 @@ export class FullTextSearch {
     return serialized;
   }
 
-  static fromJSONObject(serialized, tokenizers) {
+  static fromJSONObject(serialized: any, tokenizers: Tokenizer[]) {
     let db = JSON.parse(serialized);
     let fts = new FullTextSearch();
     let fieldNames = Object.keys(db);
     for (let i = 0, fieldName; i < fieldNames.length, fieldName = fieldNames[i]; i++) {
-      fts._invIdxs[fieldName] = new InvertedIndex();
-      fts._invIdxs[fieldName].loadJSON(db[fieldName], tokenizers[fieldName]);
+      fts._invIdxs[fieldName] = InvertedIndex.fromJSONObject(db[fieldName], tokenizers[fieldName]);
     }
     return fts;
   }
@@ -92,3 +96,11 @@ export class FullTextSearch {
     this._idxSearcher.setDirty();
   }
 }
+
+export namespace FullTextSearch {
+  export interface FieldOption extends InvertedIndex.FieldOption {
+    name: string;
+  }
+}
+
+export default FullTextSearch;

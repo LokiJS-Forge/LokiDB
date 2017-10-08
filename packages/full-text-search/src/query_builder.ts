@@ -1,17 +1,14 @@
 /**
- * Query builder
- */
-//import * as Utils from './utils.js';
-
-/**
  * The base query class to enable boost to a query type.
  */
 export class BaseQuery {
+  protected _data: any;
+
   /**
    * @param {string} type - the type name of the query
    * @param data
    */
-  constructor(type, data = {}) {
+  constructor(type: string, data = {}) {
     this._data = data;
     this._data.type = type;
   }
@@ -25,7 +22,7 @@ export class BaseQuery {
    * @param {number} value - the positive boost
    * @return {BaseQuery} object itself for cascading
    */
-  boost(value) {
+  boost(value: number) {
     if (value < 0) {
       throw TypeError("Boost must be a positive number.");
     }
@@ -63,7 +60,7 @@ export class TermQuery extends BaseQuery {
    * @param {string} term - the term
    * @param data
    */
-  constructor(field, term, data = {}) {
+  constructor(field: string, term: string, data: any = {}) {
     super("term", data);
     this._data.field = field;
     this._data.value = term;
@@ -91,7 +88,7 @@ export class TermsQuery extends BaseQuery {
    * @param {string[]} terms - the terms
    * @param data
    */
-  constructor(field, terms, data = {}) {
+  constructor(field: string, terms: Array<string>, data: any = {}) {
     super("terms", data);
     this._data.field = field;
     this._data.value = terms;
@@ -130,7 +127,7 @@ export class WildcardQuery extends BaseQuery {
    * @param {string} wildcard - the wildcard term
    * @param data
    */
-  constructor(field, wildcard, data = {}) {
+  constructor(field: string, wildcard: string, data: any = {}) {
     super("wildcard", data);
     this._data.field = field;
     this._data.value = wildcard;
@@ -141,7 +138,7 @@ export class WildcardQuery extends BaseQuery {
    * @param {boolean} enable - flag to enable or disable scoring
    * @return {WildcardQuery}
    */
-  enableScoring(enable) {
+  enableScoring(enable: boolean) {
     this._data.enable_scoring = enable;
     return this;
   }
@@ -178,7 +175,7 @@ export class FuzzyQuery extends BaseQuery {
    * @param {string} fuzzy - the fuzzy term
    * @param data
    */
-  constructor(field, fuzzy, data = {}) {
+  constructor(field: string, fuzzy: string, data: any = {}) {
     super("fuzzy", data);
     this._data.field = field;
     this._data.value = fuzzy;
@@ -195,7 +192,7 @@ export class FuzzyQuery extends BaseQuery {
    *
    * @return {FuzzyQuery} - object itself for cascading
    */
-  fuzziness(fuzziness) {
+  fuzziness(fuzziness: number | string) {
     if (fuzziness !== "AUTO" && fuzziness < 0) {
       throw TypeError("Fuzziness must be a positive number or AUTO.");
     }
@@ -208,7 +205,7 @@ export class FuzzyQuery extends BaseQuery {
    * @param {number} prefixLength - the positive prefix length
    * @return {FuzzyQuery}  object itself for cascading
    */
-  prefixLength(prefixLength) {
+  prefixLength(prefixLength: number) {
     if (prefixLength < 0) {
       throw TypeError("Prefix length must be a positive number.");
     }
@@ -240,7 +237,7 @@ export class PrefixQuery extends BaseQuery {
    * @param {string} prefix - the prefix of a term
    * @param data
    */
-  constructor(field, prefix, data = {}) {
+  constructor(field: string, prefix: string, data: any = {}) {
     super("prefix", data);
     this._data.field = field;
     this._data.value = prefix;
@@ -251,7 +248,7 @@ export class PrefixQuery extends BaseQuery {
    * @param {boolean} enable - flag to enable or disable scoring
    * @return {PrefixQuery}
    */
-  enableScoring(enable) {
+  enableScoring(enable: boolean) {
     this._data.enable_scoring = enable;
     return this;
   }
@@ -276,7 +273,7 @@ export class ExistsQuery extends BaseQuery {
    * @param {string} field - the field name of the document
    * @param data
    */
-  constructor(field, data = {}) {
+  constructor(field: string, data: any = {}) {
     super("exists", data);
     this._data.field = field;
   }
@@ -315,7 +312,7 @@ export class MatchQuery extends BaseQuery {
    * @param {string} query - the query text
    * @param data
    */
-  constructor(field, query, data = {}) {
+  constructor(field: string, query: string, data: any = {}) {
     super("match", data);
     this._data.field = field;
     this._data.value = query;
@@ -333,7 +330,7 @@ export class MatchQuery extends BaseQuery {
    *     The number computed from the percentage is rounded down and used as the minimum.
    * @return {MatchQuery} object itself for cascading
    */
-  minimumShouldMatch(minShouldMatch) {
+  minimumShouldMatch(minShouldMatch: number) {
     if (this._data.operator !== undefined && this._data.operator === "and") {
       throw SyntaxError("Match query with \"and\" operator does not support minimum should match.");
     }
@@ -343,10 +340,10 @@ export class MatchQuery extends BaseQuery {
 
   /**
    * Sets the boolean operator.
-   * @param {string} op - the operator (_or_/_and_)
+   * @param {string} op - the operator ("or" || "and")
    * @return {MatchQuery} object itself for cascading
    */
-  operator(op) {
+  operator(op: string) {
     if (op !== "and" && op !== "or") {
       throw SyntaxError("Unknown operator.");
     }
@@ -368,7 +365,7 @@ export class MatchQuery extends BaseQuery {
    *
    * @return {MatchQuery} - object itself for cascading
    */
-  fuzziness(fuzziness) {
+  fuzziness(fuzziness: number | string) {
     if (fuzziness !== "AUTO" && fuzziness < 0) {
       throw TypeError("Fuzziness must be a positive number or AUTO.");
     }
@@ -381,7 +378,7 @@ export class MatchQuery extends BaseQuery {
    * @param {number} prefixLength - the positive prefix length
    * @return {MatchQuery} - object itself for cascading
    */
-  prefixLength(prefixLength) {
+  prefixLength(prefixLength: number) {
     if (prefixLength < 0) {
       throw TypeError("Prefix length must be a positive number.");
     }
@@ -417,16 +414,18 @@ export class MatchAllQuery extends BaseQuery {
 
 /**
  * A query which holds all sub queries like an array.
- * @private
  */
-class ArrayQuery extends BaseQuery {
-  constructor(callbackName, callback, data = {}) {
+export class ArrayQuery extends BaseQuery {
+  private _callbackName: string;
+  private _prepare: Function;
+
+  constructor(callbackName: string, callback: Function, data: any = {}) {
     super("array", data);
     this._data.values = [];
     this._callbackName = callbackName;
     this[callbackName] = callback;
 
-    this._prepare = (queryType, ...args) => {
+    this._prepare = (queryType: any, ...args: any[]) => {
       let data = {};
       let query = new queryType(...args, data);
       this._data.values.push(data);
@@ -454,23 +453,23 @@ class ArrayQuery extends BaseQuery {
     return this._prepare(ConstantScoreQuery);
   }
 
-  term(field, term) {
+  term(field: string, term: string) {
     return this._prepare(TermQuery, field, term);
   }
 
-  terms(field, terms) {
+  terms(field: string, terms: Array<string>) {
     return this._prepare(TermsQuery, field, terms);
   }
 
-  wildcard(field, wildcard) {
+  wildcard(field: string, wildcard: string) {
     return this._prepare(WildcardQuery, field, wildcard);
   }
 
-  fuzzy(field, fuzzy) {
+  fuzzy(field: string, fuzzy: string) {
     return this._prepare(FuzzyQuery, field, fuzzy);
   }
 
-  match(field, query) {
+  match(field: string, query: string) {
     return this._prepare(MatchQuery, field, query);
   }
 
@@ -478,11 +477,11 @@ class ArrayQuery extends BaseQuery {
     return this._prepare(MatchAllQuery);
   }
 
-  prefix(field, prefix) {
+  prefix(field: string, prefix: string) {
     return this._prepare(PrefixQuery, field, prefix);
   }
 
-  exists(field) {
+  exists(field: string) {
     return this._prepare(ExistsQuery, field);
   }
 }
@@ -508,7 +507,7 @@ class ArrayQuery extends BaseQuery {
  * @extends BaseQuery
  */
 export class ConstantScoreQuery extends BaseQuery {
-  constructor(data = {}) {
+  constructor(data: any = {}) {
     super("constant_score", data);
   }
 
@@ -568,7 +567,7 @@ export class ConstantScoreQuery extends BaseQuery {
  * @extends BaseQuery
  */
 export class BoolQuery extends BaseQuery {
-  constructor(data = {}) {
+  constructor(data: any = {}) {
     super("bool", data);
   }
 
@@ -628,7 +627,7 @@ export class BoolQuery extends BaseQuery {
    *     The number computed from the percentage is rounded down and used as the minimum.
    * @return {BoolQuery} object itself for cascading
    */
-  minimumShouldMatch(minShouldMatch) {
+  minimumShouldMatch(minShouldMatch: number) {
     this._data.minimum_should_match = minShouldMatch;
     return this;
   }
@@ -654,6 +653,9 @@ export class BoolQuery extends BaseQuery {
  * // are scored and ranked using BM25 with k1=1.5 and b=0.5
  */
 export class QueryBuilder {
+  private _data: any;
+  private _child: any;
+
   constructor() {
     this._data = {query: {}};
     this.useBM25();
@@ -664,7 +666,7 @@ export class QueryBuilder {
    * @param {boolean} enable - flag to enable or disable final scoring
    * @return {QueryBuilder}
    */
-  enableFinalScoring(enable) {
+  enableFinalScoring(enable: boolean) {
     this._data.final_scoring = enable;
     return this;
   }
@@ -681,7 +683,7 @@ export class QueryBuilder {
    *                            A value of 0.0 disables normalization completely, and a value of 1.0 normalizes fully.
    * @return {QueryBuilder}
    */
-  useBM25(k1 = 1.2, b = 0.75) {
+  useBM25(k1: number = 1.2, b: number = 0.75) {
     if (k1 < 0) {
       throw TypeError("BM25s k1 must be a positive number.");
     }
@@ -705,23 +707,23 @@ export class QueryBuilder {
     return this._prepare(ConstantScoreQuery);
   }
 
-  term(field, term) {
+  term(field: string, term: string) {
     return this._prepare(TermQuery, field, term);
   }
 
-  terms(field, terms) {
+  terms(field: string, terms: Array<string>) {
     return this._prepare(TermsQuery, field, terms);
   }
 
-  wildcard(field, wildcard) {
+  wildcard(field: string, wildcard: string) {
     return this._prepare(WildcardQuery, field, wildcard);
   }
 
-  fuzzy(field, fuzzy) {
+  fuzzy(field: string, fuzzy: string) {
     return this._prepare(FuzzyQuery, field, fuzzy);
   }
 
-  match(field, query) {
+  match(field: string, query: string) {
     return this._prepare(MatchQuery, field, query);
   }
 
@@ -729,15 +731,15 @@ export class QueryBuilder {
     return this._prepare(MatchAllQuery);
   }
 
-  prefix(field, prefix) {
+  prefix(field: string, prefix: string) {
     return this._prepare(PrefixQuery, field, prefix);
   }
 
-  exists(field) {
+  exists(field: string) {
     return this._prepare(ExistsQuery, field);
   }
 
-  _prepare(queryType, ...args) {
+  private _prepare(queryType: any, ...args: any[]) {
     this._child = new queryType(...args, this._data.query);
     this._child.build = () => {
       return this._data;

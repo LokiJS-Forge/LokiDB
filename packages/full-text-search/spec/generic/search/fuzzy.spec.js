@@ -1,6 +1,6 @@
 /* global describe, it, expect */
 import {FullTextSearch} from "../../../src/full_text_search";
-import {QueryBuilder as QB, FuzzyQuery} from "../../../src/queries";
+import {QueryBuilder as QB, FuzzyQuery} from "../../../src/query_builder";
 
 describe("fuzzy query", () => {
   // from lucene 6.4.0 core: TestFuzzyQuery

@@ -1,6 +1,6 @@
 /* global describe, it, expect */
 import {FullTextSearch} from "../../../src/full_text_search";
-import {QueryBuilder as QB, WildcardQuery} from "../../../src/queries";
+import {QueryBuilder as QB, WildcardQuery} from "../../../src/query_builder";
 import {Tokenizer} from "../../../src/tokenizer";
 
 describe("wildcard query", () => {

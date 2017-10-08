@@ -3,7 +3,7 @@ const path = require("path");
 
 module.exports = {
   devtool: "source-map",
-  entry: path.join(__dirname, "src", "full_text_search.js"),
+  entry: path.join(__dirname, "src", "index.ts"),
   output: {
     filename: "lokijs.full-text-search.js",
     library: "@lokijs/full-text-search",
@@ -11,20 +11,16 @@ module.exports = {
     umdNamedDefine: false
   },
   externals: {
-    "../../loki/src/loki": "@lokijs/loki",
-    "fs": "fs"
+    "../../loki/src/loki": "@lokijs/loki"
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.jsx']
+    extensions: ['.ts', '.js']
   },
   module: {
     loaders: [
       {
         test: /(\.ts)$/,
-        loader: "awesome-typescript-loader",
-        options: {
-          configFileName: path.join("config", "tsconfig.json")
-        }
+        loader: "ts-loader",
       },
       {
         test: /(\.js)$/,
@@ -35,5 +31,24 @@ module.exports = {
         }
       }
     ]
-  }
+  },
+  plugins: [
+    new DtsBundlePlugin()
+  ]
+};
+
+function DtsBundlePlugin() {
+}
+DtsBundlePlugin.prototype.apply = function (compiler) {
+  compiler.plugin('done', function () {
+    var dts = require('dts-bundle');
+
+    dts.bundle({
+      name: "@lokijs/full-text-search",
+      main: path.join(__dirname, "src", "full_text_search.ts"),
+      out: path.join(__dirname, "src", "index.d.ts"),
+      removeSource: true,
+      outputAsModuleFolder: true // to use npm in-package typings
+    });
+  });
 };

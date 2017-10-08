@@ -1,47 +1,43 @@
+import {InvertedIndex} from "./inverted_index";
+import {Dictionary} from "./full_text_search";
+
 export class Scorer {
-  constructor(invIdxs) {
+  private _invIdxs: Dictionary<InvertedIndex>;
+  private _cache: object = {};
+
+  constructor(invIdxs: Dictionary<InvertedIndex>) {
     this._invIdxs = invIdxs;
-    this._cache = {};
   }
 
   setDirty() {
     this._cache = {};
   }
 
-  prepare(fieldName, boost, termIdx, doScoring, docResults = {}, term = null) {
+  prepare(fieldName: string, boost: number, termIdx: any, doScoring: boolean, docResults: object = {}, term: string = null) {
     if (termIdx === null || termIdx.dc === undefined) {
       return null;
     }
 
-    let idf = this._idf(fieldName, termIdx.df);
-    let docIds = Object.keys(termIdx.dc);
+    const idf = this._idf(fieldName, termIdx.df);
+    const docIds = Object.keys(termIdx.dc);
     for (let j = 0; j < docIds.length; j++) {
-      let docId = docIds[j];
+      const docId = docIds[j];
       if (docResults[docId] === undefined) {
         docResults[docId] = [];
       }
 
       if (doScoring) {
-        let tf = termIdx.dc[docId];
-        docResults[docId].push({
-          type: "BM25",
-          tf,
-          idf,
-          boost,
-          fieldName,
-          term
-        });
+        const tf = termIdx.dc[docId];
+        docResults[docId].push({type: "BM25", tf, idf, boost, fieldName, term});
       } else {
-        docResults[docId] = [{
-          type: "constant", value: 1, boost, fieldName
-        }];
+        docResults[docId] = [{type: "constant", value: 1, boost, fieldName}];
       }
     }
 
     return docResults;
   }
 
-  scoreConstant(boost, docId, docResults = {}) {
+  scoreConstant(boost: number, docId: string, docResults: object = {}) {
     if (docResults[docId] === undefined) {
       docResults[docId] = [];
     }
@@ -49,7 +45,7 @@ export class Scorer {
     return docResults;
   }
 
-  finalScore(query, docResults = {}) {
+  finalScore(query: any, docResults: object = {}) {
     let result = {};
     let k1 = query.scoring.k1;
     let b = query.scoring.b;
@@ -84,9 +80,9 @@ export class Scorer {
           case "constant":
             res = docResult.value * docResult.boost;
             /*console.log(
-						 "Constant: " + res,
-						 "\n\tboost: " + docResult.boost,
-						 "\n\tvalue : " + docResult.value);*/
+             "Constant: " + res,
+             "\n\tboost: " + docResult.boost,
+             "\n\tvalue : " + docResult.value);*/
             break;
         }
         docScore += res;
@@ -97,7 +93,7 @@ export class Scorer {
     return result;
   }
 
-  static _calculateFieldLength(fieldLength) {
+  static _calculateFieldLength(fieldLength: number) {
     // Lucene uses a SmallFloat (size of 1 byte) to store the field length in scoring.
     // This is useless in javascript, because every number is represented as a double (8 byte).
     // To align the scoring result with lucene, this calculation is still needed.
@@ -119,7 +115,7 @@ export class Scorer {
     throw RangeError("Unsupported field length.");
   }
 
-  _getCache(fieldName) {
+  private _getCache(fieldName: string) {
     if (this._cache[fieldName] === undefined) {
       let avgFieldLength = this._invIdxs[fieldName].totalFieldLength / this._invIdxs[fieldName].documentCount;
       this._cache[fieldName] = {idfs: {}, avgFieldLength};
@@ -128,13 +124,13 @@ export class Scorer {
   }
 
   /**
-	 * Returns the idf by either calculate it or use a cached one.
-	 * @param {string} fieldName - the name of the field
-	 * @param {number} docFreq - the doc frequency of the term
-	 * @returns {number} the idf
-	 * @private
-	 */
-  _idf(fieldName, docFreq) {
+   * Returns the idf by either calculate it or use a cached one.
+   * @param {string} fieldName - the name of the field
+   * @param {number} docFreq - the doc frequency of the term
+   * @returns {number} the idf
+   * @private
+   */
+  private _idf(fieldName: string, docFreq: number) {
     let cache = this._getCache(fieldName);
     if (cache.idfs[docFreq] !== undefined) {
       return cache.idfs[docFreq];
@@ -142,7 +138,7 @@ export class Scorer {
     return cache.idfs[docFreq] = Math.log(1 + (this._invIdxs[fieldName].documentCount - docFreq + 0.5) / (docFreq + 0.5));
   }
 
-  _avgFieldLength(fieldName) {
+  private _avgFieldLength(fieldName: string) {
     return this._getCache(fieldName).avgFieldLength;
   }
 }

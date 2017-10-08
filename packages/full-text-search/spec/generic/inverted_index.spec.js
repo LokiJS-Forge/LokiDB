@@ -1,5 +1,7 @@
 /* global describe, it, expect */
 import {InvertedIndex} from "../../src/inverted_index";
+import {QueryBuilder} from "../../src/query_builder"
+import {IndexSearcher} from "../../src/index_searcher"
 
 describe("inverted index", () => {
 

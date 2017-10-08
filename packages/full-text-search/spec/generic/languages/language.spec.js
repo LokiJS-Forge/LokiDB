@@ -1,7 +1,7 @@
 /* global describe, it, expect */
 import {de} from "./de";
 import {FullTextSearch} from "../../../src/full_text_search";
-import {QueryBuilder} from "../../../src/queries";
+import {QueryBuilder} from "../../../src/query_builder";
 
 let testData = {
   de: de

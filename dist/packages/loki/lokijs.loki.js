@@ -93,24 +93,24 @@ class LokiEventEmitter {
 
   constructor() {
     /**
-		 * @prop {hashmap} events - a hashmap, with each property being an array of callbacks
-		 */
+     * @prop {hashmap} events - a hashmap, with each property being an array of callbacks
+     */
     this.events = {};
 
     /**
-		 * @prop {boolean} asyncListeners - boolean determines whether or not the callbacks associated with each event
-		 * should happen in an async fashion or not
-		 * Default is false, which means events are synchronous
-		 */
+     * @prop {boolean} asyncListeners - boolean determines whether or not the callbacks associated with each event
+     * should happen in an async fashion or not
+     * Default is false, which means events are synchronous
+     */
     this.asyncListeners = false;
   }
 
   /**
-	 * on(eventName, listener) - adds a listener to the queue of callbacks associated to an event
-	 * @param {string|string[]} eventName - the name(s) of the event(s) to listen to
-	 * @param {function} listener - callback function of listener to attach
-	 * @returns {int} the index of the callback in the array of listeners for a particular event
-	 */
+   * on(eventName, listener) - adds a listener to the queue of callbacks associated to an event
+   * @param {string|string[]} eventName - the name(s) of the event(s) to listen to
+   * @param {function} listener - callback function of listener to attach
+   * @returns {int} the index of the callback in the array of listeners for a particular event
+   */
   on(eventName, listener) {
     let event;
 
@@ -130,21 +130,21 @@ class LokiEventEmitter {
   }
 
   /**
-	 * emit(eventName, data) - emits a particular event
-	 * with the option of passing optional parameters which are going to be processed by the callback
-	 * provided signatures match (i.e. if passing emit(event, arg0, arg1) the listener should take two parameters)
-	 * @param {string} eventName - the name of the event
-	 * @param {object=} data - optional object passed with the event
-	 */
-  emit(eventName, data) {
+   * emit(eventName, data) - emits a particular event
+   * with the option of passing optional parameters which are going to be processed by the callback
+   * provided signatures match (i.e. if passing emit(event, arg0, arg1) the listener should take two parameters)
+   * @param {string} eventName - the name of the event
+   * @param {object} data - optional object passed with the event
+   */
+  emit(eventName, ...data) {
     if (eventName && this.events[eventName]) {
       this.events[eventName].forEach((listener) => {
         if (this.asyncListeners) {
           setTimeout(() => {
-            listener(data);
+            listener(...data);
           }, 1);
         } else {
-          listener(data);
+          listener(...data);
         }
 
       });
@@ -152,21 +152,21 @@ class LokiEventEmitter {
   }
 
   /**
-	 * Alias of LokiEventEmitter.prototype.on
-	 * addListener(eventName, listener) - adds a listener to the queue of callbacks associated to an event
-	 * @param {string|string[]} eventName - the name(s) of the event(s) to listen to
-	 * @param {function} listener - callback function of listener to attach
-	 * @returns {int} the index of the callback in the array of listeners for a particular event
-	 */
+   * Alias of LokiEventEmitter.prototype.on
+   * addListener(eventName, listener) - adds a listener to the queue of callbacks associated to an event
+   * @param {string|string[]} eventName - the name(s) of the event(s) to listen to
+   * @param {function} listener - callback function of listener to attach
+   * @returns {int} the index of the callback in the array of listeners for a particular event
+   */
   addListener(eventName, listener) {
     return this.on(eventName, listener);
   }
 
   /**
-	 * removeListener() - removes the listener at position 'index' from the event 'eventName'
-	 * @param {string|string[]} eventName - the name(s) of the event(s) which the listener is attached to
-	 * @param {function} listener - the listener callback function to remove from emitter
-	 */
+   * removeListener() - removes the listener at position 'index' from the event 'eventName'
+   * @param {string|string[]} eventName - the name(s) of the event(s) which the listener is attached to
+   * @param {function} listener - the listener callback function to remove from emitter
+   */
   removeListener(eventName, listener) {
     if (Array.isArray(eventName)) {
       eventName.forEach((currentEventName) => {
@@ -397,7 +397,7 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
    * Copies 'this' database into a new Loki instance. Object references are shared to make lightweight.
    *
    * @param {object} options - apply or override collection level settings
-   * @param {bool} options.removeNonSerializable - nulls properties not safe for serialization.
+   * @param {boolean} options.removeNonSerializable - nulls properties not safe for serialization.
    */
   copy(options = {}) {
     // in case running in an environment without accurate environment detection, pass 'NA'
@@ -428,15 +428,15 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
   /**
    * Adds a collection to the database.
    * @param {string} name - name of collection to add
-   * @param {object=} options - (optional) options to configure collection with.
-   * @param {string[]} options.unique - array of property names to define unique constraints for
-   * @param {string[]} options.exact - array of property names to define exact constraints for
-   * @param {string[]} options.indices - array property names to define binary indexes for
-   * @param {boolean} options.asyncListeners - default is false
-   * @param {boolean} options.disableChangesApi - default is true
-   * @param {boolean} options.autoupdate - use Object.observe to update objects automatically (default: false)
-   * @param {boolean} options.clone - specify whether inserts and queries clone to/from user
-   * @param {string} options.cloneMethod - 'parse-stringify' (default), 'jquery-extend-deep', 'shallow'
+   * @param {object} [options={}] - options to configure collection with.
+   * @param {array} [options.unique=[]] - array of property names to define unique constraints for
+   * @param {array} [options.exact=[]] - array of property names to define exact constraints for
+   * @param {array} [options.indices=[]] - array property names to define binary indexes for
+   * @param {boolean} [options.asyncListeners=false] - whether listeners are called asynchronously
+   * @param {boolean} [options.disableChangesApi=true] - set to false to enable Changes Api
+   * @param {boolean} [options.autoupdate=false] - use Object.observe to update objects automatically
+   * @param {boolean} [options.clone=false] - specify whether inserts and queries clone to/from user
+   * @param {string} [options.cloneMethod='parse-stringify'] - 'parse-stringify', 'jquery-extend-deep', 'shallow, 'shallow-assign'
    * @param {int} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
    * @returns {Collection} a reference to the collection which was just added
    */
@@ -475,6 +475,21 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
     // no such collection
     this.emit("warning", "collection " + collectionName + " not found");
     return null;
+  }
+
+  /**
+   * Renames an existing loki collection
+   * @param {string} oldName - name of collection to rename
+   * @param {string} newName - new name of collection
+   * @returns {Collection} reference to the newly renamed collection
+   */
+  renameCollection(oldName, newName) {
+    const c = this.getCollection(oldName);
+    if (c) {
+      c.name = newName;
+    }
+    
+    return c;
   }
 
   listCollections() {
@@ -560,16 +575,16 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
   }
 
   /**
-   * Destructured JSON serialization routine to allow alternate serialization methods.
+   * Database level destructured JSON serialization routine to allow alternate serialization methods.
    * Internally, Loki supports destructuring via loki "serializationMethod' option and
    * the optional LokiPartitioningAdapter class. It is also available if you wish to do
    * your own structured persistence or data exchange.
    *
-   * @param {object=} options - output format options for use externally to loki
-   * @param {bool=} options.partitioned - (default: false) whether db and each collection are separate
-   * @param {int=} options.partition - can be used to only output an individual collection or db (-1)
-   * @param {bool=} options.delimited - (default: true) whether subitems are delimited or subarrays
-   * @param {string=} options.delimiter - override default delimiter
+   * @param {object} options - output format options for use externally to loki
+   * @param {boolean} [options.partitioned=false] - whether db and each collection are separate
+   * @param {int} options.partition - can be used to only output an individual collection or db (-1)
+   * @param {boolean} [options.delimited=true] - whether subitems are delimited or subarrays
+   * @param {string} options.delimiter - override default delimiter
    *
    * @returns {string|Array} A custom, restructured aggregation of independent serializations.
    */
@@ -691,11 +706,11 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
   }
 
   /**
-   * Utility method to serialize a collection in a 'destructured' format
+   * Collection level utility method to serialize a collection in a 'destructured' format
    *
    * @param {object} options - used to determine output of method
-   * @param {int=} options.delimited - whether to return single delimited string or an array
-   * @param {string=} options.delimiter - (optional) if delimited, this is delimiter to use
+   * @param {int} options.delimited - whether to return single delimited string or an array
+   * @param {string} options.delimiter - (optional) if delimited, this is delimiter to use
    * @param {int} options.collectionIndex -  specify which collection to serialize data for
    *
    * @returns {string|array} A custom, restructured aggregation of independent serializations for a single collection.
@@ -734,17 +749,17 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
   }
 
   /**
-   * Destructured JSON deserialization routine to minimize memory overhead.
+   * Database level destructured JSON deserialization routine to minimize memory overhead.
    * Internally, Loki supports destructuring via loki "serializationMethod' option and
    * the optional LokiPartitioningAdapter class. It is also available if you wish to do
    * your own structured persistence or data exchange.
    *
    * @param {string|array} destructuredSource - destructured json or array to deserialize from
-   * @param {object=} options - source format options
-   * @param {bool=} options.partitioned - (default: false) whether db and each collection are separate
-   * @param {int=} options.partition - can be used to deserialize only a single partition
-   * @param {bool=} options.delimited - (default: true) whether subitems are delimited or subarrays
-   * @param {string=} options.delimiter - override default delimiter
+   * @param {object} options - source format options
+   * @param {boolean} [options.partitioned=false] - whether db and each collection are separate
+   * @param {int} options.partition - can be used to deserialize only a single partition
+   * @param {boolean} [options.delimited=true] - whether subitems are delimited or subarrays
+   * @param {string} options.delimiter - override default delimiter
    *
    * @returns {object|array} An object representation of the deserialized database, not yet applied to 'this' db or document array
    */
@@ -843,12 +858,12 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
   }
 
   /**
-   * Deserializes a destructured collection.
+   * Collection level utility function to deserializes a destructured collection.
    *
    * @param {string|Array} destructuredSource - destructured representation of collection to inflate
    * @param {object} options - used to describe format of destructuredSource input
-   * @param {int} options.delimited - whether source is delimited string or an array
-   * @param {string} options.delimiter - (optional) if delimited, this is delimiter to use
+   * @param {int} [options.delimited=false] - whether source is delimited string or an array
+   * @param {string} options.delimiter - if delimited, this is delimiter to use (if other than default)
    *
    * @returns {Array} an array of documents to attach to collection.data.
    */
@@ -889,6 +904,7 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
    *
    * @param {string} serializedDb - a serialized loki database string
    * @param {object} options - apply or override collection level settings
+   * @param {boolean} options.retainDirtyFlags - whether collection dirty flags will be preserved
    */
   loadJSON(serializedDb, options) {
     let dbObject;
@@ -917,7 +933,7 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
    *
    * @param {object} dbObject - a serialized loki database string
    * @param {object} options - apply or override collection level settings
-   * @param {bool?} options.retainDirtyFlags - whether collection dirty flags will be preserved
+   * @param {boolean} options.retainDirtyFlags - whether collection dirty flags will be preserved
    */
   loadJSONObject(dbObject, options = {}) {
     const len = dbObject.collections ? dbObject.collections.length : 0;
@@ -971,7 +987,7 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
    * collection and creates a single array for the entire database. If an array of names
    * of collections is passed then only the included collections will be tracked.
    *
-   * @param {Array=} optional array of collection names. No arg means all collections are processed.
+   * @param {Array} [arrayOfCollectionNames=] - array of collection names. No arg means all collections are processed.
    * @returns {Array} array of changes
    * @see private method createChange() in Collection
    */
@@ -1013,10 +1029,10 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
   /**
    * Wait for throttledSaves to complete and invoke your callback when drained or duration is met.
    *
-   * @param {object=} options - configuration options
-   * @param {boolean} options.recursiveWait - (default: true) if after queue is drained, another save was kicked off, wait for it
-   * @param {bool} options.recursiveWaitLimit - (default: false) limit our recursive waiting to a duration
-   * @param {int} options.recursiveWaitLimitDelay - (default: 2000) cutoff in ms to stop recursively re-draining
+   * @param {object} options - configuration options
+   * @param {boolean} [options.recursiveWait=true] - if after queue is drained, another save was kicked off, wait for it
+   * @param {boolean} [options.recursiveWaitLimit=false] - limit our recursive waiting to a duration
+   * @param {number} [options.recursiveWaitLimitDelay=2000] - cutoff in ms to stop recursively re-draining
    * @returns {Promise} a Promise that resolves when save queue is drained, it is passed a sucess parameter value
    */
   throttledSaveDrain(options = {}) {
@@ -1099,15 +1115,17 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
   }
 
   /**
-   * Handles loading from file system, local storage, or adapter (indexeddb)
+   * Handles manually loading from an adapter storage (such as fs-storage)
    *    This method utilizes loki configuration options (if provided) to determine which
    *    persistence method to use, or environment detection (if configuration was not provided).
    *    To avoid contention with any throttledSaves, we will drain the save queue first.
    *
-   * @param {object} options - if throttling saves and loads, this controls how we drain save queue before loading
-   * @param {boolean} options.recursiveWait - (default: true) wait recursively until no saves are queued
-   * @param {bool} options.recursiveWaitLimit - (default: false) limit our recursive waiting to a duration
-   * @param {int} options.recursiveWaitLimitDelay - (default: 2000) cutoff in ms to stop recursively re-draining
+   * If you are configured with autosave, you do not need to call this method yourself.
+   *
+   * @param {object} [options={}] - if throttling saves and loads, this controls how we drain save queue before loading
+   * @param {boolean} [options.recursiveWait=true] wait recursively until no saves are queued
+   * @param {boolean} [options.recursiveWaitLimit=false] limit our recursive waiting to a duration
+   * @param {int} [options.recursiveWaitLimitDelay=2000] cutoff in ms to stop recursively re-draining
    * @returns {Promise} a Promise that resolves after the database is loaded
    */
   loadDatabase(options) {
@@ -1157,9 +1175,11 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
   }
 
   /**
-   * Handles saving to file system, local storage, or adapter (indexeddb)
+   * Handles manually saving to an adapter storage (such as fs-storage)
    *    This method utilizes loki configuration options (if provided) to determine which
    *    persistence method to use, or environment detection (if configuration was not provided).
+   *
+   * If you are configured with autosave, you do not need to call this method yourself.
    *
    * @returns {Promise} a Promise that resolves after the database is persisted
    */
@@ -1339,17 +1359,18 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
 
   /**
    * @param {string} name - collection name
-   * @param {(array|object)=} options - (optional) array of property names to be indicized OR a configuration object
-   * @param {array} options.unique - array of property names to define unique constraints for
-   * @param {array} options.exact - array of property names to define exact constraints for
-   * @param {array} options.indices - array property names to define binary indexes for
-   * @param {boolean} options.adaptiveBinaryIndices - collection indices will be actively rebuilt rather than lazily (default: true)
-   * @param {boolean} options.asyncListeners - default is false
-   * @param {boolean} options.disableChangesApi - default is true
-   * @param {boolean} options.autoupdate - use Object.observe to update objects automatically (default: false)
-   * @param {boolean} options.clone - specify whether inserts and queries clone to/from user
-   * @param {boolean} options.serializableIndices  - ensures indexed property values are serializable (default: true)
-   * @param {string} options.cloneMethod - 'parse-stringify' (default), 'jquery-extend-deep', 'shallow'
+   * @param {(array|object)} [options={}] - array of property names to be indicized OR a configuration object
+   * @param {array} [options.unique=[]] - array of property names to define unique constraints for
+   * @param {array} [options.exact=[]] - array of property names to define exact constraints for
+   * @param {array} [options.indices=[]] - array property names to define binary indexes for
+   * @param {boolean} [options.adaptiveBinaryIndices=true] - collection indices will be actively rebuilt rather than lazily
+   * @param {boolean} [options.asyncListeners=false] - whether listeners are invoked asynchronously
+   * @param {boolean} [options.disableChangesApi=true] - set to false to enable Changes API
+   * @param {boolean} [options.disableDeltaChangesApi=true] - set to false to enable Delta Changes API (requires Changes API, forces cloning)
+   * @param {boolean} [options.autoupdate=false] - use Object.observe to update objects automatically
+   * @param {boolean} [options.clone=false] - specify whether inserts and queries clone to/from user
+   * @param {boolean} [options.serializableIndices =true[]] - converts date values on binary indexed property values are serializable
+   * @param {string} [options.cloneMethod='parse-stringify'] - 'parse-stringify', 'jquery-extend-deep', 'shallow'
    * @param {int} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
    * @see {@link Loki#addCollection} for normal creation of collections
    */
@@ -1432,6 +1453,12 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
     // disable track changes
     this.disableChangesApi = options.disableChangesApi !== undefined ? options.disableChangesApi : true;
 
+    // disable delta update object style on changes
+    this.disableDeltaChangesApi = options.disableDeltaChangesApi !== undefined ? options.disableDeltaChangesApi : true;
+    if (this.disableChangesApi) {
+      this.disableDeltaChangesApi = true;
+    }
+
     // option to observe objects and update them automatically, ignored if Object.observe is not supported
     this.autoupdate = options.autoupdate !== undefined ? options.autoupdate : false;
 
@@ -1507,7 +1534,8 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
           return this.removeAutoUpdateObserver(object);
         try {
           this.update(object);
-        } catch (err) {/**/}
+        } catch (err) {/**/
+        }
       });
     }
 
@@ -1515,16 +1543,56 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
 
     const self = this;
     /*
-		 * This method creates a clone of the current status of an object and associates operation and collection name,
-		 * so the parent db can aggregate and generate a changes object for the entire db
-		 */
-    function createChange(name, op, obj) {
+     * This method creates a clone of the current status of an object and associates operation and collection name,
+     * so the parent db can aggregate and generate a changes object for the entire db
+     */
+    function createChange(name, op, obj, old) {
       self.changes.push({
         name,
         operation: op,
-        obj: JSON.parse(JSON.stringify(obj))
+        obj: op === "U" && !self.disableDeltaChangesApi ? getChangeDelta(obj, old) : JSON.parse(JSON.stringify(obj))
       });
     }
+
+    //Compare changed object (which is a forced clone) with existing object and return the delta
+    function getChangeDelta(obj, old) {
+      if (old) {
+        return getObjectDelta(old, obj);
+      }
+      else {
+        return JSON.parse(JSON.stringify(obj));
+      }
+    }
+
+    this.getChangeDelta = getChangeDelta;
+
+    function getObjectDelta(oldObject, newObject) {
+      const propertyNames = newObject !== null && typeof newObject === "object" ? Object.keys(newObject) : null;
+      if (propertyNames && propertyNames.length && ["string", "boolean", "number"].indexOf(typeof(newObject)) < 0) {
+        const delta = {};
+        for (let i = 0; i < propertyNames.length; i++) {
+          const propertyName = propertyNames[i];
+          if (newObject.hasOwnProperty(propertyName)) {
+            if (!oldObject.hasOwnProperty(propertyName) || self.uniqueNames.indexOf(propertyName) >= 0 || propertyName === "$loki" || propertyName === "meta") {
+              delta[propertyName] = newObject[propertyName];
+            }
+            else {
+              const propertyDelta = getObjectDelta(oldObject[propertyName], newObject[propertyName]);
+              if (typeof propertyDelta !== "undefined" && propertyDelta !== {}) {
+                delta[propertyName] = propertyDelta;
+              }
+            }
+          }
+        }
+        return Object.keys(delta).length === 0 ? undefined : delta;
+      }
+      else {
+        return oldObject === newObject ? undefined : newObject;
+      }
+    }
+
+    this.getObjectDelta = getObjectDelta;
+
 
     // clear all the changes
     function flushChanges() {
@@ -1536,8 +1604,8 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
     this.flushChanges = flushChanges;
 
     /**
-		 * If the changes API is disabled make sure only metadata is added without re-evaluating everytime if the changesApi is enabled
-		 */
+     * If the changes API is disabled make sure only metadata is added without re-evaluating everytime if the changesApi is enabled
+     */
     function insertMeta(obj) {
       let len;
       let idx;
@@ -1583,8 +1651,8 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
       createChange(self.name, "I", obj);
     }
 
-    function createUpdateChange(obj) {
-      createChange(self.name, "U", obj);
+    function createUpdateChange(obj, old) {
+      createChange(self.name, "U", obj, old);
     }
 
     function insertMetaWithChange(obj) {
@@ -1592,9 +1660,9 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
       createInsertChange(obj);
     }
 
-    function updateMetaWithChange(obj) {
+    function updateMetaWithChange(obj, old) {
       updateMeta(obj);
-      createUpdateChange(obj);
+      createUpdateChange(obj, old);
     }
 
 
@@ -1612,17 +1680,20 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
 
     this.setChangesApi = (enabled) => {
       this.disableChangesApi = !enabled;
+      if (!enabled) {
+        self.disableDeltaChangesApi = false;
+      }
       setHandlers();
     };
     /**
-		 * built-in events
-		 */
+     * built-in events
+     */
     this.on("insert", (obj) => {
       insertHandler(obj);
     });
 
-    this.on("update", (obj) => {
-      updateHandler(obj);
+    this.on("update", (obj, old) => {
+      updateHandler(obj, old);
     });
 
     this.on("delete", (obj) => {
@@ -1648,9 +1719,9 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
 
     /* ------ STAGING API -------- */
     /**
-		 * stages: a map of uniquely identified 'stages', which hold copies of objects to be
-		 * manipulated without affecting the data in the original collection
-		 */
+     * stages: a map of uniquely identified 'stages', which hold copies of objects to be
+     * manipulated without affecting the data in the original collection
+     */
     this.stages = {};
     this.commitLog = [];
   }
@@ -1678,7 +1749,10 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   static fromJSONObject(obj, options, forceRebuild) {
-    let coll = new Collection(obj.name, {disableChangesApi: obj.disableChangesApi});
+    let coll = new Collection(obj.name, {
+      disableChangesApi: obj.disableChangesApi,
+      disableDeltaChangesApi: obj.disableDeltaChangesApi
+    });
 
     coll.adaptiveBinaryIndices = obj.adaptiveBinaryIndices !== undefined ? (obj.adaptiveBinaryIndices === true) : false;
     coll.transactional = obj.transactional;
@@ -1781,11 +1855,10 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Adds a named collection transform to the collection
-	 * @param {string} name - name to associate with transform
-	 * @param {array} transform - an array of transformation 'step' objects to save into the collection
-	 * @memberof Collection
-	 */
+   * Adds a named collection transform to the collection
+   * @param {string} name - name to associate with transform
+   * @param {array} transform - an array of transformation 'step' objects to save into the collection
+   */
   addTransform(name, transform) {
     if (this.transforms[name] !== undefined) {
       throw new Error("a transform by that name already exists");
@@ -1795,20 +1868,26 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Updates a named collection transform to the collection
-	 * @param {string} name - name to associate with transform
-	 * @param {object} transform - a transformation object to save into collection
-	 * @memberof Collection
-	 */
+   * Retrieves a named transform from the collection.
+   * @param {string} name - name of the transform to lookup.
+   */
+  getTransform(name) {
+    return this.transforms[name];
+  }
+
+  /**
+   * Updates a named collection transform to the collection
+   * @param {string} name - name to associate with transform
+   * @param {object} transform - a transformation object to save into collection
+   */
   setTransform(name, transform) {
     this.transforms[name] = transform;
   }
 
   /**
-	 * Removes a named collection transform from the collection
-	 * @param {string} name - name of collection transform to remove
-	 * @memberof Collection
-	 */
+   * Removes a named collection transform from the collection
+   * @param {string} name - name of collection transform to remove
+   */
   removeTransform(name) {
     delete this.transforms[name];
   }
@@ -1840,8 +1919,8 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /*----------------------------+
-	 | TTL daemon                  |
-	 +----------------------------*/
+   | TTL daemon                  |
+   +----------------------------*/
   ttlDaemonFuncGen() {
     const collection = this;
     const age = this.ttl.age;
@@ -1867,12 +1946,12 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /*----------------------------+
-	 | INDEXING                    |
-	 +----------------------------*/
+   | INDEXING                    |
+   +----------------------------*/
 
   /**
-	 * create a row filter that covers all documents in the collection
-	 */
+   * create a row filter that covers all documents in the collection
+   */
   prepareFullDocIndex() {
     const len = this.data.length;
     const indexes = new Array(len);
@@ -1883,10 +1962,9 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Will allow reconfiguring certain collection options.
-	 * @param {boolean} options.adaptiveBinaryIndices - collection indices will be actively rebuilt rather than lazily
-	 * @memberof Collection
-	 */
+   * Will allow reconfiguring certain collection options.
+   * @param {boolean} options.adaptiveBinaryIndices - collection indices will be actively rebuilt rather than lazily
+   */
   configureOptions(options) {
     options = options || {};
 
@@ -1901,11 +1979,10 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Ensure binary index on a certain field
-	 * @param {string} property - name of property to create binary index on
-	 * @param {boolean=} force - (Optional) flag indicating whether to construct index immediately
-	 * @memberof Collection
-	 */
+   * Ensure binary index on a certain field
+   * @param {string} property - name of property to create binary index on
+   * @param {boolean} force - (Optional) flag indicating whether to construct index immediately
+   */
   ensureIndex(property, force) {
     // optional parameter to force rebuild whether flagged as dirty or not
     if (typeof(force) === "undefined") {
@@ -1933,15 +2010,23 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
     this.binaryIndices[property] = index;
 
     const wrappedComparer =
-   (((p, data) => (a, b) => {
-     const objAp = data[a][p];
-     const objBp = data[b][p];
-     if (objAp !== objBp) {
-       if (Object(__WEBPACK_IMPORTED_MODULE_6__helper__["c" /* ltHelper */])(objAp, objBp, false)) return -1;
-       if (Object(__WEBPACK_IMPORTED_MODULE_6__helper__["b" /* gtHelper */])(objAp, objBp, false)) return 1;
-     }
-     return 0;
-   }))(property, this.data);
+      (((prop, data) => (a, b) => {
+        let val1, val2, arr;
+        if (~prop.indexOf(".")) {
+          arr = prop.split(".");
+          val1 = arr.reduce(function(obj, i) { return obj && obj[i] || undefined; }, data[a]);
+          val2 = arr.reduce(function(obj, i) { return obj && obj[i] || undefined; }, data[b]);
+        } else {
+          val1 = data[a][prop];
+          val2 = data[b][prop];
+        }
+
+        if (val1 !== val2) {
+          if (Object(__WEBPACK_IMPORTED_MODULE_6__helper__["c" /* ltHelper */])(val1, val2, false)) return -1;
+          if (Object(__WEBPACK_IMPORTED_MODULE_6__helper__["b" /* gtHelper */])(val1, val2, false)) return 1;
+        }
+        return 0;
+      }))(property, this.data);
 
     index.values.sort(wrappedComparer);
     index.dirty = false;
@@ -1979,8 +2064,8 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Ensure all binary indices
-	 */
+   * Ensure all binary indices
+   */
   ensureAllIndexes(force) {
     let key;
     const bIndices = this.binaryIndices;
@@ -2007,11 +2092,10 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Quickly determine number of documents in collection (or query)
-	 * @param {object=} query - (optional) query object to count results of
-	 * @returns {number} number of documents in the collection
-	 * @memberof Collection
-	 */
+   * Quickly determine number of documents in collection (or query)
+   * @param {object} query - (optional) query object to count results of
+   * @returns {number} number of documents in the collection
+   */
   count(query) {
     if (!query) {
       return this.data.length;
@@ -2021,8 +2105,8 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Rebuild idIndex
-	 */
+   * Rebuild idIndex
+   */
   ensureId() {
     const len = this.data.length;
     let i = 0;
@@ -2034,15 +2118,14 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Add a dynamic view to the collection
-	 * @param {string} name - name of dynamic view to add
-	 * @param {object=} options - (optional) options to configure dynamic view with
-	 * @param {boolean} options.persistent - indicates if view is to main internal results array in 'resultdata'
-	 * @param {string} options.sortPriority - 'passive' (sorts performed on call to data) or 'active' (after updates)
-	 * @param {number} options.minRebuildInterval - minimum rebuild interval (need clarification to docs here)
-	 * @returns {DynamicView} reference to the dynamic view added
-	 * @memberof Collection
-	 **/
+   * Add a dynamic view to the collection
+   * @param {string} name - name of dynamic view to add
+   * @param {object} options - (optional) options to configure dynamic view with
+   * @param {boolean} [options.persistent=false] - indicates if view is to main internal results array in 'resultdata'
+   * @param {string} [options.sortPriority='passive'] - 'passive' (sorts performed on call to data) or 'active' (after updates)
+   * @param {number} options.minRebuildInterval - minimum rebuild interval (need clarification to docs here)
+   * @returns {DynamicView} reference to the dynamic view added
+   **/
   addDynamicView(name, options) {
     const dv = new __WEBPACK_IMPORTED_MODULE_4__dynamic_view__["a" /* DynamicView */](this, name, options);
     this._dynamicViews.push(dv);
@@ -2051,10 +2134,9 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Remove a dynamic view from the collection
-	 * @param {string} name - name of dynamic view to remove
-	 * @memberof Collection
-	 **/
+   * Remove a dynamic view from the collection
+   * @param {string} name - name of dynamic view to remove
+   **/
   removeDynamicView(name) {
     for (let idx = 0; idx < this._dynamicViews.length; idx++) {
       if (this._dynamicViews[idx].name === name) {
@@ -2064,11 +2146,10 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Look up dynamic view reference from within the collection
-	 * @param {string} name - name of dynamic view to retrieve reference of
-	 * @returns {DynamicView} A reference to the dynamic view with that name
-	 * @memberof Collection
-	 **/
+   * Look up dynamic view reference from within the collection
+   * @param {string} name - name of dynamic view to retrieve reference of
+   * @returns {DynamicView} A reference to the dynamic view with that name
+   **/
   getDynamicView(name) {
     for (let idx = 0; idx < this._dynamicViews.length; idx++) {
       if (this._dynamicViews[idx].name === name) {
@@ -2080,14 +2161,13 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Applies a 'mongo-like' find query object and passes all results to an update function.
-	 * For filter function querying you should migrate to [
-	 * Where()]{@link Collection#updateWhere}.
-	 *
-	 * @param {object|function} filterObject - 'mongo-like' query object (or deprecated filterFunction mode)
-	 * @param {function} updateFunction - update function to run against filtered documents
-	 * @memberof Collection
-	 */
+   * Applies a 'mongo-like' find query object and passes all results to an update function.
+   * For filter function querying you should migrate to [
+   * Where()]{@link Collection#updateWhere}.
+   *
+   * @param {object|function} filterObject - 'mongo-like' query object (or deprecated filterFunction mode)
+   * @param {function} updateFunction - update function to run against filtered documents
+   */
   findAndUpdate(filterObject, updateFunction) {
     if (typeof(filterObject) === "function") {
       this.updateWhere(filterObject, updateFunction);
@@ -2097,21 +2177,19 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Applies a 'mongo-like' find query object removes all documents which match that filter.
-	 *
-	 * @param {object} filterObject - 'mongo-like' query object
-	 * @memberof Collection
-	 */
+   * Applies a 'mongo-like' find query object removes all documents which match that filter.
+   *
+   * @param {object} filterObject - 'mongo-like' query object
+   */
   findAndRemove(filterObject) {
     this.chain().find(filterObject).remove();
   }
 
   /**
-	 * Adds object(s) to collection, ensure object(s) have meta properties, clone it if necessary, etc.
-	 * @param {(object|array)} doc - the document (or array of documents) to be inserted
-	 * @returns {(object|array)} document or documents inserted
-	 * @memberof Collection
-	 */
+   * Adds object(s) to collection, ensure object(s) have meta properties, clone it if necessary, etc.
+   * @param {(object|array)} doc - the document (or array of documents) to be inserted
+   * @returns {(object|array)} document or documents inserted
+   */
   insert(doc) {
     if (!Array.isArray(doc)) {
       return this.insertOne(doc);
@@ -2139,12 +2217,11 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Adds a single object, ensures it has meta properties, clone it if necessary, etc.
-	 * @param {object} doc - the document to be inserted
-	 * @param {boolean} bulkInsert - quiet pre-insert and insert event emits
-	 * @returns {object} document or 'undefined' if there was a problem inserting it
-	 * @memberof Collection
-	 */
+   * Adds a single object, ensures it has meta properties, clone it if necessary, etc.
+   * @param {object} doc - the document to be inserted
+   * @param {boolean} bulkInsert - quiet pre-insert and insert event emits
+   * @returns {object} document or 'undefined' if there was a problem inserting it
+   */
   insertOne(doc, bulkInsert) {
     let err = null;
     let returnObj;
@@ -2195,11 +2272,10 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Empties the collection.
-	 * @param {object=} options - configure clear behavior
-	 * @param {bool=} options.removeIndices - (default: false)
-	 * @memberof Collection
-	 */
+   * Empties the collection.
+   * @param {object} options - configure clear behavior
+   * @param {boolean} options.removeIndices - (default: false)
+   */
   clear(options) {
     options = options || {};
 
@@ -2245,10 +2321,9 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Updates an object and notifies collection that the document has changed.
-	 * @param {object} doc - document to update within the collection
-	 * @memberof Collection
-	 */
+   * Updates an object and notifies collection that the document has changed.
+   * @param {object} doc - document to update within the collection
+   */
   update(doc) {
     if (Array.isArray(doc)) {
       let k = 0;
@@ -2283,7 +2358,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
       position = arr[1]; // position in data array
 
       // if configured to clone, do so now... otherwise just use same obj reference
-      newInternal = this.cloneObjects ? Object(__WEBPACK_IMPORTED_MODULE_5__clone__["a" /* clone */])(doc, this.cloneMethod) : doc;
+      newInternal = this.cloneObjects  || !this.disableDeltaChangesApi ? Object(__WEBPACK_IMPORTED_MODULE_5__clone__["a" /* clone */])(doc, this.cloneMethod) : doc;
 
       this.emit("pre-update", doc);
 
@@ -2326,7 +2401,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
       this.commit();
       this.dirty = true; // for autosave scenarios
 
-      this.emit("update", doc, this.cloneObjects ? Object(__WEBPACK_IMPORTED_MODULE_5__clone__["a" /* clone */])(oldInternal, this.cloneMethod) : null);
+      this.emit("update", doc, this.cloneObjects  || !this.disableDeltaChangesApi ? Object(__WEBPACK_IMPORTED_MODULE_5__clone__["a" /* clone */])(oldInternal, this.cloneMethod) : null);
       return doc;
     } catch (err) {
       this.rollback();
@@ -2337,8 +2412,8 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Add object to collection
-	 */
+   * Add object to collection
+   */
   add(obj) {
     // if parameter isn't object exit with throw
     if ("object" !== typeof obj) {
@@ -2352,8 +2427,8 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
     }
 
     /*
-		 * try adding object to collection
-		 */
+     * try adding object to collection
+     */
     try {
       this.startTransaction();
       this.maxId++;
@@ -2411,12 +2486,11 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Applies a filter function and passes all results to an update function.
-	 *
-	 * @param {function} filterFunction - filter function whose results will execute update
-	 * @param {function} updateFunction - update function to run against filtered documents
-	 * @memberof Collection
-	 */
+   * Applies a filter function and passes all results to an update function.
+   *
+   * @param {function} filterFunction - filter function whose results will execute update
+   * @param {function} updateFunction - update function to run against filtered documents
+   */
   updateWhere(filterFunction, updateFunction) {
     const results = this.where(filterFunction);
     let i = 0;
@@ -2434,11 +2508,10 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Remove all documents matching supplied filter function.
-	 * For 'mongo-like' querying you should migrate to [findAndRemove()]{@link Collection#findAndRemove}.
-	 * @param {function|object} query - query object to filter on
-	 * @memberof Collection
-	 */
+   * Remove all documents matching supplied filter function.
+   * For 'mongo-like' querying you should migrate to [findAndRemove()]{@link Collection#findAndRemove}.
+   * @param {function|object} query - query object to filter on
+   */
   removeWhere(query) {
     let list;
     if (typeof query === "function") {
@@ -2454,10 +2527,9 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Remove a document from the collection
-	 * @param {object} doc - document to remove from collection
-	 * @memberof Collection
-	 */
+   * Remove a document from the collection
+   * @param {object} doc - document to remove from collection
+   */
   remove(doc) {
     if (typeof doc === "number") {
       doc = this.get(doc);
@@ -2535,17 +2607,16 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /*---------------------+
-	 | Finding methods     |
-	 +----------------------*/
+   | Finding methods     |
+   +----------------------*/
 
   /**
-	 * Get by Id - faster than other methods because of the searching algorithm
-	 * @param {int} id - $loki id of document you want to retrieve
-	 * @param {boolean} returnPosition - if 'true' we will return [object, position]
-	 * @returns {(object|array|null)} Object reference if document was found, null if not,
-	 *     or an array if 'returnPosition' was passed.
-	 * @memberof Collection
-	 */
+   * Get by Id - faster than other methods because of the searching algorithm
+   * @param {int} id - $loki id of document you want to retrieve
+   * @param {boolean} returnPosition - if 'true' we will return [object, position]
+   * @returns {(object|array|null)} Object reference if document was found, null if not,
+   *     or an array if 'returnPosition' was passed.
+   */
   get(id, returnPosition) {
     const retpos = returnPosition || false;
     const data = this.idIndex;
@@ -2579,12 +2650,12 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Perform binary range lookup for the data[dataPosition][binaryIndexName] property value
-	 *    Since multiple documents may contain the same value (which the index is sorted on),
-	 *    we hone in on range and then linear scan range to find exact index array position.
-	 * @param {int} dataPosition : coll.data array index/position
-	 * @param {string} binaryIndexName : index to search for dataPosition in
-	 */
+   * Perform binary range lookup for the data[dataPosition][binaryIndexName] property value
+   *    Since multiple documents may contain the same value (which the index is sorted on),
+   *    we hone in on range and then linear scan range to find exact index array position.
+   * @param {int} dataPosition : coll.data array index/position
+   * @param {string} binaryIndexName : index to search for dataPosition in
+   */
   getBinaryIndexPosition(dataPosition, binaryIndexName) {
     const val = this.data[dataPosition][binaryIndexName];
     const index = this.binaryIndices[binaryIndexName].values;
@@ -2614,10 +2685,10 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Adaptively insert a selected item to the index.
-	 * @param {int} dataPosition : coll.data array index/position
-	 * @param {string} binaryIndexName : index to search for dataPosition in
-	 */
+   * Adaptively insert a selected item to the index.
+   * @param {int} dataPosition : coll.data array index/position
+   * @param {string} binaryIndexName : index to search for dataPosition in
+   */
   adaptiveBinaryIndexInsert(dataPosition, binaryIndexName) {
     const index = this.binaryIndices[binaryIndexName].values;
     let val = this.data[dataPosition][binaryIndexName];
@@ -2636,10 +2707,10 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Adaptively update a selected item within an index.
-	 * @param {int} dataPosition : coll.data array index/position
-	 * @param {string} binaryIndexName : index to search for dataPosition in
-	 */
+   * Adaptively update a selected item within an index.
+   * @param {int} dataPosition : coll.data array index/position
+   * @param {string} binaryIndexName : index to search for dataPosition in
+   */
   adaptiveBinaryIndexUpdate(dataPosition, binaryIndexName) {
     // linear scan needed to find old position within index unless we optimize for clone scenarios later
     // within (my) node 5.6.0, the following for() loop with strict compare is -much- faster than indexOf()
@@ -2660,10 +2731,10 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Adaptively remove a selected item from the index.
-	 * @param {int} dataPosition : coll.data array index/position
-	 * @param {string} binaryIndexName : index to search for dataPosition in
-	 */
+   * Adaptively remove a selected item from the index.
+   * @param {int} dataPosition : coll.data array index/position
+   * @param {string} binaryIndexName : index to search for dataPosition in
+   */
   adaptiveBinaryIndexRemove(dataPosition, binaryIndexName, removedFromIndexOnly) {
     const idxPos = this.getBinaryIndexPosition(dataPosition, binaryIndexName);
     const index = this.binaryIndices[binaryIndexName].values;
@@ -2695,19 +2766,19 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Internal method used for index maintenance and indexed searching.
-	 * Calculates the beginning of an index range for a given value.
-	 * For index maintainance (adaptive:true), we will return a valid index position to insert to.
-	 * For querying (adaptive:false/undefined), we will :
-	 *    return lower bound/index of range of that value (if found)
-	 *    return next lower index position if not found (hole)
-	 * If index is empty it is assumed to be handled at higher level, so
-	 * this method assumes there is at least 1 document in index.
-	 *
-	 * @param {string} prop - name of property which has binary index
-	 * @param {any} val - value to find within index
-	 * @param {bool?} adaptive - if true, we will return insert position
-	 */
+   * Internal method used for index maintenance and indexed searching.
+   * Calculates the beginning of an index range for a given value.
+   * For index maintainance (adaptive:true), we will return a valid index position to insert to.
+   * For querying (adaptive:false/undefined), we will :
+   *    return lower bound/index of range of that value (if found)
+   *    return next lower index position if not found (hole)
+   * If index is empty it is assumed to be handled at higher level, so
+   * this method assumes there is at least 1 document in index.
+   *
+   * @param {string} prop - name of property which has binary index
+   * @param {any} val - value to find within index
+   * @param {bool?} adaptive - if true, we will return insert position
+   */
   calculateRangeStart(prop, val, adaptive) {
     const rcd = this.data;
     const index = this.binaryIndices[prop].values;
@@ -2747,9 +2818,9 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Internal method used for indexed $between.  Given a prop (index name), and a value
-	 * (which may or may not yet exist) this will find the final position of that upper range value.
-	 */
+   * Internal method used for indexed $between.  Given a prop (index name), and a value
+   * (which may or may not yet exist) this will find the final position of that upper range value.
+   */
   calculateRangeEnd(prop, val) {
     const rcd = this.data;
     const index = this.binaryIndices[prop].values;
@@ -2794,15 +2865,15 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * calculateRange() - Binary Search utility method to find range/segment of values matching criteria.
-	 *    this is used for collection.find() and first find filter of resultset/dynview
-	 *    slightly different than get() binary search in that get() hones in on 1 value,
-	 *    but we have to hone in on many (range)
-	 * @param {string} op - operation, such as $eq
-	 * @param {string} prop - name of property to calculate range for
-	 * @param {object} val - value to use for range calculation.
-	 * @returns {array} [start, end] index array positions
-	 */
+   * calculateRange() - Binary Search utility method to find range/segment of values matching criteria.
+   *    this is used for collection.find() and first find filter of resultset/dynview
+   *    slightly different than get() binary search in that get() hones in on 1 value,
+   *    but we have to hone in on many (range)
+   * @param {string} op - operation, such as $eq
+   * @param {string} prop - name of property to calculate range for
+   * @param {object} val - value to use for range calculation.
+   * @returns {array} [start, end] index array positions
+   */
   calculateRange(op, prop, val) {
     const rcd = this.data;
     const index = this.binaryIndices[prop].values;
@@ -2955,13 +3026,13 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
 
         return [lbound, ubound];
 
-        //case '$dteq':
-        // if hole (not found)
-        //  if (lval > val || lval < val) {
-        //    return [0, -1];
-        //  }
+      //case '$dteq':
+      // if hole (not found)
+      //  if (lval > val || lval < val) {
+      //    return [0, -1];
+      //  }
 
-        //  return [lbound, ubound];
+      //  return [lbound, ubound];
 
       case "$gt":
         // (an eqHelper would probably be better test)
@@ -3006,12 +3077,11 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Retrieve doc by Unique index
-	 * @param {string} field - name of uniquely indexed property to use when doing lookup
-	 * @param {value} value - unique value to search for
-	 * @returns {object} document matching the value passed
-	 * @memberof Collection
-	 */
+   * Retrieve doc by Unique index
+   * @param {string} field - name of uniquely indexed property to use when doing lookup
+   * @param {value} value - unique value to search for
+   * @returns {object} document matching the value passed
+   */
   by(field, value) {
     if (value === undefined) {
       return (value) => this.by(field, value);
@@ -3026,11 +3096,10 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Find one object by index property, by property equal to value
-	 * @param {object} query - query object used to perform search with
-	 * @returns {(object|null)} First matching document, or null if none
-	 * @memberof Collection
-	 */
+   * Find one object by index property, by property equal to value
+   * @param {object} query - query object used to perform search with
+   * @returns {(object|null)} First matching document, or null if none
+   */
   findOne(query) {
     query = query || {};
 
@@ -3049,14 +3118,13 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Chain method, used for beginning a series of chained find() and/or view() operations
-	 * on a collection.
-	 *
-	 * @param {array} transform - Ordered array of transform step objects similar to chain
-	 * @param {object} parameters - Object containing properties representing parameters to substitute
-	 * @returns {Resultset} (this) resultset, or data array if any map or join functions where called
-	 * @memberof Collection
-	 */
+   * Chain method, used for beginning a series of chained find() and/or view() operations
+   * on a collection.
+   *
+   * @param {array} transform - Ordered array of transform step objects similar to chain
+   * @param {object} parameters - Object containing properties representing parameters to substitute
+   * @returns {Resultset} (this) resultset, or data array if any map or join functions where called
+   */
   chain(transform, parameters) {
     const rs = new __WEBPACK_IMPORTED_MODULE_3__resultset__["a" /* Resultset */](this);
 
@@ -3068,21 +3136,20 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Find method, api is similar to mongodb.
-	 * for more complex queries use [chain()]{@link Collection#chain} or [where()]{@link Collection#where}.
-	 * @example {@tutorial Query Examples}
-	 * @param {object} query - 'mongo-like' query object
-	 * @returns {array} Array of matching documents
-	 * @memberof Collection
-	 */
+   * Find method, api is similar to mongodb.
+   * for more complex queries use [chain()]{@link Collection#chain} or [where()]{@link Collection#where}.
+   * @example {@tutorial Query Examples}
+   * @param {object} query - 'mongo-like' query object
+   * @returns {array} Array of matching documents
+   */
   find(query) {
     return this.chain().find(query).data();
   }
 
   /**
-	 * Find object by unindexed field by property equal to value,
-	 * simply iterates and returns the first element matching the query
-	 */
+   * Find object by unindexed field by property equal to value,
+   * simply iterates and returns the first element matching the query
+   */
   findOneUnindexed(prop, value) {
     let i = this.data.length;
     let doc;
@@ -3096,8 +3163,8 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Transaction methods
-	 */
+   * Transaction methods
+   */
 
   /** start the transation */
   startTransaction() {
@@ -3144,28 +3211,26 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Query the collection by supplying a javascript filter function.
-	 * @example
-	 * let results = coll.where(function(obj) {
+   * Query the collection by supplying a javascript filter function.
+   * @example
+   * let results = coll.where(function(obj) {
 	 *   return obj.legs === 8;
 	 * });
-	 *
-	 * @param {function} fun - filter function to run against all collection docs
-	 * @returns {array} all documents which pass your filter function
-	 * @memberof Collection
-	 */
+   *
+   * @param {function} fun - filter function to run against all collection docs
+   * @returns {array} all documents which pass your filter function
+   */
   where(fun) {
     return this.chain().where(fun).data();
   }
 
   /**
-	 * Map Reduce operation
-	 *
-	 * @param {function} mapFunction - function to use as map function
-	 * @param {function} reduceFunction - function to use as reduce function
-	 * @returns {data} The result of your mapReduce operation
-	 * @memberof Collection
-	 */
+   * Map Reduce operation
+   *
+   * @param {function} mapFunction - function to use as map function
+   * @param {function} reduceFunction - function to use as reduce function
+   * @returns {data} The result of your mapReduce operation
+   */
   mapReduce(mapFunction, reduceFunction) {
     try {
       return reduceFunction(this.data.map(mapFunction));
@@ -3175,15 +3240,14 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * Join two collections on specified properties
-	 *
-	 * @param {array} joinData - array of documents to 'join' to this collection
-	 * @param {string} leftJoinProp - property name in collection
-	 * @param {string} rightJoinProp - property name in joinData
-	 * @param {function=} mapFun - (Optional) map function to use
-	 * @returns {Resultset} Result of the mapping operation
-	 * @memberof Collection
-	 */
+   * Join two collections on specified properties
+   *
+   * @param {array} joinData - array of documents to 'join' to this collection
+   * @param {string} leftJoinProp - property name in collection
+   * @param {string} rightJoinProp - property name in joinData
+   * @param {function} mapFun - (Optional) map function to use
+   * @returns {Resultset} Result of the mapping operation
+   */
   eqJoin(joinData, leftJoinProp, rightJoinProp, mapFun) {
     // logic in Resultset class
     return new __WEBPACK_IMPORTED_MODULE_3__resultset__["a" /* Resultset */](this).eqJoin(joinData, leftJoinProp, rightJoinProp, mapFun);
@@ -3191,15 +3255,14 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
 
   /* ------ STAGING API -------- */
   /**
-	 * stages: a map of uniquely identified 'stages', which hold copies of objects to be
-	 * manipulated without affecting the data in the original collection
-	 */
+   * stages: a map of uniquely identified 'stages', which hold copies of objects to be
+   * manipulated without affecting the data in the original collection
+   */
 
 
   /**
-	 * (Staging API) create a stage and/or retrieve it
-	 * @memberof Collection
-	 */
+   * (Staging API) create a stage and/or retrieve it
+   */
   getStage(name) {
     if (!this.stages[name]) {
       this.stages[name] = {};
@@ -3208,13 +3271,12 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * a collection of objects recording the changes applied through a commmitStage
-	 */
+   * a collection of objects recording the changes applied through a commmitStage
+   */
 
   /**
-	 * (Staging API) create a copy of an object and insert it into a stage
-	 * @memberof Collection
-	 */
+   * (Staging API) create a copy of an object and insert it into a stage
+   */
   stage(stageName, obj) {
     const copy = JSON.parse(JSON.stringify(obj));
     this.getStage(stageName)[obj.$loki] = copy;
@@ -3222,12 +3284,11 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * (Staging API) re-attach all objects to the original collection, so indexes and views can be rebuilt
-	 * then create a message to be inserted in the commitlog
-	 * @param {string} stageName - name of stage
-	 * @param {string} message
-	 * @memberof Collection
-	 */
+   * (Staging API) re-attach all objects to the original collection, so indexes and views can be rebuilt
+   * then create a message to be inserted in the commitlog
+   * @param {string} stageName - name of stage
+   * @param {string} message
+   */
   commitStage(stageName, message) {
     const stage = this.getStage(stageName);
     let prop;
@@ -3250,8 +3311,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * @memberof Collection
-	 */
+   */
   extract(field) {
     let i = 0;
     const len = this.data.length;
@@ -3264,22 +3324,19 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * @memberof Collection
-	 */
+   */
   max(field) {
     return Math.max.apply(null, this.extract(field));
   }
 
   /**
-	 * @memberof Collection
-	 */
+   */
   min(field) {
     return Math.min.apply(null, this.extract(field));
   }
 
   /**
-	 * @memberof Collection
-	 */
+   */
   maxRecord(field) {
     let i = 0;
     const len = this.data.length;
@@ -3308,8 +3365,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * @memberof Collection
-	 */
+   */
   minRecord(field) {
     let i = 0;
     const len = this.data.length;
@@ -3338,36 +3394,32 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * @memberof Collection
-	 */
+   */
   extractNumerical(field) {
     return this.extract(field).map(parseBase10).filter(Number).filter((n) => !(isNaN(n)));
   }
 
   /**
-	 * Calculates the average numerical value of a property
-	 *
-	 * @param {string} field - name of property in docs to average
-	 * @returns {number} average of property in all docs in the collection
-	 * @memberof Collection
-	 */
+   * Calculates the average numerical value of a property
+   *
+   * @param {string} field - name of property in docs to average
+   * @returns {number} average of property in all docs in the collection
+   */
   avg(field) {
     return average(this.extractNumerical(field));
   }
 
   /**
-	 * Calculate standard deviation of a field
-	 * @memberof Collection
-	 * @param {string} field
-	 */
+   * Calculate standard deviation of a field
+   * @param {string} field
+   */
   stdDev(field) {
     return standardDeviation(this.extractNumerical(field));
   }
 
   /**
-	 * @memberof Collection
-	 * @param {string} field
-	 */
+   * @param {string} field
+   */
   mode(field) {
     const dict = {};
     const data = this.extract(field);
@@ -3395,9 +3447,8 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
   }
 
   /**
-	 * @memberof Collection
-	 * @param {string} field - property name
-	 */
+   * @param {string} field - property name
+   */
   median(field) {
     const values = this.extractNumerical(field);
     values.sort(sub);
@@ -3652,10 +3703,23 @@ function compoundeval(properties, obj1, obj2) {
   let res = 0;
   let prop;
   let field;
+  let val1, val2, arr;
   for (let i = 0, len = properties.length; i < len; i++) {
     prop = properties[i];
     field = prop[0];
-    res = Object(__WEBPACK_IMPORTED_MODULE_3__helper__["d" /* sortHelper */])(obj1[field], obj2[field], prop[1]);
+    if (~field.indexOf(".")) {
+      arr = field.split(".");
+      val1 = arr.reduce((obj, i) => {
+        return obj && obj[i] || undefined;
+      }, obj1);
+      val2 = arr.reduce((obj, i) => {
+        return obj && obj[i] || undefined;
+      }, obj2);
+    } else {
+      val1 = obj1[field];
+      val2 = obj2[field];
+    }
+    res = Object(__WEBPACK_IMPORTED_MODULE_3__helper__["d" /* sortHelper */])(val1, val2, prop[1]);
     if (res !== 0) {
       return res;
     }
@@ -3714,7 +3778,6 @@ class Resultset {
   /**
    * Constructor.
    * @param {Collection} collection - the collection which this Resultset will query against
-   * @returns {Resultset}
    */
   constructor(collection) {
     // retain reference to collection we are querying against
@@ -3807,8 +3870,8 @@ class Resultset {
   /**
    * transform() - executes a named collection transform or raw array of transform steps against the resultset.
    *
-   * @param transform {(string|array)} - name of collection transform or raw transform array
-   * @param parameters {object=} - (Optional) object property hash of parameters, if the transform requires them.
+   * @param {(string|array)} transform - name of collection transform or raw transform array
+   * @param {object} [parameters=] - object property hash of parameters, if the transform requires them.
    * @returns {Resultset} either (this) resultset or a clone of of this resultset (depending on steps)
    */
   transform(transform, parameters) {
@@ -3858,10 +3921,10 @@ class Resultset {
           rs = rs.offset(step.value);
           break; // offset makes copy so update reference
         case "map":
-          rs = rs.map(step.value);
+          rs = rs.map(step.value, step.dataOptions);
           break;
         case "eqJoin":
-          rs = rs.eqJoin(step.joinData, step.leftJoinKey, step.rightJoinKey, step.mapFun);
+          rs = rs.eqJoin(step.joinData, step.leftJoinKey, step.rightJoinKey, step.mapFun, step.dataOptions);
           break;
         // following cases break chain by returning array data so make any of these last in transform steps
         case "mapReduce":
@@ -3913,7 +3976,7 @@ class Resultset {
    *    Sorting based on the same lt/gt helper functions used for binary indices.
    *
    * @param {string} propname - name of property to sort by.
-   * @param {bool=} isdesc - (Optional) If true, the property will be sorted in descending order
+   * @param {boolean} isdesc - (Optional) If true, the property will be sorted in descending order
    * @returns {Resultset} Reference to this resultset, sorted, for future chain operations.
    */
   simplesort(propname, isdesc) {
@@ -3943,8 +4006,22 @@ class Resultset {
       }
     }
 
-    const wrappedComparer =
-      (((prop, desc, data) => (a, b) => Object(__WEBPACK_IMPORTED_MODULE_3__helper__["d" /* sortHelper */])(data[a][prop], data[b][prop], desc)))(propname, isdesc, this.collection.data);
+    const wrappedComparer = ((prop, desc, data) => (a, b) => {
+      let val1, val2, arr;
+      if (~prop.indexOf(".")) {
+        arr = prop.split(".");
+        val1 = arr.reduce(function (obj, i) {
+          return obj && obj[i] || undefined;
+        }, data[a]);
+        val2 = arr.reduce(function (obj, i) {
+          return obj && obj[i] || undefined;
+        }, data[b]);
+      } else {
+        val1 = data[a][prop];
+        val2 = data[b][prop];
+      }
+      return Object(__WEBPACK_IMPORTED_MODULE_3__helper__["d" /* sortHelper */])(val1, val2, desc);
+    })(propname, isdesc, this.collection.data);
 
     this.filteredrows.sort(wrappedComparer);
 
@@ -4075,7 +4152,7 @@ class Resultset {
    * Used for querying via a mongo-style query object.
    *
    * @param {object} query - A mongo-style query object used for filtering current results.
-   * @param {boolean=} firstOnly - (Optional) Used by collection.findOne()
+   * @param {boolean} firstOnly - (Optional) Used by collection.findOne()
    * @returns {Resultset} this resultset for further chain ops.
    */
   find(query, firstOnly) {
@@ -4405,6 +4482,12 @@ class Resultset {
       forceCloneMethod = "shallow";
     }
 
+    // if collection has delta changes active, then force clones and use 'parse-stringify' for effective change tracking of nested objects
+    if (!this.collection.disableDeltaChangesApi) {
+      forceClones = true;
+      forceCloneMethod = "parse-stringify";
+    }
+
     // if this has no filters applied, just return collection.data
     if (!this.filterInitialized) {
       if (this.filteredrows.length === 0) {
@@ -4521,13 +4604,17 @@ class Resultset {
   /**
    * eqJoin() - Left joining two sets of data. Join keys can be defined or calculated properties
    * eqJoin expects the right join key values to be unique.  Otherwise left data will be joined on the last joinData object with that key
-   * @param {Array} joinData - Data array to join to.
+   * @param {Array|Resultset|Collection} joinData - Data array to join to.
    * @param {(string|function)} leftJoinKey - Property name in this result set to join on or a function to produce a value to join on
    * @param {(string|function)} rightJoinKey - Property name in the joinData to join on or a function to produce a value to join on
-   * @param {function=} mapFun - (Optional) A function that receives each matching pair and maps them into output objects - function(left,right){return joinedObject}
+   * @param {function} [mapFun=] - a function that receives each matching pair and maps them into output objects - function(left,right){return joinedObject}
+   * @param {object} [dataOptions=] - optional options to apply to data() calls for left and right sides
+   * @param {boolean} dataOptions.removeMeta - allows removing meta before calling mapFun
+   * @param {boolean} dataOptions.forceClones - forcing the return of cloned objects to your map object
+   * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method.
    * @returns {Resultset} A resultset with data in the format [{left: leftObj, right: rightObj}]
    */
-  eqJoin(joinData, leftJoinKey, rightJoinKey, mapFun) {
+  eqJoin(joinData, leftJoinKey, rightJoinKey, mapFun, dataOptions) {
     let leftData = [];
     let leftDataLength;
     let rightData = [];
@@ -4539,12 +4626,14 @@ class Resultset {
     let joinMap = {};
 
     //get the left data
-    leftData = this.data();
+    leftData = this.data(dataOptions);
     leftDataLength = leftData.length;
 
     //get the right data
-    if (joinData instanceof Resultset) {
-      rightData = joinData.data();
+    if (joinData instanceof __WEBPACK_IMPORTED_MODULE_1__collection__["a" /* Collection */]) {
+      rightData = joinData.chain().data(dataOptions);
+    } else if (joinData instanceof Resultset) {
+      rightData = joinData.data(dataOptions);
     } else if (Array.isArray(joinData)) {
       rightData = joinData;
     } else {
@@ -4580,8 +4669,16 @@ class Resultset {
     return this;
   }
 
-  map(mapFun) {
-    let data = this.data().map(mapFun);
+  /**
+   * Applies a map function into a new collection for further chaining.
+   * @param {function} mapFun - javascript map function
+   * @param {object} [dataOptions=] - options to data() before input to your map function
+   * @param {boolean} dataOptions.removeMeta - allows removing meta before calling mapFun
+   * @param {boolean} dataOptions.forceClones - forcing the return of cloned objects to your map object
+   * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method.
+   */
+  map(mapFun, dataOptions) {
+    let data = this.data(dataOptions).map(mapFun);
     //return return a new resultset with no filters
     this.collection = new __WEBPACK_IMPORTED_MODULE_1__collection__["a" /* Collection */]("mappedData");
     this.collection.insert(data);
@@ -4621,14 +4718,14 @@ function clone(data, method) {
       break;
     case "shallow":
       // more compatible method for older browsers
-      cloned = data.prototype ? Object.create(data.prototype) : {};
+      cloned = Object.create(data.constructor.prototype);
       Object.keys(data).map((i) => {
         cloned[i] = data[i];
       });
       break;
     case "shallow-assign":
       // should be supported by newer environments/browsers
-      cloned = data.prototype ? Object.create(data.prototype) : {};
+      cloned = Object.create(data.constructor.prototype);
       Object.assign(cloned, data);
       break;
     default:
@@ -5242,7 +5339,7 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
   }
 
   /**
-   * rematerialize() - intended for use immediately after deserialization (loading)
+   * Internally used immediately after deserialization (loading)
    *    This will clear out and reapply filterPipeline ops, recreating the view.
    *    Since where filters do not persist correctly, this method allows
    *    restoring the view to state where user can re-apply those where filters.
@@ -5251,7 +5348,7 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
    * @returns {DynamicView} This dynamic view for further chained ops.
    * @fires DynamicView.rebuild
    */
-  rematerialize({removeWhereFilters = undefined}) {
+  _rematerialize({removeWhereFilters = undefined}) {
     let fpl;
     let fpi;
     let idx;
@@ -5304,7 +5401,7 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
    *    so your branched query should be immediately resolved and not held for future evaluation.
    *
    * @param {(string|array=)} transform - Optional name of collection transform, or an array of transform steps
-   * @param {object=} parameters - optional parameters (if optional transform requires them)
+   * @param {object} parameters - optional parameters (if optional transform requires them)
    * @returns {Resultset} A copy of the internal resultset for branched queries.
    */
   branchResultset(transform, parameters) {
@@ -5345,7 +5442,7 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
     dv._sortDirty = obj._sortDirty;
     dv._resultset.filteredrows = obj._resultset.filteredrows;
     dv._resultset.filterInitialized = obj._resultset.filterInitialized;
-    dv.rematerialize({
+    dv._rematerialize({
       removeWhereFilters: true
     });
     return dv;
@@ -5354,7 +5451,7 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
   /**
    * removeFilters() - Used to clear pipeline and reset dynamic view to initial state.
    *     Existing options should be retained.
-   * @param {boolean=} queueSortPhase - (default: false) if true we will async rebuild view (maybe set default to true in future?)
+   * @param {boolean} queueSortPhase - (default: false) if true we will async rebuild view (maybe set default to true in future?)
    */
   removeFilters({queueSortPhase = false} = {}) {
     this._rebuildPending = false;
@@ -5405,7 +5502,7 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
    * dv.applySimpleSort("name");
    *
    * @param {string} propname - Name of property by which to sort.
-   * @param {boolean=} isdesc - (Optional) If true, the sort will be in descending order.
+   * @param {boolean} isdesc - (Optional) If true, the sort will be in descending order.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
   applySimpleSort(propname, isdesc) {
@@ -5577,7 +5674,7 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
    * applyFind() - Adds or updates a mongo-style query option in the DynamicView filter pipeline
    *
    * @param {object} query - A mongo-style query object to apply to pipeline
-   * @param {(string|number)=} uid - Optional: The unique ID of this filter, to reference it in the future.
+   * @param {(string|number)} uid - Optional: The unique ID of this filter, to reference it in the future.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
   applyFind(query, uid) {
@@ -5593,7 +5690,7 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
    * applyWhere() - Adds or updates a javascript filter function in the DynamicView filter pipeline
    *
    * @param {function} fun - A javascript filter function to apply to pipeline
-   * @param {(string|number)=} uid - Optional: The unique ID of this filter, to reference it in the future.
+   * @param {(string|number)} uid - Optional: The unique ID of this filter, to reference it in the future.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
   applyWhere(fun, uid) {
@@ -5639,18 +5736,25 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
   }
 
   /**
-   * data() - resolves and pending filtering and sorting, then returns document array as result.
+   * Resolves and pending filtering and sorting, then returns document array as result.
+   *
+   * @param {object} options - optional parameters to pass to resultset.data() if non-persistent
+   * @param {boolean} options.forceClones - Allows forcing the return of cloned objects even when
+   *        the collection is not configured for clone object.
+   * @param {string} options.forceCloneMethod - Allows overriding the default or collection specified cloning method.
+   *        Possible values include 'parse-stringify', 'jquery-extend-deep', 'shallow', 'shallow-assign'
+   * @param {boolean} options.removeMeta - Will force clones and strip $loki and meta properties from documents
    *
    * @returns {array} An array of documents representing the current DynamicView contents.
    */
-  data() {
+  data(options) {
     // using final sort phase as 'catch all' for a few use cases which require full rebuild
     if (this._sortDirty || this._resultsdirty) {
       this.performSortPhase({
         suppressRebuildEvent: true
       });
     }
-    return (this._persistent) ? (this._resultdata) : (this._resultset.data());
+    return (this._persistent) ? (this._resultdata) : (this._resultset.data(options));
   }
 
   /**
@@ -5733,7 +5837,7 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
    *    Called by : collection.insert() and collection.update().
    *
    * @param {int} objIndex - index of document to (re)run through filter pipeline.
-   * @param {bool} isNew - true if the document was just added to the collection.
+   * @param {boolean} isNew - true if the document was just added to the collection.
    */
   evaluateDocument(objIndex, isNew) {
     // if no filter applied yet, the result 'set' should remain 'everything'

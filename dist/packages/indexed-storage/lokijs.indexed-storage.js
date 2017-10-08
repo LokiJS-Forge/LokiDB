@@ -91,6 +91,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
  adapter.saveDatabase("UserDatabase", JSON.stringify(myDb));
  adapter.loadDatabase("UserDatabase"); // will log the serialized db to console
  adapter.deleteDatabase("UserDatabase");
+
+ Should usercallback be still used?
  */
 
 /**
@@ -102,7 +104,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
  */
 class LokiIndexedStorage {
   /**
-   * @param {string} appname - (Optional) Application name context can be used to distinguish subdomains, "loki" by default
+   * @param {string} [appname=loki] - Application name context can be used to distinguish subdomains, "loki" by default
    */
   constructor(appname = "loki") {
     this.app = appname;
@@ -119,7 +121,6 @@ class LokiIndexedStorage {
 	 * Used to check if adapter is available
 	 *
 	 * @returns {boolean} true if indexeddb is available, false if not.
-	 * @memberof LokiIndexedAdapter
 	 */
   checkAvailability() {
     if (typeof indexedDB !== "undefined" && indexedDB) return true;
@@ -140,7 +141,6 @@ class LokiIndexedStorage {
 	 *
 	 * @param {string} dbname - the name of the database to retrieve.
 	 * @returns {Promise} a Promise that resolves after the database was loaded
-	 * @memberof LokiIndexedAdapter
 	 */
   loadDatabase(dbname) {
     const appName = this.app;
@@ -186,7 +186,6 @@ class LokiIndexedStorage {
 	 * @param {string} dbname - the name to give the serialized database within the catalog.
 	 * @param {string} dbstring - the serialized db string to save.
 	 * @returns {Promise} a Promise that resolves after the database was persisted
-	 * @memberof LokiIndexedAdapter
 	 */
   saveDatabase(dbname, dbstring) {
     const appName = this.app;
@@ -242,7 +241,6 @@ class LokiIndexedStorage {
 	 *
 	 * @param {string} dbname - the name of the database to delete from the catalog.
 	 * @returns {Promise} a Promise that resolves after the database was deleted
-	 * @memberof LokiIndexedAdapter
 	 */
   deleteDatabase(dbname) {
     const appName = this.app;
@@ -283,7 +281,6 @@ class LokiIndexedStorage {
 	 * This utility method does not (yet) guarantee async deletions will be completed before returning
 	 *
 	 * @param {string} dbname - the base filename which container, partitions, or pages are derived
-	 * @memberof LokiIndexedAdapter
 	 */
   deleteDatabasePartitions(dbname) {
     this.getDatabaseList((result) => {
@@ -307,7 +304,6 @@ class LokiIndexedStorage {
 	 * });
 	 *
 	 * @param {function} callback - should accept array of database names in the catalog for current app.
-	 * @memberof LokiIndexedAdapter
 	 */
   getDatabaseList(callback) {
     const appName = this.app;
@@ -352,7 +348,6 @@ class LokiIndexedStorage {
 	 * Allows retrieval of list of all keys in catalog along with size
 	 *
 	 * @param {function} callback - (Optional) callback to accept result array.
-	 * @memberof LokiIndexedAdapter
 	 */
   getCatalogSummary(callback) {
     const adapter = this;

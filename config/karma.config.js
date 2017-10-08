@@ -26,6 +26,9 @@ module.exports = function (config) {
       externals: {
         "fs": "fs"
       },
+      resolve: {
+        extensions: ['.ts', '.js'],
+      },
       devtool: "source-map",
       module: {
         rules: [
@@ -39,7 +42,16 @@ module.exports = function (config) {
                 }
               },
             ]
-          }
+          },
+          {
+            test: /\.ts$/,
+            use: [
+              {
+                loader: 'awesome-typescript-loader'
+              }
+            ],
+            exclude: [/\.e2e\.ts$/]
+          },
         ]
       }
     },

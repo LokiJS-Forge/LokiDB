@@ -1,5 +1,5 @@
 /* global describe, it, expect */
-import * as Query from "../../src/queries";
+import * as Query from "../../src/query_builder";
 
 describe("query builder", () => {
 
