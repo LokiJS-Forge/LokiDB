@@ -46,25 +46,24 @@ export class Scorer {
   }
 
   finalScore(query: any, docResults: object = {}) {
-    let result = {};
-    let k1 = query.scoring.k1;
-    let b = query.scoring.b;
+    const result = {};
+    const k1 = query.scoring.k1;
+    const b = query.scoring.b;
 
-    let docs = Object.keys(docResults);
+    const docs = Object.keys(docResults);
     for (let i = 0, docId; i < docs.length, docId = docs[i]; i++) {
       let docScore = 0;
       for (let j = 0; j < docResults[docId].length; j++) {
-        let docResult = docResults[docId][j];
+        const docResult = docResults[docId][j];
 
         let res = 0;
         switch (docResult.type) {
           case "BM25": {
-            let tf = docResult.tf;
-            let fieldLength = Scorer._calculateFieldLength(this._invIdxs[docResult.fieldName].documentStore[docId]
+            const tf = docResult.tf;
+            const fieldLength = Scorer._calculateFieldLength(this._invIdxs[docResult.fieldName].documentStore[docId]
               .fieldLength);
-            let avgFieldLength = this._avgFieldLength(docResult.fieldName);
-            // tfNorm, computed as (freq * (k1 + 1)) / (freq + k1 * (1 - b + b * fieldLength / avgFieldLength)) from
-            let tfNorm = (tf * (k1 + 1)) / (tf + k1 * (1 - b + b * (fieldLength / avgFieldLength)));
+            const avgFieldLength = this._avgFieldLength(docResult.fieldName);
+            const tfNorm = (tf * (k1 + 1)) / (tf + k1 * (1 - b + b * (fieldLength / avgFieldLength)));
             res = docResult.idf * tfNorm * docResult.boost;
             // console.log(
             // 	docId + ":" + docResult.fieldName + ":" + docResult.term + " = " + res,
@@ -117,7 +116,7 @@ export class Scorer {
 
   private _getCache(fieldName: string) {
     if (this._cache[fieldName] === undefined) {
-      let avgFieldLength = this._invIdxs[fieldName].totalFieldLength / this._invIdxs[fieldName].documentCount;
+      const avgFieldLength = this._invIdxs[fieldName].totalFieldLength / this._invIdxs[fieldName].documentCount;
       this._cache[fieldName] = {idfs: {}, avgFieldLength};
     }
     return this._cache[fieldName];
@@ -131,7 +130,7 @@ export class Scorer {
    * @private
    */
   private _idf(fieldName: string, docFreq: number) {
-    let cache = this._getCache(fieldName);
+    const cache = this._getCache(fieldName);
     if (cache.idfs[docFreq] !== undefined) {
       return cache.idfs[docFreq];
     }

@@ -34,11 +34,9 @@ for (let key of Object.keys(testData)) {
 
     for (let i = 0; i < testDatum.tests.length; i++) {
       let test = testDatum.tests[i];
-      it(test.what + " " + test.search, (done) => {
+      it(test.what + " " + test.search, () => {
         let query = new QueryBuilder().match("body", test.search).build();
         assertMatches(fts, query, test.found);
-
-        done();
       });
     }
   });

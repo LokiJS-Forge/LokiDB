@@ -55,7 +55,7 @@ describe("query builder", () => {
     expect(q).toEqual({type: "match_all", boost: 8.5});
   });
 
-  it("ConstantScoreQuery", (done) => {
+  it("ConstantScoreQuery", () => {
     let q = new Query.ConstantScoreQuery().boost(8.5).build();
     expect(q).toEqual({type: "constant_score", boost: 8.5});
 
@@ -69,11 +69,9 @@ describe("query builder", () => {
         values: [new Query.TermQuery("user", "albert").build(), new Query.FuzzyQuery("name", "einsten").build()]
       }
     });
-
-    done();
   });
 
-  it("BoolQuery", (done) => {
+  it("BoolQuery", () => {
     let q = new Query.BoolQuery().boost(8.5).build();
     expect(q).toEqual({type: "bool", boost: 8.5});
 
@@ -127,11 +125,9 @@ describe("query builder", () => {
           new Query.BoolQuery().build()]
       }
     });
-
-    done();
   });
 
-  it("QueryBuilder", (done) => {
+  it("QueryBuilder", () => {
     let q = new Query.QueryBuilder()
       .enableFinalScoring(true)
       .useBM25(0.1, 0.5)
@@ -221,7 +217,5 @@ describe("query builder", () => {
       },
       scoring: scoring
     });
-
-    done();
   });
 });

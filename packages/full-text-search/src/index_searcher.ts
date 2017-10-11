@@ -153,7 +153,7 @@ export class IndexSearcher {
         if (termIdx !== null) {
           const termIdxs = InvertedIndex.extendTermIndex(termIdx);
           for (let i = 0; i < termIdxs.length; i++) {
-            this._scorer.prepare(fieldName, boost, termIdx[i].index, doScoring && enableScoring, docResults, query.value + termIdx[i].term);
+            this._scorer.prepare(fieldName, boost, termIdxs[i].index, doScoring && enableScoring, docResults, query.value + termIdxs[i].term);
           }
         }
         break;

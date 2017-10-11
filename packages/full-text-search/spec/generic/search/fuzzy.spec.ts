@@ -4,7 +4,7 @@ import {QueryBuilder as QB, FuzzyQuery} from "../../../src/query_builder";
 
 describe("fuzzy query", () => {
   // from lucene 6.4.0 core: TestFuzzyQuery
-  let assertMatches = (searcher, query, docIds = []) => {
+  let assertMatches = (searcher: any, query: object, docIds: number[] = []) => {
     let res = searcher.search(query);
     expect(Object.keys(res).length).toEqual(docIds.length);
     for (let i = 0; i < docIds.length; i++) {
@@ -18,7 +18,7 @@ describe("fuzzy query", () => {
     let q = new FuzzyQuery("user", "albrt").boost(5.5).fuzziness(3).prefixLength(3).build();
     expect(q).toEqual({type: "fuzzy", field: "user", value: "albrt", boost: 5.5, fuzziness: 3, prefix_length: 3});
 
-    q = new QB().fuzzy(1, 1);
+    q = new QB().fuzzy("a", "abc");
     expect(() => q.fuzziness("AUTO")).not.toThrowErrorOfType("TypeError");
     expect(() => q.fuzziness(-3)).toThrowErrorOfType("TypeError");
     expect(() => q.fuzziness("3")).not.toThrowErrorOfType("TypeError");

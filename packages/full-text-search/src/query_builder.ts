@@ -426,8 +426,8 @@ export class ArrayQuery extends BaseQuery {
     this[callbackName] = callback;
 
     this._prepare = (queryType: any, ...args: any[]) => {
-      let data = {};
-      let query = new queryType(...args, data);
+      const data = {};
+      const query = new queryType(...args, data);
       this._data.values.push(data);
       query.bool = this.bool;
       query.constantScore = this.constantScore;

@@ -3,83 +3,84 @@ import {Tokenizer} from "../../src/tokenizer";
 
 describe("tokenizer", () => {
 
-  function splitter() {
+  function splitter(): string[] {
+    return [];
   }
 
-  function f1(tokens) {
-    return tokens;
+  function f1() {
+    return "";
   }
 
   function f2() {
+    return "";
   }
 
   function f3() {
+    return "";
   }
 
   function f4() {
+    return "";
   }
 
   function f5() {
+    return "";
   }
 
-  it("splitter", (done) => {
+  let LABEL: any = 1;
+
+  it("splitter", () => {
     let tkz = new Tokenizer();
 
     expect(tkz.getSplitter()).toBeArray();
     expect(() => tkz.setSplitter("", splitter)).toThrowErrorOfType("Error");
     tkz.setSplitter("MySplitter", splitter);
     expect(tkz.getSplitter()).toBeArray();
-
-    done();
   });
 
-  it("add, get", (done) => {
+  it("add, get", () => {
     let tkz = new Tokenizer();
 
-    expect(() => tkz.add("f1", 1)).toThrowErrorOfType("TypeError");
+    expect(() => tkz.add("f1", LABEL)).toThrowErrorOfType("TypeError");
     expect(() => tkz.add("", f1)).toThrowErrorOfType("Error");
     tkz.add("f1", f1);
     tkz.add("f2", f2);
     tkz.add("f1", f1);
 
-    expect(() => tkz.get(1)).not.toThrowErrorOfType("TypeError");
+    expect(() => tkz.get(LABEL)).not.toThrowErrorOfType("TypeError");
     expect(() => tkz.get("f3")).toThrowErrorOfType("Error");
     expect(tkz.get("f1")).toBeArray();
     expect(tkz.get(f1)).toBeArray();
-
-    done();
   });
 
-  it("addBefore, addAfter", (done) => {
+  it("addBefore, addAfter", () => {
     let tkz = new Tokenizer();
     tkz.add("f2", f2);
     tkz.addBefore(f2, "f1", f1);
     tkz.addAfter(f2, "f3", f3);
 
-    expect(() => tkz.addBefore(f3, 1, f5)).not.toThrowErrorOfType("TypeError");
-    expect(() => tkz.addBefore(f3, "f4", 1)).toThrowErrorOfType("TypeError");
+    expect(() => tkz.addBefore(f3, LABEL, f5)).not.toThrowErrorOfType("TypeError");
+    expect(() => tkz.addBefore(f3, "f4", LABEL)).toThrowErrorOfType("TypeError");
     expect(() => tkz.addBefore(f3, "", f4)).toThrowErrorOfType("Error");
     expect(() => tkz.addBefore(f4, "f1", f5)).toThrowErrorOfType("Error");
     expect(() => tkz.addBefore("f4", "f1", f5)).toThrowErrorOfType("Error");
-    expect(() => tkz.addAfter(f3, 1, f5)).not.toThrowErrorOfType("TypeError");
-    expect(() => tkz.addAfter(f3, "f4", 1)).toThrowErrorOfType("TypeError");
+    expect(() => tkz.addAfter(f3, LABEL, f5)).not.toThrowErrorOfType("TypeError");
+    expect(() => tkz.addAfter(f3, "f4", LABEL)).toThrowErrorOfType("TypeError");
     expect(() => tkz.addAfter(f3, "", f4)).toThrowErrorOfType("Error");
     expect(() => tkz.addAfter(f4, "f5", f5)).toThrowErrorOfType("Error");
     expect(() => tkz.addAfter("f4", "f1", f5)).toThrowErrorOfType("Error");
     tkz.addAfter(f3, "f5", f5);
     tkz.addBefore("f5", "f4", f4);
-
-    done();
   });
 
-  it("remove, reset", (done) => {
+  it("remove, reset", () => {
     let tkz = new Tokenizer();
     tkz.add("f1", f1);
     tkz.add("f2", f2);
     tkz.add("f3", f3);
     tkz.setSplitter("MySplitter", splitter);
 
-    expect(() => tkz.remove(1)).toThrowErrorOfType("Error");
+    expect(() => tkz.remove(LABEL)).toThrowErrorOfType("Error");
     expect(() => tkz.remove(f4)).toThrowErrorOfType("Error");
     expect(() => tkz.remove("f4")).toThrowErrorOfType("Error");
     tkz.resetSplitter();
@@ -90,20 +91,16 @@ describe("tokenizer", () => {
     expect(tkz.get("f3")).toBeArray();
     tkz.reset();
     expect(() => tkz.remove("f3")).toThrowErrorOfType("Error");
-
-    done();
   });
 
-  it("tokenize", (done) => {
+  it("tokenize", () => {
     let tkz = new Tokenizer();
     tkz.add("f1", f1);
 
     expect(tkz.tokenize("Hello world, how are you?!?")).toBeArray();
-
-    done();
   });
 
-  it("serialize from tokenizer", (done) => {
+  it("serialize from tokenizer", () => {
     let tkz = new Tokenizer();
     tkz.add("f1", f1);
     tkz.add("f2", f2);
@@ -121,11 +118,9 @@ describe("tokenizer", () => {
     expect(() => Tokenizer.fromJSONObject(serialized, tkz)).toThrowAnyError();
     tkz.setSplitter("MySplitter", splitter);
     Tokenizer.fromJSONObject(serialized, tkz);
-
-    done();
   });
 
-  it("serialize from functions", (done) => {
+  it("serialize from functions", () => {
     let tkz = new Tokenizer();
     tkz.add("f1", f1);
     tkz.add("f2", f2);
@@ -152,7 +147,5 @@ describe("tokenizer", () => {
     expect(() => Tokenizer.fromJSONObject(serialized, funcs)).toThrowAnyError();
     funcs.splitters["MySplitter"] = splitter;
     Tokenizer.fromJSONObject(serialized, funcs);
-
-    done();
   });
 });

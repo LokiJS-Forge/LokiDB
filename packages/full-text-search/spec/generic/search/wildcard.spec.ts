@@ -5,7 +5,7 @@ import {Tokenizer} from "../../../src/tokenizer";
 
 describe("wildcard query", () => {
   // from lucene 6.4.0 core: TestWildCard
-  let assertMatches = (searcher, query, docIds = []) => {
+  let assertMatches = (searcher: any, query: object, docIds: number[] = []) => {
     let res = searcher.search(query);
     expect(Object.keys(res).length).toEqual(docIds.length);
     for (let i = 0; i < docIds.length; i++) {
@@ -20,7 +20,7 @@ describe("wildcard query", () => {
     expect(q).toEqual({type: "wildcard", field: "user", value: "alb?rt", boost: 4.5});
   });
 
-  it("Tests Wildcard queries with an asterisk.", (done) => {
+  it("Tests Wildcard queries with an asterisk.", () => {
     let docs = ["metal", "metals", "mXtals", "mXtXls"];
     let fts = new FullTextSearch([{name: "body"}]);
     for (let i = 0; i < docs.length; i++) {
@@ -52,11 +52,9 @@ describe("wildcard query", () => {
     assertMatches(fts, query, [0]);
     query = new QB().wildcard("body", "*tal*").build();
     assertMatches(fts, query, [0, 1, 2]);
-
-    done();
   });
 
-  it("Tests Wildcard queries with a question mark.", (done) => {
+  it("Tests Wildcard queries with a question mark.", () => {
     let docs = ["metal", "metals", "mXtals", "mXtXls"];
     let fts = new FullTextSearch([{name: "body"}]);
     for (let i = 0; i < docs.length; i++) {
@@ -78,11 +76,9 @@ describe("wildcard query", () => {
     assertMatches(fts, query);
     query = new QB().wildcard("body", "meta??").build();
     assertMatches(fts, query, [1]);
-
-    done();
   });
 
-  it("Tests if wildcard escaping works.", (done) => {
+  it("Tests if wildcard escaping works.", () => {
     let docs = ["foo*bar", "foo??bar", "fooCDbar", "fooSOMETHINGbar", "foo\\", "foo\\\\"];
 
     let tkz = new Tokenizer();
@@ -109,7 +105,5 @@ describe("wildcard query", () => {
     assertMatches(fts, query, [4]);
     query = new QB().wildcard("body", "foo\\\\*").build();
     assertMatches(fts, query, [4, 5]);
-
-    done();
   });
 });

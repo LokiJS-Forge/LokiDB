@@ -7,6 +7,9 @@ node_modules/
 # Tests
 coverage/
 
+# Typescript
+.ts/
+
 # Publish
 dist/packages-dist/
 site/

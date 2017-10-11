@@ -1,7 +1,7 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "outDir": "./.ts/",
+    "outDir": "../types/",
     "sourceMap": true,
     "declaration": true,
     "moduleResolution": "node",
@@ -10,12 +10,12 @@
     "noImplicitAny": true,
     "suppressImplicitAnyIndexErrors": true,
     "target": "es6",
-    "typeRoots": [
-      "node_modules/@types"
-    ],
     "lib": [
       "es2017",
       "dom"
     ]
-  }
+  },
+  "include": [
+    "../packages/*/src/**/*.ts"
+  ]
 }

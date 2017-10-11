@@ -269,7 +269,7 @@ export class Tokenizer {
 
 export namespace Tokenizer {
   export interface Serialization {
-    splitter?: string,
+    splitter?: string;
     tokenizers: string[];
   }
 

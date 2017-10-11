@@ -2,7 +2,7 @@
 import {DATA} from "./MOCK_DATA";
 import {QUERIES} from "./QUERIES";
 import {FullTextSearch} from "../../src/full_text_search";
-import {Tokenizer} from  "../../src/tokenizer";
+import {Tokenizer} from "../../src/tokenizer";
 import {Client} from "elasticsearch";
 
 const INDEX_NAME = "test_index";
@@ -29,18 +29,18 @@ describe("Compare scoring against elasticsearch", () => {
   });
 
   for (let i = 0; i < QUERIES.length; i++) {
-    let query = QUERIES[i];
+    let query: any = QUERIES[i];
     it(" -> " + i + ": " + JSON.stringify(query), (done) => {
       client.search({
         index: INDEX_NAME,
         type: INDEX_TYPE,
-        search_type: "dfs_query_then_fetch",
+        searchType: "dfs_query_then_fetch",
         body: {
           explain: true,
           "size": 10000,
           query: query.es
         }
-      }).then((body) => {
+      }).then((body: any) => {
         // Compare results with loki.
         let esHits = body.hits.hits;
         let ftsHits = fts.search(query.fts);
@@ -82,7 +82,7 @@ describe("Compare scoring against elasticsearch", () => {
           }
         })();
         done();
-      }, (error) => {
+      }, (error: Error) => {
         throw error;
       });
     });
@@ -124,7 +124,7 @@ describe("Compare scoring against elasticsearch", () => {
           }
         }
       }).then(() => {
-        let createAction = (data) => client.index({
+        let createAction = (data: any) => client.index({
           index: INDEX_NAME,
           type: INDEX_TYPE,
           id: data.id,

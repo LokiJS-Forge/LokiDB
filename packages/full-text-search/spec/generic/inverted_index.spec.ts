@@ -1,7 +1,5 @@
 /* global describe, it, expect */
 import {InvertedIndex} from "../../src/inverted_index";
-import {QueryBuilder} from "../../src/query_builder"
-import {IndexSearcher} from "../../src/index_searcher"
 
 describe("inverted index", () => {
 
@@ -13,7 +11,7 @@ describe("inverted index", () => {
   let field4 = "Now again inside today! You...";
   let field5 = "Good bye NO! for all worlds...";
 
-  it ("get", () => {
+  it("get", () => {
     expect(ii.documentCount).toBeNumber();
     expect(ii.documentStore).toBeObject();
     expect(ii.totalFieldLength).toBeNumber();
@@ -23,10 +21,10 @@ describe("inverted index", () => {
 
   it("insert", () => {
     ii.insert(field1, 1);
-    expect(() =>ii.insert(field2, 1)).toThrowErrorOfType("Error");
+    expect(() => ii.insert(field2, 1)).toThrowErrorOfType("Error");
     ii.insert(field3, 2);
 
-    ii.tokenizer.add("bad_tokenizer", () => [""]);
+    ii.tokenizer.add("bad_tokenizer", () => "");
     ii.insert(field4, 3);
     ii.tokenizer.remove("bad_tokenizer");
     ii.insert(field4, 4);
@@ -106,6 +104,24 @@ describe("inverted index", () => {
     // Check if still can be used
     ii3.insert(field5, 6);
     ii3.remove(6);
+  });
+
+  it("serialize without store", () => {
+    let ii1 = new InvertedIndex({store: false});
+    ii1.insert(field1, 1);
+    ii1.insert(field2, 2);
+    ii1.insert(field3, 3);
+
+    let ii2 = InvertedIndex.fromJSONObject(JSON.parse(JSON.stringify(ii1)));
+    ii2.insert(field1, 1);
+    ii2.insert(field2, 2);
+    ii2.insert(field3, 3);
+
+    expect(JSON.stringify(ii1)).toEqual(JSON.stringify(ii2));
+    expect(JSON.stringify(ii1.root)).toEqual(JSON.stringify(ii2.root));
+
+    ii2.insert(field4, 4);
+    expect(JSON.stringify(ii1.root)).not.toEqual(JSON.stringify(ii2.root));
   });
 
   it("serialize without optimization", () => {
