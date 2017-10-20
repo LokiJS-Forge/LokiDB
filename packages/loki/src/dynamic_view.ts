@@ -1,5 +1,6 @@
 import {LokiEventEmitter} from "./event_emitter";
 import {Resultset} from "./resultset";
+import {Collection} from "./collection";
 
 /*
  applySortCriteria -> like Resultset::compoundsort
@@ -24,6 +25,27 @@ import {Resultset} from "./resultset";
  */
 export class DynamicView extends LokiEventEmitter {
 
+  private _collection: Collection;
+  private _persistent: boolean;
+  private _sortPriority: string;
+  private _minRebuildInterval: number;
+  public name: string;
+  private _rebuildPending: boolean;
+
+  private _resultset: any;
+  private _resultdata: any;
+  private _resultsdirty: any;
+
+  private cachedresultset: any;
+
+  private _filterPipeline: any;
+
+
+  private _sortFunction: any;
+  private _sortCriteria: any;
+  private _sortDirty: any;
+
+
   /**
    * Constructor.
    * @param {Collection} collection - a reference to the collection to work agains
@@ -32,23 +54,26 @@ export class DynamicView extends LokiEventEmitter {
    * @param {string} [sortPriority='passive'] - 'passive' (sorts performed on call to data) or 'active' (after updates)
    * @param {number} [minRebuildInterval=1] - minimum rebuild interval (need clarification to docs here)
    */
-  constructor(collection, name, {
-    persistent = false,
-    sortPriority = "passive",
-    minRebuildInterval = 1
-  } = {}) {
+  constructor(collection: Collection, name: string, options: any = {}) {
     super();
+    (
+      {
+        persistent: this._persistent = false,
+        sortPriority: this._sortPriority = "passive",
+        minRebuildInterval: this._minRebuildInterval = 1
+      } = options
+    );
+
     this._collection = collection;
     this.name = name;
     this._rebuildPending = false;
-    this._persistent = persistent;
+
     // 'passive' will defer the sort phase until they call data(). (most efficient overall)
     // 'active' will sort async whenever next idle. (prioritizes read speeds)
-    this._sortPriority = sortPriority;
-    this._minRebuildInterval = minRebuildInterval;
+    // sortPriority: this._sortPriority = "passive",
 
     this._resultset = new Resultset(collection);
-    this._resultsdata = [];
+    this._resultdata = [];
     this._resultsdirty = false;
 
     this.cachedresultset = null;
@@ -80,7 +105,7 @@ export class DynamicView extends LokiEventEmitter {
    * @returns {DynamicView} This dynamic view for further chained ops.
    * @fires DynamicView.rebuild
    */
-  _rematerialize({removeWhereFilters = undefined}) {
+  _rematerialize({removeWhereFilters = false}) {
     let fpl;
     let fpi;
     let idx;
@@ -93,7 +118,7 @@ export class DynamicView extends LokiEventEmitter {
       this._sortDirty = true;
     }
 
-    if (removeWhereFilters !== undefined) {
+    if (removeWhereFilters) {
       // for each view see if it had any where filters applied... since they don't
       // serialize those functions lets remove those invalid filters
       fpl = this._filterPipeline.length;
@@ -136,7 +161,7 @@ export class DynamicView extends LokiEventEmitter {
    * @param {object} parameters - optional parameters (if optional transform requires them)
    * @returns {Resultset} A copy of the internal resultset for branched queries.
    */
-  branchResultset(transform, parameters) {
+  branchResultset(transform: string | string[], parameters: object) {
     const rs = this._resultset.branch();
 
     if (typeof transform === "undefined") {
@@ -164,11 +189,11 @@ export class DynamicView extends LokiEventEmitter {
     };
   }
 
-  static fromJSONObject(collection, obj) {
+  static fromJSONObject(collection: any, obj: any) {
     let dv = new DynamicView(collection, obj.name, obj.options);
     dv._resultsdirty = obj._resultsdirty;
     dv._filterPipeline = obj._filterPipeline;
-    dv.resultdata = [];
+    dv._resultdata = [];
 
     dv._sortCriteria = obj._sortCriteria;
     dv._sortDirty = obj._sortDirty;
@@ -219,7 +244,7 @@ export class DynamicView extends LokiEventEmitter {
    * @param {function} comparefun - a javascript compare function used for sorting
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  applySort(comparefun) {
+  applySort(comparefun: Function) {
     this._sortFunction = comparefun;
     this._sortCriteria = null;
 
@@ -237,7 +262,7 @@ export class DynamicView extends LokiEventEmitter {
    * @param {boolean} isdesc - (Optional) If true, the sort will be in descending order.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  applySimpleSort(propname, isdesc) {
+  applySimpleSort(propname: string, isdesc: boolean) {
     this._sortCriteria = [
       [propname, isdesc || false]
     ];
@@ -261,7 +286,7 @@ export class DynamicView extends LokiEventEmitter {
    * @param {array} properties - array of property names or subarray of [propertyname, isdesc] used evaluate sort order
    * @returns {DynamicView} Reference to this DynamicView, sorted, for future chain operations.
    */
-  applySortCriteria(criteria) {
+  applySortCriteria(criteria: any[]) {
     this._sortCriteria = criteria;
     this._sortFunction = null;
 
@@ -319,7 +344,7 @@ export class DynamicView extends LokiEventEmitter {
    * @param {(string|number)} uid - The unique ID of the filter.
    * @returns {number}: index of the referenced filter in the pipeline; -1 if not found.
    */
-  _indexOfFilterWithId(uid) {
+  _indexOfFilterWithId(uid: string | number) {
     if (typeof uid === "string" || typeof uid === "number") {
       for (let idx = 0, len = this._filterPipeline.length; idx < len; idx += 1) {
         if (uid === this._filterPipeline[idx].uid) {
@@ -336,7 +361,7 @@ export class DynamicView extends LokiEventEmitter {
    *
    * @param {object} filter - The filter object. Refer to applyFilter() for extra details.
    */
-  _addFilter(filter) {
+  _addFilter(filter: any) {
     this._filterPipeline.push(filter);
     this._resultset[filter.type](filter.val);
   }
@@ -378,7 +403,7 @@ export class DynamicView extends LokiEventEmitter {
    *    The object is in the format { 'type': filter_type, 'val', filter_param, 'uid', optional_filter_id }
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  applyFilter(filter) {
+  applyFilter(filter: any) {
     const idx = this._indexOfFilterWithId(filter.uid);
     if (idx >= 0) {
       this._filterPipeline[idx] = filter;
@@ -409,7 +434,7 @@ export class DynamicView extends LokiEventEmitter {
    * @param {(string|number)} uid - Optional: The unique ID of this filter, to reference it in the future.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  applyFind(query, uid) {
+  applyFind(query: object, uid: string | number = "") {
     this.applyFilter({
       type: "find",
       val: query,
@@ -425,7 +450,7 @@ export class DynamicView extends LokiEventEmitter {
    * @param {(string|number)} uid - Optional: The unique ID of this filter, to reference it in the future.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  applyWhere(fun, uid) {
+  applyWhere(fun: Function, uid: string | number) {
     this.applyFilter({
       type: "where",
       val: fun,
@@ -440,7 +465,7 @@ export class DynamicView extends LokiEventEmitter {
    * @param {(string|number)} uid - The unique ID of the filter to be removed.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  removeFilter(uid) {
+  removeFilter(uid: string | number) {
     const idx = this._indexOfFilterWithId(uid);
     if (idx < 0) {
       throw new Error("Dynamic view does not contain a filter with ID: " + uid);
@@ -479,7 +504,7 @@ export class DynamicView extends LokiEventEmitter {
    *
    * @returns {array} An array of documents representing the current DynamicView contents.
    */
-  data(options) {
+  data(options: object = {}) {
     // using final sort phase as 'catch all' for a few use cases which require full rebuild
     if (this._sortDirty || this._resultsdirty) {
       this.performSortPhase({
@@ -535,7 +560,7 @@ export class DynamicView extends LokiEventEmitter {
    * performSortPhase() - invoked synchronously or asynchronously to perform final sort phase (if needed)
    *
    */
-  performSortPhase(options) {
+  performSortPhase(options: any = {}) {
     // async call to this may have been pre-empted by synchronous call to data before async could fire
     if (!this._sortDirty && !this._resultsdirty) {
       return;
@@ -571,7 +596,7 @@ export class DynamicView extends LokiEventEmitter {
    * @param {int} objIndex - index of document to (re)run through filter pipeline.
    * @param {boolean} isNew - true if the document was just added to the collection.
    */
-  evaluateDocument(objIndex, isNew) {
+  evaluateDocument(objIndex: number, isNew: boolean) {
     // if no filter applied yet, the result 'set' should remain 'everything'
     if (!this._resultset.filterInitialized) {
       if (this._persistent) {
@@ -669,7 +694,7 @@ export class DynamicView extends LokiEventEmitter {
   /**
    * removeDocument() - internal function called on collection.delete()
    */
-  removeDocument(objIndex) {
+  removeDocument(objIndex: number) {
     // if no filter applied yet, the result 'set' should remain 'everything'
     if (!this._resultset.filterInitialized) {
       if (this._persistent) {
@@ -735,7 +760,7 @@ export class DynamicView extends LokiEventEmitter {
    * @param {function} reduceFunction - this function accepts many (array of map outputs) and returns single value
    * @returns The output of your reduceFunction
    */
-  mapReduce(mapFunction, reduceFunction) {
+  mapReduce(mapFunction: Function, reduceFunction: Function) {
     try {
       return reduceFunction(this.data().map(mapFunction));
     } catch (err) {

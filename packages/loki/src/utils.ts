@@ -1,7 +1,7 @@
 /**
  * Created by toni on 1/27/17.
  */
-export function copyProperties(src, dest) {
+export function copyProperties(src: object, dest: object) {
   let prop;
   for (prop in src) {
     dest[prop] = src[prop];
@@ -9,13 +9,9 @@ export function copyProperties(src, dest) {
 }
 
 // used to recursively scan hierarchical transform step object for param substitution
-function resolveTransformObject(subObj, params, depth) {
+function resolveTransformObject(subObj: object, params: object, depth: number = 0) {
   let prop;
   let pname;
-
-  if (typeof depth !== "number") {
-    depth = 0;
-  }
 
   if (++depth >= 10) return subObj;
 
@@ -32,8 +28,9 @@ function resolveTransformObject(subObj, params, depth) {
 
   return subObj;
 }
+
 // top level utility to resolve an entire (single) transform (array of steps) for parameter substitution
-export function resolveTransformParams(transform, params) {
+export function resolveTransformParams(transform: any, params: object) {
   let idx;
   let clonedStep;
   const resolvedTransform = [];

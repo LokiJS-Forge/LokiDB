@@ -15,18 +15,18 @@ import {ltHelper, gtHelper, aeqHelper, sortHelper} from "./helper";
 
  */
 
-function containsCheckFn(a) {
+function containsCheckFn(a: any) {
   if (typeof a === "string" || Array.isArray(a)) {
-    return (b) => a.indexOf(b) !== -1;
+    return (b: any) => (a as string).indexOf(b) !== -1;
   } else if (typeof a === "object" && a !== null) {
-    return (b) => hasOwnProperty.call(a, b);
+    return (b: any) => Object.hasOwnProperty.call(a, b);
   }
   return null;
 }
 
-function doQueryOp(val, op) {
+function doQueryOp(val: any, op: any) {
   for (let p in op) {
-    if (hasOwnProperty.call(op, p)) {
+    if (Object.hasOwnProperty.call(op, p)) {
       return LokiOps[p](val, op[p]);
     }
   }
@@ -38,16 +38,16 @@ export const LokiOps = {
   // comparison operators
   // a is the value in the collection
   // b is the query value
-  $eq(a, b) {
+  $eq(a: any, b: any) {
     return a === b;
   },
 
   // abstract/loose equality
-  $aeq(a, b) {
+  $aeq(a: any, b: any) {
     return a == b;
   },
 
-  $ne(a, b) {
+  $ne(a: any, b: any) {
     // ecma 5 safe test for NaN
     if (b !== b) {
       // ecma 5 test value is not NaN
@@ -58,69 +58,69 @@ export const LokiOps = {
   },
 
   // date equality / loki abstract equality test
-  $dteq(a, b) {
+  $dteq(a: any, b: any) {
     return aeqHelper(a, b);
   },
 
-  $gt(a, b) {
+  $gt(a: any, b: any) {
     return gtHelper(a, b, false);
   },
 
-  $gte(a, b) {
+  $gte(a: any, b: any) {
     return gtHelper(a, b, true);
   },
 
-  $lt(a, b) {
+  $lt(a: any, b: any) {
     return ltHelper(a, b, false);
   },
 
-  $lte(a, b) {
+  $lte(a: any, b: any) {
     return ltHelper(a, b, true);
   },
 
   // ex : coll.find({'orderCount': {$between: [10, 50]}});
-  $between(a, vals) {
+  $between(a: any, vals: any) {
     if (a === undefined || a === null) return false;
     return (gtHelper(a, vals[0], true) && ltHelper(a, vals[1], true));
   },
 
-  $in(a, b) {
+  $in(a: any, b: any) {
     return b.indexOf(a) !== -1;
   },
 
-  $nin(a, b) {
+  $nin(a: any, b: any) {
     return b.indexOf(a) === -1;
   },
 
-  $keyin(a, b) {
+  $keyin(a: any, b: any) {
     return a in b;
   },
 
-  $nkeyin(a, b) {
+  $nkeyin(a: any, b: any) {
     return !(a in b);
   },
 
-  $definedin(a, b) {
+  $definedin(a: any, b: any) {
     return b[a] !== undefined;
   },
 
-  $undefinedin(a, b) {
+  $undefinedin(a: any, b: any) {
     return b[a] === undefined;
   },
 
-  $regex(a, b) {
+  $regex(a: any, b: any) {
     return b.test(a);
   },
 
-  $containsString(a, b) {
+  $containsString(a: any, b: any) {
     return (typeof a === "string") && (a.indexOf(b) !== -1);
   },
 
-  $containsNone(a, b) {
+  $containsNone(a: any, b: any) {
     return !LokiOps.$containsAny(a, b);
   },
 
-  $containsAny(a, b) {
+  $containsAny(a: any, b: any) {
     const checkFn = containsCheckFn(a);
     if (checkFn !== null) {
       return (Array.isArray(b)) ? (b.some(checkFn)) : (checkFn(b));
@@ -128,7 +128,7 @@ export const LokiOps = {
     return false;
   },
 
-  $contains(a, b) {
+  $contains(a: any, b: any) {
     const checkFn = containsCheckFn(a);
     if (checkFn !== null) {
       return (Array.isArray(b)) ? (b.every(checkFn)) : (checkFn(b));
@@ -136,8 +136,8 @@ export const LokiOps = {
     return false;
   },
 
-  $type(a, b) {
-    let type = typeof a;
+  $type(a: any, b: any) {
+    let type: string = typeof a;
     if (type === "object") {
       if (Array.isArray(a)) {
         type = "array";
@@ -148,25 +148,25 @@ export const LokiOps = {
     return (typeof b !== "object") ? (type === b) : doQueryOp(type, b);
   },
 
-  $finite(a, b) {
+  $finite(a: any, b: any) {
     return (b === isFinite(a));
   },
 
-  $size(a, b) {
+  $size(a: any, b: any) {
     if (Array.isArray(a)) {
       return (typeof b !== "object") ? (a.length === b) : doQueryOp(a.length, b);
     }
     return false;
   },
 
-  $len(a, b) {
+  $len(a: any, b: any) {
     if (typeof a === "string") {
       return (typeof b !== "object") ? (a.length === b) : doQueryOp(a.length, b);
     }
     return false;
   },
 
-  $where(a, b) {
+  $where(a: any, b: any) {
     return b(a) === true;
   },
 
@@ -174,11 +174,11 @@ export const LokiOps = {
   // a is the value in the collection
   // b is the nested query operation (for '$not')
   //   or an array of nested query operations (for '$and' and '$or')
-  $not(a, b) {
+  $not(a: any, b: any) {
     return !doQueryOp(a, b);
   },
 
-  $and(a, b) {
+  $and(a: any, b: any) {
     for (let idx = 0, len = b.length; idx < len; idx += 1) {
       if (!doQueryOp(a, b[idx])) {
         return false;
@@ -187,7 +187,7 @@ export const LokiOps = {
     return true;
   },
 
-  $or(a, b) {
+  $or(a: any, b: any) {
     for (let idx = 0, len = b.length; idx < len; idx += 1) {
       if (doQueryOp(a, b[idx])) {
         return true;
@@ -220,7 +220,7 @@ const indexedOps = {
  * @param {object} obj2 - second object to compare
  * @returns {integer} 0, -1, or 1 to designate if identical (sortwise) or which should be first
  */
-function compoundeval(properties, obj1, obj2) {
+function compoundeval(properties: object[], obj1: object, obj2: object) {
   let res = 0;
   let prop;
   let field;
@@ -230,10 +230,10 @@ function compoundeval(properties, obj1, obj2) {
     field = prop[0];
     if (~field.indexOf(".")) {
       arr = field.split(".");
-      val1 = arr.reduce((obj, i) => {
+      val1 = arr.reduce((obj: object, i: number) => {
         return obj && obj[i] || undefined;
       }, obj1);
-      val2 = arr.reduce((obj, i) => {
+      val2 = arr.reduce((obj: object, i: number) => {
         return obj && obj[i] || undefined;
       }, obj2);
     } else {
@@ -256,10 +256,9 @@ function compoundeval(properties, obj1, obj2) {
  * @param {array} paths - array of properties to drill into
  * @param {function} fun - evaluation function to test with
  * @param {any} value - comparative value to also pass to (compare) fun
- * @param {number} poffset - index of the item in 'paths' to start the sub-scan from
+ * @param {number} pathOffset - index of the item in 'paths' to start the sub-scan from
  */
-function dotSubScan(root, paths, fun, value, poffset) {
-  const pathOffset = poffset || 0;
+function dotSubScan(root: object, paths: string[], fun: Function, value: any, pathOffset = 0) {
   const path = paths[pathOffset];
   if (root === undefined || root === null || root[path] === undefined) {
     return false;
@@ -296,11 +295,16 @@ function dotSubScan(root, paths, fun, value, poffset) {
  *      .data();
  */
 export class Resultset {
+
+  public collection: Collection;
+  public filteredrows: any[];
+  public filterInitialized: boolean;
+
   /**
    * Constructor.
    * @param {Collection} collection - the collection which this Resultset will query against
    */
-  constructor(collection) {
+  constructor(collection: Collection) {
     // retain reference to collection we are querying against
     this.collection = collection;
     this.filteredrows = [];
@@ -337,7 +341,7 @@ export class Resultset {
    * @param {int} qty - The number of documents to return.
    * @returns {Resultset} Returns a copy of the resultset, limited by qty, for subsequent chain ops.
    */
-  limit(qty) {
+  limit(qty: number) {
     // if this has no filters applied, we need to populate filteredrows first
     if (!this.filterInitialized && this.filteredrows.length === 0) {
       this.filteredrows = this.collection.prepareFullDocIndex();
@@ -354,7 +358,7 @@ export class Resultset {
    * @param {int} pos - Number of documents to skip; all preceding documents are filtered out.
    * @returns {Resultset} Returns a copy of the resultset, containing docs starting at 'pos' for subsequent chain ops.
    */
-  offset(pos) {
+  offset(pos: number) {
     // if this has no filters applied, we need to populate filteredrows first
     if (!this.filterInitialized && this.filteredrows.length === 0) {
       this.filteredrows = this.collection.prepareFullDocIndex();
@@ -395,7 +399,7 @@ export class Resultset {
    * @param {object} [parameters=] - object property hash of parameters, if the transform requires them.
    * @returns {Resultset} either (this) resultset or a clone of of this resultset (depending on steps)
    */
-  transform(transform, parameters) {
+  transform(transform: string | any[], parameters: object) {
     let idx;
     let step;
     let rs = this;
@@ -478,14 +482,14 @@ export class Resultset {
    * @param {function} comparefun - A javascript compare function used for sorting.
    * @returns {Resultset} Reference to this resultset, sorted, for future chain operations.
    */
-  sort(comparefun) {
+  sort(comparefun: Function) {
     // if this has no filters applied, just we need to populate filteredrows first
     if (!this.filterInitialized && this.filteredrows.length === 0) {
       this.filteredrows = this.collection.prepareFullDocIndex();
     }
 
     const wrappedComparer =
-      (((userComparer, data) => (a, b) => userComparer(data[a], data[b])))(comparefun, this.collection.data);
+      (((userComparer, data) => (a: number, b: number) => userComparer(data[a], data[b])))(comparefun, this.collection.data);
 
     this.filteredrows.sort(wrappedComparer);
 
@@ -500,7 +504,7 @@ export class Resultset {
    * @param {boolean} isdesc - (Optional) If true, the property will be sorted in descending order
    * @returns {Resultset} Reference to this resultset, sorted, for future chain operations.
    */
-  simplesort(propname, isdesc) {
+  simplesort(propname: string, isdesc: boolean) {
     if (typeof (isdesc) === "undefined") {
       isdesc = false;
     }
@@ -527,7 +531,7 @@ export class Resultset {
       }
     }
 
-    const wrappedComparer = ((prop, desc, data) => (a, b) => {
+    const wrappedComparer = ((prop, desc, data) => (a: number, b: number) => {
       let val1, val2, arr;
       if (~prop.indexOf(".")) {
         arr = prop.split(".");
@@ -560,7 +564,7 @@ export class Resultset {
    * @param {array} properties - array of property names or subarray of [propertyname, isdesc] used evaluate sort order
    * @returns {Resultset} Reference to this resultset, sorted, for future chain operations.
    */
-  compoundsort(properties) {
+  compoundsort(properties: any) {
     if (properties.length === 0) {
       throw new Error("Invalid call to compoundsort, need at least one property");
     }
@@ -588,7 +592,7 @@ export class Resultset {
     }
 
     const wrappedComparer =
-      (((props, data) => (a, b) => compoundeval(props, data[a], data[b])))(properties, this.collection.data);
+      (((props, data) => (a: number, b: number) => compoundeval(props, data[a], data[b])))(properties, this.collection.data);
 
     this.filteredrows.sort(wrappedComparer);
 
@@ -604,7 +608,7 @@ export class Resultset {
    * @param {array} expressionArray - array of expressions
    * @returns {Resultset} this resultset for further chain ops.
    */
-  findOr(expressionArray) {
+  findOr(expressionArray?: any[]) {
     let fr = null;
     let fri = 0;
     let frlen = 0;
@@ -640,7 +644,7 @@ export class Resultset {
     return this;
   }
 
-  $or(...args) {
+  $or(...args: any[]) {
     return this.findOr(...args);
   }
 
@@ -653,7 +657,7 @@ export class Resultset {
    * @param {array} expressionArray - array of expressions
    * @returns {Resultset} this resultset for further chain ops.
    */
-  findAnd(expressionArray) {
+  findAnd(expressionArray?: any[]) {
     // we have already implementing method chaining in this (our Resultset class)
     // so lets just progressively apply user supplied and filters
     for (let i = 0, len = expressionArray.length; i < len; i++) {
@@ -665,7 +669,7 @@ export class Resultset {
     return this;
   }
 
-  $and(...args) {
+  $and(...args: any[]) {
     return this.findAnd(...args);
   }
 
@@ -673,10 +677,10 @@ export class Resultset {
    * Used for querying via a mongo-style query object.
    *
    * @param {object} query - A mongo-style query object used for filtering current results.
-   * @param {boolean} firstOnly - (Optional) Used by collection.findOne()
+   * @param {boolean} firstOnly - (Optional) Used by collection.findOne() - flag if this was invoked via findOne()
    * @returns {Resultset} this resultset for further chain ops.
    */
-  find(query, firstOnly) {
+  find(query: object, firstOnly = false): any {
     if (this.collection.data.length === 0) {
       this.filteredrows = [];
       this.filterInitialized = true;
@@ -695,9 +699,6 @@ export class Resultset {
     let result = [];
     let filters = [];
     let index = null;
-
-    // flag if this was invoked via findOne()
-    firstOnly = firstOnly || false;
 
     if (typeof queryObject === "object") {
       for (p in queryObject) {
@@ -763,19 +764,19 @@ export class Resultset {
       }
     }
 
-    if (query.query) {
-      let res = this.collection._fullTextSearch.search(query);
-      let docIds = Object.keys(res);
-      let results = [];
-      for (let i = 0; i < docIds.length; i++) {
-        let docId = parseInt(docIds[i]);
-        for (let j = 0; j < this.collection.data.length; j++) {
-          if (this.collection.data[j].$loki === docId) {
-            results.push(this.collection.data[j]);
-          }
-        }
-      }
-      return results;
+    if (query["query"]) {
+      // let res = this.collection._fullTextSearch.search(query);
+      // let docIds = Object.keys(res);
+      // let results = [];
+      // for (let i = 0; i < docIds.length; i++) {
+      //   let docId = parseInt(docIds[i]);
+      //   for (let j = 0; j < this.collection.data.length; j++) {
+      //     if (this.collection.data[j].$loki === docId) {
+      //       results.push(this.collection.data[j]);
+      //     }
+      //   }
+      // }
+      //return results;
     }
 
     // if user is deep querying the object such as find('name.first': 'odin')
@@ -783,7 +784,7 @@ export class Resultset {
 
     // if an index exists for the property being queried against, use it
     // for now only enabling where it is the first filter applied and prop is indexed
-    var doIndexCheck = !usingDotNotation && !this.filterInitialized;
+    const doIndexCheck = !usingDotNotation && !this.filterInitialized;
 
     if (doIndexCheck && this.collection.binaryIndices[property] && indexedOps[operator]) {
       // this is where our lazy index rebuilding will take place
@@ -923,7 +924,7 @@ export class Resultset {
    * @param {function} fun - A javascript function used for filtering current results by.
    * @returns {Resultset} this resultset for further chain ops.
    */
-  where(fun) {
+  where(fun: any) {
     let viewFunction;
     let result = [];
 
@@ -989,7 +990,18 @@ export class Resultset {
    *
    * @returns {array} Array of documents in the resultset
    */
-  data({forceClones, forceCloneMethod = this.collection.cloneMethod, removeMeta = false} = {}) {
+  data(options: any = {}) {
+    let forceClones: boolean;
+    let forceCloneMethod: string;
+    let removeMeta: boolean;
+    (
+      {
+        forceClones,
+        forceCloneMethod = this.collection.cloneMethod,
+        removeMeta = false
+      } = options
+    );
+
     let result = [];
     let data = this.collection.data;
     let obj;
@@ -1064,7 +1076,7 @@ export class Resultset {
    * @param {function} updateFunction - User supplied updateFunction(obj) will be executed for each document object.
    * @returns {Resultset} this resultset for further chain ops.
    */
-  update(updateFunction) {
+  update(updateFunction: Function) {
     if (typeof(updateFunction) !== "function") {
       throw new TypeError("Argument is not a function");
     }
@@ -1114,7 +1126,7 @@ export class Resultset {
    * @param {function} reduceFunction - this function accepts many (array of map outputs) and returns single value
    * @returns {value} The output of your reduceFunction
    */
-  mapReduce(mapFunction, reduceFunction) {
+  mapReduce(mapFunction: any, reduceFunction: Function) {
     try {
       return reduceFunction(this.data().map(mapFunction));
     } catch (err) {
@@ -1135,7 +1147,7 @@ export class Resultset {
    * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method.
    * @returns {Resultset} A resultset with data in the format [{left: leftObj, right: rightObj}]
    */
-  eqJoin(joinData, leftJoinKey, rightJoinKey, mapFun, dataOptions) {
+  eqJoin(joinData: any, leftJoinKey: string | Function, rightJoinKey: string | Function, mapFun: Function, dataOptions?: any) {
     let leftData = [];
     let leftDataLength;
     let rightData = [];
@@ -1164,12 +1176,12 @@ export class Resultset {
 
     //construct a lookup table
     for (let i = 0; i < rightDataLength; i++) {
-      key = rightKeyisFunction ? rightJoinKey(rightData[i]) : rightData[i][rightJoinKey];
+      key = rightKeyisFunction ? (rightJoinKey as Function)(rightData[i]) : rightData[i][rightJoinKey as string];
       joinMap[key] = rightData[i];
     }
 
     if (!mapFun) {
-      mapFun = (left, right) => ({
+      mapFun = (left: any, right: any) => ({
         left,
         right
       });
@@ -1177,7 +1189,7 @@ export class Resultset {
 
     //Run map function over each object in the resultset
     for (let j = 0; j < leftDataLength; j++) {
-      key = leftKeyisFunction ? leftJoinKey(leftData[j]) : leftData[j][leftJoinKey];
+      key = leftKeyisFunction ? (leftJoinKey as Function)(leftData[j]) : leftData[j][leftJoinKey as string];
       result.push(mapFun(leftData[j], joinMap[key] || {}));
     }
 
@@ -1198,7 +1210,7 @@ export class Resultset {
    * @param {boolean} dataOptions.forceClones - forcing the return of cloned objects to your map object
    * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method.
    */
-  map(mapFun, dataOptions) {
+  map(mapFun: any, dataOptions?: object) {
     let data = this.data(dataOptions).map(mapFun);
     //return return a new resultset with no filters
     this.collection = new Collection("mappedData");

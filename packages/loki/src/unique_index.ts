@@ -1,12 +1,16 @@
 export class UniqueIndex {
 
-  constructor(uniqueField) {
+  private field: string;
+  private keyMap: object;
+  private lokiMap: object;
+
+  constructor(uniqueField: string) {
     this.field = uniqueField;
     this.keyMap = {};
     this.lokiMap = {};
   }
 
-  set(obj) {
+  set(obj: any) {
     const fieldValue = obj[this.field];
     if (fieldValue !== null && typeof(fieldValue) !== "undefined") {
       if (this.keyMap[fieldValue]) {
@@ -18,20 +22,20 @@ export class UniqueIndex {
     }
   }
 
-  get(key) {
+  get(key: string) {
     return this.keyMap[key];
   }
 
-  byId(id) {
+  byId(id: number) {
     return this.keyMap[this.lokiMap[id]];
   }
 
   /**
-	 * Updates a document's unique index given an updated object.
-	 * @param  {Object} obj Original document object
-	 * @param  {Object} doc New document object (likely the same as obj)
-	 */
-  update(obj, doc) {
+   * Updates a document's unique index given an updated object.
+   * @param  {Object} obj Original document object
+   * @param  {Object} doc New document object (likely the same as obj)
+   */
+  update(obj: any, doc: object) {
     if (this.lokiMap[obj.$loki] !== doc[this.field]) {
       const old = this.lokiMap[obj.$loki];
       this.set(doc);
@@ -42,7 +46,7 @@ export class UniqueIndex {
     }
   }
 
-  remove(key) {
+  remove(key: string) {
     const obj = this.keyMap[key];
     if (obj !== null && typeof obj !== "undefined") {
       this.keyMap[key] = undefined;

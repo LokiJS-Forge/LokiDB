@@ -488,7 +488,7 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
     if (c) {
       c.name = newName;
     }
-    
+
     return c;
   }
 
@@ -6018,4 +6018,4 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
 /***/ })
 /******/ ]);
 });
-//# sourceMappingURL=lokijs.loki.js.map
+//# sourceMappingURL=lokijs.loki.ts.map

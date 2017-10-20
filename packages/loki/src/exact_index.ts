@@ -1,12 +1,15 @@
 export class ExactIndex {
 
-  constructor(exactField) {
+  private index: object;
+  private field: string;
+
+  constructor(exactField: string) {
     this.index = {};
     this.field = exactField;
   }
 
   // add the value you want returned to the key in the index
-  set(key, val) {
+  set(key: string, val: any) {
     if (this.index[key]) {
       this.index[key].push(val);
     } else {
@@ -15,7 +18,7 @@ export class ExactIndex {
   }
 
   // remove the value from the index, if the value was the last one, remove the key
-  remove(key, val) {
+  remove(key: string, val: any) {
     const idxSet = this.index[key];
     for (const i in idxSet) {
       if (idxSet[i] === val) {
@@ -28,7 +31,7 @@ export class ExactIndex {
   }
 
   // get the values related to the key, could be more than one
-  get(key) {
+  get(key: string) {
     return this.index[key];
   }
 

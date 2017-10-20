@@ -7,7 +7,7 @@
  *     aeqHelper([1, 2, 3], [1, 2, 3]) === true
  *     aeqHelper(undefined, null) === true
  */
-export function aeqHelper(prop1, prop2) {
+export function aeqHelper(prop1: any, prop2: any) {
   let cv1;
   let cv2;
   let t1;
@@ -87,7 +87,7 @@ export function aeqHelper(prop1, prop2) {
  *     Since binary indices on a property might need to index [12, NaN, new Date(), Infinity], we
  *     need this function (as well as gtHelper) to always ensure one value is LT, GT, or EQ to another.
  */
-export function ltHelper(prop1, prop2, equal) {
+export function ltHelper(prop1: any, prop2: any, equal: boolean) {
   let cv1;
   let cv2;
   let t1;
@@ -112,7 +112,7 @@ export function ltHelper(prop1, prop2, equal) {
       case "":
         t1 = 5;
         break;
-        // if strict equal probably 0 so sort higher, otherwise probably NaN so sort lower than even null
+      // if strict equal probably 0 so sort higher, otherwise probably NaN so sort lower than even null
       default:
         t1 = (prop1 === prop1) ? 9 : 0;
         break;
@@ -182,7 +182,7 @@ export function ltHelper(prop1, prop2, equal) {
   return false;
 }
 
-export function gtHelper(prop1, prop2, equal) {
+export function gtHelper(prop1: any, prop2: any, equal: boolean) {
   let cv1;
   let cv2;
   let t1;
@@ -206,7 +206,7 @@ export function gtHelper(prop1, prop2, equal) {
       case "":
         t1 = 5;
         break;
-        // NaN 0
+      // NaN 0
       default:
         t1 = (prop1 === prop1) ? 9 : 0;
         break;
@@ -276,7 +276,7 @@ export function gtHelper(prop1, prop2, equal) {
   return false;
 }
 
-export function sortHelper(prop1, prop2, desc) {
+export function sortHelper(prop1: any, prop2: any, desc: any) {
   if (aeqHelper(prop1, prop2)) return 0;
 
   if (ltHelper(prop1, prop2, false)) {

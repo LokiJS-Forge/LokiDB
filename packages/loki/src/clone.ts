@@ -1,18 +1,19 @@
 /* global jQuery */
-export function clone(data, method) {
+export function clone(data: object, method: string) : any {
   if (data === null || data === undefined) {
     return null;
   }
 
   const cloneMethod = method || "parse-stringify";
-  let cloned;
+  let cloned: object;
 
   switch (cloneMethod) {
     case "parse-stringify":
       cloned = JSON.parse(JSON.stringify(data));
       break;
     case "jquery-extend-deep":
-      cloned = jQuery.extend(true, {}, data);
+      //cloned = jQuery.extend(true, {}, data);
+      // TODO
       break;
     case "shallow":
       // more compatible method for older browsers
@@ -33,7 +34,7 @@ export function clone(data, method) {
   return cloned;
 }
 
-export function cloneObjectArray(objarray, method) {
+export function cloneObjectArray(objarray: object[], method: string) {
   let i;
   const result = [];
 

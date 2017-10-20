@@ -10,7 +10,10 @@
  */
 export class LokiMemoryAdapter {
 
-  constructor(options) {
+  private hashStore: object;
+  private options: any;
+
+  constructor(options: any) {
     this.hashStore = {};
     this.options = options || {};
 
@@ -24,13 +27,13 @@ export class LokiMemoryAdapter {
   }
 
   /**
-	 * Loads a serialized database from its in-memory store.
-	 * (Loki persistence adapter interface function)
-	 *
-	 * @param {string} dbname - name of the database (filename/keyname)
-	 * @returns {Promise} a Promise that resolves after the database was loaded
-	 */
-  loadDatabase(dbname) {
+   * Loads a serialized database from its in-memory store.
+   * (Loki persistence adapter interface function)
+   *
+   * @param {string} dbname - name of the database (filename/keyname)
+   * @returns {Promise} a Promise that resolves after the database was loaded
+   */
+  loadDatabase(dbname: string) {
     if (this.options.asyncResponses) {
       return new Promise((resolve, reject) => {
         setTimeout(() => {
@@ -54,13 +57,13 @@ export class LokiMemoryAdapter {
   }
 
   /**
-	 * Saves a serialized database to its in-memory store.
-	 * (Loki persistence adapter interface function)
-	 *
-	 * @param {string} dbname - name of the database (filename/keyname)
-	 * @returns {Promise} a Promise that resolves after the database was persisted
-	 */
-  saveDatabase(dbname, dbstring) {
+   * Saves a serialized database to its in-memory store.
+   * (Loki persistence adapter interface function)
+   *
+   * @param {string} dbname - name of the database (filename/keyname)
+   * @returns {Promise} a Promise that resolves after the database was persisted
+   */
+  saveDatabase(dbname: string, dbstring: string) {
     let saveCount;
 
     if (this.options.asyncResponses) {
@@ -91,12 +94,12 @@ export class LokiMemoryAdapter {
   }
 
   /**
-	 * Deletes a database from its in-memory store.
-	 *
-	 * @param {string} dbname - name of the database (filename/keyname)
-	 * @returns {Promise} a Promise that resolves after the database was deleted
-	 */
-  deleteDatabase(dbname) {
+   * Deletes a database from its in-memory store.
+   *
+   * @param {string} dbname - name of the database (filename/keyname)
+   * @returns {Promise} a Promise that resolves after the database was deleted
+   */
+  deleteDatabase(dbname: string) {
     if (this.hashStore[dbname] !== undefined) {
       delete this.hashStore[dbname];
     }

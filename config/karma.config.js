@@ -29,7 +29,7 @@ module.exports = function (config) {
       resolve: {
         extensions: ['.ts', '.js'],
       },
-      devtool: "source-map",
+      devtool: "source-map-inline",
       module: {
         rules: [
           {

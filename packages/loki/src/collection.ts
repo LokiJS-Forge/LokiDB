@@ -23,41 +23,38 @@ import {copyProperties} from "./utils";
 /**
  * General utils, including statistical functions
  */
-function isDeepProperty(field) {
+function isDeepProperty(field: string) {
   return field.indexOf(".") !== -1;
 }
 
-function parseBase10(num) {
-  return parseFloat(num, 10);
+function parseBase10(num: string) {
+  return parseFloat(num);
 }
 
-function add(a, b) {
+function add(a: any, b: any) {
   return a + b;
 }
 
-function sub(a, b) {
+function sub(a: any, b: any) {
   return a - b;
 }
 
-function average(array) {
+function average(array: any[]) {
   return (array.reduce(add, 0)) / array.length;
 }
 
-function standardDeviation(values) {
+function standardDeviation(values: number[]) {
   const avg = average(values);
   const squareDiffs = values.map((value) => {
     const diff = value - avg;
-    const sqrDiff = diff * diff;
-    return sqrDiff;
+    return diff * diff;
   });
 
   const avgSquareDiff = average(squareDiffs);
-
-  const stdDev = Math.sqrt(avgSquareDiff);
-  return stdDev;
+  return Math.sqrt(avgSquareDiff);
 }
 
-function deepProperty(obj, property, isDeep) {
+function deepProperty(obj: object, property: string, isDeep: boolean) {
   if (isDeep === false) {
     // pass without processing
     return obj[property];
@@ -76,6 +73,44 @@ function deepProperty(obj, property, isDeep) {
  */
 export class Collection extends LokiEventEmitter {
 
+  public name: string;
+  // the data held by the collection
+  public data: any[];
+  private idIndex: number[]; // index of id
+  public binaryIndices = {}; // user defined indexes
+  public constraints = {
+    unique: {},
+    exact: {}
+  };
+  private uniqueNames: string[];
+  public transforms: {};
+  public objType: string;
+  public dirty: boolean;
+  private cachedIndex: any;
+  private cachedBinaryIndex: any;
+  private cachedData: any;
+  public adaptiveBinaryIndices: any;
+  private transactional: any;
+  public cloneObjects: any;
+  public cloneMethod: any;
+  private disableChangesApi: any;
+  public disableDeltaChangesApi: any;
+  private setChangesApi: any;
+  private autoupdate: any;
+  private serializableIndices: any;
+  public ttl: any;
+  private maxId: any;
+  private _dynamicViews: any;
+  private changes: any;
+  private observerCallback: any;
+  private getChangeDelta: any;
+  private getObjectDelta: any;
+  public getChanges: any;
+  public flushChanges: any;
+  public console: any;
+  private stages: object;
+  private commitLog: any[];
+
   /**
    * @param {string} name - collection name
    * @param {(array|object)} [options={}] - array of property names to be indicized OR a configuration object
@@ -93,7 +128,7 @@ export class Collection extends LokiEventEmitter {
    * @param {int} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
    * @see {@link Loki#addCollection} for normal creation of collections
    */
-  constructor(name, options = {}) {
+  constructor(name: string, options: any = {}) {
     super();
     // the name of the collection
 
@@ -134,24 +169,24 @@ export class Collection extends LokiEventEmitter {
       if (!Array.isArray(options.unique)) {
         options.unique = [options.unique];
       }
-      options.unique.forEach((prop) => {
+      options.unique.forEach((prop: string) => {
         this.uniqueNames.push(prop); // used to regenerate on subsequent database loads
         this.constraints.unique[prop] = new UniqueIndex(prop);
       });
     }
 
     if (options.exact !== undefined) {
-      options.exact.forEach((prop) => {
+      options.exact.forEach((prop: string) => {
         this.constraints.exact[prop] = new ExactIndex(prop);
       });
     }
 
-    // Inverted index
-    this._fullTextSearch = null;
-    if (Loki.FullTextSearch !== undefined) {
-      this._fullTextSearch = options.fullTextSearch !== undefined
-        ? new (Loki.FullTextSearch.FullTextSearch)(options.fullTextSearch) : null;
-    }
+    // Full text search
+    // this._fullTextSearch = null;
+    // if (Loki.FullTextSearch !== undefined) {
+    //   this._fullTextSearch = options.fullTextSearch !== undefined
+    //     ? new (Loki.FullTextSearch.FullTextSearch)(options.fullTextSearch) : null;
+    // }
 
     // if set to true we will optimally keep indices 'fresh' during insert/update/remove ops (never dirty/never needs rebuild)
     // if you frequently intersperse insert/update/remove ops between find ops this will likely be significantly faster option.
@@ -233,9 +268,9 @@ export class Collection extends LokiEventEmitter {
       this.ensureIndex(indices[idx]);
     }
 
-    function observerCallback(changes) {
+    function observerCallback(changes: any[]) {
 
-      const changedObjects = typeof Set === "function" ? new Set() : [];
+      const changedObjects = new Set();
 
       if (!changedObjects.add)
         changedObjects.add = function (object) {
@@ -261,11 +296,12 @@ export class Collection extends LokiEventEmitter {
     this.observerCallback = observerCallback;
 
     const self = this;
+
     /*
      * This method creates a clone of the current status of an object and associates operation and collection name,
      * so the parent db can aggregate and generate a changes object for the entire db
      */
-    function createChange(name, op, obj, old) {
+    function createChange(name: string, op: string, obj: object, old: object = {}) {
       self.changes.push({
         name,
         operation: op,
@@ -274,7 +310,7 @@ export class Collection extends LokiEventEmitter {
     }
 
     //Compare changed object (which is a forced clone) with existing object and return the delta
-    function getChangeDelta(obj, old) {
+    function getChangeDelta(obj: object, old: object) {
       if (old) {
         return getObjectDelta(old, obj);
       }
@@ -285,7 +321,7 @@ export class Collection extends LokiEventEmitter {
 
     this.getChangeDelta = getChangeDelta;
 
-    function getObjectDelta(oldObject, newObject) {
+    function getObjectDelta(oldObject: object, newObject: object) {
       const propertyNames = newObject !== null && typeof newObject === "object" ? Object.keys(newObject) : null;
       if (propertyNames && propertyNames.length && ["string", "boolean", "number"].indexOf(typeof(newObject)) < 0) {
         const delta = {};
@@ -325,7 +361,7 @@ export class Collection extends LokiEventEmitter {
     /**
      * If the changes API is disabled make sure only metadata is added without re-evaluating everytime if the changesApi is enabled
      */
-    function insertMeta(obj) {
+    function insertMeta(obj: any) {
       let len;
       let idx;
 
@@ -358,7 +394,7 @@ export class Collection extends LokiEventEmitter {
       obj.meta.revision = 0;
     }
 
-    function updateMeta(obj) {
+    function updateMeta(obj: any) {
       if (!obj) {
         return;
       }
@@ -366,29 +402,29 @@ export class Collection extends LokiEventEmitter {
       obj.meta.revision += 1;
     }
 
-    function createInsertChange(obj) {
+    function createInsertChange(obj: any) {
       createChange(self.name, "I", obj);
     }
 
-    function createUpdateChange(obj, old) {
+    function createUpdateChange(obj: object, old: object) {
       createChange(self.name, "U", obj, old);
     }
 
-    function insertMetaWithChange(obj) {
+    function insertMetaWithChange(obj: object) {
       insertMeta(obj);
       createInsertChange(obj);
     }
 
-    function updateMetaWithChange(obj, old) {
+    function updateMetaWithChange(obj: object, old: object) {
       updateMeta(obj);
       createUpdateChange(obj, old);
     }
 
 
     /* assign correct handler based on ChangesAPI flag */
-    let insertHandler;
+    let insertHandler: any;
 
-    let updateHandler;
+    let updateHandler: any;
 
     function setHandlers() {
       insertHandler = self.disableChangesApi ? insertMeta : insertMetaWithChange;
@@ -397,7 +433,7 @@ export class Collection extends LokiEventEmitter {
 
     setHandlers();
 
-    this.setChangesApi = (enabled) => {
+    this.setChangesApi = (enabled: boolean) => {
       this.disableChangesApi = !enabled;
       if (!enabled) {
         self.disableDeltaChangesApi = false;
@@ -407,21 +443,21 @@ export class Collection extends LokiEventEmitter {
     /**
      * built-in events
      */
-    this.on("insert", (obj) => {
+    this.on("insert", (obj: object) => {
       insertHandler(obj);
     });
 
-    this.on("update", (obj, old) => {
+    this.on("update", (obj: object, old: object) => {
       updateHandler(obj, old);
     });
 
-    this.on("delete", (obj) => {
+    this.on("delete", (obj: object) => {
       if (!this.disableChangesApi) {
         createChange(this.name, "R", obj);
       }
     });
 
-    this.on("warning", (warning) => {
+    this.on("warning", (warning: any) => {
       this.console.warn(warning);
     });
     // for de-serialization purposes
@@ -467,7 +503,7 @@ export class Collection extends LokiEventEmitter {
     };
   }
 
-  static fromJSONObject(obj, options, forceRebuild) {
+  static fromJSONObject(obj: any, options: any, forceRebuild: boolean) {
     let coll = new Collection(obj.name, {
       disableChangesApi: obj.disableChangesApi,
       disableDeltaChangesApi: obj.disableDeltaChangesApi
@@ -484,14 +520,13 @@ export class Collection extends LokiEventEmitter {
 
     coll.dirty = (options.retainDirtyFlags === true) ? obj.dirty : false;
 
-    function makeLoader(coll) {
+    function makeLoader(coll: any) {
       const collOptions = options[coll.name];
-      let inflater;
 
       if (collOptions.proto) {
-        inflater = collOptions.inflate || copyProperties;
+        let inflater = collOptions.inflate || copyProperties;
 
-        return (data) => {
+        return (data: any) => {
           const collObj = new (collOptions.proto)();
           inflater(data, collObj);
           return collObj;
@@ -508,15 +543,11 @@ export class Collection extends LokiEventEmitter {
       let loader = makeLoader(obj);
 
       for (j; j < clen; j++) {
-        let collObj = loader(obj.data[j]);
-        coll.data[j] = collObj;
-        coll.addAutoUpdateObserver(coll);
+        coll.data[j] = loader(obj.data[j]);
       }
     } else {
-
       for (j; j < clen; j++) {
         coll.data[j] = obj.data[j];
-        coll.addAutoUpdateObserver(coll.data[j]);
       }
     }
 
@@ -559,26 +590,12 @@ export class Collection extends LokiEventEmitter {
     return coll;
   }
 
-  addAutoUpdateObserver(object) {
-    if (!this.autoupdate || typeof Object.observe !== "function")
-      return;
-
-    Object.observe(object, this.observerCallback, ["add", "update", "delete", "reconfigure", "setPrototype"]);
-  }
-
-  removeAutoUpdateObserver(object) {
-    if (!this.autoupdate || typeof Object.observe !== "function")
-      return;
-
-    Object.unobserve(object, this.observerCallback);
-  }
-
   /**
    * Adds a named collection transform to the collection
    * @param {string} name - name to associate with transform
    * @param {array} transform - an array of transformation 'step' objects to save into the collection
    */
-  addTransform(name, transform) {
+  addTransform(name: string, transform: any[]) {
     if (this.transforms[name] !== undefined) {
       throw new Error("a transform by that name already exists");
     }
@@ -590,7 +607,7 @@ export class Collection extends LokiEventEmitter {
    * Retrieves a named transform from the collection.
    * @param {string} name - name of the transform to lookup.
    */
-  getTransform(name) {
+  getTransform(name: string) {
     return this.transforms[name];
   }
 
@@ -599,7 +616,7 @@ export class Collection extends LokiEventEmitter {
    * @param {string} name - name to associate with transform
    * @param {object} transform - a transformation object to save into collection
    */
-  setTransform(name, transform) {
+  setTransform(name: string, transform: any[]) {
     this.transforms[name] = transform;
   }
 
@@ -607,11 +624,11 @@ export class Collection extends LokiEventEmitter {
    * Removes a named collection transform from the collection
    * @param {string} name - name of collection transform to remove
    */
-  removeTransform(name) {
+  removeTransform(name: string) {
     delete this.transforms[name];
   }
 
-  byExample(template) {
+  byExample(template: object) {
     let k;
     let obj;
     let query;
@@ -620,8 +637,8 @@ export class Collection extends LokiEventEmitter {
       if (template[k] === undefined) continue;
       query.push((
         obj = {},
-        obj[k] = template[k],
-        obj
+          obj[k] = template[k],
+          obj
       ));
     }
     return {
@@ -629,11 +646,11 @@ export class Collection extends LokiEventEmitter {
     };
   }
 
-  findObject(template) {
+  findObject(template: object) {
     return this.findOne(this.byExample(template));
   }
 
-  findObjects(template) {
+  findObjects(template: object) {
     return this.find(this.byExample(template));
   }
 
@@ -645,7 +662,7 @@ export class Collection extends LokiEventEmitter {
     const age = this.ttl.age;
     return function ttlDaemon() {
       const now = Date.now();
-      const toRemove = collection.chain().where(function daemonFilter(member) {
+      const toRemove = collection.chain().where((member: any) => {
         const timestamp = member.meta.updated || member.meta.created;
         const diff = now - timestamp;
         return age < diff;
@@ -654,7 +671,7 @@ export class Collection extends LokiEventEmitter {
     };
   }
 
-  setTTL(age, interval) {
+  setTTL(age: number, interval: number) {
     if (age < 0) {
       clearInterval(this.ttl.daemon);
     } else {
@@ -684,7 +701,7 @@ export class Collection extends LokiEventEmitter {
    * Will allow reconfiguring certain collection options.
    * @param {boolean} options.adaptiveBinaryIndices - collection indices will be actively rebuilt rather than lazily
    */
-  configureOptions(options) {
+  configureOptions(options: any) {
     options = options || {};
 
     if (options.adaptiveBinaryIndices !== undefined) {
@@ -702,12 +719,8 @@ export class Collection extends LokiEventEmitter {
    * @param {string} property - name of property to create binary index on
    * @param {boolean} force - (Optional) flag indicating whether to construct index immediately
    */
-  ensureIndex(property, force) {
+  ensureIndex(property: string, force = false) {
     // optional parameter to force rebuild whether flagged as dirty or not
-    if (typeof(force) === "undefined") {
-      force = false;
-    }
-
     if (property === null || property === undefined) {
       throw new Error("Attempting to set index without an associated property");
     }
@@ -729,12 +742,16 @@ export class Collection extends LokiEventEmitter {
     this.binaryIndices[property] = index;
 
     const wrappedComparer =
-      (((prop, data) => (a, b) => {
+      (((prop, data) => (a: string, b: string) => {
         let val1, val2, arr;
         if (~prop.indexOf(".")) {
           arr = prop.split(".");
-          val1 = arr.reduce(function(obj, i) { return obj && obj[i] || undefined; }, data[a]);
-          val2 = arr.reduce(function(obj, i) { return obj && obj[i] || undefined; }, data[b]);
+          val1 = arr.reduce(function (obj, i) {
+            return obj && obj[i] || undefined;
+          }, data[a]);
+          val2 = arr.reduce(function (obj, i) {
+            return obj && obj[i] || undefined;
+          }, data[b]);
         } else {
           val1 = data[a][prop];
           val2 = data[b][prop];
@@ -753,7 +770,7 @@ export class Collection extends LokiEventEmitter {
     this.dirty = true; // for autosave scenarios
   }
 
-  getSequencedIndexValues(property) {
+  getSequencedIndexValues(property: string) {
     let idx;
     const idxvals = this.binaryIndices[property].values;
     let result = "";
@@ -765,7 +782,7 @@ export class Collection extends LokiEventEmitter {
     return result;
   }
 
-  ensureUniqueIndex(field) {
+  ensureUniqueIndex(field: string) {
     let index = this.constraints.unique[field];
     if (!index) {
       // keep track of new unique index for regenerate after database (re)load.
@@ -785,7 +802,7 @@ export class Collection extends LokiEventEmitter {
   /**
    * Ensure all binary indices
    */
-  ensureAllIndexes(force) {
+  ensureAllIndexes(force = false) {
     let key;
     const bIndices = this.binaryIndices;
     for (key in bIndices) {
@@ -805,7 +822,7 @@ export class Collection extends LokiEventEmitter {
     }
   }
 
-  flagBinaryIndexDirty(index) {
+  flagBinaryIndexDirty(index: number) {
     if (this.binaryIndices[index])
       this.binaryIndices[index].dirty = true;
   }
@@ -815,7 +832,7 @@ export class Collection extends LokiEventEmitter {
    * @param {object} query - (optional) query object to count results of
    * @returns {number} number of documents in the collection
    */
-  count(query) {
+  count(query?: object) {
     if (!query) {
       return this.data.length;
     }
@@ -845,7 +862,7 @@ export class Collection extends LokiEventEmitter {
    * @param {number} options.minRebuildInterval - minimum rebuild interval (need clarification to docs here)
    * @returns {DynamicView} reference to the dynamic view added
    **/
-  addDynamicView(name, options) {
+  addDynamicView(name: string, options: any) {
     const dv = new DynamicView(this, name, options);
     this._dynamicViews.push(dv);
 
@@ -856,7 +873,7 @@ export class Collection extends LokiEventEmitter {
    * Remove a dynamic view from the collection
    * @param {string} name - name of dynamic view to remove
    **/
-  removeDynamicView(name) {
+  removeDynamicView(name: string) {
     for (let idx = 0; idx < this._dynamicViews.length; idx++) {
       if (this._dynamicViews[idx].name === name) {
         this._dynamicViews.splice(idx, 1);
@@ -869,7 +886,7 @@ export class Collection extends LokiEventEmitter {
    * @param {string} name - name of dynamic view to retrieve reference of
    * @returns {DynamicView} A reference to the dynamic view with that name
    **/
-  getDynamicView(name) {
+  getDynamicView(name: string) {
     for (let idx = 0; idx < this._dynamicViews.length; idx++) {
       if (this._dynamicViews[idx].name === name) {
         return this._dynamicViews[idx];
@@ -887,7 +904,7 @@ export class Collection extends LokiEventEmitter {
    * @param {object|function} filterObject - 'mongo-like' query object (or deprecated filterFunction mode)
    * @param {function} updateFunction - update function to run against filtered documents
    */
-  findAndUpdate(filterObject, updateFunction) {
+  findAndUpdate(filterObject: object | Function, updateFunction: Function) {
     if (typeof(filterObject) === "function") {
       this.updateWhere(filterObject, updateFunction);
     } else {
@@ -900,7 +917,7 @@ export class Collection extends LokiEventEmitter {
    *
    * @param {object} filterObject - 'mongo-like' query object
    */
-  findAndRemove(filterObject) {
+  findAndRemove(filterObject: object) {
     this.chain().find(filterObject).remove();
   }
 
@@ -909,7 +926,7 @@ export class Collection extends LokiEventEmitter {
    * @param {(object|array)} doc - the document (or array of documents) to be inserted
    * @returns {(object|array)} document or documents inserted
    */
-  insert(doc) {
+  insert(doc: any) {
     if (!Array.isArray(doc)) {
       return this.insertOne(doc);
     }
@@ -941,7 +958,7 @@ export class Collection extends LokiEventEmitter {
    * @param {boolean} bulkInsert - quiet pre-insert and insert event emits
    * @returns {object} document or 'undefined' if there was a problem inserting it
    */
-  insertOne(doc, bulkInsert) {
+  insertOne(doc: any, bulkInsert = false) {
     let err = null;
     let returnObj;
 
@@ -976,9 +993,9 @@ export class Collection extends LokiEventEmitter {
     }
 
     // FullTextSearch TODO.
-    if (this._fullTextSearch !== null) {
-      this._fullTextSearch.addDocument(doc);
-    }
+    // if (this._fullTextSearch !== null) {
+    //   this._fullTextSearch.addDocument(doc);
+    // }
 
     returnObj = obj;
     if (!bulkInsert) {
@@ -986,7 +1003,6 @@ export class Collection extends LokiEventEmitter {
       returnObj = this.cloneObjects ? clone(obj, this.cloneMethod) : obj;
     }
 
-    this.addAutoUpdateObserver(returnObj);
     return returnObj;
   }
 
@@ -995,9 +1011,7 @@ export class Collection extends LokiEventEmitter {
    * @param {object} options - configure clear behavior
    * @param {boolean} options.removeIndices - (default: false)
    */
-  clear(options) {
-    options = options || {};
-
+  clear(options: any = {}) {
     this.data = [];
     this.idIndex = [];
     this.cachedIndex = null;
@@ -1043,7 +1057,7 @@ export class Collection extends LokiEventEmitter {
    * Updates an object and notifies collection that the document has changed.
    * @param {object} doc - document to update within the collection
    */
-  update(doc) {
+  update(doc: any) {
     if (Array.isArray(doc)) {
       let k = 0;
       const len = doc.length;
@@ -1061,23 +1075,17 @@ export class Collection extends LokiEventEmitter {
       this.startTransaction();
       const arr = this.get(doc.$loki, true);
 
-      // ref to existing obj
-      let oldInternal;
-
-      // ref to new internal obj
-      let newInternal;
-
-      let position;
-
       if (!arr) {
         throw new Error("Trying to update a document not in collection.");
       }
 
-      oldInternal = arr[0]; // -internal- obj ref
-      position = arr[1]; // position in data array
+      // ref to existing obj
+      let oldInternal = arr[0]; // -internal- obj ref
+      let position = arr[1]; // position in data array
 
+      // ref to new internal obj
       // if configured to clone, do so now... otherwise just use same obj reference
-      newInternal = this.cloneObjects  || !this.disableDeltaChangesApi ? clone(doc, this.cloneMethod) : doc;
+      let newInternal = this.cloneObjects || !this.disableDeltaChangesApi ? clone(doc, this.cloneMethod) : doc;
 
       this.emit("pre-update", doc);
 
@@ -1087,10 +1095,6 @@ export class Collection extends LokiEventEmitter {
 
       // operate the update
       this.data[position] = newInternal;
-
-      if (newInternal !== doc) {
-        this.addAutoUpdateObserver(doc);
-      }
 
       // now that we can efficiently determine the data[] position of newly added document,
       // submit it for all registered DynamicViews to evaluate for inclusion/exclusion
@@ -1113,14 +1117,14 @@ export class Collection extends LokiEventEmitter {
       //this.flagBinaryIndexesDirty();
 
       // FullTextSearch.
-      if (this._fullTextSearch !== null) {
-        this._fullTextSearch.updateDocument(doc);
-      }
+      // if (this._fullTextSearch !== null) {
+      //   this._fullTextSearch.updateDocument(doc);
+      // }
 
       this.commit();
       this.dirty = true; // for autosave scenarios
 
-      this.emit("update", doc, this.cloneObjects  || !this.disableDeltaChangesApi ? clone(oldInternal, this.cloneMethod) : null);
+      this.emit("update", doc, this.cloneObjects || !this.disableDeltaChangesApi ? clone(oldInternal, this.cloneMethod) : null);
       return doc;
     } catch (err) {
       this.rollback();
@@ -1133,7 +1137,7 @@ export class Collection extends LokiEventEmitter {
   /**
    * Add object to collection
    */
-  add(obj) {
+  add(obj: any) {
     // if parameter isn't object exit with throw
     if ("object" !== typeof obj) {
       throw new TypeError("Object being added needs to be an object");
@@ -1210,7 +1214,7 @@ export class Collection extends LokiEventEmitter {
    * @param {function} filterFunction - filter function whose results will execute update
    * @param {function} updateFunction - update function to run against filtered documents
    */
-  updateWhere(filterFunction, updateFunction) {
+  updateWhere(filterFunction: Function, updateFunction: Function) {
     const results = this.where(filterFunction);
     let i = 0;
     let obj;
@@ -1231,7 +1235,7 @@ export class Collection extends LokiEventEmitter {
    * For 'mongo-like' querying you should migrate to [findAndRemove()]{@link Collection#findAndRemove}.
    * @param {function|object} query - query object to filter on
    */
-  removeWhere(query) {
+  removeWhere(query: any) {
     let list;
     if (typeof query === "function") {
       list = this.data.filter(query);
@@ -1249,7 +1253,7 @@ export class Collection extends LokiEventEmitter {
    * Remove a document from the collection
    * @param {object} doc - document to remove from collection
    */
-  remove(doc) {
+  remove(doc: any) {
     if (typeof doc === "number") {
       doc = this.get(doc);
     }
@@ -1301,15 +1305,14 @@ export class Collection extends LokiEventEmitter {
       }
 
       this.data.splice(position, 1);
-      this.removeAutoUpdateObserver(doc);
 
       // remove id from idIndex
       this.idIndex.splice(position, 1);
 
       // FullTextSearch.
-      if (this._fullTextSearch != null) {
+      /*if (this._fullTextSearch != null) {
         this._fullTextSearch.removeDocument(doc);
-      }
+      }*/
 
       this.commit();
       this.dirty = true; // for autosave scenarios
@@ -1336,8 +1339,7 @@ export class Collection extends LokiEventEmitter {
    * @returns {(object|array|null)} Object reference if document was found, null if not,
    *     or an array if 'returnPosition' was passed.
    */
-  get(id, returnPosition) {
-    const retpos = returnPosition || false;
+  get(id: number, returnPosition = false) {
     const data = this.idIndex;
     let max = data.length - 1;
     let min = 0;
@@ -1360,7 +1362,7 @@ export class Collection extends LokiEventEmitter {
     }
 
     if (max === min && data[min] === id) {
-      if (retpos) {
+      if (returnPosition) {
         return [this.data[min], min];
       }
       return this.data[min];
@@ -1375,7 +1377,7 @@ export class Collection extends LokiEventEmitter {
    * @param {int} dataPosition : coll.data array index/position
    * @param {string} binaryIndexName : index to search for dataPosition in
    */
-  getBinaryIndexPosition(dataPosition, binaryIndexName) {
+  getBinaryIndexPosition(dataPosition: number, binaryIndexName: string) {
     const val = this.data[dataPosition][binaryIndexName];
     const index = this.binaryIndices[binaryIndexName].values;
 
@@ -1408,7 +1410,7 @@ export class Collection extends LokiEventEmitter {
    * @param {int} dataPosition : coll.data array index/position
    * @param {string} binaryIndexName : index to search for dataPosition in
    */
-  adaptiveBinaryIndexInsert(dataPosition, binaryIndexName) {
+  adaptiveBinaryIndexInsert(dataPosition: number, binaryIndexName: string) {
     const index = this.binaryIndices[binaryIndexName].values;
     let val = this.data[dataPosition][binaryIndexName];
 
@@ -1430,7 +1432,7 @@ export class Collection extends LokiEventEmitter {
    * @param {int} dataPosition : coll.data array index/position
    * @param {string} binaryIndexName : index to search for dataPosition in
    */
-  adaptiveBinaryIndexUpdate(dataPosition, binaryIndexName) {
+  adaptiveBinaryIndexUpdate(dataPosition: number, binaryIndexName: string) {
     // linear scan needed to find old position within index unless we optimize for clone scenarios later
     // within (my) node 5.6.0, the following for() loop with strict compare is -much- faster than indexOf()
     let idxPos;
@@ -1454,7 +1456,7 @@ export class Collection extends LokiEventEmitter {
    * @param {int} dataPosition : coll.data array index/position
    * @param {string} binaryIndexName : index to search for dataPosition in
    */
-  adaptiveBinaryIndexRemove(dataPosition, binaryIndexName, removedFromIndexOnly) {
+  adaptiveBinaryIndexRemove(dataPosition: number, binaryIndexName: string, removedFromIndexOnly = false): any {
     const idxPos = this.getBinaryIndexPosition(dataPosition, binaryIndexName);
     const index = this.binaryIndices[binaryIndexName].values;
     let len;
@@ -1498,7 +1500,7 @@ export class Collection extends LokiEventEmitter {
    * @param {any} val - value to find within index
    * @param {bool?} adaptive - if true, we will return insert position
    */
-  calculateRangeStart(prop, val, adaptive) {
+  calculateRangeStart(prop: string, val: any, adaptive = false) {
     const rcd = this.data;
     const index = this.binaryIndices[prop].values;
     let min = 0;
@@ -1540,7 +1542,7 @@ export class Collection extends LokiEventEmitter {
    * Internal method used for indexed $between.  Given a prop (index name), and a value
    * (which may or may not yet exist) this will find the final position of that upper range value.
    */
-  calculateRangeEnd(prop, val) {
+  calculateRangeEnd(prop: string, val: any) {
     const rcd = this.data;
     const index = this.binaryIndices[prop].values;
     let min = 0;
@@ -1593,7 +1595,7 @@ export class Collection extends LokiEventEmitter {
    * @param {object} val - value to use for range calculation.
    * @returns {array} [start, end] index array positions
    */
-  calculateRange(op, prop, val) {
+  calculateRange(op: string, prop: string, val: any): any {
     const rcd = this.data;
     const index = this.binaryIndices[prop].values;
     const min = 0;
@@ -1801,9 +1803,9 @@ export class Collection extends LokiEventEmitter {
    * @param {value} value - unique value to search for
    * @returns {object} document matching the value passed
    */
-  by(field, value) {
+  by(field: string, value: number) {
     if (value === undefined) {
-      return (value) => this.by(field, value);
+      return (value: number) => this.by(field, value);
     }
 
     const result = this.constraints.unique[field].get(value);
@@ -1819,7 +1821,7 @@ export class Collection extends LokiEventEmitter {
    * @param {object} query - query object used to perform search with
    * @returns {(object|null)} First matching document, or null if none
    */
-  findOne(query) {
+  findOne(query: object) {
     query = query || {};
 
     // Instantiate Resultset and exec find op passing firstOnly = true param
@@ -1844,7 +1846,7 @@ export class Collection extends LokiEventEmitter {
    * @param {object} parameters - Object containing properties representing parameters to substitute
    * @returns {Resultset} (this) resultset, or data array if any map or join functions where called
    */
-  chain(transform, parameters) {
+  chain(transform?: any, parameters?: any) {
     const rs = new Resultset(this);
 
     if (typeof transform === "undefined") {
@@ -1861,7 +1863,7 @@ export class Collection extends LokiEventEmitter {
    * @param {object} query - 'mongo-like' query object
    * @returns {array} Array of matching documents
    */
-  find(query) {
+  find(query: object) {
     return this.chain().find(query).data();
   }
 
@@ -1869,7 +1871,7 @@ export class Collection extends LokiEventEmitter {
    * Find object by unindexed field by property equal to value,
    * simply iterates and returns the first element matching the query
    */
-  findOneUnindexed(prop, value) {
+  findOneUnindexed(prop: string, value: any) {
     let i = this.data.length;
     let doc;
     while (i--) {
@@ -1939,7 +1941,7 @@ export class Collection extends LokiEventEmitter {
    * @param {function} fun - filter function to run against all collection docs
    * @returns {array} all documents which pass your filter function
    */
-  where(fun) {
+  where(fun: Function) {
     return this.chain().where(fun).data();
   }
 
@@ -1950,7 +1952,7 @@ export class Collection extends LokiEventEmitter {
    * @param {function} reduceFunction - function to use as reduce function
    * @returns {data} The result of your mapReduce operation
    */
-  mapReduce(mapFunction, reduceFunction) {
+  mapReduce(mapFunction: any, reduceFunction: Function) {
     try {
       return reduceFunction(this.data.map(mapFunction));
     } catch (err) {
@@ -1967,12 +1969,13 @@ export class Collection extends LokiEventEmitter {
    * @param {function} mapFun - (Optional) map function to use
    * @returns {Resultset} Result of the mapping operation
    */
-  eqJoin(joinData, leftJoinProp, rightJoinProp, mapFun) {
+  eqJoin(joinData: any[], leftJoinProp: string, rightJoinProp: string, mapFun: Function) {
     // logic in Resultset class
     return new Resultset(this).eqJoin(joinData, leftJoinProp, rightJoinProp, mapFun);
   }
 
   /* ------ STAGING API -------- */
+
   /**
    * stages: a map of uniquely identified 'stages', which hold copies of objects to be
    * manipulated without affecting the data in the original collection
@@ -1982,7 +1985,7 @@ export class Collection extends LokiEventEmitter {
   /**
    * (Staging API) create a stage and/or retrieve it
    */
-  getStage(name) {
+  getStage(name: string) {
     if (!this.stages[name]) {
       this.stages[name] = {};
     }
@@ -1996,7 +1999,7 @@ export class Collection extends LokiEventEmitter {
   /**
    * (Staging API) create a copy of an object and insert it into a stage
    */
-  stage(stageName, obj) {
+  stage(stageName: string, obj: any) {
     const copy = JSON.parse(JSON.stringify(obj));
     this.getStage(stageName)[obj.$loki] = copy;
     return copy;
@@ -2008,13 +2011,12 @@ export class Collection extends LokiEventEmitter {
    * @param {string} stageName - name of stage
    * @param {string} message
    */
-  commitStage(stageName, message) {
+  commitStage(stageName: string, message: string) {
     const stage = this.getStage(stageName);
     let prop;
     const timestamp = new Date().getTime();
 
     for (prop in stage) {
-
       this.update(stage[prop]);
       this.commitLog.push({
         timestamp,
@@ -2031,7 +2033,7 @@ export class Collection extends LokiEventEmitter {
 
   /**
    */
-  extract(field) {
+  extract(field: string) {
     let i = 0;
     const len = this.data.length;
     const isDotNotation = isDeepProperty(field);
@@ -2044,26 +2046,26 @@ export class Collection extends LokiEventEmitter {
 
   /**
    */
-  max(field) {
+  max(field: string) {
     return Math.max.apply(null, this.extract(field));
   }
 
   /**
    */
-  min(field) {
+  min(field: string) {
     return Math.min.apply(null, this.extract(field));
   }
 
   /**
    */
-  maxRecord(field) {
+  maxRecord(field: string) {
     let i = 0;
     const len = this.data.length;
     const deep = isDeepProperty(field);
 
     const result = {
       index: 0,
-      value: undefined
+      value: any
     };
 
     let max;
@@ -2085,14 +2087,14 @@ export class Collection extends LokiEventEmitter {
 
   /**
    */
-  minRecord(field) {
+  minRecord(field: string) {
     let i = 0;
     const len = this.data.length;
     const deep = isDeepProperty(field);
 
     const result = {
       index: 0,
-      value: undefined
+      value: any
     };
 
     let min;
@@ -2114,7 +2116,7 @@ export class Collection extends LokiEventEmitter {
 
   /**
    */
-  extractNumerical(field) {
+  extractNumerical(field: string) {
     return this.extract(field).map(parseBase10).filter(Number).filter((n) => !(isNaN(n)));
   }
 
@@ -2124,7 +2126,7 @@ export class Collection extends LokiEventEmitter {
    * @param {string} field - name of property in docs to average
    * @returns {number} average of property in all docs in the collection
    */
-  avg(field) {
+  avg(field: string) {
     return average(this.extractNumerical(field));
   }
 
@@ -2132,14 +2134,14 @@ export class Collection extends LokiEventEmitter {
    * Calculate standard deviation of a field
    * @param {string} field
    */
-  stdDev(field) {
+  stdDev(field: string) {
     return standardDeviation(this.extractNumerical(field));
   }
 
   /**
    * @param {string} field
    */
-  mode(field) {
+  mode(field: string) {
     const dict = {};
     const data = this.extract(field);
     data.forEach((obj) => {
@@ -2168,7 +2170,7 @@ export class Collection extends LokiEventEmitter {
   /**
    * @param {string} field - property name
    */
-  median(field) {
+  median(field: string) {
     const values = this.extractNumerical(field);
     values.sort(sub);
 

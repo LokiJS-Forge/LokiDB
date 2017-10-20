@@ -16,14 +16,14 @@ import {Collection} from "./collection";
  */
 
 function getENV() {
-  if (typeof global !== "undefined" && (global.android || global.NSObject)) {
+  if (typeof global !== "undefined" && (global["android"] || global["NSObject"])) {
     return "NATIVESCRIPT";
   }
 
   const isNode = typeof global !== "undefined" && ({}).toString.call(global) === "[object global]";
 
   if (isNode) {
-    if (global.window) {
+    if (global["window"]) {
       return "NODEJS"; //node-webkit
     } else {
       return "NODEJS";
@@ -55,9 +55,25 @@ function getENV() {
  */
 export class Loki extends LokiEventEmitter {
 
-  constructor(filename, {serializationMethod = "normal", destructureDelimiter = "$<\n", verbose = false, env = getENV()} = {}) {
+  private filename: string;
+  private collections: Collection[];
+  private databaseVersion: number;
+  private engineVersion: number;
+  private autosave: boolean;
+  private autosaveInterval: number;
+  private autosaveHandle: any;
+  private _throttledSaves: any;
+  private persistenceMethod: any;
+  private persistenceAdapter: any;
+  private _throttledSaveRunning: any;
+  private _throttledSavePending: any;
+  private verbose: any;
+  private ENV: any;
+  private options: any;
+
+  constructor(filename = "loki.db", {serializationMethod = "normal", destructureDelimiter = "$<\n", verbose = false, env = getENV()} = {}) {
     super();
-    this.filename = filename || "loki.db";
+    this.filename = filename;
     this.collections = [];
 
     // persist version of code which created the database to the database.
@@ -123,7 +139,19 @@ export class Loki extends LokiEventEmitter {
    * @param {object} persistenceMethod - a persistence method which should be used (fs, local-storage, indexed-db)
    * @returns {Promise} a Promise that resolves after initialization and (if enabled) autoloading the database
    */
-  initializePersistence({persistenceMethod, adapter, autosaveInterval, throttledSaves, autosave, inflate, autoload} = {}) {
+  initializePersistence(options: any = {}) {
+    (
+      {
+        persistenceMethod: this.options.persistenceMethod,
+        adapter: this.options.adapter,
+        autosave: this.autosave,
+        inflate: this.options.inflate,
+        autoload: this.options.autoload,
+        autosaveInterval: this.options.autosaveInterval,
+        throttledSaves: this.options.throttledSaves
+      } = options
+    );
+
     const defaultPersistence = {
       "NODEJS": ["fs"],
       "BROWSER": ["local-storage", "indexed-db"],
@@ -137,7 +165,6 @@ export class Loki extends LokiEventEmitter {
       "indexed-db": Loki["LokiIndexedStorage"]
     };
 
-    this.options.persistenceMethod = persistenceMethod;
 
     // process the options
     if (this.options.persistenceMethod !== undefined) {
@@ -149,7 +176,6 @@ export class Loki extends LokiEventEmitter {
       // should be throw an error here, or just fall back to defaults ??
     }
 
-    this.options.adapter = adapter;
 
     // if user passes adapter, set persistence mode to adapter and retain persistence adapter instance
     if (this.options.adapter !== undefined) {
@@ -163,8 +189,8 @@ export class Loki extends LokiEventEmitter {
       let possiblePersistenceMethods = defaultPersistence[this.ENV];
       if (possiblePersistenceMethods) {
         for (let i = 0; i < possiblePersistenceMethods.length; i++) {
-          if (possiblePersistenceMethods[persistenceMethods]) {
-            this.persistenceMethod = possiblePersistenceMethods[persistenceMethods];
+          if (possiblePersistenceMethods[persistenceMethods[this.options.persistenceMethod]]) {
+            this.persistenceMethod = possiblePersistenceMethods[persistenceMethods[this.options.persistenceMethod]];
             this.persistenceAdapter = new persistenceMethods[this.persistenceMethod]();
             break;
           }
@@ -172,18 +198,15 @@ export class Loki extends LokiEventEmitter {
       }
     }
 
-    this.options.autosaveInterval = autosaveInterval;
-    this.options.throttledSaves = throttledSaves;
+    //this.options.autosaveInterval = autosaveInterval;
+    //this.options.throttledSaves = throttledSaves;
     if (this.options.throttledSaves !== undefined) {
       this._throttledSaves = this.options.throttledSaves;
     }
-    this.options.autosave = autosave;
 
     this.autosaveDisable();
 
     let loaded;
-    this.options.autoload = autoload;
-    this.options.inflate = inflate;
 
     // if they want to load database on loki instantiation, now is a good time to load... after adapter set and before possible autosave initiation
     if (this.options.autoload) {
@@ -205,7 +228,7 @@ export class Loki extends LokiEventEmitter {
    * @param {object} options - apply or override collection level settings
    * @param {boolean} options.removeNonSerializable - nulls properties not safe for serialization.
    */
-  copy(options = {}) {
+  copy(options: any = {}) {
     // in case running in an environment without accurate environment detection, pass 'NA'
     const databaseCopy = new Loki(this.filename, {env: "NA"});
     let clen;
@@ -246,7 +269,7 @@ export class Loki extends LokiEventEmitter {
    * @param {int} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
    * @returns {Collection} a reference to the collection which was just added
    */
-  addCollection(name, options) {
+  addCollection(name: string, options: any = {}) {
     const collection = new Collection(name, options);
     this.collections.push(collection);
 
@@ -256,7 +279,7 @@ export class Loki extends LokiEventEmitter {
     return collection;
   }
 
-  loadCollection(collection) {
+  loadCollection(collection: Collection) {
     if (!collection.name) {
       throw new Error("Collection must have a name property to be loaded");
     }
@@ -268,7 +291,7 @@ export class Loki extends LokiEventEmitter {
    * @param {string} collectionName - name of collection to look up
    * @returns {Collection} Reference to collection in database by that name, or null if not found
    */
-  getCollection(collectionName) {
+  getCollection(collectionName: string) {
     let i;
     const len = this.collections.length;
 
@@ -289,12 +312,12 @@ export class Loki extends LokiEventEmitter {
    * @param {string} newName - new name of collection
    * @returns {Collection} reference to the newly renamed collection
    */
-  renameCollection(oldName, newName) {
+  renameCollection(oldName: string, newName: string) {
     const c = this.getCollection(oldName);
     if (c) {
       c.name = newName;
     }
-    
+
     return c;
   }
 
@@ -316,7 +339,7 @@ export class Loki extends LokiEventEmitter {
    * Removes a collection from the database.
    * @param {string} collectionName - name of collection to remove
    */
-  removeCollection(collectionName) {
+  removeCollection(collectionName: string) {
     let i;
     const len = this.collections.length;
 
@@ -336,7 +359,7 @@ export class Loki extends LokiEventEmitter {
   }
 
   getName() {
-    return this.name;
+    return this.filename;
   }
 
   /**
@@ -344,7 +367,7 @@ export class Loki extends LokiEventEmitter {
    *
    * @returns {string} Stringified representation of the loki database.
    */
-  serialize(options = {}) {
+  serialize(options: any = {}): any {
     if (options.serializationMethod === undefined) {
       options.serializationMethod = this.options.serializationMethod;
     }
@@ -365,7 +388,7 @@ export class Loki extends LokiEventEmitter {
   toJSON() {
     return {
       ENV: this.ENV,
-      serializationMethod: this.serializationMethod,
+      serializationMethod: this.options.serializationMethod,
       autosave: this.autosave,
       autosaveInterval: this.autosaveInterval,
       collections: this.collections,
@@ -394,7 +417,7 @@ export class Loki extends LokiEventEmitter {
    *
    * @returns {string|Array} A custom, restructured aggregation of independent serializations.
    */
-  serializeDestructured(options = {}) {
+  serializeDestructured(options: any = {}) {
     let idx;
     let sidx;
     let result;
@@ -521,7 +544,7 @@ export class Loki extends LokiEventEmitter {
    *
    * @returns {string|array} A custom, restructured aggregation of independent serializations for a single collection.
    */
-  serializeCollection(options = {}) {
+  serializeCollection(options: any = {}) {
     let doccount;
     let docidx;
     let resultlines = [];
@@ -569,7 +592,7 @@ export class Loki extends LokiEventEmitter {
    *
    * @returns {object|array} An object representation of the deserialized database, not yet applied to 'this' db or document array
    */
-  deserializeDestructured(destructuredSource, options = {}) {
+  deserializeDestructured(destructuredSource: any, options: any = {}) {
     let workarray = [];
     let len;
     let cdb;
@@ -673,7 +696,7 @@ export class Loki extends LokiEventEmitter {
    *
    * @returns {Array} an array of documents to attach to collection.data.
    */
-  deserializeCollection(destructuredSource, options = {}) {
+  deserializeCollection(destructuredSource: any, options: any = {}) {
     let workarray = [];
     let idx;
     let len;
@@ -712,7 +735,7 @@ export class Loki extends LokiEventEmitter {
    * @param {object} options - apply or override collection level settings
    * @param {boolean} options.retainDirtyFlags - whether collection dirty flags will be preserved
    */
-  loadJSON(serializedDb, options) {
+  loadJSON(serializedDb: string, options: any) {
     let dbObject;
     if (serializedDb.length === 0) {
       dbObject = {};
@@ -741,10 +764,10 @@ export class Loki extends LokiEventEmitter {
    * @param {object} options - apply or override collection level settings
    * @param {boolean} options.retainDirtyFlags - whether collection dirty flags will be preserved
    */
-  loadJSONObject(dbObject, options = {}) {
+  loadJSONObject(dbObject: any, options: any = {}) {
     const len = dbObject.collections ? dbObject.collections.length : 0;
 
-    this.name = dbObject.name;
+    this.filename = dbObject.filename;
     this.collections = [];
 
     for (let i = 0; i < len; ++i) {
@@ -797,12 +820,12 @@ export class Loki extends LokiEventEmitter {
    * @returns {Array} array of changes
    * @see private method createChange() in Collection
    */
-  generateChangesNotification(arrayOfCollectionNames) {
-    function getCollName(coll) {
+  generateChangesNotification(arrayOfCollectionNames: string[]) {
+    function getCollName(coll: Collection) {
       return coll.name;
     }
 
-    let changes = [];
+    let changes: any[] = [];
     const selectedCollections = arrayOfCollectionNames || this.collections.map(getCollName);
 
     this.collections.forEach((coll) => {
@@ -817,7 +840,7 @@ export class Loki extends LokiEventEmitter {
    * (Changes API) - stringify changes for network transmission
    * @returns {string} string representation of the changes
    */
-  serializeChanges(collectionNamesArray) {
+  serializeChanges(collectionNamesArray: string[]) {
     return JSON.stringify(this.generateChangesNotification(collectionNamesArray));
   }
 
@@ -841,7 +864,7 @@ export class Loki extends LokiEventEmitter {
    * @param {number} [options.recursiveWaitLimitDelay=2000] - cutoff in ms to stop recursively re-draining
    * @returns {Promise} a Promise that resolves when save queue is drained, it is passed a sucess parameter value
    */
-  throttledSaveDrain(options = {}) {
+  throttledSaveDrain(options: any = {}): any {
     const now = (new Date()).getTime();
 
     if (!this._throttledSaves) {
@@ -869,7 +892,7 @@ export class Loki extends LokiEventEmitter {
         return Promise.resolve(Promise.all([this._throttledSaveRunning, this._throttledSavePending])).then(() => {
           if (this._throttledSaveRunning !== null || this._throttledSavePending !== null) {
             if (options.recursiveWaitLimit && (now - options.started > options.recursiveWaitLimitDuration)) {
-              return Promise.reject();
+              return Promise.reject({});
             }
             return this.throttledSaveDrain(options);
           } else {
@@ -934,7 +957,7 @@ export class Loki extends LokiEventEmitter {
    * @param {int} [options.recursiveWaitLimitDelay=2000] cutoff in ms to stop recursively re-draining
    * @returns {Promise} a Promise that resolves after the database is loaded
    */
-  loadDatabase(options) {
+  loadDatabase(options: any = {}) {
     // if throttling disabled, just call internal
     if (!this._throttledSaves) {
       return this._loadDatabase(options);
