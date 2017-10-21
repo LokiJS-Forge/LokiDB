@@ -262,7 +262,7 @@ export class DynamicView extends LokiEventEmitter {
    * @param {boolean} isdesc - (Optional) If true, the sort will be in descending order.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  applySimpleSort(propname: string, isdesc: boolean) {
+  applySimpleSort(propname: string, isdesc?: boolean) {
     this._sortCriteria = [
       [propname, isdesc || false]
     ];
@@ -450,7 +450,7 @@ export class DynamicView extends LokiEventEmitter {
    * @param {(string|number)} uid - Optional: The unique ID of this filter, to reference it in the future.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  applyWhere(fun: Function, uid: string | number) {
+  applyWhere(fun: Function, uid?: string | number) {
     this.applyFilter({
       type: "where",
       val: fun,

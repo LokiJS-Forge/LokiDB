@@ -680,7 +680,7 @@ export class Resultset {
    * @param {boolean} firstOnly - (Optional) Used by collection.findOne() - flag if this was invoked via findOne()
    * @returns {Resultset} this resultset for further chain ops.
    */
-  find(query: object, firstOnly = false): any {
+  find(query?: object, firstOnly = false): any {
     if (this.collection.data.length === 0) {
       this.filteredrows = [];
       this.filterInitialized = true;

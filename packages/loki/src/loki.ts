@@ -735,7 +735,7 @@ export class Loki extends LokiEventEmitter {
    * @param {object} options - apply or override collection level settings
    * @param {boolean} options.retainDirtyFlags - whether collection dirty flags will be preserved
    */
-  loadJSON(serializedDb: string, options: any) {
+  loadJSON(serializedDb: string, options?: any) {
     let dbObject;
     if (serializedDb.length === 0) {
       dbObject = {};
@@ -820,7 +820,7 @@ export class Loki extends LokiEventEmitter {
    * @returns {Array} array of changes
    * @see private method createChange() in Collection
    */
-  generateChangesNotification(arrayOfCollectionNames: string[]) {
+  generateChangesNotification(arrayOfCollectionNames?: string[]) {
     function getCollName(coll: Collection) {
       return coll.name;
     }

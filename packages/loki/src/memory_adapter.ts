@@ -13,7 +13,7 @@ export class LokiMemoryAdapter {
   private hashStore: object;
   private options: any;
 
-  constructor(options: any) {
+  constructor(options?: any) {
     this.hashStore = {};
     this.options = options || {};
 

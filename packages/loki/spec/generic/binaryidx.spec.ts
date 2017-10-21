@@ -1,8 +1,8 @@
 /* global describe, beforeEach, it, expect */
-import {Loki as loki} from "../../src/loki";
+import {Loki} from "../../src/loki";
 
 describe("binary indices", () => {
-  let testRecords;
+  let testRecords: any[];
 
   beforeEach(() => {
     testRecords = [
@@ -15,7 +15,7 @@ describe("binary indices", () => {
 
   describe("collection.clear affects binary indices correctly", () => {
     it("works", () => {
-      const db = new loki("idxtest");
+      const db = new Loki("idxtest");
       const t2 = JSON.parse(JSON.stringify(testRecords));
 
       const items = db.addCollection("users", {indices: ["name"]});
@@ -33,7 +33,7 @@ describe("binary indices", () => {
 
   describe("binary index loosly but reliably works across datatypes", () => {
     it("works", () => {
-      const db = new loki("ugly.db");
+      const db = new Loki("ugly.db");
 
       // Add a collection to the database
       const dirtydata = db.addCollection("dirtydata", {indices: ["b"]});
@@ -59,7 +59,7 @@ describe("binary indices", () => {
   describe("index maintained across inserts", () => {
     it("works", () => {
 
-      const db = new loki("idxtest");
+      const db = new Loki("idxtest");
       const items = db.addCollection("users", {indices: ["name"]});
       items.insert(testRecords);
 
@@ -92,7 +92,7 @@ describe("binary indices", () => {
   describe("index maintained across removes", () => {
     it("works", () => {
 
-      const db = new loki("idxtest");
+      const db = new Loki("idxtest");
       const items = db.addCollection("users", {indices: ["name"]});
       items.insert(testRecords);
 
@@ -125,7 +125,7 @@ describe("binary indices", () => {
   describe("index maintained across updates", () => {
     it("works", () => {
 
-      const db = new loki("idxtest");
+      const db = new Loki("idxtest");
       const items = db.addCollection("users", {indices: ["name"]});
       items.insert(testRecords);
 
@@ -162,7 +162,7 @@ describe("binary indices", () => {
 
       // let's base this off of our 'remove' test so data is more meaningful
 
-      const db = new loki("idxtest");
+      const db = new Loki("idxtest");
       const items = db.addCollection("users", {indices: ["name"]});
       items.insert(testRecords);
 
@@ -195,7 +195,7 @@ describe("binary indices", () => {
       // we shall verify our getBinaryIndexPosition method's ability to look up an
       // index value based on data array position function (obtained via get)
 
-      const db = new loki("idxtest");
+      const db = new Loki("idxtest");
       const items = db.addCollection("users", {indices: ["name"]});
       items.insert(testRecords);
 
@@ -228,7 +228,7 @@ describe("binary indices", () => {
       // calculateRangeStart is helper function for adaptive inserts/updates
       // we will use it to find position within index where (new) nonexistent value should be inserted into index
 
-      const db = new loki("idxtest");
+      const db = new Loki("idxtest");
       const items = db.addCollection("users", {indices: ["name"]});
       items.insert(testRecords);
 
@@ -255,7 +255,7 @@ describe("binary indices", () => {
       // Since we use coll.get's ability to do a positional lookup of a loki id during adaptive indexing we will test it here
       // let's base this off of our 'remove' test so data is more meaningful
 
-      const db = new loki("idxtest");
+      const db = new Loki("idxtest");
       const items = db.addCollection("users", {
         adaptiveBinaryIndices: false,
         indices: ["name"]
@@ -283,7 +283,7 @@ describe("binary indices", () => {
   describe("adaptiveBinaryIndexUpdate works", () => {
     it("works", () => {
 
-      const db = new loki("idxtest");
+      const db = new Loki("idxtest");
       const items = db.addCollection("users", {
         adaptiveBinaryIndices: false, // we are doing utility function testing
         indices: ["name"]
@@ -319,7 +319,7 @@ describe("binary indices", () => {
 
       // let's base this off of our 'remove' test so data is more meaningful
 
-      const db = new loki("idxtest");
+      const db = new Loki("idxtest");
       const items = db.addCollection("users", {indices: ["name"]});
       items.insert(testRecords);
 
@@ -342,7 +342,7 @@ describe("binary indices", () => {
   describe("adaptiveBinaryIndex high level operability test", () => {
     it("works", () => {
 
-      const db = new loki("idxtest");
+      const db = new Loki("idxtest");
       const coll = db.addCollection("users", {
         adaptiveBinaryIndices: true,
         indices: ["customIdx"]
@@ -422,7 +422,7 @@ describe("binary indices", () => {
 
   describe("adaptiveBinaryIndex high level random stress test", () => {
     it("works", () => {
-      const db = new loki("idxtest");
+      const db = new Loki("idxtest");
       const coll = db.addCollection("users", {
         adaptiveBinaryIndices: true,
         indices: ["customIdx"]
@@ -463,7 +463,7 @@ describe("binary indices", () => {
   describe("adaptiveBinaryIndex collection serializes correctly", () => {
     it("works", () => {
 
-      let db = new loki("idxtest");
+      let db = new Loki("idxtest");
       let coll = db.addCollection("users", {
         adaptiveBinaryIndices: true,
         indices: ["customIdx"]
@@ -472,14 +472,14 @@ describe("binary indices", () => {
 
       let jsonString = db.serialize();
 
-      let newDatabase = new loki("idxtest");
+      let newDatabase = new Loki("idxtest");
       newDatabase.loadJSON(jsonString);
 
       expect(newDatabase.getCollection("users").adaptiveBinaryIndices).toBe(true);
 
 
       // repeat without option set
-      db = new loki("idxtest");
+      db = new Loki("idxtest");
       coll = db.addCollection("users", {
         adaptiveBinaryIndices: false,
         indices: ["customIdx"]
@@ -487,7 +487,7 @@ describe("binary indices", () => {
       coll.insert({customIdx: 1});
 
       jsonString = db.serialize();
-      newDatabase = new loki("idxtest");
+      newDatabase = new Loki("idxtest");
       newDatabase.loadJSON(jsonString);
 
       expect(newDatabase.getCollection("users").adaptiveBinaryIndices).toBe(false);

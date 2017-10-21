@@ -1,11 +1,12 @@
 /* global describe, beforeEach, it, expect */
-import {Loki as loki} from "../../src/loki";
+import {Loki} from "../../src/loki";
+import {Collection} from "../../src/collection";
 
 describe("cloning behavior", () => {
-  let db, items;
+  let db, items: Collection;
 
   beforeEach(() => {
-    db = new loki("cloningDisabled");
+    db = new Loki("cloningDisabled");
     items = db.addCollection("items");
 
     items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
@@ -31,7 +32,7 @@ describe("cloning behavior", () => {
 
   describe("cloning inserts are immutable", () => {
     it("works", () => {
-      const cdb = new loki("clonetest");
+      const cdb = new Loki("clonetest");
       const citems = cdb.addCollection("items", {clone: true});
       const oldObject = {name: "mjolnir", owner: "thor", maker: "dwarves"};
       const insObject = citems.insert(oldObject);
@@ -47,7 +48,7 @@ describe("cloning behavior", () => {
 
   describe("cloning updates are immutable", () => {
     it("works", () => {
-      const cdb = new loki("clonetest");
+      const cdb = new Loki("clonetest");
       const citems = cdb.addCollection("items", {clone: true});
       const oldObject = {name: "mjolnir", owner: "thor", maker: "dwarves"};
       citems.insert(oldObject);
@@ -67,13 +68,19 @@ describe("cloning behavior", () => {
 
   describe("cloning method \"shallow\" save prototype", function () {
     it("works", () => {
-      function Item(name, owner, maker) {
-        this.name = name;
-        this.owner = owner;
-        this.maker = maker;
+      class Item {
+        public name: string;
+        public owner: string;
+        public maker: string;
+
+        constructor(name: string, owner: string, maker: string) {
+          this.name = name;
+          this.owner = owner;
+          this.maker = maker;
+        }
       }
 
-      const cdb = new loki("clonetest");
+      const cdb = new Loki("clonetest");
       const citems = cdb.addCollection("items", {clone: true, cloneMethod: "shallow"});
       const oldObject = new Item("mjolnir", "thor", "dwarves");
       const insObject = citems.insert(oldObject);
@@ -90,7 +97,7 @@ describe("cloning behavior", () => {
 
   describe("collection find() cloning works", () => {
     it("works", () => {
-      const cdb = new loki("cloningEnabled");
+      const cdb = new Loki("cloningEnabled");
       const citems = cdb.addCollection("items", {
         clone: true
         //, clonemethod: "parse-stringify"
@@ -113,7 +120,7 @@ describe("cloning behavior", () => {
 
   describe("collection findOne() cloning works", () => {
     it("works", () => {
-      const cdb = new loki("cloningEnabled");
+      const cdb = new Loki("cloningEnabled");
       const citems = cdb.addCollection("items", {
         clone: true
         //, clonemethod: "parse-stringify"
@@ -137,7 +144,7 @@ describe("cloning behavior", () => {
 
   describe("collection where() cloning works", () => {
     it("works", () => {
-      const cdb = new loki("cloningEnabled");
+      const cdb = new Loki("cloningEnabled");
       const citems = cdb.addCollection("items", {
         clone: true
         //, clonemethod: "parse-stringify"
@@ -150,17 +157,17 @@ describe("cloning behavior", () => {
 
       // just to prove that resultset.data() is not giving the user the actual object reference we keep internally
       // we will modify the object and see if future requests for that object show the change
-      const mj = citems.where((obj) => obj.name === "mjolnir")[0];
+      const mj = citems.where((obj: any) => obj.name === "mjolnir")[0];
       mj.maker = "the dwarves";
 
-      const mj2 = citems.where((obj) => obj.name === "mjolnir")[0];
+      const mj2 = citems.where((obj: any) => obj.name === "mjolnir")[0];
       expect(mj2.maker).toBe("dwarves");
     });
   });
 
   describe("collection by() cloning works", () => {
     it("works", () => {
-      const cdb = new loki("cloningEnabled");
+      const cdb = new Loki("cloningEnabled");
       const citems = cdb.addCollection("items", {
         clone: true,
         unique: ["name"]
@@ -185,7 +192,7 @@ describe("cloning behavior", () => {
 
   describe("collection by() cloning works with no data", () => {
     it("works", () => {
-      const cdb = new loki("cloningEnabled");
+      const cdb = new Loki("cloningEnabled");
       const citems = cdb.addCollection("items", {
         clone: true,
         unique: ["name"]
@@ -203,7 +210,7 @@ describe("cloning behavior", () => {
 
   describe("resultset data cloning works", () => {
     it("works", () => {
-      const cdb = new loki("cloningEnabled");
+      const cdb = new Loki("cloningEnabled");
       const citems = cdb.addCollection("items", {
         clone: true
         //, clonemethod: "parse-stringify"

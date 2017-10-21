@@ -77,7 +77,7 @@ export class Collection extends LokiEventEmitter {
   // the data held by the collection
   public data: any[];
   private idIndex: number[]; // index of id
-  public binaryIndices = {}; // user defined indexes
+  public binaryIndices: any; // user defined indexes
   public constraints = {
     unique: {},
     exact: {}
@@ -95,7 +95,7 @@ export class Collection extends LokiEventEmitter {
   public cloneMethod: any;
   private disableChangesApi: any;
   public disableDeltaChangesApi: any;
-  private setChangesApi: any;
+  public setChangesApi: any;
   private autoupdate: any;
   private serializableIndices: any;
   public ttl: any;
@@ -862,7 +862,7 @@ export class Collection extends LokiEventEmitter {
    * @param {number} options.minRebuildInterval - minimum rebuild interval (need clarification to docs here)
    * @returns {DynamicView} reference to the dynamic view added
    **/
-  addDynamicView(name: string, options: any) {
+  addDynamicView(name: string, options?: any) {
     const dv = new DynamicView(this, name, options);
     this._dynamicViews.push(dv);
 
@@ -1800,10 +1800,10 @@ export class Collection extends LokiEventEmitter {
   /**
    * Retrieve doc by Unique index
    * @param {string} field - name of uniquely indexed property to use when doing lookup
-   * @param {value} value - unique value to search for
+   * @param {any} value - unique value to search for
    * @returns {object} document matching the value passed
    */
-  by(field: string, value: number) {
+  by(field: string, value: any) {
     if (value === undefined) {
       return (value: number) => this.by(field, value);
     }

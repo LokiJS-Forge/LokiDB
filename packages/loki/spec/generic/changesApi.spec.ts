@@ -1,9 +1,9 @@
 /* global describe, it, expect */
-import {Loki as loki} from "../../src/loki";
+import {Loki} from "../../src/loki";
 
 describe("changesApi", () => {
   it("does what it says on the tin", () => {
-    const db = new loki(),
+    const db = new Loki(),
       // gordian = require('gordian'),
       // suite = new gordian('testEvents'),
       options = {
@@ -38,7 +38,7 @@ describe("changesApi", () => {
 
     expect(allChanges.length).toEqual(4);
     users.setChangesApi(false);
-    expect(users.disableChangesApi).toEqual(true);
+    expect(users["disableChangesApi"]).toEqual(true);
 
     u.name = "john";
     users.update(u);
@@ -57,7 +57,7 @@ describe("changesApi", () => {
   });
 
   it("works with delta mode", function () {
-    const db = new loki(),
+    const db = new Loki(),
       options = {
         asyncListeners: false,
         disableChangesApi: false,
@@ -78,8 +78,8 @@ describe("changesApi", () => {
     tyrfing.maker.count = 4;
     items.update(tyrfing);
 
-    let changes = db.serializeChanges(["items"]);
-    changes = JSON.parse(changes);
+    let changes_serialized = db.serializeChanges(["items"]);
+    let changes = JSON.parse(changes_serialized);
 
     expect(changes.length).toEqual(6);
 

@@ -1,3 +1,3 @@
 import {Loki} from "./loki";
 
-export Loki;
+export {Loki};
