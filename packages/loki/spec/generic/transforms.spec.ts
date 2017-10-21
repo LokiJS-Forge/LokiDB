@@ -1,11 +1,13 @@
 /* global describe, beforeEach, it, expect */
-import {Loki as loki} from "../../src/loki";
+import {Loki} from "../../src/loki";
+import {Collection} from "../../src/collection";
 
 describe("transforms", () => {
-  let db, items;
+  let db: Loki;
+  let items: Collection;
 
   beforeEach(() => {
-    db = new loki("transformTest"),
+    db = new Loki("transformTest");
     items = db.addCollection("items");
 
     items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
@@ -44,7 +46,7 @@ describe("transforms", () => {
         },
         {
           type: "where",
-          value: function (obj) {
+          value: function (obj: any) {
             return (obj.name.indexOf("drau") !== -1);
           }
         }
@@ -89,7 +91,7 @@ describe("transforms", () => {
       ];
 
       const params = {
-        NameFilter: function (obj) {
+        NameFilter: function (obj: any) {
           return (obj.name.indexOf("nir") !== -1);
         }
       };
@@ -201,7 +203,7 @@ describe("transforms", () => {
   });
   describe("eqJoin step with dataOptions works", function () {
     it("works", () => {
-      const db1 = new loki("testJoins");
+      const db1 = new Loki("testJoins");
 
       const directors = db1.addCollection("directors");
       const films = db1.addCollection("films");
@@ -224,7 +226,7 @@ describe("transforms", () => {
 
       // Since our collection options do not specify cloning, this is only safe
       // because we have cloned internal objects with dataOptions before modifying them.
-      function fdmap(left, right) {
+      function fdmap(left: object, right: object) {
         // PhantomJS does not support es6 Object.assign
         //left = Object.assign(left, right);
         Object.keys(right).forEach((key) => {
@@ -267,13 +269,13 @@ describe("transforms", () => {
 
   describe("map step with dataOptions works", function () {
     it("works", () => {
-      const db1 = new loki("testJoins");
+      const db1 = new Loki("testJoins");
 
       const c1 = db1.addCollection("c1");
       c1.insert([{a: 1, b: 9}, {a: 2, b: 8}, {a: 3, b: 7}, {a: 4, b: 6}]);
 
       // only safe because our 'removeMeta' option will clone objects passed in
-      function graftMap(obj) {
+      function graftMap(obj: any) {
         obj.c = obj.b - obj.a;
         return obj;
       }

@@ -1,13 +1,16 @@
 /* global describe, beforeEach, it, expect */
-import {Loki as loki} from "../../src/loki";
+import {Loki} from "../../src/loki";
 import {LokiOps} from "../../src/resultset";
+import {Collection} from "../../src/collection";
 
 describe("Testing operators", () => {
 
-  let db, tree, res;
+  let db: Loki;
+  let tree: Collection;
+  let res;
   beforeEach(() => {
-    db = new loki("testOps"),
-    tree = db.addCollection("tree"),
+    db = new Loki("testOps");
+    tree = db.addCollection("tree");
 
     /*
 			 * The following data represents a tree that should look like this:
@@ -93,7 +96,7 @@ describe("Testing operators", () => {
 
 describe("Individual operator tests", () => {
 
-  let ops;
+  let ops: any;
   beforeEach(() => {
     ops = LokiOps;
   });
@@ -159,7 +162,7 @@ describe("Individual operator tests", () => {
 
   it("$between find works as expected", () => {
     // test unindexed code path
-    let db = new loki("db");
+    let db = new Loki("db");
     let coll = db.addCollection("coll");
     coll.insert({name: "mjolnir", count: 73});
     coll.insert({name: "gungnir", count: 5});
@@ -182,7 +185,7 @@ describe("Individual operator tests", () => {
     expect(coll.find({count: {$between: [1, 4]}}).length).toEqual(0);
 
     // multiple low and high bounds
-    db = new loki("db");
+    db = new Loki("db");
     coll = db.addCollection("coll");
     coll.insert({name: "first", count: 5});
     coll.insert({name: "mjolnir", count: 15});
@@ -229,7 +232,7 @@ describe("Individual operator tests", () => {
 
   it("indexed $in find works as expected", () => {
     // test unindexed code path
-    const db = new loki("db");
+    const db = new Loki("db");
     const coll = db.addCollection("coll", {indices: ["count"]});
     coll.insert({name: "mjolnir", count: 73});
     coll.insert({name: "gungnir", count: 5});
@@ -243,7 +246,7 @@ describe("Individual operator tests", () => {
   });
 
   it("ops work with mixed datatypes", () => {
-    const db = new loki("db");
+    const db = new Loki("db");
     const coll = db.addCollection("coll");
 
     coll.insert({a: null, b: 5});

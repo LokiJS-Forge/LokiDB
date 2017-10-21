@@ -1,11 +1,14 @@
 /* global describe, beforeEach, it, expect */
-import {Loki as loki} from "../../src/loki";
+import {Loki} from "../../src/loki";
+import {Collection} from "../../src/collection";
 
 describe("loki", () => {
-  let db, users, testObject;
+  let db: Loki;
+  let users: Collection;
+  let testObject: any;
 
   beforeEach(() => {
-    db = new loki("test.json");
+    db = new Loki("test.json");
     users = db.addCollection("user");
 
     users.insert({
@@ -30,7 +33,7 @@ describe("loki", () => {
 
   describe("core methods", () => {
     it("works", () => {
-      const tdb = new loki("regextests");
+      const tdb = new Loki("regextests");
       const tcu = tdb.addCollection("user");
       tcu.insert({
         name: "abcd",
@@ -712,7 +715,7 @@ describe("loki", () => {
         "age": {
           "$gte": 30
         }
-      }).where((obj) => obj.lang === "Swedish").data().length).toEqual(1);
+      }).where((obj: any) => obj.lang === "Swedish").data().length).toEqual(1);
 
       // Resultset offset
       expect(users.chain().offset(1).data().length).toEqual(users.data.length - 1);
@@ -905,7 +908,7 @@ describe("loki", () => {
         }, {
           "testString": "bbb"
         }]
-      }).testFloat, 6.2);
+      }).testFloat).toEqual(6.2);
 
       expect(eic.findOne({
         "$or": [{
@@ -921,7 +924,7 @@ describe("loki", () => {
 
   describe("resultset unfiltered simplesort works", () => {
     it("works", () => {
-      const ssdb = new loki("sandbox.db");
+      const ssdb = new Loki("sandbox.db");
 
       // Add a collection to the database
       const items = ssdb.addCollection("items", {indices: ["name"]});
@@ -952,7 +955,7 @@ describe("loki", () => {
 
   describe("resultset data removeMeta works", () => {
     it("works", () => {
-      const idb = new loki("sandbox.db");
+      const idb = new Loki("sandbox.db");
 
       // Add a collection to the database
       const items = idb.addCollection("items", {indices: ["owner"]});
@@ -1077,8 +1080,4 @@ describe("loki", () => {
   });
 
   /* Dynamic View Tests */
-
-
-
-})
-;
+});

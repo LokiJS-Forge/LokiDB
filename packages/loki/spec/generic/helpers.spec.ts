@@ -3,7 +3,8 @@ import {LokiOps} from "../../src/resultset";
 
 describe("Testing comparator helpers", () => {
 
-  let ops;
+  let ops: any;
+
   beforeEach(() => {
     ops = LokiOps;
   });

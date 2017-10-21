@@ -1,8 +1,8 @@
 /* global describe, it, expect */
-import {Loki as loki} from "../../src/loki";
+import {Loki} from "../../src/loki";
 
 describe("stats", () => {
-  const db = new loki();
+  const db = new Loki();
   const users = db.addCollection("users");
   users.insert({
     name: "joe",
@@ -56,7 +56,7 @@ describe("stats", () => {
     expect({
       index: 3,
       value: 32
-    }).toEqual(users.maxRecord("relatives.firstgrade"));
+    }).toEqual(users.maxRecord("relatives.firstgrade") as any);
   });
 
   it("min should be 12", () => {
@@ -67,7 +67,7 @@ describe("stats", () => {
     expect(users.minRecord("age")).toEqual({
       index: 6,
       value: 12
-    });
+    } as any);
   });
 
   it("average to be 19", () => {

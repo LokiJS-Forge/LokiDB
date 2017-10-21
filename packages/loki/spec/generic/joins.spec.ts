@@ -1,14 +1,15 @@
 /* global describe, beforeEach, it, expect */
-import {Loki as loki} from "../../src/loki";
+import {Loki} from "../../src/loki";
+import {Collection} from "../../src/collection";
 
 describe("joins", () => {
-  let db, directors, films;
+  let db: Loki;
+  let directors: Collection;
+  let films: Collection;
 
   beforeEach(() => {
-    db = new loki("testJoins", {
-      persistenceMethod: null
-    }),
-    directors = db.addCollection("directors"),
+    db = new Loki("testJoins");
+    directors = db.addCollection("directors");
     films = db.addCollection("films");
 
     directors.insert([{
@@ -60,7 +61,7 @@ describe("joins", () => {
     expect(joined[0].left.title).toEqual("Taxi");
 
     //Basic join with map
-    joined = films.eqJoin(directors.data, "directorId", "directorId", (left, right) => ({
+    joined = films.eqJoin(directors.data, "directorId", "directorId", (left: any, right: any) => ({
       filmTitle: left.title,
       directorName: right.name
     })).data();
@@ -70,7 +71,7 @@ describe("joins", () => {
 
     //Basic non-mapped join with chained map
     joined = films.eqJoin(directors.data, "directorId", "directorId")
-      .map((obj) => ({
+      .map((obj: any) => ({
         filmTitle: obj.left.title,
         directorName: obj.right.name
       })).data();
@@ -85,7 +86,7 @@ describe("joins", () => {
         directorId: 3
       })
       .simplesort("title")
-      .eqJoin(directors.data, "directorId", "directorId", (left, right) => ({
+      .eqJoin(directors.data, "directorId", "directorId", (left: any, right: any) => ({
         filmTitle: left.title,
         directorName: right.name
       }));
@@ -99,8 +100,8 @@ describe("joins", () => {
 
     //Test calculated keys
     joined = films.chain().eqJoin(directors.data,
-      (director) => director.directorId + 1,
-      (film) => film.directorId - 1)
+      (director: any) => director.directorId + 1,
+      (film: any) => film.directorId - 1)
       .data();
 
     expect(joined[0].right.name).toEqual("Steven Spielberg");

@@ -161,7 +161,7 @@ export class DynamicView extends LokiEventEmitter {
    * @param {object} parameters - optional parameters (if optional transform requires them)
    * @returns {Resultset} A copy of the internal resultset for branched queries.
    */
-  branchResultset(transform: string | string[], parameters: object) {
+  branchResultset(transform: string | any[], parameters?: object) {
     const rs = this._resultset.branch();
 
     if (typeof transform === "undefined") {

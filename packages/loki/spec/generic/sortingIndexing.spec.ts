@@ -1,13 +1,14 @@
 /* global describe, beforeEach, it, expect */
-import {Loki as loki} from "../../src/loki";
+import {Loki} from "../../src/loki";
+import {Collection} from "../../src/collection";
 
 describe("sorting and indexing", () => {
-  let db;
-  let items;
+  let db: Loki;
+  let items: Collection;
 
   beforeEach(() => {
-    db = new loki("sortingIndexingTest"),
-    items = db.addCollection("items");
+    db = new Loki("sortingIndexingTest"),
+      items = db.addCollection("items");
 
     items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
     items.insert({name: "gungnir", owner: "odin", maker: "elves"});
@@ -108,12 +109,12 @@ describe("sorting and indexing", () => {
 
   describe("resultset sort works correctly", () => {
     it("works", () => {
-      const db = new loki("test.db");
+      const db = new Loki("test.db");
       const coll = db.addCollection("coll");
 
       coll.insert([{a: 1, b: 9, c: "first"}, {a: 5, b: 7, c: "second"}, {a: 2, b: 9, c: "third"}]);
 
-      const sortfun = (obj1, obj2) => {
+      const sortfun = (obj1: any, obj2: any) => {
         if (obj1.a === obj2.a) return 0;
         if (obj1.a > obj2.a) return 1;
         if (obj1.a < obj2.a) return -1;
@@ -129,7 +130,7 @@ describe("sorting and indexing", () => {
 
   describe("resultset compoundsort works correctly", () => {
     it("works", () => {
-      const db = new loki("test.db");
+      const db = new Loki("test.db");
       const coll = db.addCollection("coll");
 
       coll.insert([{a: 1, b: 9, c: "first"}, {a: 5, b: 7, c: "second"}, {a: 2, b: 9, c: "third"}]);
@@ -150,7 +151,7 @@ describe("sorting and indexing", () => {
 
   describe("resultset compoundsort on nested properties works correctly", () => {
     it("works", function () {
-      const db = new loki("test.db");
+      const db = new Loki("test.db");
       const coll = db.addCollection("coll");
 
       coll.insert([{a: 1, z: {y: {b: 9, c: "first"}}}, {a: 5, z: {y: {b: 7, c: "second"}}}, {
@@ -190,7 +191,7 @@ describe("sorting and indexing", () => {
       coll.insert({a: [8, 1, 15], b: 5});
       coll.insert({a: "asdf", b: 5});
 
-      let indexVals = [];
+      let indexVals: any[] = [];
 
       // make sure unindexed sort is as expected
 
@@ -222,7 +223,7 @@ describe("sorting and indexing", () => {
       indexVals = [];
       coll.ensureIndex("a");
 
-      coll.binaryIndices.a.values.forEach((vi) => {
+      coll["binaryIndices"].a.values.forEach((vi: any) => {
         indexVals.push(coll.data[vi].a);
       });
 
@@ -285,11 +286,11 @@ describe("sorting and indexing", () => {
 
       // now verify indices
       // they are array of 'positions' so both array index and value are zero based
-      expect(cidx.binaryIndices.b.values[0]).toBe(2);
-      expect(cidx.binaryIndices.b.values[1]).toBe(4);
-      expect(cidx.binaryIndices.b.values[2]).toBe(0);
-      expect(cidx.binaryIndices.b.values[3]).toBe(3);
-      expect(cidx.binaryIndices.b.values[4]).toBe(1);
+      expect(cidx["binaryIndices"].b.values[0]).toBe(2);
+      expect(cidx["binaryIndices"].b.values[1]).toBe(4);
+      expect(cidx["binaryIndices"].b.values[2]).toBe(0);
+      expect(cidx["binaryIndices"].b.values[3]).toBe(3);
+      expect(cidx["binaryIndices"].b.values[4]).toBe(1);
     });
   });
 

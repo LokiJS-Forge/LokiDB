@@ -504,7 +504,7 @@ export class Resultset {
    * @param {boolean} isdesc - (Optional) If true, the property will be sorted in descending order
    * @returns {Resultset} Reference to this resultset, sorted, for future chain operations.
    */
-  simplesort(propname: string, isdesc: boolean) {
+  simplesort(propname: string, isdesc?: boolean) {
     if (typeof (isdesc) === "undefined") {
       isdesc = false;
     }
@@ -1147,7 +1147,7 @@ export class Resultset {
    * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method.
    * @returns {Resultset} A resultset with data in the format [{left: leftObj, right: rightObj}]
    */
-  eqJoin(joinData: any, leftJoinKey: string | Function, rightJoinKey: string | Function, mapFun: Function, dataOptions?: any) {
+  eqJoin(joinData: any, leftJoinKey: string | Function, rightJoinKey: string | Function, mapFun?: Function, dataOptions?: any) {
     let leftData = [];
     let leftDataLength;
     let rightData = [];

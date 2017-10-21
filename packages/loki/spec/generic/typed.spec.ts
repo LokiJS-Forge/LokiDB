@@ -1,12 +1,12 @@
 /* global describe, it, expect */
-import {Loki as loki} from "../../src/loki";
+import {Loki} from "../../src/loki";
 
 describe("typed", () => {
   it("works", () => {
-    const db = new loki("test.json");
+    const db = new Loki("test.json");
     let users;
 
-    function User(n) {
+    function User(n: any) {
       this.name = n || "";
     }
 
@@ -37,22 +37,9 @@ describe("typed", () => {
         "binaryIndices": {},
         "objType": "users",
         "transactional": false,
-        "cachedIndex": null,
-        "cachedBinaryIndex": null,
-        "cachedData": null,
-        "maxId": 2,
-        "DynamicViews": [],
-        "events": {
-          "insert": [null],
-          "update": [null],
-          "close": [],
-          "flushbuffer": [],
-          "error": [],
-          "delete": []
-        }
+        "maxId": 2
       }],
       "events": {
-        "close": []
       },
       "ENV": "NODEJS",
       "fs": {}
@@ -74,7 +61,7 @@ describe("typed", () => {
     db.loadJSON(JSON.stringify(json), {
       users: {
         proto: User,
-        inflate: function (src, dest) {
+        inflate: function (src: any, dest: any) {
           dest.$loki = src.$loki;
           dest.meta = src.meta;
           dest.customInflater = true;
@@ -91,8 +78,8 @@ describe("typed", () => {
     // Loading only using inflate:
     db.loadJSON(JSON.stringify(json), {
       users: {
-        inflate: function (src) {
-          const dest = {};
+        inflate: function (src: any) {
+          const dest: any = {};
 
           dest.$loki = src.$loki;
           dest.meta = src.meta;

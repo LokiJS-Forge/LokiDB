@@ -1,10 +1,10 @@
 /* global describe, it, expect */
-import {Loki as loki} from "../../src/loki";
+import {Loki} from "../../src/loki";
 
 describe("Constraints", () => {
 
   it("should retrieve records with by()", () => {
-    const db = new loki();
+    const db = new Loki();
     const coll = db.addCollection("users", {
       unique: ["username"]
     });
@@ -32,7 +32,7 @@ describe("Constraints", () => {
   });
 
   it("should create a unique index", () => {
-    const db = new loki();
+    const db = new Loki();
     const coll2 = db.addCollection("moreusers");
     coll2.insert({
       name: "jack"
@@ -44,7 +44,7 @@ describe("Constraints", () => {
   });
 
   it("should not add record with null index", () => {
-    const db = new loki();
+    const db = new Loki();
     const coll3 = db.addCollection("nullusers", {
       unique: ["username"]
     });
@@ -57,11 +57,11 @@ describe("Constraints", () => {
       name: "Jack"
     });
 
-    expect(Object.keys(coll3.constraints.unique.username.keyMap).length).toEqual(1);
+    expect(Object.keys(coll3["constraints"].unique["username"].keyMap).length).toEqual(1);
   });
 
   it("should not throw an error id multiple nulls are added", () => {
-    const db = new loki();
+    const db = new Loki();
     const coll4 = db.addCollection("morenullusers", {
       unique: ["username"]
     });
@@ -77,42 +77,42 @@ describe("Constraints", () => {
       username: null,
       name: "Jake"
     });
-    expect(Object.keys(coll4.constraints.unique.username.keyMap).length).toEqual(1);
+    expect(Object.keys(coll4["constraints"].unique["username"].keyMap).length).toEqual(1);
   });
 
   it("coll.clear should affect unique indices correctly", () => {
-    let db = new loki();
+    let db = new Loki();
     let coll = db.addCollection("users", {unique: ["username"]});
 
     coll.insert({username: "joe", name: "Joe"});
     coll.insert({username: "jack", name: "Jack"});
     coll.insert({username: "jake", name: "Jake"});
-    expect(Object.keys(coll.constraints.unique.username.keyMap).length).toEqual(3);
-    expect(coll.uniqueNames.length).toEqual(1);
+    expect(Object.keys(coll["constraints"].unique["username"].keyMap).length).toEqual(3);
+    expect(coll["uniqueNames"].length).toEqual(1);
     coll.clear();
-    expect(Object.keys(coll.constraints.unique.username.keyMap).length).toEqual(0);
+    expect(Object.keys(coll["constraints"].unique["username"].keyMap).length).toEqual(0);
     coll.insert({username: "joe", name: "Joe"});
     coll.insert({username: "jack", name: "Jack"});
-    expect(Object.keys(coll.constraints.unique.username.keyMap).length).toEqual(2);
+    expect(Object.keys(coll["constraints"].unique["username"].keyMap).length).toEqual(2);
     coll.insert({username: "jake", name: "Jake"});
-    expect(Object.keys(coll.constraints.unique.username.keyMap).length).toEqual(3);
-    expect(coll.uniqueNames.length).toEqual(1);
+    expect(Object.keys(coll["constraints"].unique["username"].keyMap).length).toEqual(3);
+    expect(coll["uniqueNames"].length).toEqual(1);
 
-    db = new loki();
+    db = new Loki();
     coll = db.addCollection("users", {unique: ["username"]});
 
     coll.insert({username: "joe", name: "Joe"});
     coll.insert({username: "jack", name: "Jack"});
     coll.insert({username: "jake", name: "Jake"});
-    expect(Object.keys(coll.constraints.unique.username.keyMap).length).toEqual(3);
-    expect(coll.uniqueNames.length).toEqual(1);
+    expect(Object.keys(coll["constraints"].unique["username"].keyMap).length).toEqual(3);
+    expect(coll["uniqueNames"].length).toEqual(1);
     coll.clear({removeIndices: true});
-    expect(coll.constraints.unique.hasOwnProperty("username")).toEqual(false);
-    expect(coll.uniqueNames.length).toEqual(0);
+    expect(coll["constraints"].unique.hasOwnProperty("username")).toEqual(false);
+    expect(coll["uniqueNames"].length).toEqual(0);
     coll.insert({username: "joe", name: "Joe"});
     coll.insert({username: "jack", name: "Jack"});
     coll.insert({username: "jake", name: "Jake"});
-    expect(coll.constraints.unique.hasOwnProperty("username")).toEqual(false);
-    expect(coll.uniqueNames.length).toEqual(0);
+    expect(coll["constraints"].unique.hasOwnProperty("username")).toEqual(false);
+    expect(coll["uniqueNames"].length).toEqual(0);
   });
 });

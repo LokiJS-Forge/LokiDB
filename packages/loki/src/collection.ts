@@ -1803,7 +1803,7 @@ export class Collection extends LokiEventEmitter {
    * @param {any} value - unique value to search for
    * @returns {object} document matching the value passed
    */
-  by(field: string, value: any) {
+  by(field: string, value?: any) {
     if (value === undefined) {
       return (value: number) => this.by(field, value);
     }
@@ -1863,7 +1863,7 @@ export class Collection extends LokiEventEmitter {
    * @param {object} query - 'mongo-like' query object
    * @returns {array} Array of matching documents
    */
-  find(query: object) {
+  find(query?: object) {
     return this.chain().find(query).data();
   }
 
@@ -1969,7 +1969,7 @@ export class Collection extends LokiEventEmitter {
    * @param {function} mapFun - (Optional) map function to use
    * @returns {Resultset} Result of the mapping operation
    */
-  eqJoin(joinData: any[], leftJoinProp: string, rightJoinProp: string, mapFun: Function) {
+  eqJoin(joinData: any[], leftJoinProp: string, rightJoinProp: string, mapFun?: Function) {
     // logic in Resultset class
     return new Resultset(this).eqJoin(joinData, leftJoinProp, rightJoinProp, mapFun);
   }

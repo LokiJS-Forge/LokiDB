@@ -1,13 +1,13 @@
 /* global describe, beforeEach, it, expect */
-import {Loki as loki} from "../../src/loki";
+import {Loki} from "../../src/loki";
+import {Collection} from "../../src/collection";
 
 describe("Staging and commits", () => {
-  let db, directors;
+  let db: Loki;
+  let directors: Collection;
 
   beforeEach(() => {
-    db = new loki("testJoins", {
-      persistenceMethod: null
-    });
+    db = new Loki("testJoins");
     directors = db.addCollection("directors");
 
     directors.insert([{
@@ -39,6 +39,6 @@ describe("Staging and commits", () => {
     expect(cohen.name).toEqual("Cohen Brothers");
     directors.commitStage(stageName, message);
     expect(directors.get(cohen.$loki).name).toEqual("Joel and Ethan Cohen");
-    expect(directors.commitLog[0].message).toEqual(message);
+    expect(directors["commitLog"][0].message).toEqual(message);
   });
 });

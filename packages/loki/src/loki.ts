@@ -840,7 +840,7 @@ export class Loki extends LokiEventEmitter {
    * (Changes API) - stringify changes for network transmission
    * @returns {string} string representation of the changes
    */
-  serializeChanges(collectionNamesArray: string[]) {
+  serializeChanges(collectionNamesArray?: string[]) {
     return JSON.stringify(this.generateChangesNotification(collectionNamesArray));
   }
 

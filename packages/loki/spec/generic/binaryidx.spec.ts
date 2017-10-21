@@ -20,14 +20,14 @@ describe("binary indices", () => {
 
       const items = db.addCollection("users", {indices: ["name"]});
       items.insert(testRecords);
-      expect(items.binaryIndices.name.values.length).toBe(4);
+      expect(items["binaryIndices"].name.values.length).toBe(4);
       items.clear();
-      expect(items.binaryIndices.hasOwnProperty("name")).toEqual(true);
-      expect(items.binaryIndices.name.values.length).toBe(0);
+      expect(items["binaryIndices"].hasOwnProperty("name")).toEqual(true);
+      expect(items["binaryIndices"].name.values.length).toBe(0);
       items.insert(t2);
-      expect(items.binaryIndices.name.values.length).toBe(4);
+      expect(items["binaryIndices"].name.values.length).toBe(4);
       items.clear({removeIndices: true});
-      expect(items.binaryIndices.hasOwnProperty("name")).toEqual(false);
+      expect(items["binaryIndices"].hasOwnProperty("name")).toEqual(false);
     });
   });
 
@@ -66,7 +66,7 @@ describe("binary indices", () => {
       // force index build
       items.find({name: "mjolnir"});
 
-      let bi = items.binaryIndices.name;
+      let bi = items["binaryIndices"].name;
       expect(bi.values.length).toBe(4);
       expect(bi.values[0]).toBe(3);
       expect(bi.values[1]).toBe(1);
@@ -79,7 +79,7 @@ describe("binary indices", () => {
       items.find({name: "mjolnir"});
 
       // reaquire values array
-      bi = items.binaryIndices.name;
+      bi = items["binaryIndices"].name;
 
       expect(bi.values[0]).toBe(3);
       expect(bi.values[1]).toBe(4);
@@ -99,7 +99,7 @@ describe("binary indices", () => {
       // force index build
       items.find({name: "mjolnir"});
 
-      let bi = items.binaryIndices.name;
+      let bi = items["binaryIndices"].name;
       expect(bi.values.length).toBe(4);
       expect(bi.values[0]).toBe(3);
       expect(bi.values[1]).toBe(1);
@@ -113,7 +113,7 @@ describe("binary indices", () => {
       items.find({name: "mjolnir"});
 
       // reaquire values array
-      bi = items.binaryIndices.name;
+      bi = items["binaryIndices"].name;
 
       // values are data array positions which should be collapsed, decrementing all index positions after the deleted
       expect(bi.values[0]).toBe(2);
@@ -132,7 +132,7 @@ describe("binary indices", () => {
       // force index build
       items.find({name: "mjolnir"});
 
-      let bi = items.binaryIndices.name;
+      let bi = items["binaryIndices"].name;
       expect(bi.values.length).toBe(4);
       expect(bi.values[0]).toBe(3);
       expect(bi.values[1]).toBe(1);
@@ -147,7 +147,7 @@ describe("binary indices", () => {
       items.find({name: "mjolnir"});
 
       // reaquire values array
-      bi = items.binaryIndices.name;
+      bi = items["binaryIndices"].name;
 
       expect(bi.values[0]).toBe(3);
       expect(bi.values[1]).toBe(2);
@@ -272,11 +272,11 @@ describe("binary indices", () => {
 
       items.adaptiveBinaryIndexInsert(4, "name");
 
-      expect(items.binaryIndices.name.values[0]).toBe(3);  // draupnir at index position 0 and data[] position 3 (same as old)
-      expect(items.binaryIndices.name.values[1]).toBe(4);  // fff at index position 1 and data[] position 4 (now)
-      expect(items.binaryIndices.name.values[2]).toBe(1);  // gungnir at index position 2 (now) and data[] position 1
-      expect(items.binaryIndices.name.values[3]).toBe(0);  // mjolnir at index position 3 (now) and data[] position 0
-      expect(items.binaryIndices.name.values[4]).toBe(2);  // tyrfing at index position 4 (now) and data[] position 2
+      expect(items["binaryIndices"].name.values[0]).toBe(3);  // draupnir at index position 0 and data[] position 3 (same as old)
+      expect(items["binaryIndices"].name.values[1]).toBe(4);  // fff at index position 1 and data[] position 4 (now)
+      expect(items["binaryIndices"].name.values[2]).toBe(1);  // gungnir at index position 2 (now) and data[] position 1
+      expect(items["binaryIndices"].name.values[3]).toBe(0);  // mjolnir at index position 3 (now) and data[] position 0
+      expect(items["binaryIndices"].name.values[4]).toBe(2);  // tyrfing at index position 4 (now) and data[] position 2
     });
   });
 
@@ -294,10 +294,10 @@ describe("binary indices", () => {
       // force index build
       items.find({name: "mjolnir"});
 
-      expect(items.binaryIndices.name.values[0]).toBe(3);
-      expect(items.binaryIndices.name.values[1]).toBe(1);
-      expect(items.binaryIndices.name.values[2]).toBe(0);
-      expect(items.binaryIndices.name.values[3]).toBe(2);
+      expect(items["binaryIndices"].name.values[0]).toBe(3);
+      expect(items["binaryIndices"].name.values[1]).toBe(1);
+      expect(items["binaryIndices"].name.values[2]).toBe(0);
+      expect(items["binaryIndices"].name.values[3]).toBe(2);
 
       // for this test, just update gungnir directly in collection.data
       items.data[1].name = "ygungnir";
@@ -305,10 +305,10 @@ describe("binary indices", () => {
       // renegotiate index position of 2nd data element (ygungnir) within name index
       items.adaptiveBinaryIndexUpdate(1, "name");
 
-      expect(items.binaryIndices.name.values[0]).toBe(3);
-      expect(items.binaryIndices.name.values[1]).toBe(0);
-      expect(items.binaryIndices.name.values[2]).toBe(2);
-      expect(items.binaryIndices.name.values[3]).toBe(1);
+      expect(items["binaryIndices"].name.values[0]).toBe(3);
+      expect(items["binaryIndices"].name.values[1]).toBe(0);
+      expect(items["binaryIndices"].name.values[2]).toBe(2);
+      expect(items["binaryIndices"].name.values[3]).toBe(1);
     });
   });
 
@@ -333,9 +333,9 @@ describe("binary indices", () => {
       items.adaptiveBinaryIndexRemove(1, "name");
 
       // should only be three index array elements now (ordered by name)
-      expect(items.binaryIndices.name.values[0]).toBe(2);  // draupnir at index position 0 and data[] position 2 (now)
-      expect(items.binaryIndices.name.values[1]).toBe(0);  // mjolnir at index position 1 and data[] position 0
-      expect(items.binaryIndices.name.values[2]).toBe(1);  // tyrfing at index position 2 and data[] position 1 (now)
+      expect(items["binaryIndices"].name.values[0]).toBe(2);  // draupnir at index position 0 and data[] position 2 (now)
+      expect(items["binaryIndices"].name.values[1]).toBe(0);  // mjolnir at index position 1 and data[] position 0
+      expect(items["binaryIndices"].name.values[2]).toBe(1);  // tyrfing at index position 2 and data[] position 1 (now)
     });
   });
 

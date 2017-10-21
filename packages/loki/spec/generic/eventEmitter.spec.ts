@@ -1,14 +1,12 @@
 /* global describe, beforeEach, it, expect */
-import {Loki as loki} from "../../src/loki";
+import {Loki} from "../../src/loki";
 
 describe("eventEmitter", () => {
-  let db;
+  let db: Loki;
   let users;
 
   beforeEach(() => {
-    db = new loki("test", {
-      persistenceMethod: null
-    }),
+    db = new Loki("test");
     users = db.addCollection("users", {
       asyncListeners: false
     });
@@ -19,17 +17,17 @@ describe("eventEmitter", () => {
   });
 
   it("async", function testAsync() {
-    expect(db.asyncListeners).toBe(false);
+    expect(db["asyncListeners"]).toBe(false);
   });
 
   it("emit", () => {
-    const index = db.on("test", function test(obj) {
+    const index = db.on("test", function test(obj: any) {
       expect(obj).toEqual(42);
     });
 
     db.emit("test", 42);
     db.removeListener("test", index);
 
-    expect(db.events["test"].length).toEqual(0);
+    expect(db["events"]["test"].length).toEqual(0);
   });
 });
