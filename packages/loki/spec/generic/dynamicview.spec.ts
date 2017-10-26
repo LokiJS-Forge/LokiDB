@@ -3,11 +3,13 @@ import {Loki} from "../../src/loki";
 import {LokiMemoryAdapter} from "../../src/memory_adapter";
 import {Collection} from "../../src/collection";
 
+export type ANY = any;
+
 describe("dynamicviews", () => {
-  let testRecords: any;
+  let testRecords: ANY;
   let db: Loki;
   let users: Collection;
-  let jonas: any;
+  let jonas: ANY;
 
   beforeEach(() => {
     testRecords = [
@@ -39,7 +41,7 @@ describe("dynamicviews", () => {
     });
   });
 
-  function docCompare(a: any, b: any) {
+  function docCompare(a: ANY, b: ANY) {
     if (a.$loki < b.$loki) return -1;
     if (a.$loki > b.$loki) return 1;
 
@@ -77,7 +79,7 @@ describe("dynamicviews", () => {
       const dv = items.addDynamicView("view");
 
       dv.applyFind({"owner": "odin"});
-      dv.applyWhere((obj: any) => obj.maker === "elves");
+      dv.applyWhere((obj: ANY) => obj.maker === "elves");
 
       expect(dv.data().length).toEqual(2);
       expect(dv["_filterPipeline"].length).toEqual(2);
@@ -108,7 +110,7 @@ describe("dynamicviews", () => {
       const dv = items.addDynamicView("ownr");
 
       dv.applyFind({"owner": "odin"});
-      dv.applyWhere((obj: any) => obj.maker === "elves");
+      dv.applyWhere((obj: ANY) => obj.maker === "elves");
 
       expect(dv["_filterPipeline"].length).toEqual(2);
       expect(dv.data().length).toEqual(2);
@@ -127,7 +129,7 @@ describe("dynamicviews", () => {
       const dv = items.addDynamicView("ownr", {persistent: true});
 
       dv.applyFind({"owner": "odin"});
-      dv.applyWhere((obj: any) => obj.maker === "elves");
+      dv.applyWhere((obj: ANY) => obj.maker === "elves");
 
       expect(items["_dynamicViews"].length).toEqual(1);
 
@@ -165,10 +167,10 @@ describe("dynamicviews", () => {
       // assert set equality of docArrays irrelevant of sort/sequence
       const result1 = users.find(query).sort(docCompare);
       const result2 = view.data().sort(docCompare);
-      result1.forEach((obj: any) => {
+      result1.forEach((obj: ANY) => {
         delete obj.meta;
       });
-      result2.forEach((obj: any) => {
+      result2.forEach((obj: ANY) => {
         delete obj.meta;
       });
 
@@ -327,7 +329,7 @@ describe("dynamicviews", () => {
         public name = "TestError";
         public message = "TestErrorMessage";
       }
-      
+
       db.autosaveEnable();
       db.on("close", () => {
         throw new TestError();

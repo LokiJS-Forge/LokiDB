@@ -1,3 +1,5 @@
+export type ANY = any;
+
 export class UniqueIndex {
 
   private field: string;
@@ -10,7 +12,7 @@ export class UniqueIndex {
     this.lokiMap = {};
   }
 
-  set(obj: any) {
+  set(obj: ANY) {
     const fieldValue = obj[this.field];
     if (fieldValue !== null && typeof(fieldValue) !== "undefined") {
       if (this.keyMap[fieldValue]) {
@@ -35,7 +37,7 @@ export class UniqueIndex {
    * @param  {Object} obj Original document object
    * @param  {Object} doc New document object (likely the same as obj)
    */
-  update(obj: any, doc: object) {
+  update(obj: ANY, doc: object) {
     if (this.lokiMap[obj.$loki] !== doc[this.field]) {
       const old = this.lokiMap[obj.$loki];
       this.set(doc);

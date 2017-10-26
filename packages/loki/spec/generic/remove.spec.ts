@@ -1,6 +1,8 @@
 /* global describe, it, expect */
 import {Loki} from "../../src/loki";
 
+export type ANY = any;
+
 describe("remove", () => {
   it("removes", () => {
     const db = new Loki();
@@ -32,9 +34,9 @@ describe("remove", () => {
     });
 
     const dv = users.addDynamicView("testview");
-    dv.applyWhere((obj: any) => obj.name.length > 3);
+    dv.applyWhere((obj: ANY) => obj.name.length > 3);
 
-    users.removeWhere((obj: any) => obj.age > 35);
+    users.removeWhere((obj: ANY) => obj.age > 35);
     expect(users.data.length).toEqual(4);
     users.removeWhere({
       "age": {

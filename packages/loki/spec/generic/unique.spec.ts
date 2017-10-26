@@ -1,6 +1,8 @@
 /* global describe, it, expect */
 import {Loki} from "../../src/loki";
 
+export type ANY = any;
+
 describe("Constraints", () => {
 
   it("should retrieve records with by()", () => {

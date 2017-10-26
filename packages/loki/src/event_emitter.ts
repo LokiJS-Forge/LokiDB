@@ -2,6 +2,8 @@
  'listen' is not defined  no-undef
  */
 
+export type ANY = any;
+
 /**
  * LokiEventEmitter is a minimalist version of EventEmitter. It enables any
  * constructor that inherits EventEmitter to emit events and trigger
@@ -59,7 +61,7 @@ export class LokiEventEmitter {
    * @param {string} eventName - the name of the event
    * @param {object} data - optional object passed with the event
    */
-  emit(eventName: string, ...data: any[]) {
+  emit(eventName: string, ...data: ANY[]) {
     if (eventName && this.events[eventName]) {
       this.events[eventName].forEach((listener: Function) => {
         if (this.asyncListeners) {

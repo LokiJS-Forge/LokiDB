@@ -1,6 +1,8 @@
 /**
  * Created by toni on 1/27/17.
  */
+export type ANY = any;
+
 export function copyProperties(src: object, dest: object) {
   let prop;
   for (prop in src) {
@@ -30,7 +32,7 @@ function resolveTransformObject(subObj: object, params: object, depth: number = 
 }
 
 // top level utility to resolve an entire (single) transform (array of steps) for parameter substitution
-export function resolveTransformParams(transform: any, params: object) {
+export function resolveTransformParams(transform: ANY, params: object) {
   let idx;
   let clonedStep;
   const resolvedTransform = [];

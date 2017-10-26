@@ -2,10 +2,12 @@
 import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
 
+export type ANY = any;
+
 describe("loki", () => {
   let db: Loki;
   let users: Collection;
-  let testObject: any;
+  let testObject: ANY;
 
   beforeEach(() => {
     db = new Loki("test.json");
@@ -715,7 +717,7 @@ describe("loki", () => {
         "age": {
           "$gte": 30
         }
-      }).where((obj: any) => obj.lang === "Swedish").data().length).toEqual(1);
+      }).where((obj: ANY) => obj.lang === "Swedish").data().length).toEqual(1);
 
       // Resultset offset
       expect(users.chain().offset(1).data().length).toEqual(users.data.length - 1);

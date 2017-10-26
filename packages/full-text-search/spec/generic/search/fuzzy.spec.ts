@@ -4,7 +4,7 @@ import {QueryBuilder as QB, FuzzyQuery} from "../../../src/query_builder";
 
 describe("fuzzy query", () => {
   // from lucene 6.4.0 core: TestFuzzyQuery
-  let assertMatches = (searcher: any, query: object, docIds: number[] = []) => {
+  let assertMatches = (searcher: FullTextSearch, query: object, docIds: number[] = []) => {
     let res = searcher.search(query);
     expect(Object.keys(res).length).toEqual(docIds.length);
     for (let i = 0; i < docIds.length; i++) {

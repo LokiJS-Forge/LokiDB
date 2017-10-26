@@ -3,6 +3,8 @@ import {Loki} from "../../src/loki";
 import {LokiOps} from "../../src/resultset";
 import {Collection} from "../../src/collection";
 
+export type ANY = any;
+
 describe("Testing operators", () => {
 
   let db: Loki;
@@ -96,7 +98,7 @@ describe("Testing operators", () => {
 
 describe("Individual operator tests", () => {
 
-  let ops: any;
+  let ops: ANY;
   beforeEach(() => {
     ops = LokiOps;
   });

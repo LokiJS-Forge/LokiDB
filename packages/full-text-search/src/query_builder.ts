@@ -1,8 +1,10 @@
+export type ANY = any;
+
 /**
  * The base query class to enable boost to a query type.
  */
 export class BaseQuery {
-  protected _data: any;
+  protected _data: ANY;
 
   /**
    * @param {string} type - the type name of the query
@@ -60,7 +62,7 @@ export class TermQuery extends BaseQuery {
    * @param {string} term - the term
    * @param data
    */
-  constructor(field: string, term: string, data: any = {}) {
+  constructor(field: string, term: string, data: ANY = {}) {
     super("term", data);
     this._data.field = field;
     this._data.value = term;
@@ -88,7 +90,7 @@ export class TermsQuery extends BaseQuery {
    * @param {string[]} terms - the terms
    * @param data
    */
-  constructor(field: string, terms: Array<string>, data: any = {}) {
+  constructor(field: string, terms: Array<string>, data: ANY = {}) {
     super("terms", data);
     this._data.field = field;
     this._data.value = terms;
@@ -127,7 +129,7 @@ export class WildcardQuery extends BaseQuery {
    * @param {string} wildcard - the wildcard term
    * @param data
    */
-  constructor(field: string, wildcard: string, data: any = {}) {
+  constructor(field: string, wildcard: string, data: ANY = {}) {
     super("wildcard", data);
     this._data.field = field;
     this._data.value = wildcard;
@@ -175,7 +177,7 @@ export class FuzzyQuery extends BaseQuery {
    * @param {string} fuzzy - the fuzzy term
    * @param data
    */
-  constructor(field: string, fuzzy: string, data: any = {}) {
+  constructor(field: string, fuzzy: string, data: ANY = {}) {
     super("fuzzy", data);
     this._data.field = field;
     this._data.value = fuzzy;
@@ -237,7 +239,7 @@ export class PrefixQuery extends BaseQuery {
    * @param {string} prefix - the prefix of a term
    * @param data
    */
-  constructor(field: string, prefix: string, data: any = {}) {
+  constructor(field: string, prefix: string, data: ANY = {}) {
     super("prefix", data);
     this._data.field = field;
     this._data.value = prefix;
@@ -273,7 +275,7 @@ export class ExistsQuery extends BaseQuery {
    * @param {string} field - the field name of the document
    * @param data
    */
-  constructor(field: string, data: any = {}) {
+  constructor(field: string, data: ANY = {}) {
     super("exists", data);
     this._data.field = field;
   }
@@ -312,7 +314,7 @@ export class MatchQuery extends BaseQuery {
    * @param {string} query - the query text
    * @param data
    */
-  constructor(field: string, query: string, data: any = {}) {
+  constructor(field: string, query: string, data: ANY = {}) {
     super("match", data);
     this._data.field = field;
     this._data.value = query;
@@ -419,13 +421,13 @@ export class ArrayQuery extends BaseQuery {
   private _callbackName: string;
   private _prepare: Function;
 
-  constructor(callbackName: string, callback: Function, data: any = {}) {
+  constructor(callbackName: string, callback: Function, data: ANY = {}) {
     super("array", data);
     this._data.values = [];
     this._callbackName = callbackName;
     this[callbackName] = callback;
 
-    this._prepare = (queryType: any, ...args: any[]) => {
+    this._prepare = (queryType: ANY, ...args: ANY[]) => {
       const data = {};
       const query = new queryType(...args, data);
       this._data.values.push(data);
@@ -507,7 +509,7 @@ export class ArrayQuery extends BaseQuery {
  * @extends BaseQuery
  */
 export class ConstantScoreQuery extends BaseQuery {
-  constructor(data: any = {}) {
+  constructor(data: ANY = {}) {
     super("constant_score", data);
   }
 
@@ -567,7 +569,7 @@ export class ConstantScoreQuery extends BaseQuery {
  * @extends BaseQuery
  */
 export class BoolQuery extends BaseQuery {
-  constructor(data: any = {}) {
+  constructor(data: ANY = {}) {
     super("bool", data);
   }
 
@@ -653,8 +655,8 @@ export class BoolQuery extends BaseQuery {
  * // are scored and ranked using BM25 with k1=1.5 and b=0.5
  */
 export class QueryBuilder {
-  private _data: any;
-  private _child: any;
+  private _data: ANY;
+  private _child: ANY;
 
   constructor() {
     this._data = {query: {}};
@@ -739,7 +741,7 @@ export class QueryBuilder {
     return this._prepare(ExistsQuery, field);
   }
 
-  private _prepare(queryType: any, ...args: any[]) {
+  private _prepare(queryType: ANY, ...args: ANY[]) {
     this._child = new queryType(...args, this._data.query);
     this._child.build = () => {
       return this._data;

@@ -3,6 +3,8 @@ import {Collection} from "./collection";
 import {resolveTransformParams} from "./utils";
 import {ltHelper, gtHelper, aeqHelper, sortHelper} from "./helper";
 
+export type ANY = any;
+
 /*
  'Utils' is not defined                 no-undef	(resolveTransformParams)
  'sortHelper' is not defined            no-undef
@@ -15,16 +17,16 @@ import {ltHelper, gtHelper, aeqHelper, sortHelper} from "./helper";
 
  */
 
-function containsCheckFn(a: any) {
+function containsCheckFn(a: ANY) {
   if (typeof a === "string" || Array.isArray(a)) {
-    return (b: any) => (a as string).indexOf(b) !== -1;
+    return (b: ANY) => (a as string).indexOf(b) !== -1;
   } else if (typeof a === "object" && a !== null) {
-    return (b: any) => Object.hasOwnProperty.call(a, b);
+    return (b: ANY) => Object.hasOwnProperty.call(a, b);
   }
   return null;
 }
 
-function doQueryOp(val: any, op: any) {
+function doQueryOp(val: ANY, op: ANY) {
   for (let p in op) {
     if (Object.hasOwnProperty.call(op, p)) {
       return LokiOps[p](val, op[p]);
@@ -38,16 +40,16 @@ export const LokiOps = {
   // comparison operators
   // a is the value in the collection
   // b is the query value
-  $eq(a: any, b: any) {
+  $eq(a: ANY, b: ANY) {
     return a === b;
   },
 
   // abstract/loose equality
-  $aeq(a: any, b: any) {
+  $aeq(a: ANY, b: ANY) {
     return a == b;
   },
 
-  $ne(a: any, b: any) {
+  $ne(a: ANY, b: ANY) {
     // ecma 5 safe test for NaN
     if (b !== b) {
       // ecma 5 test value is not NaN
@@ -58,69 +60,69 @@ export const LokiOps = {
   },
 
   // date equality / loki abstract equality test
-  $dteq(a: any, b: any) {
+  $dteq(a: ANY, b: ANY) {
     return aeqHelper(a, b);
   },
 
-  $gt(a: any, b: any) {
+  $gt(a: ANY, b: ANY) {
     return gtHelper(a, b, false);
   },
 
-  $gte(a: any, b: any) {
+  $gte(a: ANY, b: ANY) {
     return gtHelper(a, b, true);
   },
 
-  $lt(a: any, b: any) {
+  $lt(a: ANY, b: ANY) {
     return ltHelper(a, b, false);
   },
 
-  $lte(a: any, b: any) {
+  $lte(a: ANY, b: ANY) {
     return ltHelper(a, b, true);
   },
 
   // ex : coll.find({'orderCount': {$between: [10, 50]}});
-  $between(a: any, vals: any) {
+  $between(a: ANY, vals: ANY) {
     if (a === undefined || a === null) return false;
     return (gtHelper(a, vals[0], true) && ltHelper(a, vals[1], true));
   },
 
-  $in(a: any, b: any) {
+  $in(a: ANY, b: ANY) {
     return b.indexOf(a) !== -1;
   },
 
-  $nin(a: any, b: any) {
+  $nin(a: ANY, b: ANY) {
     return b.indexOf(a) === -1;
   },
 
-  $keyin(a: any, b: any) {
+  $keyin(a: ANY, b: ANY) {
     return a in b;
   },
 
-  $nkeyin(a: any, b: any) {
+  $nkeyin(a: ANY, b: ANY) {
     return !(a in b);
   },
 
-  $definedin(a: any, b: any) {
+  $definedin(a: ANY, b: ANY) {
     return b[a] !== undefined;
   },
 
-  $undefinedin(a: any, b: any) {
+  $undefinedin(a: ANY, b: ANY) {
     return b[a] === undefined;
   },
 
-  $regex(a: any, b: any) {
+  $regex(a: ANY, b: ANY) {
     return b.test(a);
   },
 
-  $containsString(a: any, b: any) {
+  $containsString(a: ANY, b: ANY) {
     return (typeof a === "string") && (a.indexOf(b) !== -1);
   },
 
-  $containsNone(a: any, b: any) {
+  $containsNone(a: ANY, b: ANY) {
     return !LokiOps.$containsAny(a, b);
   },
 
-  $containsAny(a: any, b: any) {
+  $containsAny(a: ANY, b: ANY) {
     const checkFn = containsCheckFn(a);
     if (checkFn !== null) {
       return (Array.isArray(b)) ? (b.some(checkFn)) : (checkFn(b));
@@ -128,7 +130,7 @@ export const LokiOps = {
     return false;
   },
 
-  $contains(a: any, b: any) {
+  $contains(a: ANY, b: ANY) {
     const checkFn = containsCheckFn(a);
     if (checkFn !== null) {
       return (Array.isArray(b)) ? (b.every(checkFn)) : (checkFn(b));
@@ -136,7 +138,7 @@ export const LokiOps = {
     return false;
   },
 
-  $type(a: any, b: any) {
+  $type(a: ANY, b: ANY) {
     let type: string = typeof a;
     if (type === "object") {
       if (Array.isArray(a)) {
@@ -148,25 +150,25 @@ export const LokiOps = {
     return (typeof b !== "object") ? (type === b) : doQueryOp(type, b);
   },
 
-  $finite(a: any, b: any) {
+  $finite(a: ANY, b: ANY) {
     return (b === isFinite(a));
   },
 
-  $size(a: any, b: any) {
+  $size(a: ANY, b: ANY) {
     if (Array.isArray(a)) {
       return (typeof b !== "object") ? (a.length === b) : doQueryOp(a.length, b);
     }
     return false;
   },
 
-  $len(a: any, b: any) {
+  $len(a: ANY, b: ANY) {
     if (typeof a === "string") {
       return (typeof b !== "object") ? (a.length === b) : doQueryOp(a.length, b);
     }
     return false;
   },
 
-  $where(a: any, b: any) {
+  $where(a: ANY, b: ANY) {
     return b(a) === true;
   },
 
@@ -174,11 +176,11 @@ export const LokiOps = {
   // a is the value in the collection
   // b is the nested query operation (for '$not')
   //   or an array of nested query operations (for '$and' and '$or')
-  $not(a: any, b: any) {
+  $not(a: ANY, b: ANY) {
     return !doQueryOp(a, b);
   },
 
-  $and(a: any, b: any) {
+  $and(a: ANY, b: ANY) {
     for (let idx = 0, len = b.length; idx < len; idx += 1) {
       if (!doQueryOp(a, b[idx])) {
         return false;
@@ -187,7 +189,7 @@ export const LokiOps = {
     return true;
   },
 
-  $or(a: any, b: any) {
+  $or(a: ANY, b: ANY) {
     for (let idx = 0, len = b.length; idx < len; idx += 1) {
       if (doQueryOp(a, b[idx])) {
         return true;
@@ -258,7 +260,7 @@ function compoundeval(properties: object[], obj1: object, obj2: object) {
  * @param {any} value - comparative value to also pass to (compare) fun
  * @param {number} pathOffset - index of the item in 'paths' to start the sub-scan from
  */
-function dotSubScan(root: object, paths: string[], fun: Function, value: any, pathOffset = 0) {
+function dotSubScan(root: object, paths: string[], fun: Function, value: ANY, pathOffset = 0) {
   const path = paths[pathOffset];
   if (root === undefined || root === null || root[path] === undefined) {
     return false;
@@ -297,7 +299,7 @@ function dotSubScan(root: object, paths: string[], fun: Function, value: any, pa
 export class Resultset {
 
   public collection: Collection;
-  public filteredrows: any[];
+  public filteredrows: ANY[];
   public filterInitialized: boolean;
 
   /**
@@ -564,7 +566,7 @@ export class Resultset {
    * @param {array} properties - array of property names or subarray of [propertyname, isdesc] used evaluate sort order
    * @returns {Resultset} Reference to this resultset, sorted, for future chain operations.
    */
-  compoundsort(properties: any) {
+  compoundsort(properties: ANY) {
     if (properties.length === 0) {
       throw new Error("Invalid call to compoundsort, need at least one property");
     }
@@ -608,7 +610,7 @@ export class Resultset {
    * @param {array} expressionArray - array of expressions
    * @returns {Resultset} this resultset for further chain ops.
    */
-  findOr(expressionArray?: any[]) {
+  findOr(expressionArray?: ANY[]) {
     let fr = null;
     let fri = 0;
     let frlen = 0;
@@ -644,7 +646,7 @@ export class Resultset {
     return this;
   }
 
-  $or(...args: any[]) {
+  $or(...args: ANY[]) {
     return this.findOr(...args);
   }
 
@@ -657,7 +659,7 @@ export class Resultset {
    * @param {array} expressionArray - array of expressions
    * @returns {Resultset} this resultset for further chain ops.
    */
-  findAnd(expressionArray?: any[]) {
+  findAnd(expressionArray?: ANY[]) {
     // we have already implementing method chaining in this (our Resultset class)
     // so lets just progressively apply user supplied and filters
     for (let i = 0, len = expressionArray.length; i < len; i++) {
@@ -669,7 +671,7 @@ export class Resultset {
     return this;
   }
 
-  $and(...args: any[]) {
+  $and(...args: ANY[]) {
     return this.findAnd(...args);
   }
 
@@ -680,7 +682,7 @@ export class Resultset {
    * @param {boolean} firstOnly - (Optional) Used by collection.findOne() - flag if this was invoked via findOne()
    * @returns {Resultset} this resultset for further chain ops.
    */
-  find(query?: object, firstOnly = false): any {
+  find(query?: object, firstOnly = false): ANY {
     if (this.collection.data.length === 0) {
       this.filteredrows = [];
       this.filterInitialized = true;
@@ -924,7 +926,7 @@ export class Resultset {
    * @param {function} fun - A javascript function used for filtering current results by.
    * @returns {Resultset} this resultset for further chain ops.
    */
-  where(fun: any) {
+  where(fun: ANY) {
     let viewFunction;
     let result = [];
 
@@ -990,7 +992,7 @@ export class Resultset {
    *
    * @returns {array} Array of documents in the resultset
    */
-  data(options: any = {}) {
+  data(options: ANY = {}) {
     let forceClones: boolean;
     let forceCloneMethod: string;
     let removeMeta: boolean;
@@ -1126,7 +1128,7 @@ export class Resultset {
    * @param {function} reduceFunction - this function accepts many (array of map outputs) and returns single value
    * @returns {value} The output of your reduceFunction
    */
-  mapReduce(mapFunction: any, reduceFunction: Function) {
+  mapReduce(mapFunction: ANY, reduceFunction: Function) {
     try {
       return reduceFunction(this.data().map(mapFunction));
     } catch (err) {
@@ -1147,7 +1149,7 @@ export class Resultset {
    * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method.
    * @returns {Resultset} A resultset with data in the format [{left: leftObj, right: rightObj}]
    */
-  eqJoin(joinData: any, leftJoinKey: string | Function, rightJoinKey: string | Function, mapFun?: Function, dataOptions?: any) {
+  eqJoin(joinData: ANY, leftJoinKey: string | Function, rightJoinKey: string | Function, mapFun?: Function, dataOptions?: ANY) {
     let leftData = [];
     let leftDataLength;
     let rightData = [];
@@ -1181,7 +1183,7 @@ export class Resultset {
     }
 
     if (!mapFun) {
-      mapFun = (left: any, right: any) => ({
+      mapFun = (left: ANY, right: ANY) => ({
         left,
         right
       });
@@ -1210,7 +1212,7 @@ export class Resultset {
    * @param {boolean} dataOptions.forceClones - forcing the return of cloned objects to your map object
    * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method.
    */
-  map(mapFun: any, dataOptions?: object) {
+  map(mapFun: ANY, dataOptions?: object) {
     let data = this.data(dataOptions).map(mapFun);
     //return return a new resultset with no filters
     this.collection = new Collection("mappedData");

@@ -1,6 +1,8 @@
 import {InvertedIndex} from "./inverted_index";
 import {Dictionary} from "./full_text_search";
 
+export type ANY = any;
+
 export class Scorer {
   private _invIdxs: Dictionary<InvertedIndex>;
   private _cache: object = {};
@@ -13,7 +15,7 @@ export class Scorer {
     this._cache = {};
   }
 
-  prepare(fieldName: string, boost: number, termIdx: any, doScoring: boolean, docResults: object = {}, term: string = null) {
+  prepare(fieldName: string, boost: number, termIdx: ANY, doScoring: boolean, docResults: object = {}, term: string = null) {
     if (termIdx === null || termIdx.dc === undefined) {
       return null;
     }
@@ -45,7 +47,7 @@ export class Scorer {
     return docResults;
   }
 
-  finalScore(query: any, docResults: object = {}) {
+  finalScore(query: ANY, docResults: object = {}) {
     const result = {};
     const k1 = query.scoring.k1;
     const b = query.scoring.b;

@@ -1,8 +1,10 @@
 /* global describe, beforeEach, it, expect */
 import {Loki} from "../../src/loki";
 
+export type ANY = any;
+
 describe("binary indices", () => {
-  let testRecords: any[];
+  let testRecords: ANY[];
 
   beforeEach(() => {
     testRecords = [
@@ -471,9 +473,8 @@ describe("binary indices", () => {
       coll.insert({customIdx: 1});
 
       let jsonString = db.serialize();
-
       let newDatabase = new Loki("idxtest");
-      newDatabase.loadJSON(jsonString);
+      newDatabase.loadJSON(jsonString as any);
 
       expect(newDatabase.getCollection("users").adaptiveBinaryIndices).toBe(true);
 

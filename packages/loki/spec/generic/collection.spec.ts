@@ -2,10 +2,12 @@
 import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
 
+export type ANY = any;
+
 describe("collection", () => {
   it("works", () => {
     class SubclassedCollection extends Collection {
-      constructor(name: string, options: any = {}) {
+      constructor(name: string, options: ANY = {}) {
         super(name, options);
       }
 
@@ -43,7 +45,7 @@ describe("collection", () => {
     const coll = db.addCollection("testcoll");
     coll.insert([{a: 3, b: 3}, {a: 6, b: 7}, {a: 1, b: 2}, {a: 7, b: 8}, {a: 6, b: 4}]);
 
-    coll.findAndUpdate({a: 6}, (obj: any) => {
+    coll.findAndUpdate({a: 6}, (obj: ANY) => {
       obj.b += 1;
     });
 
@@ -74,7 +76,7 @@ describe("collection", () => {
     const coll = db.addCollection("testcoll");
     coll.insert([{a: 3, b: 3}, {a: 6, b: 7}, {a: 1, b: 2}, {a: 7, b: 8}, {a: 6, b: 4}]);
 
-    coll.removeWhere((obj: any) => obj.a === 6);
+    coll.removeWhere((obj: ANY) => obj.a === 6);
 
     expect(coll.data.length).toEqual(3);
 
@@ -91,7 +93,7 @@ describe("collection", () => {
     coll.insert([{a: 3, b: 3}, {a: 6, b: 7}, {a: 1, b: 2}, {a: 7, b: 8}, {a: 6, b: 4}]);
 
     // guess we need to return object for this to work
-    coll.updateWhere((fobj: any) => fobj.a === 6, (obj: any) => {
+    coll.updateWhere((fobj: ANY) => fobj.a === 6, (obj: ANY) => {
       obj.b += 1;
       return obj;
     });
@@ -120,7 +122,7 @@ describe("collection", () => {
     const coll = db.addCollection("testcoll");
 
     // listen for insert events to validate objects
-    coll.on("insert", (obj: any) => {
+    coll.on("insert", (obj: ANY) => {
       expect(obj.hasOwnProperty("a")).toEqual(true);
       expect([3, 6, 1, 7, 5].indexOf(obj.a)).toBeGreaterThan(-1);
 
@@ -165,7 +167,7 @@ describe("collection", () => {
     const coll = db.addCollection("testcoll", {clone: true});
 
     // listen for insert events to validate objects
-    coll.on("insert", (obj: any) => {
+    coll.on("insert", (obj: ANY) => {
       expect(obj.hasOwnProperty("a")).toEqual(true);
       expect([3, 6, 1, 7, 5].indexOf(obj.a)).toBeGreaterThan(-1);
 
@@ -215,7 +217,7 @@ describe("collection", () => {
     const coll = db.addCollection("testcoll");
 
     // listen for insert events to validate objects
-    coll.on("insert", (objs: any) => {
+    coll.on("insert", (objs: ANY) => {
       expect(Array.isArray(objs)).toEqual(true);
       expect(objs.length).toEqual(5);
 
@@ -253,7 +255,7 @@ describe("collection", () => {
     const coll = db.addCollection("testcoll", {clone: true});
 
     // listen for insert events to validate objects
-    coll.on("insert", (objs: any) => {
+    coll.on("insert", (objs: ANY) => {
       expect(Array.isArray(objs)).toEqual(true);
       expect(objs.length).toEqual(5);
 

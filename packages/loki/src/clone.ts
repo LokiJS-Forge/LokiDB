@@ -1,5 +1,7 @@
 /* global jQuery */
-export function clone(data: object, method: string) : any {
+export type ANY = any;
+
+export function clone(data: object, method: string) : ANY {
   if (data === null || data === undefined) {
     return null;
   }

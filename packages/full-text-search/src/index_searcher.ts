@@ -4,22 +4,23 @@ import {QueryBuilder} from "./query_builder";
 import {Dictionary} from "./full_text_search";
 
 type Tree = any;
+export type ANY = any;
 
 export class IndexSearcher {
   private _invIdxs: Dictionary<InvertedIndex>;
-  private _docs: any;
+  private _docs: ANY;
   private _scorer: Scorer;
 
   /**
    * @param {object} invIdxs
    */
-  constructor(invIdxs: Dictionary<InvertedIndex>, docs: any) {
+  constructor(invIdxs: Dictionary<InvertedIndex>, docs: ANY) {
     this._invIdxs = invIdxs;
     this._docs = docs;
     this._scorer = new Scorer(this._invIdxs);
   }
 
-  search(query: any) {
+  search(query: ANY) {
     let docResults = this._recursive(query.query, true);
 
     // Final scoring.
@@ -34,7 +35,7 @@ export class IndexSearcher {
     this._scorer.setDirty();
   }
 
-  _recursive(query: any, doScoring: boolean) {
+  _recursive(query: ANY, doScoring: boolean) {
     let docResults = {};
     let boost = query.boost !== undefined ? query.boost : 1;
     let fieldName = query.field !== undefined ? query.field : null;
@@ -211,7 +212,7 @@ export class IndexSearcher {
     return docResults;
   }
 
-  _getUnique(values: any[], doScoring: boolean, docResults: any) {
+  _getUnique(values: ANY[], doScoring: boolean, docResults: ANY) {
     if (values.length === 0) {
       return docResults;
     }
@@ -235,7 +236,7 @@ export class IndexSearcher {
     return docResults;
   }
 
-  _getAll(values: any[], doScoring: boolean) {
+  _getAll(values: ANY[], doScoring: boolean) {
     let docResults = {};
     for (let i = 0; i < values.length; i++) {
       let currDocs = this._recursive(values[i], doScoring);
@@ -258,7 +259,7 @@ class FuzzySearch {
   private _fuzziness: number | string;
   private _prefixLength: number;
 
-  constructor(query: any) {
+  constructor(query: ANY) {
     this._fuzzy = query.value;
     this._fuzziness = query.fuzziness !== undefined ? query.fuzziness : "AUTO";
     if (this._fuzziness === "AUTO") {
@@ -389,9 +390,9 @@ class FuzzySearch {
 
 class WildcardSearch {
   private _wildcard: string;
-  private _result: any[];
+  private _result: ANY[];
 
-  constructor(query: any) {
+  constructor(query: ANY) {
     this._wildcard = query.value;
     this._result = [];
   }

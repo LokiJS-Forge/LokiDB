@@ -62,7 +62,7 @@ export class LokiPartitioningAdapter {
       this._dbref.loadJSONObject(db);
       db = null;
 
-      if (this._dbref.collections.length === 0) {
+      if (this._dbref._collections.length === 0) {
         return this._dbref;
       }
 
@@ -94,9 +94,9 @@ export class LokiPartitioningAdapter {
         delimited: true,
         collectionIndex: partition
       });
-      this._dbref.collections[partition].data = data;
+      this._dbref._collections[partition].data = data;
 
-      if (++partition < this._dbref.collections.length) {
+      if (++partition < this._dbref._collections.length) {
         return this.loadNextPartition(partition);
       }
     });
@@ -132,7 +132,7 @@ export class LokiPartitioningAdapter {
 
       // convert stringified array elements to object instances and push to collection data
       for (idx = 0; idx < dlen; idx++) {
-        this._dbref.collections[this._pageIterator.collection].data.push(JSON.parse(data[idx]));
+        this._dbref._collections[this._pageIterator.collection].data.push(JSON.parse(data[idx]));
         data[idx] = null;
       }
       data = [];
@@ -140,7 +140,7 @@ export class LokiPartitioningAdapter {
       // if last page, we are done with this partition
       if (isLastPage) {
         // if there are more partitions, kick off next partition load
-        if (++this._pageIterator.collection < this._dbref.collections.length) {
+        if (++this._pageIterator.collection < this._dbref._collections.length) {
           return this.loadNextPartition(this._pageIterator.collection);
         }
       } else {
@@ -161,7 +161,7 @@ export class LokiPartitioningAdapter {
 	 */
   exportDatabase(dbname, dbref) {
     let idx;
-    const clen = dbref.collections.length;
+    const clen = dbref._collections.length;
 
     this._dbref = dbref;
     this._dbname = dbname;
@@ -169,7 +169,7 @@ export class LokiPartitioningAdapter {
     // queue up dirty partitions to be saved
     this.dirtyPartitions = [-1];
     for (idx = 0; idx < clen; idx++) {
-      if (dbref.collections[idx].dirty) {
+      if (dbref._collections[idx].dirty) {
         this.dirtyPartitions.push(idx);
       }
     }
@@ -222,7 +222,7 @@ export class LokiPartitioningAdapter {
 	 * @returns {Promise} a Promise that resolves after the next partition is saved
 	 */
   saveNextPage() {
-    const coll = this._dbref.collections[this._pageIterator.collection];
+    const coll = this._dbref._collections[this._pageIterator.collection];
     const keyname = this._dbname + "." + this._pageIterator.collection + "." + this._pageIterator.pageIndex;
     let pageLen = 0;
     const cdlen = coll.data.length;

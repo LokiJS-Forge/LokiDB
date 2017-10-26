@@ -2,6 +2,8 @@
 import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
 
+export type ANY = any;
+
 describe("Staging and commits", () => {
   let db: Loki;
   let directors: Collection;

@@ -7,7 +7,9 @@
  *     aeqHelper([1, 2, 3], [1, 2, 3]) === true
  *     aeqHelper(undefined, null) === true
  */
-export function aeqHelper(prop1: any, prop2: any) {
+export type ANY = any;
+
+export function aeqHelper(prop1: ANY, prop2: ANY) {
   let cv1;
   let cv2;
   let t1;
@@ -87,7 +89,7 @@ export function aeqHelper(prop1: any, prop2: any) {
  *     Since binary indices on a property might need to index [12, NaN, new Date(), Infinity], we
  *     need this function (as well as gtHelper) to always ensure one value is LT, GT, or EQ to another.
  */
-export function ltHelper(prop1: any, prop2: any, equal: boolean) {
+export function ltHelper(prop1: ANY, prop2: ANY, equal: boolean) {
   let cv1;
   let cv2;
   let t1;
@@ -182,7 +184,7 @@ export function ltHelper(prop1: any, prop2: any, equal: boolean) {
   return false;
 }
 
-export function gtHelper(prop1: any, prop2: any, equal: boolean) {
+export function gtHelper(prop1: ANY, prop2: ANY, equal: boolean) {
   let cv1;
   let cv2;
   let t1;
@@ -276,7 +278,7 @@ export function gtHelper(prop1: any, prop2: any, equal: boolean) {
   return false;
 }
 
-export function sortHelper(prop1: any, prop2: any, desc: any) {
+export function sortHelper(prop1: ANY, prop2: ANY, desc: ANY) {
   if (aeqHelper(prop1, prop2)) return 0;
 
   if (ltHelper(prop1, prop2, false)) {

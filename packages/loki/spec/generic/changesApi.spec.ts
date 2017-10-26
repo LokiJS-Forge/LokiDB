@@ -1,6 +1,8 @@
 /* global describe, it, expect */
 import {Loki} from "../../src/loki";
 
+export type ANY = any;
+
 describe("changesApi", () => {
   it("does what it says on the tin", () => {
     const db = new Loki(),

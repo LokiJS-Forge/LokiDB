@@ -2,6 +2,8 @@
 import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
 
+export type ANY = any;
+
 describe("transforms", () => {
   let db: Loki;
   let items: Collection;
@@ -46,7 +48,7 @@ describe("transforms", () => {
         },
         {
           type: "where",
-          value: function (obj: any) {
+          value: function (obj: ANY) {
             return (obj.name.indexOf("drau") !== -1);
           }
         }
@@ -91,7 +93,7 @@ describe("transforms", () => {
       ];
 
       const params = {
-        NameFilter: function (obj: any) {
+        NameFilter: function (obj: ANY) {
           return (obj.name.indexOf("nir") !== -1);
         }
       };
@@ -275,7 +277,7 @@ describe("transforms", () => {
       c1.insert([{a: 1, b: 9}, {a: 2, b: 8}, {a: 3, b: 7}, {a: 4, b: 6}]);
 
       // only safe because our 'removeMeta' option will clone objects passed in
-      function graftMap(obj: any) {
+      function graftMap(obj: ANY) {
         obj.c = obj.b - obj.a;
         return obj;
       }

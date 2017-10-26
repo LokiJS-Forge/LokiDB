@@ -2,6 +2,8 @@
 import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
 
+export type ANY = any;
+
 describe("sorting and indexing", () => {
   let db: Loki;
   let items: Collection;
@@ -114,7 +116,7 @@ describe("sorting and indexing", () => {
 
       coll.insert([{a: 1, b: 9, c: "first"}, {a: 5, b: 7, c: "second"}, {a: 2, b: 9, c: "third"}]);
 
-      const sortfun = (obj1: any, obj2: any) => {
+      const sortfun = (obj1: ANY, obj2: ANY) => {
         if (obj1.a === obj2.a) return 0;
         if (obj1.a > obj2.a) return 1;
         if (obj1.a < obj2.a) return -1;
@@ -191,7 +193,7 @@ describe("sorting and indexing", () => {
       coll.insert({a: [8, 1, 15], b: 5});
       coll.insert({a: "asdf", b: 5});
 
-      let indexVals: any[] = [];
+      let indexVals: ANY[] = [];
 
       // make sure unindexed sort is as expected
 
@@ -223,7 +225,7 @@ describe("sorting and indexing", () => {
       indexVals = [];
       coll.ensureIndex("a");
 
-      coll["binaryIndices"].a.values.forEach((vi: any) => {
+      coll["binaryIndices"].a.values.forEach((vi: ANY) => {
         indexVals.push(coll.data[vi].a);
       });
 

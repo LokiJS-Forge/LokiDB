@@ -2,6 +2,8 @@
 import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
 
+export type ANY = any;
+
 describe("joins", () => {
   let db: Loki;
   let directors: Collection;
@@ -61,7 +63,7 @@ describe("joins", () => {
     expect(joined[0].left.title).toEqual("Taxi");
 
     //Basic join with map
-    joined = films.eqJoin(directors.data, "directorId", "directorId", (left: any, right: any) => ({
+    joined = films.eqJoin(directors.data, "directorId", "directorId", (left: ANY, right: ANY) => ({
       filmTitle: left.title,
       directorName: right.name
     })).data();
@@ -71,7 +73,7 @@ describe("joins", () => {
 
     //Basic non-mapped join with chained map
     joined = films.eqJoin(directors.data, "directorId", "directorId")
-      .map((obj: any) => ({
+      .map((obj: ANY) => ({
         filmTitle: obj.left.title,
         directorName: obj.right.name
       })).data();
@@ -86,7 +88,7 @@ describe("joins", () => {
         directorId: 3
       })
       .simplesort("title")
-      .eqJoin(directors.data, "directorId", "directorId", (left: any, right: any) => ({
+      .eqJoin(directors.data, "directorId", "directorId", (left: ANY, right: ANY) => ({
         filmTitle: left.title,
         directorName: right.name
       }));
@@ -100,8 +102,8 @@ describe("joins", () => {
 
     //Test calculated keys
     joined = films.chain().eqJoin(directors.data,
-      (director: any) => director.directorId + 1,
-      (film: any) => film.directorId - 1)
+      (director: ANY) => director.directorId + 1,
+      (film: ANY) => film.directorId - 1)
       .data();
 
     expect(joined[0].right.name).toEqual("Steven Spielberg");

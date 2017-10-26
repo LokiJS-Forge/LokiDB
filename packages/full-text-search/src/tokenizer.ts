@@ -12,6 +12,8 @@ function defaultSplitter(str: string) {
   return tokens;
 }
 
+export type ANY = any;
+
 /**
  * The tokenizer is used to prepare the string content of a document field for the inverted index.
  * Firstly the string gets split into tokens.
@@ -26,7 +28,7 @@ function defaultSplitter(str: string) {
 export class Tokenizer {
   private _splitter: Tokenizer.SplitterFunction;
   private _queue: Tokenizer.TokinizeFunction[] = [];
-  private _symbol: any = Symbol("label");
+  private _symbol: ANY = Symbol("label");
 
   /**
    * Initializes the tokenizer with a splitter, which splits a string at non-alphanumeric characters.
@@ -197,7 +199,7 @@ export class Tokenizer {
    * @param {Object.<string, function>|Tokenizer} funcTok - the depending functions with labels
    *  or an equivalent tokenizer
    */
-  static fromJSONObject(serialized: Tokenizer.Serialization, funcTok: any = undefined) {
+  static fromJSONObject(serialized: Tokenizer.Serialization, funcTok: ANY = undefined) {
     let tkz = new Tokenizer();
     if (funcTok !== undefined && funcTok instanceof Tokenizer) {
       if (serialized.splitter !== undefined) {

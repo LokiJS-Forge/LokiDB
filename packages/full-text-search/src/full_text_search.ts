@@ -2,6 +2,8 @@ import {InvertedIndex} from "./inverted_index";
 import {IndexSearcher} from "./index_searcher";
 import {Tokenizer} from "./tokenizer";
 
+export type ANY = any;
+
 export interface Dictionary<T> {
   [Key: string]: T;
 }
@@ -34,7 +36,7 @@ export class FullTextSearch {
     this._idxSearcher = new IndexSearcher(this._invIdxs, this._docs);
   }
 
-  addDocument(doc: any) {
+  addDocument(doc: ANY) {
     if (doc[this._id] === undefined) {
       throw new Error("Document is not stored in the collection.");
     }
@@ -50,7 +52,7 @@ export class FullTextSearch {
     this.setDirty();
   }
 
-  removeDocument(doc: any) {
+  removeDocument(doc: ANY) {
     if (doc[this._id] === undefined) {
       throw new Error("Document is not stored in the collection.");
     }
@@ -64,12 +66,12 @@ export class FullTextSearch {
     this.setDirty();
   }
 
-  updateDocument(doc: any) {
+  updateDocument(doc: ANY) {
     this.removeDocument(doc);
     this.addDocument(doc);
   }
 
-  search(query: any) {
+  search(query: ANY) {
     return this._idxSearcher.search(query);
   }
 
@@ -82,7 +84,7 @@ export class FullTextSearch {
     return serialized;
   }
 
-  static fromJSONObject(serialized: any, tokenizers: Tokenizer[]) {
+  static fromJSONObject(serialized: ANY, tokenizers: Tokenizer[]) {
     let db = JSON.parse(serialized);
     let fts = new FullTextSearch();
     let fieldNames = Object.keys(db);

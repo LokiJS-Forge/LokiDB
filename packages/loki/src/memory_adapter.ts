@@ -1,3 +1,7 @@
+import {lokijs} from "./types";
+
+export type ANY = any;
+
 /**
  * In in-memory persistence adapter for an in-memory database.
  * This simple 'key/value' adapter is intended for unit testing and diagnostics.
@@ -8,12 +12,12 @@
  *
  * @constructor LokiMemoryAdapter
  */
-export class LokiMemoryAdapter {
+export class LokiMemoryAdapter implements lokijs.Storage {
 
   private hashStore: object;
-  private options: any;
+  private options: ANY;
 
-  constructor(options?: any) {
+  constructor(options?: ANY) {
     this.hashStore = {};
     this.options = options || {};
 

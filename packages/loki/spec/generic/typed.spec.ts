@@ -1,18 +1,20 @@
 /* global describe, it, expect */
 import {Loki} from "../../src/loki";
 
+export type ANY = any;
+
 describe("typed", () => {
   it("works", () => {
     const db = new Loki("test.json");
     let users;
 
-    function User(n: any) {
+    function User(n: ANY) {
       this.name = n || "";
     }
 
     const json = {
       "filename": "test.json",
-      "collections": [{
+      "_collections": [{
         "name": "users",
         "data": [{
           "name": "joe",
@@ -61,7 +63,7 @@ describe("typed", () => {
     db.loadJSON(JSON.stringify(json), {
       users: {
         proto: User,
-        inflate: function (src: any, dest: any) {
+        inflate: function (src: ANY, dest: ANY) {
           dest.$loki = src.$loki;
           dest.meta = src.meta;
           dest.customInflater = true;
@@ -78,8 +80,8 @@ describe("typed", () => {
     // Loading only using inflate:
     db.loadJSON(JSON.stringify(json), {
       users: {
-        inflate: function (src: any) {
-          const dest: any = {};
+        inflate: function (src: ANY) {
+          const dest: ANY = {};
 
           dest.$loki = src.$loki;
           dest.meta = src.meta;

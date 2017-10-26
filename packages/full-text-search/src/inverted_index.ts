@@ -1,5 +1,7 @@
 import {Tokenizer} from "./tokenizer";
 
+export type ANY = any;
+
 /**
  * Inverted index class handles featured text search for specific document fields.
  * @constructor InvertedIndex
@@ -70,7 +72,7 @@ export class InvertedIndex {
     const fieldTokens = this._tokenizer.tokenize(field);
     this._totalFieldLength += fieldTokens.length;
 
-    const termRefs: any[] = [];
+    const termRefs: ANY[] = [];
     this._docStore[docId] = {fieldLength: fieldTokens.length};
     if (this._optimizeChanges) {
       Object.defineProperties(this._docStore[docId], {
@@ -239,7 +241,7 @@ export class InvertedIndex {
    * @return {Array} - array with term indices and extension
    */
   static getNextTermIndex(root: InvertedIndex.Index) {
-    const termIndices: any[] = [];
+    const termIndices: ANY[] = [];
     const keys = Object.keys(root);
     for (let i = 0; i < keys.length; i++) {
       if (keys[i].length === 1) {
@@ -255,7 +257,7 @@ export class InvertedIndex {
    * @returns {Array} - Array with term indices and extension
    */
   static extendTermIndex(root: InvertedIndex.Index) {
-    const termIndices: any[] = [];
+    const termIndices: ANY[] = [];
     const stack = [root];
     const treeStack = [""];
     do {
@@ -299,7 +301,7 @@ export class InvertedIndex {
    * @param {Object.<string, function>|Tokenizer} funcTok[undefined] - the depending functions with labels
    *  or an equivalent tokenizer
    */
-  static fromJSONObject(serialized: InvertedIndex.Serialization, funcTok: any = undefined) {
+  static fromJSONObject(serialized: InvertedIndex.Serialization, funcTok: ANY = undefined) {
     const invIdx = new InvertedIndex({
       store: serialized._store,
       optimizeChanges: serialized._optimizeChanges,

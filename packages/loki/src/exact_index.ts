@@ -1,3 +1,5 @@
+export type ANY = any;
+
 export class ExactIndex {
 
   private index: object;
@@ -9,7 +11,7 @@ export class ExactIndex {
   }
 
   // add the value you want returned to the key in the index
-  set(key: string, val: any) {
+  set(key: string, val: ANY) {
     if (this.index[key]) {
       this.index[key].push(val);
     } else {
@@ -18,7 +20,7 @@ export class ExactIndex {
   }
 
   // remove the value from the index, if the value was the last one, remove the key
-  remove(key: string, val: any) {
+  remove(key: string, val: ANY) {
     const idxSet = this.index[key];
     for (const i in idxSet) {
       if (idxSet[i] === val) {

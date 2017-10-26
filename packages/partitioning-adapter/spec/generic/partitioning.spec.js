@@ -55,9 +55,9 @@ describe("partitioning adapter", () => {
 
       return db2.loadDatabase();
     }).then(() => {
-      expect(db2.collections.length).toEqual(2);
-      expect(db2.collections[0].data.length).toEqual(4);
-      expect(db2.collections[1].data.length).toEqual(1);
+      expect(db2._collections.length).toEqual(2);
+      expect(db2._collections[0].data.length).toEqual(4);
+      expect(db2._collections[1].data.length).toEqual(1);
       expect(db2.getCollection("items").findOne({name: "gungnir"}).owner).toEqual("odin");
       expect(db2.getCollection("another").findOne({a: 1}).b).toEqual(3);
     }).then(done, done.fail);
@@ -138,9 +138,9 @@ describe("partitioning adapter", () => {
       db2.initializePersistence({adapter: adapter});
       return db2.loadDatabase();
     }).then(() => {
-      expect(db2.collections.length).toEqual(2);
-      expect(db2.collections[0].data.length).toEqual(4);
-      expect(db2.collections[1].data.length).toEqual(1);
+      expect(db2._collections.length).toEqual(2);
+      expect(db2._collections[0].data.length).toEqual(4);
+      expect(db2._collections[1].data.length).toEqual(1);
       expect(db2.getCollection("items").findOne({name: "tyrfing"}).maker).toEqual("elves");
       expect(db2.getCollection("another").findOne({a: 1}).b).toEqual(3);
 
@@ -161,10 +161,10 @@ describe("partitioning adapter", () => {
       db2.initializePersistence({adapter: adapter});
       return db2.loadDatabase();
     }).then(() => {
-      expect(db2.collections.length).toEqual(3);
-      expect(db2.collections[0].data.length).toEqual(4);
-      expect(db2.collections[1].data.length).toEqual(1);
-      expect(db2.collections[2].data.length).toEqual(0);
+      expect(db2._collections.length).toEqual(3);
+      expect(db2._collections[0].data.length).toEqual(4);
+      expect(db2._collections[1].data.length).toEqual(1);
+      expect(db2._collections[2].data.length).toEqual(0);
     }).then(done, done.fail);
   });
 
@@ -221,9 +221,9 @@ describe("partitioning adapter", () => {
           let db2 = new Loki("sandbox.db");
           db2.initializePersistence({adapter: adapter, throttledSaves: throttled});
           db2.loadDatabase().then(() => {
-            expect(db2.collections.length).toEqual(2);
-            expect(db2.collections[0].data.length).toEqual(4);
-            expect(db2.collections[1].data.length).toEqual(1);
+            expect(db2._collections.length).toEqual(2);
+            expect(db2._collections[0].data.length).toEqual(4);
+            expect(db2._collections[1].data.length).toEqual(1);
             expect(db2.getCollection("items").findOne({name: "tyrfing"}).maker).toEqual("elves");
             expect(db2.getCollection("another").findOne({a: 1}).b).toEqual(3);
 
@@ -239,10 +239,10 @@ describe("partitioning adapter", () => {
               db2 = new Loki("sandbox.db");
               db2.initializePersistence({adapter: adapter, throttledSaves: throttled});
               db2.loadDatabase().then(() => {
-                expect(db2.collections.length).toEqual(3);
-                expect(db2.collections[0].data.length).toEqual(4);
-                expect(db2.collections[1].data.length).toEqual(1);
-                expect(db2.collections[2].data.length).toEqual(0);
+                expect(db2._collections.length).toEqual(3);
+                expect(db2._collections[0].data.length).toEqual(4);
+                expect(db2._collections[1].data.length).toEqual(1);
+                expect(db2._collections[2].data.length).toEqual(0);
 
                 // since async calls are being used, use jasmine done() to indicate test finished
                 done();
