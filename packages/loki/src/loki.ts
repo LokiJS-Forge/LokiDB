@@ -263,7 +263,7 @@ export class Loki extends LokiEventEmitter {
    * @param {int} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
    * @returns {Collection} a reference to the collection which was just added
    */
-  addCollection(name: string, options: any/*Collection.Options*/ = {}) {
+  addCollection(name: string, options: Collection.Options = {}) {
     const collection = new Collection(name, options);
     this._collections.push(collection);
 

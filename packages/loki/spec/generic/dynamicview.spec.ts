@@ -248,7 +248,7 @@ describe("dynamicviews", () => {
 
   describe("stepDynamicViewPersistence", () => {
     it("works", () => {
-      const test = db.addCollection("nodupes", ["index"]);
+      const test = db.addCollection("nodupes", {indices: ["testindex"]});
 
       const item = test.insert({
         index: "key",
@@ -276,7 +276,7 @@ describe("dynamicviews", () => {
 
   describe("stepDynamicViewPersistence", () => {
     it("works", function testEmptyTableWithIndex() {
-      const itc = db.addCollection("test", ["testindex"]);
+      const itc = db.addCollection("test", {indices: ["testindex"]});
 
       const resultsNoIndex = itc.find({
         "testid": 2
@@ -284,7 +284,7 @@ describe("dynamicviews", () => {
       expect(resultsNoIndex.length).toEqual(0);
 
       const resultsWithIndex = itc.find({
-        "testindex": 4
+        "testindex":  4
       });
       it("no results found", () => {
         expect(resultsWithIndex.length).toEqual(0);

@@ -115,7 +115,7 @@ export class Collection extends LokiEventEmitter {
 
   /**
    * @param {string} name - collection name
-   * @param {(object)} [options={}] - array of property names to be indicized OR a configuration object
+   * @param {(object)} [options={}] - a configuration object
    * @param {string[]} [options.unique=[]] - array of property names to define unique constraints for
    * @param {string[]} [options.exact=[]] - array of property names to define exact constraints for
    * @param {string[]} [options.indices=[]] - array property names to define binary indexes for
@@ -132,7 +132,7 @@ export class Collection extends LokiEventEmitter {
    * @param {number} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
    * @see {@link Loki#addCollection} for normal creation of collections
    */
-  constructor(name: string, options: any /*Collection.Options*/ = {}) {
+  constructor(name: string, options: Collection.Options = {}) {
     super();
     // the name of the collection
     this.name = name;
@@ -259,18 +259,7 @@ export class Collection extends LokiEventEmitter {
     //   options.indices = [];
     // }
     this.ensureId();
-    let indices = [];
-    // initialize optional user-supplied indices array ['age', 'lname', 'zip']
-    if (options && options.indices) {
-      if (Object.prototype.toString.call(options.indices) === "[object Array]") {
-        indices = options.indices;
-      } else if (typeof options.indices === "string") {
-        indices = [options.indices];
-      } else {
-        throw new TypeError("Indices needs to be a string or an array of strings");
-      }
-    }
-
+    let indices = options.indices ? options.indices : [];
     for (let idx = 0; idx < indices.length; idx++) {
       this.ensureIndex(options.indices[idx]);
     }
@@ -635,32 +624,6 @@ export class Collection extends LokiEventEmitter {
     delete this.transforms[name];
   }
 
-  byExample(template: object) {
-    let k;
-    let obj;
-    let query;
-    query = [];
-    for (k in template) {
-      if (template[k] === undefined) continue;
-      query.push((
-        obj = {},
-          obj[k] = template[k],
-          obj
-      ));
-    }
-    return {
-      "$and": query
-    };
-  }
-
-  findObject(template: object) {
-    return this.findOne(this.byExample(template));
-  }
-
-  findObjects(template: object) {
-    return this.find(this.byExample(template));
-  }
-
   /*----------------------------+
    | TTL daemon                  |
    +----------------------------*/
@@ -702,23 +665,6 @@ export class Collection extends LokiEventEmitter {
       indexes[i] = i;
     }
     return indexes;
-  }
-
-  /**
-   * Will allow reconfiguring certain collection options.
-   * @param {boolean} options.adaptiveBinaryIndices - collection indices will be actively rebuilt rather than lazily
-   */
-  configureOptions(options: ANY) {
-    options = options || {};
-
-    if (options.adaptiveBinaryIndices !== undefined) {
-      this.adaptiveBinaryIndices = options.adaptiveBinaryIndices;
-
-      // if switching to adaptive binary indices, make sure none are 'dirty'
-      if (this.adaptiveBinaryIndices) {
-        this.ensureAllIndexes();
-      }
-    }
   }
 
   /**
@@ -829,7 +775,7 @@ export class Collection extends LokiEventEmitter {
     }
   }
 
-  flagBinaryIndexDirty(index: number) {
+  flagBinaryIndexDirty(index: string) {
     if (this.binaryIndices[index])
       this.binaryIndices[index].dirty = true;
   }
