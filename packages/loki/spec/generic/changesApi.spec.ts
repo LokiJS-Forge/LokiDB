@@ -39,7 +39,7 @@ describe("changesApi", () => {
     const allChanges = db.generateChangesNotification();
 
     expect(allChanges.length).toEqual(4);
-    users.setChangesApi(false);
+    users.setChangesApi(true);
     expect(users["disableChangesApi"]).toEqual(true);
 
     u.name = "john";

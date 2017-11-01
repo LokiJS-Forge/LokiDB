@@ -257,7 +257,6 @@ export class Loki extends LokiEventEmitter {
    * @param {array} [options.indices=[]] - array property names to define binary indexes for
    * @param {boolean} [options.asyncListeners=false] - whether listeners are called asynchronously
    * @param {boolean} [options.disableChangesApi=true] - set to false to enable Changes Api
-   * @param {boolean} [options.autoupdate=false] - use Object.observe to update objects automatically
    * @param {boolean} [options.clone=false] - specify whether inserts and queries clone to/from user
    * @param {string} [options.cloneMethod='parse-stringify'] - 'parse-stringify', 'jquery-extend-deep', 'shallow, 'shallow-assign'
    * @param {int} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
@@ -737,15 +736,14 @@ export class Loki extends LokiEventEmitter {
    * @param {object} options - apply or override collection level settings
    * @param {boolean} options.retainDirtyFlags - whether collection dirty flags will be preserved
    */
-  loadJSONObject(dbObject: ANY, options: ANY = {}) {
+  loadJSONObject(dbObject: ANY, options: Collection.DeserializeOptions = {}) {
     const len = dbObject._collections ? dbObject._collections.length : 0;
 
     this.filename = dbObject.filename;
     this._collections = [];
 
     for (let i = 0; i < len; ++i) {
-      this._collections.push(Collection.fromJSONObject(dbObject._collections[i],
-        options, dbObject.databaseVersion < 1.5));
+      this._collections.push(Collection.fromJSONObject(dbObject._collections[i], options));
     }
   }
 
@@ -791,7 +789,7 @@ export class Loki extends LokiEventEmitter {
    *
    * @param {Array} [arrayOfCollectionNames=] - array of collection names. No arg means all collections are processed.
    * @returns {Array} array of changes
-   * @see private method createChange() in Collection
+   * @see private method _createChange() in Collection
    */
   generateChangesNotification(arrayOfCollectionNames?: string[]) {
     let changes: ANY[] = [];

@@ -143,23 +143,30 @@ export class Collection extends LokiEventEmitter {
    */
   public disableDeltaChangesApi: ANY;
 
-  public setChangesApi: ANY;
-
   /**
    * By default, if you insert a document into a collection with binary indices, if those indexed properties contain
    * a DateTime we will convert to epoch time format so that (across serializations) its value position will be the
    * same 'after' serialization as it was 'before'.
    */
-  private serializableIndices: ANY;
+  private serializableIndices: boolean;
+
+  /**
+   * Option to activate a cleaner daemon - clears "aged" documents at set intervals.
+   */
   public ttl: ANY;
+
   private maxId: ANY;
   private _dynamicViews: ANY;
-  private changes: ANY;
 
-  private getChangeDelta: ANY;
-  private getObjectDelta: ANY;
-  public getChanges: ANY;
-  public flushChanges: ANY;
+  /**
+   * Changes are tracked by collection and aggregated by the db.
+   */
+  private changes: Collection.Change[];
+
+  /* assign correct handler based on ChangesAPI flag */
+  private insertHandler: ANY;
+  private updateHandler: ANY;
+
   public console: ANY;
   private stages: object;
   private commitLog: ANY[];
@@ -175,7 +182,7 @@ export class Collection extends LokiEventEmitter {
    * @param {boolean} [options.disableChangesApi=true] - set to false to enable Changes API
    * @param {boolean} [options.disableDeltaChangesApi=true] - set to false to enable Delta Changes API (requires Changes API, forces cloning)
    * @param {boolean} [options.clone=false] - specify whether inserts and queries clone to/from user
-   * @param {boolean} [options.serializableIndices =true[]] - converts date values on binary indexed property values are serializable
+   * @param {boolean} [options.serializableIndices =true] - converts date values on binary indexed property values are serializable
    * @param {string} [options.cloneMethod='parse-stringify'] - 'parse-stringify', 'jquery-extend-deep', 'shallow'
    * @param {number} [options.transactional=false] - ?
    * @param {number} options.ttl - ?
@@ -257,12 +264,10 @@ export class Collection extends LokiEventEmitter {
       this.disableDeltaChangesApi = true;
     }
 
-    // by default, if you insert a document into a collection with binary indices, if those indexed properties contain
-    // a DateTime we will convert to epoch time format so that (across serializations) its value position will be the
-    // same 'after' serialization as it was 'before'.
+    // .
     this.serializableIndices = options.serializableIndices !== undefined ? options.serializableIndices : true;
 
-    //option to activate a cleaner daemon - clears "aged" documents at set intervals.
+    //
     this.ttl = {
       age: null,
       ttlInterval: null,
@@ -288,187 +293,39 @@ export class Collection extends LokiEventEmitter {
       "warning": []
     };
 
-    // changes are tracked by collection and aggregated by the db
+    // .
     this.changes = [];
 
     // initialize the id index
-    // this.ensureId();
-    // if (!options.indices) {
-    //   options.indices = [];
-    // }
     this.ensureId();
     let indices = options.indices ? options.indices : [];
     for (let idx = 0; idx < indices.length; idx++) {
       this.ensureIndex(options.indices[idx]);
     }
 
-    const self = this;
+    this.setChangesApi(this.disableChangesApi, this.disableDeltaChangesApi);
 
-    /*
-     * This method creates a clone of the current status of an object and associates operation and collection name,
-     * so the parent db can aggregate and generate a changes object for the entire db
-     */
-    function createChange(name: string, op: string, obj: object, old: object = {}) {
-      self.changes.push({
-        name,
-        operation: op,
-        obj: op === "U" && !self.disableDeltaChangesApi ? getChangeDelta(obj, old) : JSON.parse(JSON.stringify(obj))
-      });
-    }
-
-    //Compare changed object (which is a forced clone) with existing object and return the delta
-    function getChangeDelta(obj: object, old: object) {
-      if (old) {
-        return getObjectDelta(old, obj);
-      }
-      else {
-        return JSON.parse(JSON.stringify(obj));
-      }
-    }
-
-    this.getChangeDelta = getChangeDelta;
-
-    function getObjectDelta(oldObject: object, newObject: object) {
-      const propertyNames = newObject !== null && typeof newObject === "object" ? Object.keys(newObject) : null;
-      if (propertyNames && propertyNames.length && ["string", "boolean", "number"].indexOf(typeof(newObject)) < 0) {
-        const delta = {};
-        for (let i = 0; i < propertyNames.length; i++) {
-          const propertyName = propertyNames[i];
-          if (newObject.hasOwnProperty(propertyName)) {
-            if (!oldObject.hasOwnProperty(propertyName) || self.uniqueNames.indexOf(propertyName) >= 0 || propertyName === "$loki" || propertyName === "meta") {
-              delta[propertyName] = newObject[propertyName];
-            }
-            else {
-              const propertyDelta = getObjectDelta(oldObject[propertyName], newObject[propertyName]);
-              if (typeof propertyDelta !== "undefined" && propertyDelta !== {}) {
-                delta[propertyName] = propertyDelta;
-              }
-            }
-          }
-        }
-        return Object.keys(delta).length === 0 ? undefined : delta;
-      }
-      else {
-        return oldObject === newObject ? undefined : newObject;
-      }
-    }
-
-    this.getObjectDelta = getObjectDelta;
-
-
-    // clear all the changes
-    function flushChanges() {
-      self.changes = [];
-    }
-
-    this.getChanges = () => this.changes;
-
-    this.flushChanges = flushChanges;
-
-    /**
-     * If the changes API is disabled make sure only metadata is added without re-evaluating everytime if the changesApi is enabled
-     */
-    function insertMeta(obj: ANY) {
-      let len;
-      let idx;
-
-      if (!obj) {
-        return;
-      }
-
-      // if batch insert
-      if (Array.isArray(obj)) {
-        len = obj.length;
-
-        for (idx = 0; idx < len; idx++) {
-          if (obj[idx].meta === undefined) {
-            obj[idx].meta = {};
-          }
-
-          obj[idx].meta.created = (new Date()).getTime();
-          obj[idx].meta.revision = 0;
-        }
-
-        return;
-      }
-
-      // single object
-      if (!obj.meta) {
-        obj.meta = {};
-      }
-
-      obj.meta.created = (new Date()).getTime();
-      obj.meta.revision = 0;
-    }
-
-    function updateMeta(obj: ANY) {
-      if (!obj) {
-        return;
-      }
-      obj.meta.updated = (new Date()).getTime();
-      obj.meta.revision += 1;
-    }
-
-    function createInsertChange(obj: ANY) {
-      createChange(self.name, "I", obj);
-    }
-
-    function createUpdateChange(obj: object, old: object) {
-      createChange(self.name, "U", obj, old);
-    }
-
-    function insertMetaWithChange(obj: object) {
-      insertMeta(obj);
-      createInsertChange(obj);
-    }
-
-    function updateMetaWithChange(obj: object, old: object) {
-      updateMeta(obj);
-      createUpdateChange(obj, old);
-    }
-
-
-    /* assign correct handler based on ChangesAPI flag */
-    let insertHandler: ANY;
-
-    let updateHandler: ANY;
-
-    function setHandlers() {
-      insertHandler = self.disableChangesApi ? insertMeta : insertMetaWithChange;
-      updateHandler = self.disableChangesApi ? updateMeta : updateMetaWithChange;
-    }
-
-    setHandlers();
-
-    this.setChangesApi = (enabled: boolean) => {
-      this.disableChangesApi = !enabled;
-      if (!enabled) {
-        self.disableDeltaChangesApi = false;
-      }
-      setHandlers();
-    };
-    /**
-     * built-in events
-     */
-    this.on("insert", (obj: object) => {
-      insertHandler(obj);
+    // Add change api to event callback.
+    this.on("insert", (obj: lokijs.Document) => {
+      this.insertHandler(obj);
     });
 
-    this.on("update", (obj: object, old: object) => {
-      updateHandler(obj, old);
+    this.on("update", (obj: lokijs.Document, old: lokijs.Document) => {
+      this.updateHandler(obj, old);
     });
 
-    this.on("delete", (obj: object) => {
+    this.on("delete", (obj: lokijs.Document) => {
       if (!this.disableChangesApi) {
-        createChange(this.name, "R", obj);
+        this._createChange(this.name, "R", obj);
       }
     });
 
     this.on("warning", (warning: ANY) => {
       this.console.warn(warning);
     });
+
     // for de-serialization purposes
-    flushChanges();
+    this.flushChanges();
 
     this.console = {
       log() {
@@ -509,7 +366,8 @@ export class Collection extends LokiEventEmitter {
     };
   }
 
-  static fromJSONObject(obj: ANY, options: ANY, forceRebuild: boolean) {
+  // TODO: Force rebuild?
+  static fromJSONObject(obj: ANY, options: Collection.DeserializeOptions) {
     let coll = new Collection(obj.name, {
       disableChangesApi: obj.disableChangesApi,
       disableDeltaChangesApi: obj.disableDeltaChangesApi
@@ -585,13 +443,6 @@ export class Collection extends LokiEventEmitter {
       coll._dynamicViews.push(DynamicView.fromJSONObject(coll, obj._dynamicViews[idx]));
     }
 
-    // Upgrade Logic for binary index refactoring at version 1.5
-    if (forceRebuild) {
-      // rebuild all indices
-      coll.ensureAllIndexes(true);
-      coll.dirty = true;
-    }
-
     return coll;
   }
 
@@ -650,7 +501,7 @@ export class Collection extends LokiEventEmitter {
     };
   }
 
-  setTTL(age: number, interval: number) {
+  private setTTL(age: number, interval: number) {
     if (age < 0) {
       clearInterval(this.ttl.daemon);
     } else {
@@ -1288,6 +1139,153 @@ export class Collection extends LokiEventEmitter {
       this.emit("error", err);
       return null;
     }
+  }
+
+  /*------------+
+   | Change API |
+   +------------*/
+  /**
+   * Returns all changes.
+   * @returns {ANY}
+   */
+  public getChanges() {
+    return this.changes;
+  }
+
+  /**
+   * Enables/disables changes api.
+   * @param {boolean} disableChangesApi
+   * @param {boolean} disableDeltaChangesApi
+   */
+  public setChangesApi(disableChangesApi: boolean, disableDeltaChangesApi: boolean = true) {
+    this.disableChangesApi = disableChangesApi;
+    this.disableDeltaChangesApi = disableDeltaChangesApi;
+
+    if (disableChangesApi) {
+      this.disableDeltaChangesApi = true;
+    }
+
+    this.insertHandler = this.disableChangesApi ? this._insertMeta : this._insertMetaWithChange;
+    this.updateHandler = this.disableChangesApi ? this._updateMeta : this._updateMetaWithChange;
+  }
+
+  /**
+   * Clears all the changes.
+   */
+  public flushChanges() {
+    this.changes = [];
+  }
+
+  private _getObjectDelta(oldObject: lokijs.Document, newObject: lokijs.Document) {
+    const propertyNames = newObject !== null && typeof newObject === "object" ? Object.keys(newObject) : null;
+    if (propertyNames && propertyNames.length && ["string", "boolean", "number"].indexOf(typeof(newObject)) < 0) {
+      const delta = {};
+      for (let i = 0; i < propertyNames.length; i++) {
+        const propertyName = propertyNames[i];
+        if (newObject.hasOwnProperty(propertyName)) {
+          if (!oldObject.hasOwnProperty(propertyName) || this.uniqueNames.indexOf(propertyName) >= 0 || propertyName === "$loki" || propertyName === "meta") {
+            delta[propertyName] = newObject[propertyName];
+          }
+          else {
+            const propertyDelta = this._getObjectDelta(oldObject[propertyName], newObject[propertyName]);
+            if (propertyDelta !== undefined && propertyDelta !== {}) {
+              delta[propertyName] = propertyDelta;
+            }
+          }
+        }
+      }
+      return Object.keys(delta).length === 0 ? undefined : delta;
+    }
+    else {
+      return oldObject === newObject ? undefined : newObject;
+    }
+  }
+
+  /**
+   * Compare changed object (which is a forced clone) with existing object and return the delta
+   */
+  private _getChangeDelta(obj: lokijs.Document, old: lokijs.Document) {
+    if (old) {
+      return this._getObjectDelta(old, obj);
+    }
+    else {
+      return JSON.parse(JSON.stringify(obj));
+    }
+  }
+
+  /**
+   * This method creates a clone of the current status of an object and associates operation and collection name,
+   * so the parent db can aggregate and generate a changes object for the entire db
+   */
+  private _createChange(name: string, op: string, obj: lokijs.Document, old: lokijs.Document = {}) {
+    this.changes.push({
+      name,
+      operation: op,
+      obj: op === "U" && !this.disableDeltaChangesApi ? this._getChangeDelta(obj, old) : JSON.parse(JSON.stringify(obj))
+    });
+  }
+
+  private _createInsertChange(obj: lokijs.Document) {
+    this._createChange(this.name, "I", obj);
+  }
+
+  /**
+   * If the changes API is disabled make sure only metadata is added without re-evaluating everytime if the changesApi is enabled
+   */
+  private _insertMeta(obj: lokijs.Document) {
+    let len;
+    let idx;
+
+    if (!obj) {
+      return;
+    }
+
+    // if batch insert
+    if (Array.isArray(obj)) {
+      len = obj.length;
+
+      for (idx = 0; idx < len; idx++) {
+        if (obj[idx].meta === undefined) {
+          obj[idx].meta = {};
+        }
+
+        obj[idx].meta.created = (new Date()).getTime();
+        obj[idx].meta.revision = 0;
+      }
+
+      return;
+    }
+
+    // single object
+    if (!obj.meta) {
+      obj.meta = {};
+    }
+
+    obj.meta.created = (new Date()).getTime();
+    obj.meta.revision = 0;
+  }
+
+  private _updateMeta(obj: lokijs.Document) {
+    if (!obj) {
+      return;
+    }
+    obj.meta.updated = (new Date()).getTime();
+    obj.meta.revision += 1;
+  }
+
+
+  private _createUpdateChange(obj: lokijs.Document, old: lokijs.Document) {
+    this._createChange(this.name, "U", obj, old);
+  }
+
+  private _insertMetaWithChange(obj: lokijs.Document) {
+    this._insertMeta(obj);
+    this._createInsertChange(obj);
+  }
+
+  private _updateMetaWithChange(obj: lokijs.Document, old: lokijs.Document) {
+    this._updateMeta(obj);
+    this._createUpdateChange(obj, old);
   }
 
   /*---------------------+
@@ -2156,10 +2154,16 @@ export namespace Collection {
     disableChangesApi?: boolean;
     disableDeltaChangesApi?: boolean;
     clone?: boolean;
-    serializableIndices?: boolean[];
+    serializableIndices?: boolean;
     cloneMethod?: CloneMethod;
     transactional?: boolean;
     ttl?: number;
     ttlInterval?: number;
   }
+
+  export interface DeserializeOptions {
+    retainDirtyFlags?: boolean;
+  }
+
+  export type Change = any;
 }
