@@ -1,6 +1,6 @@
 /* global describe, beforeEach, it, expect */
 import {Loki} from "../../src/loki";
-import {Collection} from "../../src/collection";
+import {Collection, CloneMethod} from "../../src/collection";
 
 export type ANY = any;
 
@@ -83,7 +83,7 @@ describe("cloning behavior", () => {
       }
 
       const cdb = new Loki("clonetest");
-      const citems = cdb.addCollection("items", {clone: true, cloneMethod: "shallow"});
+      const citems = cdb.addCollection("items", {clone: true, cloneMethod: CloneMethod.SHALLOW});
       const oldObject = new Item("mjolnir", "thor", "dwarves");
       const insObject = citems.insert(oldObject);
 

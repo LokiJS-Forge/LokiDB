@@ -1,30 +1,29 @@
 /* global jQuery */
 export type ANY = any;
 
-export function clone(data: object, method: string) : ANY {
+export function clone(data: object, method: CloneMethod = CloneMethod.PARSE_STRINGIFY) : ANY {
   if (data === null || data === undefined) {
     return null;
   }
 
-  const cloneMethod = method || "parse-stringify";
   let cloned: object;
 
-  switch (cloneMethod) {
-    case "parse-stringify":
+  switch (method) {
+    case CloneMethod.PARSE_STRINGIFY:
       cloned = JSON.parse(JSON.stringify(data));
       break;
-    case "jquery-extend-deep":
+    case CloneMethod.JQUERY_EXTEND_DEEP:
       //cloned = jQuery.extend(true, {}, data);
       // TODO
       break;
-    case "shallow":
+    case CloneMethod.SHALLOW:
       // more compatible method for older browsers
       cloned = Object.create(data.constructor.prototype);
       Object.keys(data).map((i) => {
         cloned[i] = data[i];
       });
       break;
-    case "shallow-assign":
+    case CloneMethod.SHALLOW_ASSIGN:
       // should be supported by newer environments/browsers
       cloned = Object.create(data.constructor.prototype);
       Object.assign(cloned, data);
@@ -36,11 +35,11 @@ export function clone(data: object, method: string) : ANY {
   return cloned;
 }
 
-export function cloneObjectArray(objarray: object[], method: string) {
+export function cloneObjectArray(objarray: object[], method: CloneMethod) {
   let i;
   const result = [];
 
-  if (method === "parse-stringify") {
+  if (method === CloneMethod.PARSE_STRINGIFY) {
     return clone(objarray, method);
   }
 
@@ -51,4 +50,11 @@ export function cloneObjectArray(objarray: object[], method: string) {
   }
 
   return result;
+}
+
+export enum CloneMethod {
+  PARSE_STRINGIFY,
+  JQUERY_EXTEND_DEEP,
+  SHALLOW,
+  SHALLOW_ASSIGN,
 }

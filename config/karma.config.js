@@ -6,12 +6,16 @@ module.exports = function (config) {
     frameworks: ["jasmine", "jasmine-matchers"],
     browsers: ["Chrome"],
     files: [
-      {pattern: "../packages/*/spec/generic/**/*.spec.js", watched: false},
-      {pattern: "../packages/*/spec/web/**/*.spec.js", watched: false},
+      // {pattern: "../packages/*/spec/generic/**/*.spec.js", watched: false},
+      // {pattern: "../packages/*/spec/web/**/*.spec.js", watched: false},
+      {pattern: "../packages/*/spec/generic/**/*.spec.ts", watched: false},
+      {pattern: "../packages/*/spec/web/**/*.spec.ts", watched: false},
     ],
     preprocessors: {
-      "../packages/*/spec/generic/**/*.spec.js": ["webpack"],
-      "../packages/*/spec/web/**/*.spec.js": ["webpack"],
+      //"../packages/*/spec/generic/**/*.spec.js": ["webpack"],
+      //"../packages/*/spec/web/**/*.spec.js": ["webpack"],
+      "../packages/*/spec/generic/**/*.spec.ts": ["webpack"],
+      "../packages/*/spec/web/**/*.spec.ts": ["webpack"],
     },
 
     // coverage reporter generates the coverage
@@ -33,7 +37,7 @@ module.exports = function (config) {
       module: {
         rules: [
           {
-            test: /\.js$/,
+            test: /\.ts$/,
             use: [
               {
                 loader: "istanbul-instrumenter-loader",

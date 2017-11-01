@@ -18,7 +18,6 @@ describe("typed", () => {
         "name": "users",
         "data": [{
           "name": "joe",
-          "objType": "users",
           "meta": {
             "version": 0,
             "created": 1415467401386,
@@ -27,7 +26,6 @@ describe("typed", () => {
           "$loki": 1
         }, {
           "name": "jack",
-          "objType": "users",
           "meta": {
             "version": 0,
             "created": 1415467401388,
@@ -37,7 +35,6 @@ describe("typed", () => {
         }],
         "idIndex": [1, 2],
         "binaryIndices": {},
-        "objType": "users",
         "transactional": false,
         "maxId": 2
       }],

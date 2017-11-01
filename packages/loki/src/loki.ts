@@ -320,7 +320,6 @@ export class Loki extends LokiEventEmitter {
     for (let i = 0; i < this._collections.length; i++) {
       colls.push({
         name: this._collections[i].name,
-        type: this._collections[i].objType,
         count: this._collections[i].data.length
       });
     }

@@ -12,21 +12,19 @@ export type ANY = any;
  * @constructor LokiEventEmitter
  */
 export class LokiEventEmitter {
-
+  /**
+   * A map, with each property being an array of callbacks.
+   */
   protected events: object;
+
+  /**
+   * Determines whether or not the callbacks associated with each event should happen in an async fashion or not.
+   * Default is false, which means events are synchronous
+   */
   protected asyncListeners: boolean;
 
   constructor() {
-    /**
-     * @prop {hashmap} events - a hashmap, with each property being an array of callbacks
-     */
     this.events = {};
-
-    /**
-     * @prop {boolean} asyncListeners - boolean determines whether or not the callbacks associated with each event
-     * should happen in an async fashion or not
-     * Default is false, which means events are synchronous
-     */
     this.asyncListeners = false;
   }
 

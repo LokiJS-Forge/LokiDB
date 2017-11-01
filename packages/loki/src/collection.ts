@@ -3,10 +3,11 @@ import {UniqueIndex} from "./unique_index";
 import {ExactIndex} from "./exact_index";
 import {Resultset} from "./resultset";
 import {DynamicView} from "./dynamic_view";
-import {clone} from "./clone";
+import {clone, CloneMethod} from "./clone";
 import {ltHelper, gtHelper, aeqHelper} from "./helper";
 import {Loki} from "./loki";
 import {copyProperties} from "./utils";
+import {lokijs} from "./types";
 
 /*
  'isDeepProperty' is not defined              no-undef
@@ -21,6 +22,7 @@ import {copyProperties} from "./utils";
  */
 
 export type ANY = any;
+export {CloneMethod} from "./clone";
 
 /**
  * General utils, including statistical functions
@@ -77,34 +79,83 @@ export class Collection extends LokiEventEmitter {
 
   public name: string;
   // the data held by the collection
-  public data: ANY[];
+  public data: lokijs.Document[];
   private idIndex: number[]; // index of id
   public binaryIndices: ANY; // user defined indexes
   public constraints = {
     unique: {},
     exact: {}
   };
+
+  /**
+   * Unique contraints contain duplicate object references, so they are not persisted.
+   * We will keep track of properties which have unique contraint applied here, and regenerate on load.
+   */
   private uniqueNames: string[];
+
+  /**
+   * Transforms will be used to store frequently used query chains as a series of steps which itself can be stored along
+   * with the database.
+   */
   public transforms: {};
-  public objType: string;
+
+  /**
+   * In autosave scenarios we will use collection level dirty flags to determine whether save is needed.
+   * currently, if any collection is dirty we will autosave the whole database if autosave is configured.
+   * Defaulting to true since this is called from addCollection and adding a collection should trigger save.
+   */
   public dirty: boolean;
+
   private cachedIndex: ANY;
   private cachedBinaryIndex: ANY;
   private cachedData: ANY;
-  public adaptiveBinaryIndices: ANY;
-  private transactional: ANY;
-  public cloneObjects: ANY;
-  public cloneMethod: ANY;
-  private disableChangesApi: ANY;
+
+  /**
+   * If set to true we will optimally keep indices 'fresh' during insert/update/remove ops (never dirty/never needs rebuild).
+   * If you frequently intersperse insert/update/remove ops between find ops this will likely be significantly faster option.
+   */
+  public adaptiveBinaryIndices: boolean;
+
+  /**
+   * Is collection transactional.
+   */
+  private transactional: boolean;
+
+
+  /**
+   * Options to clone objects when inserting them.
+   */
+  public cloneObjects: boolean;
+
+  /**
+   * Default clone method (if enabled) is parse-stringify.
+   */
+  public cloneMethod: CloneMethod;
+
+
+  /**
+   * Disable track changes.
+   */
+  private disableChangesApi: boolean;
+
+  /**
+   * Disable delta update object style on changes.
+   */
   public disableDeltaChangesApi: ANY;
+
   public setChangesApi: ANY;
-  private autoupdate: ANY;
+
+  /**
+   * By default, if you insert a document into a collection with binary indices, if those indexed properties contain
+   * a DateTime we will convert to epoch time format so that (across serializations) its value position will be the
+   * same 'after' serialization as it was 'before'.
+   */
   private serializableIndices: ANY;
   public ttl: ANY;
   private maxId: ANY;
   private _dynamicViews: ANY;
   private changes: ANY;
-  private observerCallback: ANY;
+
   private getChangeDelta: ANY;
   private getObjectDelta: ANY;
   public getChanges: ANY;
@@ -123,7 +174,6 @@ export class Collection extends LokiEventEmitter {
    * @param {boolean} [options.asyncListeners=false] - whether listeners are invoked asynchronously
    * @param {boolean} [options.disableChangesApi=true] - set to false to enable Changes API
    * @param {boolean} [options.disableDeltaChangesApi=true] - set to false to enable Delta Changes API (requires Changes API, forces cloning)
-   * @param {boolean} [options.autoupdate=false] - use Object.observe to update objects automatically
    * @param {boolean} [options.clone=false] - specify whether inserts and queries clone to/from user
    * @param {boolean} [options.serializableIndices =true[]] - converts date values on binary indexed property values are serializable
    * @param {string} [options.cloneMethod='parse-stringify'] - 'parse-stringify', 'jquery-extend-deep', 'shallow'
@@ -144,21 +194,13 @@ export class Collection extends LokiEventEmitter {
       unique: {},
       exact: {}
     };
-
-    // unique contraints contain duplicate object references, so they are not persisted.
-    // we will keep track of properties which have unique contraint applied here, and regenerate on load
+    // .
     this.uniqueNames = [];
 
-    // transforms will be used to store frequently used query chains as a series of steps
-    // which itself can be stored along with the database.
+    // .
     this.transforms = {};
 
-    // the object type of the collection
-    this.objType = name;
-
-    // in autosave scenarios we will use collection level dirty flags to determine whether save is needed.
-    // currently, if any collection is dirty we will autosave the whole database if autosave is configured.
-    // defaulting to true since this is called from addCollection and adding a collection should trigger save
+    // .
     this.dirty = true;
 
     // private holders for cached data
@@ -191,33 +233,29 @@ export class Collection extends LokiEventEmitter {
     //     ? new (Loki.FullTextSearch.FullTextSearch)(options.fullTextSearch) : null;
     // }
 
-    // if set to true we will optimally keep indices 'fresh' during insert/update/remove ops (never dirty/never needs rebuild)
-    // if you frequently intersperse insert/update/remove ops between find ops this will likely be significantly faster option.
+    // .
     this.adaptiveBinaryIndices = options.adaptiveBinaryIndices !== undefined ? options.adaptiveBinaryIndices : true;
 
-    // is collection transactional
+    // .
     this.transactional = options.transactional !== undefined ? options.transactional : false;
 
-    // options to clone objects when inserting them
+    // .
     this.cloneObjects = options.clone !== undefined ? options.clone : false;
 
-    // default clone method (if enabled) is parse-stringify
-    this.cloneMethod = options.cloneMethod !== undefined ? options.cloneMethod : "parse-stringify";
+    // .
+    this.cloneMethod = options.cloneMethod !== undefined ? options.cloneMethod : CloneMethod.PARSE_STRINGIFY;
 
-    // option to make event listeners async, default is sync
+    // .
     this.asyncListeners = options.asyncListeners !== undefined ? options.asyncListeners : false;
 
-    // disable track changes
+    // .
     this.disableChangesApi = options.disableChangesApi !== undefined ? options.disableChangesApi : true;
 
-    // disable delta update object style on changes
+    // .
     this.disableDeltaChangesApi = options.disableDeltaChangesApi !== undefined ? options.disableDeltaChangesApi : true;
     if (this.disableChangesApi) {
       this.disableDeltaChangesApi = true;
     }
-
-    // option to observe objects and update them automatically, ignored if Object.observe is not supported
-    this.autoupdate = options.autoupdate !== undefined ? options.autoupdate : false;
 
     // by default, if you insert a document into a collection with binary indices, if those indexed properties contain
     // a DateTime we will convert to epoch time format so that (across serializations) its value position will be the
@@ -263,33 +301,6 @@ export class Collection extends LokiEventEmitter {
     for (let idx = 0; idx < indices.length; idx++) {
       this.ensureIndex(options.indices[idx]);
     }
-
-    function observerCallback(changes: ANY[]) {
-
-      const changedObjects = new Set();
-
-      if (!changedObjects.add)
-        changedObjects.add = function (object) {
-          if (this.indexOf(object) === -1)
-            this.push(object);
-          return this;
-        };
-
-      changes.forEach((change) => {
-        changedObjects.add(change.object);
-      });
-
-      changedObjects.forEach((object) => {
-        if (object.$loki === undefined)
-          return this.removeAutoUpdateObserver(object);
-        try {
-          this.update(object);
-        } catch (err) {/**/
-        }
-      });
-    }
-
-    this.observerCallback = observerCallback;
 
     const self = this;
 
@@ -494,7 +505,6 @@ export class Collection extends LokiEventEmitter {
       disableChangesApi: this.disableChangesApi,
       cloneObjects: this.cloneObjects,
       cloneMethod: this.cloneMethod,
-      autoupdate: this.autoupdate,
       changes: this.changes,
     };
   }
@@ -511,7 +521,6 @@ export class Collection extends LokiEventEmitter {
     coll.disableChangesApi = obj.disableChangesApi;
     coll.cloneObjects = obj.cloneObjects;
     coll.cloneMethod = obj.cloneMethod || "parse-stringify";
-    coll.autoupdate = obj.autoupdate;
     coll.changes = obj.changes;
 
     coll.dirty = (options.retainDirtyFlags === true) ? obj.dirty : false;
@@ -879,7 +888,7 @@ export class Collection extends LokiEventEmitter {
    * @param {(object|array)} doc - the document (or array of documents) to be inserted
    * @returns {(object|array)} document or documents inserted
    */
-  insert(doc: ANY) {
+  insert(doc: lokijs.Document | lokijs.Document[]) {
     if (!Array.isArray(doc)) {
       return this.insertOne(doc);
     }
@@ -2146,18 +2155,11 @@ export namespace Collection {
     asyncListeners?: boolean;
     disableChangesApi?: boolean;
     disableDeltaChangesApi?: boolean;
-    autoupdate?: boolean;
     clone?: boolean;
     serializableIndices?: boolean[];
-    cloneMethod?: ANY;
+    cloneMethod?: CloneMethod;
     transactional?: boolean;
     ttl?: number;
     ttlInterval?: number;
-  }
-
-  export enum CloneMethod {
-    PARSE_STRINGIFY,
-    JQUERY_EXTEND_DEEP,
-    SHALLOW
   }
 }

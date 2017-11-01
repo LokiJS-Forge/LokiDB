@@ -1,4 +1,4 @@
-import {clone} from "./clone";
+import {clone, CloneMethod} from "./clone";
 import {Collection} from "./collection";
 import {resolveTransformParams} from "./utils";
 import {ltHelper, gtHelper, aeqHelper, sortHelper} from "./helper";
@@ -984,17 +984,18 @@ export class Resultset {
 
   /**
    * Terminates the chain and returns array of filtered documents
-   * @param {boolean} forceClones - Allows forcing the return of cloned objects even when
+   * @param {object} options
+   * @param {boolean} options.forceClones - Allows forcing the return of cloned objects even when
    *        the collection is not configured for clone object.
-   * @param {string} forceCloneMethod - Allows overriding the default or collection specified cloning method.
+   * @param {string} options.forceCloneMethod - Allows overriding the default or collection specified cloning method.
    *        Possible values include 'parse-stringify', 'jquery-extend-deep', and 'shallow'
-   * @param {boolean} removeMeta - Will force clones and strip $loki and meta properties from documents
+   * @param {boolean} options.removeMeta - Will force clones and strip $loki and meta properties from documents
    *
-   * @returns {array} Array of documents in the resultset
+   * @returns {Array} Array of documents in the resultset
    */
   data(options: ANY = {}) {
     let forceClones: boolean;
-    let forceCloneMethod: string;
+    let forceCloneMethod: CloneMethod;
     let removeMeta: boolean;
     (
       {
@@ -1014,13 +1015,13 @@ export class Resultset {
     // if user opts to strip meta, then force clones and use 'shallow' if 'force' options are not present
     if (removeMeta && !forceClones) {
       forceClones = true;
-      forceCloneMethod = "shallow";
+      forceCloneMethod = CloneMethod.SHALLOW;
     }
 
     // if collection has delta changes active, then force clones and use 'parse-stringify' for effective change tracking of nested objects
     if (!this.collection.disableDeltaChangesApi) {
       forceClones = true;
-      forceCloneMethod = "parse-stringify";
+      forceCloneMethod = CloneMethod.PARSE_STRINGIFY;
     }
 
     // if this has no filters applied, just return collection.data

@@ -11,4 +11,6 @@ export namespace lokijs {
 
     exportDatabase?: Function;
   }
+
+  export type Document = any;
 }
