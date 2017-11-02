@@ -2,7 +2,8 @@
   "compileOnSave": false,
   "compilerOptions": {
     "outDir": "./.ts/",
-    "sourceMap": true,
+    "inlineSourceMap": true,
+    "sourceMap": false,
     "declaration": true,
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,

@@ -34,7 +34,6 @@
     "@types/elasticsearch": "^5.0.17",
     "@types/jasmine": "^2.6.0",
     "@types/jasmine-expect": "^3.6.1",
-    "awesome-typescript-loader": "^3.2.3",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
     "babel-register": "^6.26.0",
     "conventional-changelog": "^1.1.6",

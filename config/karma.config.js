@@ -6,16 +6,12 @@ module.exports = function (config) {
     frameworks: ["jasmine", "jasmine-matchers"],
     browsers: ["Chrome"],
     files: [
-      // {pattern: "../packages/*/spec/generic/**/*.spec.js", watched: false},
-      // {pattern: "../packages/*/spec/web/**/*.spec.js", watched: false},
       {pattern: "../packages/*/spec/generic/**/*.spec.ts", watched: false},
-      {pattern: "../packages/*/spec/web/**/*.spec.ts", watched: false},
+      {pattern: "../packages/*/spec/web/**/*.spec.ts", watched: false}
     ],
     preprocessors: {
-      //"../packages/*/spec/generic/**/*.spec.js": ["webpack"],
-      //"../packages/*/spec/web/**/*.spec.js": ["webpack"],
       "../packages/*/spec/generic/**/*.spec.ts": ["webpack"],
-      "../packages/*/spec/web/**/*.spec.ts": ["webpack"],
+      "../packages/*/spec/web/**/*.spec.ts": ["webpack"]
     },
 
     // coverage reporter generates the coverage
@@ -25,7 +21,9 @@ module.exports = function (config) {
       reports: ["text-summary", "lcov", "html", "json"],
       fixWebpackSourcePaths: false
     },
-
+    mime: {
+      'text/x-typescript': ['ts']
+    },
     webpack: {
       externals: {
         "fs": "fs"
@@ -33,28 +31,25 @@ module.exports = function (config) {
       resolve: {
         extensions: ['.ts', '.js'],
       },
-      devtool: "source-map-inline",
+      devtool: "inline-source-map",
       module: {
-        rules: [
+        // rules: [
+        //   {
+        //     test: /\.js$/,
+        //     use: [
+        //       {
+        //         loader: "istanbul-instrumenter-loader",
+        //         options: {
+        //           esModules: true
+        //         }
+        //       },
+        //     ]
+        //   }
+        // ],
+        loaders: [
           {
             test: /\.ts$/,
-            use: [
-              {
-                loader: "istanbul-instrumenter-loader",
-                options: {
-                  esModules: true
-                }
-              },
-            ]
-          },
-          {
-            test: /\.ts$/,
-            use: [
-              {
-                loader: 'awesome-typescript-loader'
-              }
-            ],
-            exclude: [/\.e2e\.ts$/]
+            loader: "ts-loader"
           },
         ]
       }
