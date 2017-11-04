@@ -8,6 +8,7 @@ import {ltHelper, gtHelper, aeqHelper} from "./helper";
 import {Loki} from "./loki";
 import {copyProperties} from "./utils";
 import {lokijs} from "./types";
+import NewDocument = lokijs.NewDocument;
 
 /*
  'isDeepProperty' is not defined              no-undef
@@ -739,7 +740,7 @@ export class Collection extends LokiEventEmitter {
    * @param {(object|array)} doc - the document (or array of documents) to be inserted
    * @returns {(object|array)} document or documents inserted
    */
-  insert(doc: lokijs.Document | lokijs.Document[]) {
+  insert(doc: lokijs.NewDocument | lokijs.NewDocument[]) {
     if (!Array.isArray(doc)) {
       return this.insertOne(doc);
     }
@@ -749,7 +750,7 @@ export class Collection extends LokiEventEmitter {
     let results = [];
 
     this.emit("pre-insert", doc);
-    for (let i = 0, len = doc.length; i < len; i++) {
+    for (let i = 0; i < doc.length; i++) {
       obj = this.insertOne(doc[i], true);
       if (!obj) {
         return undefined;
@@ -771,7 +772,7 @@ export class Collection extends LokiEventEmitter {
    * @param {boolean} bulkInsert - quiet pre-insert and insert event emits
    * @returns {object} document or 'undefined' if there was a problem inserting it
    */
-  insertOne(doc: ANY, bulkInsert = false) {
+  insertOne(doc: lokijs.NewDocument, bulkInsert = false) {
     let err = null;
     let returnObj;
 
@@ -950,7 +951,7 @@ export class Collection extends LokiEventEmitter {
   /**
    * Add object to collection
    */
-  add(obj: ANY) {
+  private add(obj: lokijs.NewDocument) {
     // if parameter isn't object exit with throw
     if ("object" !== typeof obj) {
       throw new TypeError("Object being added needs to be an object");
@@ -1217,7 +1218,7 @@ export class Collection extends LokiEventEmitter {
    * This method creates a clone of the current status of an object and associates operation and collection name,
    * so the parent db can aggregate and generate a changes object for the entire db
    */
-  private _createChange(name: string, op: string, obj: lokijs.Document, old: lokijs.Document = {}) {
+  private _createChange(name: string, op: string, obj: lokijs.Document, old?: lokijs.Document) {
     this.changes.push({
       name,
       operation: op,

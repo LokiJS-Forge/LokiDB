@@ -3,7 +3,7 @@ import {Loki} from "../../src/loki";
 import {LokiMemoryAdapter} from "../../src/memory_adapter";
 import {Collection} from "../../src/collection";
 import SerializationMethod = Loki.SerializationMethod;
-import {lokijs} from '../../src/types';
+import {lokijs} from "../../src/types";
 
 export type ANY = any;
 

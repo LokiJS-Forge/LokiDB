@@ -12,5 +12,10 @@ export namespace lokijs {
     exportDatabase?: Function;
   }
 
-  export type Document = any;
+  export type NewDocument = any;
+
+  export interface Document extends Object {
+    $loki: number;
+    meta: any;
+  }
 }
