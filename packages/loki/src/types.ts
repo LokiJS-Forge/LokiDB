@@ -12,10 +12,17 @@ export namespace lokijs {
     exportDatabase?: Function;
   }
 
-  export type NewDocument = any;
 
-  export interface Document extends Object {
+  export interface _Document {
     $loki: number;
     meta: any;
   }
+
+  export type Doc<T extends object = object> = _Document & T;
+
+  export interface Dict<T> {
+    [index: string]: T;
+    [index: number]: T;
+  }
+
 }

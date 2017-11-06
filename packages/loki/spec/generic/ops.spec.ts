@@ -7,12 +7,24 @@ export type ANY = any;
 
 describe("Testing operators", () => {
 
+  interface Tree {
+    text: string;
+    value: string;
+    id: number;
+    order: number;
+    parents_id: number[];
+    level: number;
+    open: boolean;
+    checked: boolean;
+  }
+
   let db: Loki;
-  let tree: Collection;
+  let tree: Collection<Tree>;
   let res;
+
   beforeEach(() => {
     db = new Loki("testOps");
-    tree = db.addCollection("tree");
+    tree = db.addCollection<Tree>("tree");
 
     /*
 			 * The following data represents a tree that should look like this:
@@ -165,7 +177,13 @@ describe("Individual operator tests", () => {
   it("$between find works as expected", () => {
     // test unindexed code path
     let db = new Loki("db");
-    let coll = db.addCollection("coll");
+
+    interface User {
+      name: string;
+      count: number;
+    }
+
+    let coll = db.addCollection<User>("coll");
     coll.insert({name: "mjolnir", count: 73});
     coll.insert({name: "gungnir", count: 5});
     coll.insert({name: "tyrfing", count: 15});
@@ -188,7 +206,7 @@ describe("Individual operator tests", () => {
 
     // multiple low and high bounds
     db = new Loki("db");
-    coll = db.addCollection("coll");
+    coll = db.addCollection<User>("coll");
     coll.insert({name: "first", count: 5});
     coll.insert({name: "mjolnir", count: 15});
     coll.insert({name: "gungnir", count: 15});
@@ -233,9 +251,14 @@ describe("Individual operator tests", () => {
   });
 
   it("indexed $in find works as expected", () => {
+    interface User {
+      name: string;
+      count: number;
+    }
+
     // test unindexed code path
     const db = new Loki("db");
-    const coll = db.addCollection("coll", {indices: ["count"]});
+    const coll = db.addCollection<User>("coll", {indices: ["count"]});
     coll.insert({name: "mjolnir", count: 73});
     coll.insert({name: "gungnir", count: 5});
     coll.insert({name: "tyrfing", count: 15});
@@ -249,7 +272,13 @@ describe("Individual operator tests", () => {
 
   it("ops work with mixed datatypes", () => {
     const db = new Loki("db");
-    const coll = db.addCollection("coll");
+
+    interface AB {
+      a: any;
+      b: number;
+    }
+
+    const coll = db.addCollection<AB>("coll");
 
     coll.insert({a: null, b: 5});
     coll.insert({a: "asdf", b: 5});

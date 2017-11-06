@@ -1,18 +1,31 @@
 /* global describe, beforeEach, it, expect */
 import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
+import {Resultset} from "../../src/resultset";
+import {lokijs} from "../../src/types";
 
 export type ANY = any;
 
+interface Director {
+  name: string;
+  directorId: number;
+}
+
+interface Film {
+  title: string;
+  filmId: number;
+  directorId: number;
+}
+
 describe("joins", () => {
   let db: Loki;
-  let directors: Collection;
-  let films: Collection;
+  let directors: Collection<Director>;
+  let films: Collection<Film>;
 
   beforeEach(() => {
     db = new Loki("testJoins");
-    directors = db.addCollection("directors");
-    films = db.addCollection("films");
+    directors = db.addCollection<Director>("directors");
+    films = db.addCollection<Film>("films");
 
     directors.insert([{
       name: "Martin Scorsese",
@@ -59,14 +72,14 @@ describe("joins", () => {
     let joined;
 
     //Basic non-mapped join
-    joined = films.eqJoin(directors.data, "directorId", "directorId").data();
+    joined = films.eqJoin(directors.data, "directorId", "directorId").data() as ANY;
     expect(joined[0].left.title).toEqual("Taxi");
 
     //Basic join with map
     joined = films.eqJoin(directors.data, "directorId", "directorId", (left: ANY, right: ANY) => ({
       filmTitle: left.title,
       directorName: right.name
-    })).data();
+    })).data()  as ANY;
     expect(joined.length).toEqual(films.data.length);
     expect(joined[0].filmTitle).toEqual("Taxi");
     expect(joined[0].directorName).toEqual("Martin Scorsese");
@@ -76,10 +89,15 @@ describe("joins", () => {
       .map((obj: ANY) => ({
         filmTitle: obj.left.title,
         directorName: obj.right.name
-      })).data();
+      })).data()  as ANY;
     expect(joined[0].filmTitle).toEqual("Taxi");
     expect(joined[0].directorName).toEqual("Martin Scorsese");
 
+
+    interface Join1 {
+      filmTitle: string;
+      directorName: string;
+    }
 
     //Test filtered join
     joined = films
@@ -91,7 +109,7 @@ describe("joins", () => {
       .eqJoin(directors.data, "directorId", "directorId", (left: ANY, right: ANY) => ({
         filmTitle: left.title,
         directorName: right.name
-      }));
+      })) as any as Resultset<Join1>;
     expect(joined.data().length).toEqual(3);
 
     //Test chaining after join
@@ -100,11 +118,16 @@ describe("joins", () => {
     });
     expect(joined.data()[0].filmTitle).toEqual("Jaws");
 
+    interface Join2 {
+      left: lokijs.Doc<Director>;
+      right: lokijs.Doc<Film>;
+    }
+
     //Test calculated keys
     joined = films.chain().eqJoin(directors.data,
       (director: ANY) => director.directorId + 1,
       (film: ANY) => film.directorId - 1)
-      .data();
+      .data() as any as Join2;
 
     expect(joined[0].right.name).toEqual("Steven Spielberg");
   });

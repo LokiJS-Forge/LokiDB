@@ -6,21 +6,18 @@ export type ANY = any;
 
 describe("sorting and indexing", () => {
   let db: Loki;
-  let items: Collection;
-
   beforeEach(() => {
-    db = new Loki("sortingIndexingTest"),
-      items = db.addCollection("items");
-
-    items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
-    items.insert({name: "gungnir", owner: "odin", maker: "elves"});
-    items.insert({name: "tyrfing", owner: "Svafrlami", maker: "dwarves"});
-    items.insert({name: "draupnir", owner: "odin", maker: "elves"});
+    db = new Loki("sortingIndexingTest");
   });
 
   describe("resultset simplesort", () => {
     it("works", () => {
-      const rss = db.addCollection("rssort");
+      interface Sortable {
+        a: number;
+        b: number;
+      }
+
+      const rss = db.addCollection<Sortable>("rssort");
 
       rss.insert({a: 4, b: 2});
       rss.insert({a: 7, b: 1});
@@ -37,7 +34,12 @@ describe("sorting and indexing", () => {
 
   describe("resultset simplesort descending", () => {
     it("works", () => {
-      const rss = db.addCollection("rssort");
+      interface Sortable {
+        a: number;
+        b: number;
+      }
+
+      const rss = db.addCollection<Sortable>("rssort");
 
       rss.insert({a: 4, b: 2});
       rss.insert({a: 7, b: 1});
@@ -51,7 +53,7 @@ describe("sorting and indexing", () => {
       expect(results[3].a).toBe(3);
 
       // test when indexed
-      const rss2 = db.addCollection("rssort2", {indices: ["a"]});
+      const rss2 = db.addCollection<Sortable>("rssort2", {indices: ["a"]});
 
       rss2.insert({a: 4, b: 2});
       rss2.insert({a: 7, b: 1});
@@ -68,7 +70,14 @@ describe("sorting and indexing", () => {
 
   describe("resultset simplesort on nested properties", () => {
     it("works", function () {
-      const rss = db.addCollection("rssort");
+      interface Sortable {
+        foo: {
+          a: number;
+          b: number;
+        };
+      }
+
+      const rss = db.addCollection<Sortable>("rssort");
 
       rss.insert({foo: {a: 4, b: 2}});
       rss.insert({foo: {a: 7, b: 1}});
@@ -92,7 +101,12 @@ describe("sorting and indexing", () => {
       const dt4 = new Date(now + 2000);
       const dt5 = new Date(now - 3000);
 
-      const rss = db.addCollection("rssort");
+      interface Sortable {
+        a: number;
+        b: Date;
+      }
+
+      const rss = db.addCollection<Sortable>("rssort");
 
       rss.insert({a: 1, b: dt1});
       rss.insert({a: 2, b: dt2});
@@ -111,10 +125,20 @@ describe("sorting and indexing", () => {
 
   describe("resultset sort works correctly", () => {
     it("works", () => {
-      const db = new Loki("test.db");
-      const coll = db.addCollection("coll");
+      interface Sortable {
+        a: number;
+        b: number;
+        c: string;
+      }
 
-      coll.insert([{a: 1, b: 9, c: "first"}, {a: 5, b: 7, c: "second"}, {a: 2, b: 9, c: "third"}]);
+      const db = new Loki("test.db");
+      const coll = db.addCollection<Sortable>("coll");
+
+      coll.insert([
+        {a: 1, b: 9, c: "first"},
+        {a: 5, b: 7, c: "second"},
+        {a: 2, b: 9, c: "third"}
+      ]);
 
       const sortfun = (obj1: ANY, obj2: ANY) => {
         if (obj1.a === obj2.a) return 0;
@@ -133,9 +157,20 @@ describe("sorting and indexing", () => {
   describe("resultset compoundsort works correctly", () => {
     it("works", () => {
       const db = new Loki("test.db");
-      const coll = db.addCollection("coll");
 
-      coll.insert([{a: 1, b: 9, c: "first"}, {a: 5, b: 7, c: "second"}, {a: 2, b: 9, c: "third"}]);
+      interface ABC {
+        a: number;
+        b: number;
+        c: string;
+      }
+
+      const coll = db.addCollection<ABC>("coll");
+
+      coll.insert([
+        {a: 1, b: 9, c: "first"},
+        {a: 5, b: 7, c: "second"},
+        {a: 2, b: 9, c: "third"}
+      ]);
 
       let result = coll.chain().compoundsort(["b", "c"]).data();
       expect(result.length).toEqual(3);
@@ -154,12 +189,25 @@ describe("sorting and indexing", () => {
   describe("resultset compoundsort on nested properties works correctly", () => {
     it("works", function () {
       const db = new Loki("test.db");
-      const coll = db.addCollection("coll");
 
-      coll.insert([{a: 1, z: {y: {b: 9, c: "first"}}}, {a: 5, z: {y: {b: 7, c: "second"}}}, {
-        a: 2,
-        z: {y: {b: 9, c: "third"}}
-      }]);
+      interface AZYBC {
+        a: number;
+        z: {
+          y: {
+            b: number;
+            c: string;
+          };
+        };
+      }
+
+      const coll = db.addCollection<AZYBC>("coll");
+
+      coll.insert([
+        {a: 1, z: {y: {b: 9, c: "first"}}},
+        {a: 5, z: {y: {b: 7, c: "second"}}},
+        {
+          a: 2, z: {y: {b: 9, c: "third"}}
+        }]);
 
       let result = coll.chain().compoundsort(["z.y.b", "z.y.c"]).data();
       expect(result.length).toEqual(3);
@@ -177,7 +225,13 @@ describe("sorting and indexing", () => {
 
   describe("collection indexing", () => {
     it("mixed types sort as expected", () => {
-      const coll = db.addCollection("coll");
+
+      interface AB {
+        a?: any;
+        b?: any;
+      }
+
+      const coll = db.addCollection<AB>("coll");
       coll.insert({a: undefined, b: 5});
       coll.insert({b: 5});
       coll.insert({a: null, b: 5});
@@ -257,7 +311,12 @@ describe("sorting and indexing", () => {
       const dt4 = new Date(now + 2000);
       const dt5 = new Date(now - 3000);
 
-      const cidx = db.addCollection("collidx", {indices: ["b"]});
+      interface Sortable {
+        a: number;
+        b: Date;
+      }
+
+      const cidx = db.addCollection<Sortable>("collidx", {indices: ["b"]});
 
       cidx.insert({a: 1, b: dt1});
       cidx.insert({a: 2, b: dt2});

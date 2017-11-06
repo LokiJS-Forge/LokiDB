@@ -4,17 +4,22 @@ import {Loki} from "../../src/loki";
 export type ANY = any;
 
 describe("changesApi", () => {
+
+  interface User {
+    name: string;
+  }
+
   it("does what it says on the tin", () => {
-    const db = new Loki(),
-      // gordian = require('gordian'),
-      // suite = new gordian('testEvents'),
-      options = {
-        asyncListeners: false,
-        disableChangesApi: false
-      },
-      users = db.addCollection("users", options),
-      test = db.addCollection("test", options),
-      test2 = db.addCollection("test2", options);
+    const db = new Loki();
+    // gordian = require('gordian'),
+    // suite = new gordian('testEvents'),
+    const options = {
+      asyncListeners: false,
+      disableChangesApi: false
+    };
+    const users = db.addCollection<User>("users", options);
+    const test = db.addCollection<User>("test", options);
+    const test2 = db.addCollection<User>("test2", options);
 
     const u = users.insert({
       name: "joe"
@@ -59,13 +64,23 @@ describe("changesApi", () => {
   });
 
   it("works with delta mode", function () {
-    const db = new Loki(),
-      options = {
-        asyncListeners: false,
-        disableChangesApi: false,
-        disableDeltaChangesApi: false
-      },
-      items = db.addCollection("items", options);
+    const db = new Loki();
+    const options = {
+      asyncListeners: false,
+      disableChangesApi: false,
+      disableDeltaChangesApi: false
+    };
+
+    interface User {
+      name: string;
+      owner: string;
+      maker: {
+        name: string,
+        count: number;
+      };
+    }
+
+    const items = db.addCollection<User>("items", options);
 
     // Add some documents to the collection
     items.insert({name: "mjolnir", owner: "thor", maker: {name: "dwarves", count: 1}});

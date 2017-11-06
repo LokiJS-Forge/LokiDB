@@ -7,12 +7,33 @@ import {lokijs} from "../../src/types";
 
 export type ANY = any;
 
+interface AB {
+  a: number;
+  b: number;
+}
+
+interface Test {
+  name: string;
+  val: number;
+}
+
+interface User {
+  name: string;
+  owner?: string;
+  maker?: string;
+}
+
 describe("testing unique index serialization", () => {
   let db: Loki;
+
+  interface AUser {
+    username: string;
+  }
+
   let users: Collection;
   beforeEach(() => {
     db = new Loki();
-    users = db.addCollection("users");
+    users = db.addCollection<AUser>("users");
     users.insert([{
       username: "joe"
     }, {
@@ -28,7 +49,7 @@ describe("testing unique index serialization", () => {
   it("should have a unique index", () => {
     const ser = db.serialize(), reloaded = new Loki();
     reloaded.loadJSON(ser);
-    const coll = reloaded.getCollection("users");
+    const coll = reloaded.getCollection<AUser>("users");
     expect(coll.data.length).toEqual(4);
     expect(coll.constraints.unique["username"]).toBeDefined();
     const joe = coll.by("username", "joe");
@@ -43,7 +64,7 @@ describe("testing unique index serialization", () => {
 describe("testing destructured serialization/deserialization", () => {
   it("verify default (D) destructuring works as expected", () => {
     const ddb = new Loki("test.db", {serializationMethod: SerializationMethod.DESTRUCTURED});
-    const coll = ddb.addCollection("testcoll");
+    const coll = ddb.addCollection<Test>("testcoll");
     coll.insert({
       name: "test1",
       val: 100
@@ -57,7 +78,7 @@ describe("testing destructured serialization/deserialization", () => {
       val: 102
     });
 
-    const coll2 = ddb.addCollection("another");
+    const coll2 = ddb.addCollection<AB>("another");
     coll2.insert({
       a: 1,
       b: 2
@@ -71,9 +92,9 @@ describe("testing destructured serialization/deserialization", () => {
     expect(cddb["_serializationMethod"]).toEqual(SerializationMethod.DESTRUCTURED);
     expect(cddb["_collections"].length).toEqual(2);
     expect(cddb["_collections"][0].data.length).toEqual(3);
-    expect(cddb["_collections"][0].data[0].val).toEqual(ddb["_collections"][0].data[0].val);
+    expect(cddb["_collections"][0].data[0]["val"]).toEqual(ddb["_collections"][0].data[0]["val"]);
     expect(cddb["_collections"][1].data.length).toEqual(1);
-    expect(cddb["_collections"][1].data[0].a).toEqual(ddb["_collections"][1].data[0].a);
+    expect(cddb["_collections"][1].data[0]["a"]).toEqual(ddb["_collections"][1].data[0]["a"]);
   });
 
   // Destructuring Formats :
@@ -87,7 +108,7 @@ describe("testing destructured serialization/deserialization", () => {
     let idx, options, result;
     let cddb;
     const ddb = new Loki("test.db");
-    const coll = ddb.addCollection("testcoll");
+    const coll = ddb.addCollection<Test>("testcoll");
     coll.insert({
       name: "test1",
       val: 100
@@ -101,7 +122,7 @@ describe("testing destructured serialization/deserialization", () => {
       val: 102
     });
 
-    const coll2 = ddb.addCollection("another");
+    const coll2 = ddb.addCollection<AB>("another");
     coll2.insert({
       a: 1,
       b: 2
@@ -137,11 +158,11 @@ describe("testing destructured serialization/deserialization", () => {
       // assert expectations on reinflated database
       expect(cddb["_collections"].length).toEqual(2);
       expect(cddb["_collections"][0].data.length).toEqual(3);
-      expect(cddb["_collections"][0].data[0].val).toEqual(ddb["_collections"][0].data[0].val);
+      expect(cddb["_collections"][0].data[0]["val"]).toEqual(ddb["_collections"][0].data[0]["val"]);
       expect(cddb["_collections"][0].data[0].$loki).toEqual(ddb["_collections"][0].data[0].$loki);
       expect(cddb["_collections"][0].data[2].$loki).toEqual(ddb["_collections"][0].data[2].$loki);
       expect(cddb["_collections"][1].data.length).toEqual(1);
-      expect(cddb["_collections"][1].data[0].a).toEqual(ddb["_collections"][1].data[0].a);
+      expect(cddb["_collections"][1].data[0]["a"]).toEqual(ddb["_collections"][1].data[0]["a"]);
     }
   });
 
@@ -149,7 +170,7 @@ describe("testing destructured serialization/deserialization", () => {
     let result;
     let cddb;
     const ddb = new Loki("test.db");
-    const coll = ddb.addCollection("testcoll");
+    const coll = ddb.addCollection<Test>("testcoll");
     coll.insert({
       name: "test1",
       val: 100
@@ -163,7 +184,7 @@ describe("testing destructured serialization/deserialization", () => {
       val: 102
     });
 
-    const coll2 = ddb.addCollection("another");
+    const coll2 = ddb.addCollection<AB>("another");
     coll2.insert({
       a: 1,
       b: 2
@@ -182,8 +203,8 @@ describe("testing destructured serialization/deserialization", () => {
     expect(cddb["_collections"].length).toEqual(2);
     expect(cddb["_collections"][0].data.length).toEqual(0);
     expect(cddb["_collections"][1].data.length).toEqual(0);
-    expect(cddb["_collections"][0].name).toEqual(ddb["_collections"][0].name);
-    expect(cddb["_collections"][1].name).toEqual(ddb["_collections"][1].name);
+    expect(cddb["_collections"][0].name).toEqual(ddb["_collections"][0]["name"]);
+    expect(cddb["_collections"][1].name).toEqual(ddb["_collections"][1]["name"]);
 
     // Verify collection alone works correctly using NDAA format
     result = ddb.serializeDestructured({
@@ -194,12 +215,12 @@ describe("testing destructured serialization/deserialization", () => {
 
     // we dont need to test all components of reassembling whole database
     // so we will just call helper function to deserialize just collection data
-    let data: ANY = ddb.deserializeCollection(result, {partitioned: true, delimited: false});
+    let data: ANY = ddb.deserializeCollection<Test>(result, {partitioned: true, delimited: false});
 
     expect(data.length).toEqual(ddb["_collections"][0].data.length);
-    expect(data[0].val).toEqual(ddb["_collections"][0].data[0].val);
-    expect(data[1].val).toEqual(ddb["_collections"][0].data[1].val);
-    expect(data[2].val).toEqual(ddb["_collections"][0].data[2].val);
+    expect(data[0]["val"]).toEqual(ddb["_collections"][0].data[0]["val"]);
+    expect(data[1]["val"]).toEqual(ddb["_collections"][0].data[1]["val"]);
+    expect(data[2]["val"]).toEqual(ddb["_collections"][0].data[2]["val"]);
     expect(data[0].$loki).toEqual(ddb["_collections"][0].data[0].$loki);
     expect(data[1].$loki).toEqual(ddb["_collections"][0].data[1].$loki);
     expect(data[2].$loki).toEqual(ddb["_collections"][0].data[2].$loki);
@@ -212,12 +233,12 @@ describe("testing destructured serialization/deserialization", () => {
     });
 
     // now reinflate from that interim DA format
-    data = ddb.deserializeCollection(result, {partitioned: true, delimited: true});
+    data = ddb.deserializeCollection<Test>(result, {partitioned: true, delimited: true});
 
     expect(data.length).toEqual(ddb["_collections"][0].data.length);
-    expect(data[0].val).toEqual(ddb["_collections"][0].data[0].val);
-    expect(data[1].val).toEqual(ddb["_collections"][0].data[1].val);
-    expect(data[2].val).toEqual(ddb["_collections"][0].data[2].val);
+    expect(data[0]["val"]).toEqual(ddb["_collections"][0].data[0]["val"]);
+    expect(data[1]["val"]).toEqual(ddb["_collections"][0].data[1]["val"]);
+    expect(data[2]["val"]).toEqual(ddb["_collections"][0].data[2]["val"]);
     expect(data[0].$loki).toEqual(ddb["_collections"][0].data[0].$loki);
     expect(data[1].$loki).toEqual(ddb["_collections"][0].data[1].$loki);
     expect(data[2].$loki).toEqual(ddb["_collections"][0].data[2].$loki);
@@ -232,7 +253,7 @@ describe("testing adapter functionality", () => {
 
     ddb.initializePersistence({adapter: memAdapter});
 
-    const coll = ddb.addCollection("testcoll");
+    const coll = ddb.addCollection<Test>("testcoll");
     coll.insert({
       name: "test1",
       val: 100
@@ -246,7 +267,7 @@ describe("testing adapter functionality", () => {
       val: 102
     });
 
-    const coll2 = ddb.addCollection("another");
+    const coll2 = ddb.addCollection<AB>("another");
     coll2.insert({
       a: 1,
       b: 2
@@ -265,10 +286,10 @@ describe("testing adapter functionality", () => {
 
     const p2 = cdb.loadDatabase().then(() => {
       expect(cdb["_collections"].length).toEqual(2);
-      expect(cdb.getCollection("testcoll").findOne({name: "test2"}).val).toEqual(101);
+      expect(cdb.getCollection<Test>("testcoll").findOne({name: "test2"})["val"]).toEqual(101);
       expect(cdb["_collections"][0].data.length).toEqual(3);
       expect(cdb["_collections"][1].data.length).toEqual(1);
-      expect(cdb.getCollection("another").getDynamicView("test").data()).toEqual(coll2.find({"a": 1}));
+      expect(cdb.getCollection<AB>("another").getDynamicView("test").data()).toEqual(coll2.find({"a": 1}));
     });
 
     Promise.all([p1, p2]).then(done, done.fail);
@@ -279,7 +300,7 @@ describe("testing adapter functionality", () => {
     const ddb = new Loki("test.db");
     ddb.initializePersistence({adapter: memAdapter});
 
-    const coll = ddb.addCollection("testcoll");
+    const coll = ddb.addCollection<Test>("testcoll");
     coll.insert({
       name: "test1",
       val: 100
@@ -308,6 +329,11 @@ describe("testing adapter functionality", () => {
     // Since we don't use serializeReplacer on reference mode adapters, we make
     // lightweight clone, cloning only db container and collection containers (object refs are same).
 
+    interface MN {
+      m: number;
+      n: number;
+    }
+
     class MyFakeReferenceAdapter implements lokijs.Storage {
       mode = "reference";
 
@@ -315,8 +341,8 @@ describe("testing adapter functionality", () => {
         expect(typeof(dbname)).toEqual("string");
 
         const result = new Loki("new db");
-        const n1 = result.addCollection("n1");
-        const n2 = result.addCollection("n2");
+        const n1 = result.addCollection<MN>("n1");
+        const n2 = result.addCollection<MN>("n2");
         n1.insert({m: 9, n: 8});
         n2.insert({m: 7, n: 6});
 
@@ -331,18 +357,18 @@ describe("testing adapter functionality", () => {
         return Promise.resolve();
       }
 
-      exportDatabase(dbname: string, dbref: ANY) {
+      exportDatabase(dbname: string, dbref: Loki) {
         expect(typeof(dbname)).toEqual("string");
         expect(dbref.constructor.name).toEqual("Loki");
 
-        expect(dbref._persistenceAdapter).toEqual(null);
+        expect(dbref["_persistenceAdapter"]).toEqual(null);
         expect(dbref["_collections"].length).toEqual(2);
-        expect(dbref.getCollection("c1").findOne({a: 1}).b).toEqual(2);
+        expect(dbref.getCollection<AB>("c1").findOne({a: 1}).b).toEqual(2);
         // these changes should not affect original database
-        dbref.filename = "somethingelse";
+        dbref["filename"] = "somethingelse";
         dbref["_collections"][0].name = "see1";
         // (accidentally?) updating a document should...
-        dbref["_collections"][0].findOne({a: 1}).b = 3;
+        dbref["_collections"][0].findOne({a: 1})["b"] = 3;
       }
     }
 
@@ -351,8 +377,8 @@ describe("testing adapter functionality", () => {
     const db = new Loki("rma test");
     let db2: Loki;
     db.initializePersistence({adapter: adapter});
-    const c1 = db.addCollection("c1");
-    const c2 = db.addCollection("c2");
+    const c1 = db.addCollection<AB>("c1");
+    const c2 = db.addCollection<AB>("c2");
     c1.insert({a: 1, b: 2});
     c2.insert({a: 3, b: 4});
 
@@ -360,7 +386,7 @@ describe("testing adapter functionality", () => {
       expect(db["persistenceAdapter"]).not.toEqual(null);
       expect(db["filename"]).toEqual("rma test");
       expect(db["_collections"][0].name).toEqual("c1");
-      expect(db.getCollection("c1").findOne({a: 1}).b).toEqual(3);
+      expect(db.getCollection<AB>("c1").findOne({a: 1}).b).toEqual(3);
 
       db2 = new Loki("other name");
       db2.initializePersistence({adapter: adapter});
@@ -370,7 +396,7 @@ describe("testing adapter functionality", () => {
       expect(db2["_collections"].length).toEqual(2);
       expect(db2["_collections"][0].name).toEqual("n1");
       expect(db2["_collections"][1].name).toEqual("n2");
-      expect(db2.getCollection("n1").findOne({m: 9}).n).toEqual(8);
+      expect(db2.getCollection<MN>("n1").findOne({m: 9}).n).toEqual(8);
     }).then(done, done.fail);
   });
 });
@@ -382,13 +408,13 @@ describe("async adapter tests", () => {
     db.initializePersistence({adapter: mem, throttledSaves: true});
 
     // Add a collection to the database
-    const items = db.addCollection("items");
+    const items = db.addCollection<User>("items");
     items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
     items.insert({name: "gungnir", owner: "odin", maker: "elves"});
     const tyr = items.insert({name: "tyrfing", owner: "Svafrlami", maker: "dwarves"});
     const drau = items.insert({name: "draupnir", owner: "odin", maker: "elves"});
 
-    const another = db.addCollection("another");
+    const another = db.addCollection<AB>("another");
     const ai = another.insert({a: 1, b: 2});
 
     // this should immediately kick off the first save
@@ -418,9 +444,9 @@ describe("async adapter tests", () => {
         expect(mem["hashStore"]["sandbox.db"].savecount).toEqual(2);
 
         // verify the saved database contains all expected changes
-        expect(db2.getCollection("another").findOne({a: 1}).b).toEqual(3);
-        expect(db2.getCollection("items").findOne({name: "tyrfing"}).owner).toEqual("arngrim");
-        expect(db2.getCollection("items").findOne({name: "draupnir"}).maker).toEqual("dwarves");
+        expect(db2.getCollection<AB>("another").findOne({a: 1}).b).toEqual(3);
+        expect(db2.getCollection<User>("items").findOne({name: "tyrfing"}).owner).toEqual("arngrim");
+        expect(db2.getCollection<User>("items").findOne({name: "draupnir"}).maker).toEqual("dwarves");
         done();
       });
     });
@@ -432,13 +458,13 @@ describe("async adapter tests", () => {
     db.initializePersistence({adapter: mem});
 
     // Add a collection to the database
-    const items = db.addCollection("items");
+    const items = db.addCollection<User>("items");
     items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
     items.insert({name: "gungnir", owner: "odin", maker: "elves"});
     const tyr = items.insert({name: "tyrfing", owner: "Svafrlami", maker: "dwarves"});
     const drau = items.insert({name: "draupnir", owner: "odin", maker: "elves"});
 
-    const another = db.addCollection("another");
+    const another = db.addCollection<AB>("another");
     const ai = another.insert({a: 1, b: 2});
 
     // this should immediately kick off the first save (~200ms)
@@ -481,13 +507,13 @@ describe("async adapter tests", () => {
     db.initializePersistence({adapter: mem});
 
     // Add a collection to the database
-    const items = db.addCollection("items");
+    const items = db.addCollection<User>("items");
     items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
     items.insert({name: "gungnir", owner: "odin", maker: "elves"});
     const tyr = items.insert({name: "tyrfing", owner: "Svafrlami", maker: "dwarves"});
     const drau = items.insert({name: "draupnir", owner: "odin", maker: "elves"});
 
-    const another = db.addCollection("another");
+    const another = db.addCollection<AB>("another");
     const ai = another.insert({a: 1, b: 2});
 
     // this should immediately kick off the first save
@@ -515,9 +541,9 @@ describe("async adapter tests", () => {
       const db2 = new Loki("sandbox.db");
       db2.initializePersistence({adapter: mem});
       db2.loadDatabase().then(() => {
-        expect(db2.getCollection("another").findOne({a: 1}).b).toEqual(3);
-        expect(db2.getCollection("items").findOne({name: "tyrfing"}).owner).toEqual("arngrim");
-        expect(db2.getCollection("items").findOne({name: "draupnir"}).maker).toEqual("dwarves");
+        expect(db2.getCollection<AB>("another").findOne({a: 1}).b).toEqual(3);
+        expect(db2.getCollection<User>("items").findOne({name: "tyrfing"}).owner).toEqual("arngrim");
+        expect(db2.getCollection<User>("items").findOne({name: "draupnir"}).maker).toEqual("dwarves");
         done();
       });
     }, 200);
@@ -529,13 +555,13 @@ describe("async adapter tests", () => {
     db.initializePersistence({adapter: mem});
 
     // Add a collection to the database
-    const items = db.addCollection("items");
+    const items = db.addCollection<User>("items");
     items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
     items.insert({name: "gungnir", owner: "odin", maker: "elves"});
     const tyr = items.insert({name: "tyrfing", owner: "Svafrlami", maker: "dwarves"});
     const drau = items.insert({name: "draupnir", owner: "odin", maker: "elves"});
 
-    const another = db.addCollection("another");
+    const another = db.addCollection<AB>("another");
     const ai = another.insert({a: 1, b: 2});
 
     // this should immediately kick off the first save (~100ms)
@@ -565,9 +591,9 @@ describe("async adapter tests", () => {
     // then re-enable saves
     db.loadDatabase().then(() => {
 
-      expect(db.getCollection("another").findOne({a: 1}).b).toEqual(3);
-      expect(db.getCollection("items").findOne({name: "tyrfing"}).owner).toEqual("arngrim");
-      expect(db.getCollection("items").findOne({name: "draupnir"}).maker).toEqual("dwarves");
+      expect(db.getCollection<AB>("another").findOne({a: 1}).b).toEqual(3);
+      expect(db.getCollection<User>("items").findOne({name: "tyrfing"}).owner).toEqual("arngrim");
+      expect(db.getCollection<User>("items").findOne({name: "draupnir"}).maker).toEqual("dwarves");
     });
 
     setTimeout(() => {
@@ -584,7 +610,7 @@ describe("testing changesAPI", () => {
     db.initializePersistence({adapter: mem});
 
     // Add a collection to the database
-    const items = db.addCollection("items", {disableChangesApi: false});
+    const items = db.addCollection<User>("items", {disableChangesApi: false});
 
     // Add some documents to the collection
     items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});

@@ -4,7 +4,13 @@ import {Loki} from "../../src/loki";
 export type ANY = any;
 
 describe("binary indices", () => {
-  let testRecords: ANY[];
+  interface User {
+    name: string;
+    owner?: string;
+    maker?: string;
+  }
+
+  let testRecords: User[];
 
   beforeEach(() => {
     testRecords = [
@@ -20,7 +26,7 @@ describe("binary indices", () => {
       const db = new Loki("idxtest");
       const t2 = JSON.parse(JSON.stringify(testRecords));
 
-      const items = db.addCollection("users", {indices: ["name"]});
+      const items = db.addCollection<User>("users", {indices: ["name"]});
       items.insert(testRecords);
       expect(items["binaryIndices"].name.values.length).toBe(4);
       items.clear();
@@ -62,7 +68,7 @@ describe("binary indices", () => {
     it("works", () => {
 
       const db = new Loki("idxtest");
-      const items = db.addCollection("users", {indices: ["name"]});
+      const items = db.addCollection<User>("users", {indices: ["name"]});
       items.insert(testRecords);
 
       // force index build
@@ -95,7 +101,7 @@ describe("binary indices", () => {
     it("works", () => {
 
       const db = new Loki("idxtest");
-      const items = db.addCollection("users", {indices: ["name"]});
+      const items = db.addCollection<User>("users", {indices: ["name"]});
       items.insert(testRecords);
 
       // force index build
@@ -128,7 +134,7 @@ describe("binary indices", () => {
     it("works", () => {
 
       const db = new Loki("idxtest");
-      const items = db.addCollection("users", {indices: ["name"]});
+      const items = db.addCollection<User>("users", {indices: ["name"]});
       items.insert(testRecords);
 
       // force index build
@@ -165,7 +171,7 @@ describe("binary indices", () => {
       // let's base this off of our 'remove' test so data is more meaningful
 
       const db = new Loki("idxtest");
-      const items = db.addCollection("users", {indices: ["name"]});
+      const items = db.addCollection<User>("users", {indices: ["name"]});
       items.insert(testRecords);
 
       // force index build
@@ -198,7 +204,7 @@ describe("binary indices", () => {
       // index value based on data array position function (obtained via get)
 
       const db = new Loki("idxtest");
-      const items = db.addCollection("users", {indices: ["name"]});
+      const items = db.addCollection<User>("users", {indices: ["name"]});
       items.insert(testRecords);
 
       // force index build
@@ -231,7 +237,7 @@ describe("binary indices", () => {
       // we will use it to find position within index where (new) nonexistent value should be inserted into index
 
       const db = new Loki("idxtest");
-      const items = db.addCollection("users", {indices: ["name"]});
+      const items = db.addCollection<User>("users", {indices: ["name"]});
       items.insert(testRecords);
 
       // force index build
@@ -258,7 +264,7 @@ describe("binary indices", () => {
       // let's base this off of our 'remove' test so data is more meaningful
 
       const db = new Loki("idxtest");
-      const items = db.addCollection("users", {
+      const items = db.addCollection<User>("users", {
         adaptiveBinaryIndices: false,
         indices: ["name"]
       });
@@ -286,7 +292,7 @@ describe("binary indices", () => {
     it("works", () => {
 
       const db = new Loki("idxtest");
-      const items = db.addCollection("users", {
+      const items = db.addCollection<User>("users", {
         adaptiveBinaryIndices: false, // we are doing utility function testing
         indices: ["name"]
       });
@@ -322,7 +328,7 @@ describe("binary indices", () => {
       // let's base this off of our 'remove' test so data is more meaningful
 
       const db = new Loki("idxtest");
-      const items = db.addCollection("users", {indices: ["name"]});
+      const items = db.addCollection<User>("users", {indices: ["name"]});
       items.insert(testRecords);
 
       // force index build
@@ -345,7 +351,14 @@ describe("binary indices", () => {
     it("works", () => {
 
       const db = new Loki("idxtest");
-      const coll = db.addCollection("users", {
+
+      interface BinIndex {
+        customIdx: number;
+        originalIdx?: number;
+        desc?: string;
+      }
+
+      const coll = db.addCollection<BinIndex>("users", {
         adaptiveBinaryIndices: true,
         indices: ["customIdx"]
       });
@@ -425,7 +438,14 @@ describe("binary indices", () => {
   describe("adaptiveBinaryIndex high level random stress test", () => {
     it("works", () => {
       const db = new Loki("idxtest");
-      const coll = db.addCollection("users", {
+
+      interface BinIdx {
+        customIdx: number;
+        sequence: number;
+        desc: string;
+      }
+
+      const coll = db.addCollection<BinIdx>("users", {
         adaptiveBinaryIndices: true,
         indices: ["customIdx"]
       });

@@ -6,6 +6,12 @@ import {Collection} from "../../src/collection";
 export type ANY = any;
 
 describe("dynamicviews", () => {
+  interface User {
+    name: string;
+    owner?: string;
+    maker?: string;
+  }
+
   let testRecords: ANY;
   let db: Loki;
   let users: Collection;
@@ -20,7 +26,7 @@ describe("dynamicviews", () => {
     ];
 
     db = new Loki("test.json");
-    users = db.addCollection("user");
+    users = db.addCollection<User>("user");
 
     users.insert({
       name: "dave",
@@ -52,7 +58,7 @@ describe("dynamicviews", () => {
     it("works", () => {
 
       const db = new Loki("dvtest");
-      const items = db.addCollection("users");
+      const items = db.addCollection<User>("users");
       items.insert(testRecords);
       const dv = items.addDynamicView("view");
 
@@ -74,7 +80,7 @@ describe("dynamicviews", () => {
   describe("dynamic view rematerialize works as expected", () => {
     it("works", () => {
       const db = new Loki("dvtest");
-      const items = db.addCollection("users");
+      const items = db.addCollection<User>("users");
       items.insert(testRecords);
       const dv = items.addDynamicView("view");
 
@@ -93,7 +99,7 @@ describe("dynamicviews", () => {
   describe("dynamic view toJSON does not circularly reference", () => {
     it("works", () => {
       const db = new Loki("dvtest");
-      const items = db.addCollection("users");
+      const items = db.addCollection<User>("users");
       items.insert(testRecords);
       const dv = items.addDynamicView("view");
 
@@ -105,7 +111,7 @@ describe("dynamicviews", () => {
   describe("dynamic view removeFilters works as expected", () => {
     it("works", () => {
       const db = new Loki("dvtest");
-      const items = db.addCollection("users");
+      const items = db.addCollection<User>("users");
       items.insert(testRecords);
       const dv = items.addDynamicView("ownr");
 
@@ -124,7 +130,7 @@ describe("dynamicviews", () => {
   describe("removeDynamicView works correctly", () => {
     it("works", () => {
       const db = new Loki("dvtest");
-      const items = db.addCollection("users");
+      const items = db.addCollection<User>("users");
       items.insert(testRecords);
       const dv = items.addDynamicView("ownr", {persistent: true});
 
@@ -248,7 +254,12 @@ describe("dynamicviews", () => {
 
   describe("stepDynamicViewPersistence", () => {
     it("works", () => {
-      const test = db.addCollection("nodupes", {indices: ["testindex"]});
+      interface CR {
+        index: string;
+        a: number;
+      }
+
+      const test = db.addCollection<CR>("nodupes", {indices: ["testindex"]});
 
       const item = test.insert({
         index: "key",
@@ -286,9 +297,9 @@ describe("dynamicviews", () => {
       const resultsWithIndex = itc.find({
         "testindex":  4
       });
-      it("no results found", () => {
+      //it("no results found", () => {
         expect(resultsWithIndex.length).toEqual(0);
-      });
+      //});
     });
   });
 

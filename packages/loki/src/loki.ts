@@ -262,14 +262,14 @@ export class Loki extends LokiEventEmitter {
    * @param {int} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
    * @returns {Collection} a reference to the collection which was just added
    */
-  addCollection(name: string, options: Collection.Options = {}) {
-    const collection = new Collection(name, options);
+  addCollection<T extends object>(name: string, options: Collection.Options = {}) {
+    const collection = new Collection<T>(name, options);
     this._collections.push(collection);
 
     if (this._verbose) {
       collection.console = console;
     }
-    return collection;
+    return collection as Collection<T>;
   }
 
   loadCollection(collection: Collection) {
@@ -284,13 +284,13 @@ export class Loki extends LokiEventEmitter {
    * @param {string} collectionName - name of collection to look up
    * @returns {Collection} Reference to collection in database by that name, or null if not found
    */
-  getCollection(collectionName: string) {
+  getCollection<T extends object>(collectionName: string) {
     let i;
     const len = this._collections.length;
 
     for (i = 0; i < len; i += 1) {
       if (this._collections[i].name === collectionName) {
-        return this._collections[i];
+        return this._collections[i] as Collection<T>;
       }
     }
 
@@ -673,7 +673,7 @@ export class Loki extends LokiEventEmitter {
    *
    * @returns {Array} an array of documents to attach to collection.data.
    */
-  deserializeCollection(destructuredSource: string | string[], options: Loki.DeserializeCollectionOptions = {}) {
+  deserializeCollection<T extends object>(destructuredSource: string | string[], options: Loki.DeserializeCollectionOptions = {}) {
     if (options.partitioned === undefined) {
       options.partitioned = false;
     }
@@ -697,7 +697,7 @@ export class Loki extends LokiEventEmitter {
     for (let idx = 0; idx < workarray.length; idx++) {
       workarray[idx] = JSON.parse(workarray[idx]);
     }
-    return workarray;
+    return workarray as any as lokijs.Doc<T>;
   }
 
   /**

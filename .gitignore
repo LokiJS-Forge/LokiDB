@@ -13,3 +13,4 @@ coverage/
 # Publish
 dist/packages-dist/
 site/
+dist/

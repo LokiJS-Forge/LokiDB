@@ -1,16 +1,23 @@
 /* global describe, beforeEach, it, expect */
 import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
+import {lokijs} from "../../src/types";
 
 export type ANY = any;
 
 describe("transforms", () => {
+  interface User {
+    name: string;
+    owner?: string;
+    maker?: string;
+  }
+
   let db: Loki;
-  let items: Collection;
+  let items: Collection<User>;
 
   beforeEach(() => {
     db = new Loki("transformTest");
-    items = db.addCollection("items");
+    items = db.addCollection<User>("items");
 
     items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
     items.insert({name: "gungnir", owner: "odin", maker: "elves"});
@@ -207,8 +214,19 @@ describe("transforms", () => {
     it("works", () => {
       const db1 = new Loki("testJoins");
 
-      const directors = db1.addCollection("directors");
-      const films = db1.addCollection("films");
+      interface Director {
+        name: string;
+        directorId: number;
+      }
+
+      interface Film {
+        title: string;
+        filmId: number;
+        directorId: number;
+      }
+
+      const directors = db1.addCollection<Director>("directors");
+      const films = db1.addCollection<Film>("films");
 
       directors.insert([
         {name: "Martin Scorsese", directorId: 1},
@@ -256,7 +274,7 @@ describe("transforms", () => {
       // Although we removed all meta, the eqjoin inserts the resulting objects
       // into a new volatile collection which would adds its own meta and loki.
       // We don't care about these useless volatile data so grab results without it.
-      const results = films.chain("filmdirect").data({removeMeta: true});
+      const results = films.chain("filmdirect").data({removeMeta: true}) as any as (Director & Film)[];
 
       expect(results.length).toEqual(6);
       expect(results[0].title).toEqual("Taxi");
@@ -273,11 +291,22 @@ describe("transforms", () => {
     it("works", () => {
       const db1 = new Loki("testJoins");
 
-      const c1 = db1.addCollection("c1");
-      c1.insert([{a: 1, b: 9}, {a: 2, b: 8}, {a: 3, b: 7}, {a: 4, b: 6}]);
+      interface C1 {
+        a: number;
+        b: number;
+        c?: number;
+      }
+
+      const c1 = db1.addCollection<C1>("c1");
+      c1.insert([
+        {a: 1, b: 9},
+        {a: 2, b: 8},
+        {a: 3, b: 7},
+        {a: 4, b: 6}
+      ]);
 
       // only safe because our 'removeMeta' option will clone objects passed in
-      function graftMap(obj: ANY) {
+      function graftMap(obj: C1) {
         obj.c = obj.b - obj.a;
         return obj;
       }

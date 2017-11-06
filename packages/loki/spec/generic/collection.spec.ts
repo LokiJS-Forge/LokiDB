@@ -5,6 +5,11 @@ import {Collection} from "../../src/collection";
 export type ANY = any;
 
 describe("collection", () => {
+  interface CL {
+    a: number;
+    b: number;
+  }
+
   it("works", () => {
     class SubclassedCollection extends Collection {
       constructor(name: string, options: ANY = {}) {
@@ -42,7 +47,7 @@ describe("collection", () => {
 
   it("findAndUpdate works", () => {
     const db = new Loki("test.db");
-    const coll = db.addCollection("testcoll");
+    const coll = db.addCollection<CL>("testcoll");
     coll.insert([{a: 3, b: 3}, {a: 6, b: 7}, {a: 1, b: 2}, {a: 7, b: 8}, {a: 6, b: 4}]);
 
     coll.findAndUpdate({a: 6}, (obj: ANY) => {
@@ -57,7 +62,7 @@ describe("collection", () => {
 
   it("findAndRemove works", () => {
     const db = new Loki("test.db");
-    const coll = db.addCollection("testcoll");
+    const coll = db.addCollection<CL>("testcoll");
     coll.insert([{a: 3, b: 3}, {a: 6, b: 7}, {a: 1, b: 2}, {a: 7, b: 8}, {a: 6, b: 4}]);
 
     coll.findAndRemove({a: 6});
@@ -73,7 +78,7 @@ describe("collection", () => {
 
   it("removeWhere works", () => {
     const db = new Loki("test.db");
-    const coll = db.addCollection("testcoll");
+    const coll = db.addCollection<CL>("testcoll");
     coll.insert([{a: 3, b: 3}, {a: 6, b: 7}, {a: 1, b: 2}, {a: 7, b: 8}, {a: 6, b: 4}]);
 
     coll.removeWhere((obj: ANY) => obj.a === 6);
@@ -89,7 +94,7 @@ describe("collection", () => {
 
   it("updateWhere works", () => {
     const db = new Loki("test.db");
-    const coll = db.addCollection("testcoll");
+    const coll = db.addCollection<CL>("testcoll");
     coll.insert([{a: 3, b: 3}, {a: 6, b: 7}, {a: 1, b: 2}, {a: 7, b: 8}, {a: 6, b: 4}]);
 
     // guess we need to return object for this to work
@@ -119,7 +124,7 @@ describe("collection", () => {
 
   it("single inserts emit with meta when async listeners false", () => {
     const db = new Loki("test.db");
-    const coll = db.addCollection("testcoll");
+    const coll = db.addCollection<CL>("testcoll");
 
     // listen for insert events to validate objects
     coll.on("insert", (obj: ANY) => {
@@ -164,7 +169,7 @@ describe("collection", () => {
 
   it("single inserts (with clone) emit meta and return instances correctly", () => {
     const db = new Loki("test.db");
-    const coll = db.addCollection("testcoll", {clone: true});
+    const coll = db.addCollection<CL>("testcoll", {clone: true});
 
     // listen for insert events to validate objects
     coll.on("insert", (obj: ANY) => {
@@ -214,7 +219,7 @@ describe("collection", () => {
 
   it("batch inserts emit with meta", () => {
     const db = new Loki("test.db");
-    const coll = db.addCollection("testcoll");
+    const coll = db.addCollection<CL>("testcoll");
 
     // listen for insert events to validate objects
     coll.on("insert", (objs: ANY) => {
@@ -252,7 +257,7 @@ describe("collection", () => {
 
   it("batch inserts emit with meta and return clones", () => {
     const db = new Loki("test.db");
-    const coll = db.addCollection("testcoll", {clone: true});
+    const coll = db.addCollection<CL>("testcoll", {clone: true});
 
     // listen for insert events to validate objects
     coll.on("insert", (objs: ANY) => {

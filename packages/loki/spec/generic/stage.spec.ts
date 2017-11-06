@@ -4,13 +4,18 @@ import {Collection} from "../../src/collection";
 
 export type ANY = any;
 
+interface Director {
+  name: string;
+  directorId: number;
+}
+
 describe("Staging and commits", () => {
   let db: Loki;
-  let directors: Collection;
+  let directors: Collection<Director>;
 
   beforeEach(() => {
     db = new Loki("testJoins");
-    directors = db.addCollection("directors");
+    directors = db.addCollection<Director>("directors");
 
     directors.insert([{
       name: "Martin Scorsese",
@@ -29,8 +34,9 @@ describe("Staging and commits", () => {
 
   it("work", () => {
 
-    const stageName = "tentative directors", newDirectorsName = "Joel and Ethan Cohen",
-      message = "Edited Cohen brothers name";
+    const stageName = "tentative directors";
+    const newDirectorsName = "Joel and Ethan Cohen";
+    const message = "Edited Cohen brothers name";
 
     const cohen = directors.insert({
       name: "Cohen Brothers",

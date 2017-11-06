@@ -1,7 +1,7 @@
 /* global jQuery */
 export type ANY = any;
 
-export function clone(data: object, method: CloneMethod = CloneMethod.PARSE_STRINGIFY) : ANY {
+export function clone<T>(data: T, method: CloneMethod = CloneMethod.PARSE_STRINGIFY) : T {
   if (data === null || data === undefined) {
     return null;
   }
@@ -32,7 +32,7 @@ export function clone(data: object, method: CloneMethod = CloneMethod.PARSE_STRI
       break;
   }
 
-  return cloned;
+  return cloned as any as T;
 }
 
 export function cloneObjectArray(objarray: object[], method: CloneMethod) {

@@ -8,8 +8,13 @@ describe("typed", () => {
     const db = new Loki("test.json");
     let users;
 
-    function User(n: ANY) {
-      this.name = n || "";
+    class User {
+      public name: string;
+      public customInflater?: boolean;
+      public onlyInflater?: boolean;
+      constructor(name: string = "") {
+        this.name = name;
+      }
     }
 
     const json = {
@@ -51,7 +56,7 @@ describe("typed", () => {
       }
     });
 
-    users = db.getCollection("users");
+    users = db.getCollection<User>("users");
 
     expect(users.get(1) instanceof User).toBe(true);
     expect(users.get(1).name).toBe("joe");
@@ -68,7 +73,7 @@ describe("typed", () => {
       }
     });
 
-    users = db.getCollection("users");
+    users = db.getCollection<User>("users");
 
     expect(users.get(1) instanceof User).toBe(true);
     expect(users.get(1).name).toBe("");
@@ -89,7 +94,7 @@ describe("typed", () => {
       }
     });
 
-    users = db.getCollection("users");
+    users = db.getCollection<User>("users");
 
     expect(users.get(1) instanceof User).toBe(false);
     expect(users.get(1).name).toBe(undefined);

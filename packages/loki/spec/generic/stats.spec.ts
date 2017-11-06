@@ -5,7 +5,16 @@ export type ANY = any;
 
 describe("stats", () => {
   const db = new Loki();
-  const users = db.addCollection("users");
+
+  interface User {
+    name: string;
+    age: number;
+    relatives: {
+      firstgrade: number;
+    };
+  }
+
+  const users = db.addCollection<User>("users");
   users.insert({
     name: "joe",
     age: 35,

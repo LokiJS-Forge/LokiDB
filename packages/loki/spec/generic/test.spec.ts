@@ -6,12 +6,18 @@ export type ANY = any;
 
 describe("loki", () => {
   let db: Loki;
-  let users: Collection;
+  interface User {
+    name: string;
+    age: number;
+    lang: string;
+  }
+
+  let users: Collection<User>;
   let testObject: ANY;
 
   beforeEach(() => {
     db = new Loki("test.json");
-    users = db.addCollection("user");
+    users = db.addCollection<User>("user");
 
     users.insert({
       name: "dave",
@@ -153,7 +159,7 @@ describe("loki", () => {
       wasAdded = true;
 
       try {
-        users.insert(legacyObject);
+        users.insert(legacyObject as any);
       } catch (err) {
         wasAdded = false;
       }
@@ -176,7 +182,7 @@ describe("loki", () => {
       let wasUpdated = true;
 
       try {
-        users.update(legacyObject);
+        users.update(legacyObject as any);
       } catch (err) {
         wasUpdated = false;
       }
@@ -192,17 +198,28 @@ describe("loki", () => {
         state: "ca"
       };
 
-      users.insert(testObject);
+      users.insert(testObject as any);
 
       expect(userCount1 + 1).toEqual(users.data.length);
-      users.remove(testObject);
+      users.remove(testObject as any);
       expect(userCount1).toEqual(users.data.length);
     });
   });
 
   describe("dot notation", () => {
     it("works", () => {
-      const dnc = db.addCollection("dncoll");
+
+      interface DNC {
+        first: string;
+        last: string;
+        addr?: {
+          street?: string;
+          state?: string;
+          zip?: number;
+        };
+      }
+
+      const dnc = db.addCollection<DNC>("dncoll");
 
       dnc.insert({
         first: "aaa",
@@ -611,7 +628,11 @@ describe("loki", () => {
 
   describe("indexes", () => {
     it("works", () => {
-      const itc = db.addCollection("test", {
+      interface ITC {
+        "testid": number;
+      }
+
+      const itc = db.addCollection<ITC>("test", {
         indices: ["testid"]
       });
 
@@ -729,7 +750,13 @@ describe("loki", () => {
 
   describe("andOrOps", () => {
     it("works", () => {
-      const eic = db.addCollection("eic");
+      interface EIC {
+        "testid": number;
+        "testString": string;
+        "testFloat": number;
+      }
+
+      const eic = db.addCollection<EIC>("eic");
 
       eic.insert({
         "testid": 1,
@@ -875,7 +902,13 @@ describe("loki", () => {
 
   describe("findOne", () => {
     it("works", () => {
-      const eic = db.addCollection("eic");
+      interface EIC {
+        "testid": number;
+        "testString": string;
+        "testFloat": number;
+      }
+
+      const eic = db.addCollection<EIC>("eic");
 
       eic.insert({
         "testid": 1,
@@ -928,8 +961,14 @@ describe("loki", () => {
     it("works", () => {
       const ssdb = new Loki("sandbox.db");
 
+      interface User {
+        name: string;
+        owner: string;
+        maker: string;
+      }
+
       // Add a collection to the database
-      const items = ssdb.addCollection("items", {indices: ["name"]});
+      const items = ssdb.addCollection<User>("items", {indices: ["name"]});
 
       // Add some documents to the collection
       items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
@@ -959,8 +998,14 @@ describe("loki", () => {
     it("works", () => {
       const idb = new Loki("sandbox.db");
 
+      interface User {
+        name: string;
+        owner: string;
+        maker: string;
+      }
+
       // Add a collection to the database
-      const items = idb.addCollection("items", {indices: ["owner"]});
+      const items = idb.addCollection<User>("items", {indices: ["owner"]});
 
       // Add some documents to the collection
       items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
@@ -1036,7 +1081,13 @@ describe("loki", () => {
 
   describe("chained removes", () => {
     it("works", () => {
-      const rsc = db.addCollection("rsc");
+      interface RSC {
+        "testid": number;
+        "testString": string;
+        "testFloat": number;
+      }
+
+      const rsc = db.addCollection<RSC>("rsc");
 
       rsc.insert({
         "testid": 1,

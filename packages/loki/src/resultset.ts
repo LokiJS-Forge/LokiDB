@@ -2,6 +2,7 @@ import {clone, CloneMethod} from "./clone";
 import {Collection} from "./collection";
 import {resolveTransformParams} from "./utils";
 import {ltHelper, gtHelper, aeqHelper, sortHelper} from "./helper";
+import {lokijs} from "./types";
 
 export type ANY = any;
 
@@ -296,9 +297,9 @@ function dotSubScan(root: object, paths: string[], fun: Function, value: ANY, pa
  *      .where(function(obj) { return obj.name === 'Toyota' })
  *      .data();
  */
-export class Resultset {
+export class Resultset<T extends object = object> {
 
-  public collection: Collection;
+  public collection: Collection<T>;
   public filteredrows: ANY[];
   public filterInitialized: boolean;
 
@@ -306,7 +307,7 @@ export class Resultset {
    * Constructor.
    * @param {Collection} collection - the collection which this Resultset will query against
    */
-  constructor(collection: Collection) {
+  constructor(collection: Collection<T>) {
     // retain reference to collection we are querying against
     this.collection = collection;
     this.filteredrows = [];
@@ -377,7 +378,7 @@ export class Resultset {
    * @returns {Resultset} Returns a copy of the resultset (set) but the underlying document references will be the same.
    */
   copy() {
-    const result = new Resultset(this.collection);
+    const result = new Resultset<T>(this.collection);
 
     if (this.filteredrows.length > 0) {
       result.filteredrows = this.filteredrows.slice();
@@ -682,7 +683,7 @@ export class Resultset {
    * @param {boolean} firstOnly - (Optional) Used by collection.findOne() - flag if this was invoked via findOne()
    * @returns {Resultset} this resultset for further chain ops.
    */
-  find(query?: object, firstOnly = false): ANY {
+  find(query?: object, firstOnly = false) : Resultset<T> {
     if (this.collection.data.length === 0) {
       this.filteredrows = [];
       this.filterInitialized = true;
@@ -993,7 +994,7 @@ export class Resultset {
    *
    * @returns {Array} Array of documents in the resultset
    */
-  data(options: ANY = {}) {
+  data(options: ANY = {}) : lokijs.Doc<T>[] {
     let forceClones: boolean;
     let forceCloneMethod: CloneMethod;
     let removeMeta: boolean;
@@ -1109,7 +1110,6 @@ export class Resultset {
    * @returns {Resultset} this (empty) resultset for further chain ops.
    */
   remove() {
-
     // if this has no filters applied, we need to populate filteredrows first
     if (!this.filterInitialized && this.filteredrows.length === 0) {
       this.filteredrows = this.collection.prepareFullDocIndex();
@@ -1150,7 +1150,7 @@ export class Resultset {
    * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method.
    * @returns {Resultset} A resultset with data in the format [{left: leftObj, right: rightObj}]
    */
-  eqJoin(joinData: ANY, leftJoinKey: string | Function, rightJoinKey: string | Function, mapFun?: Function, dataOptions?: ANY) {
+  eqJoin(joinData: ANY, leftJoinKey: string | Function, rightJoinKey: string | Function, mapFun?: Function, dataOptions?: ANY) : ANY {
     let leftData = [];
     let leftDataLength;
     let rightData = [];
@@ -1217,7 +1217,7 @@ export class Resultset {
     let data = this.data(dataOptions).map(mapFun);
     //return return a new resultset with no filters
     this.collection = new Collection("mappedData");
-    this.collection.insert(data);
+    this.collection.insert(data as any as T);
     this.filteredrows = [];
     this.filterInitialized = false;
 

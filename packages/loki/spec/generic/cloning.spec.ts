@@ -5,12 +5,18 @@ import {Collection, CloneMethod} from "../../src/collection";
 export type ANY = any;
 
 describe("cloning behavior", () => {
-  let db, items: Collection;
+  interface User {
+    name: string;
+    owner: string;
+    maker: string;
+  }
+
+  let db;
+  let items: Collection<User>;
 
   beforeEach(() => {
     db = new Loki("cloningDisabled");
-    items = db.addCollection("items");
-
+    items = db.addCollection<User>("items");
     items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
     items.insert({name: "gungnir", owner: "odin", maker: "elves"});
     items.insert({name: "tyrfing", owner: "Svafrlami", maker: "dwarves"});
@@ -35,7 +41,7 @@ describe("cloning behavior", () => {
   describe("cloning inserts are immutable", () => {
     it("works", () => {
       const cdb = new Loki("clonetest");
-      const citems = cdb.addCollection("items", {clone: true});
+      const citems = cdb.addCollection<User>("items", {clone: true});
       const oldObject = {name: "mjolnir", owner: "thor", maker: "dwarves"};
       const insObject = citems.insert(oldObject);
 
@@ -51,7 +57,7 @@ describe("cloning behavior", () => {
   describe("cloning updates are immutable", () => {
     it("works", () => {
       const cdb = new Loki("clonetest");
-      const citems = cdb.addCollection("items", {clone: true});
+      const citems = cdb.addCollection<User>("items", {clone: true});
       const oldObject = {name: "mjolnir", owner: "thor", maker: "dwarves"};
       citems.insert(oldObject);
       const rObject = citems.findOne({"owner": "thor"});
@@ -83,7 +89,7 @@ describe("cloning behavior", () => {
       }
 
       const cdb = new Loki("clonetest");
-      const citems = cdb.addCollection("items", {clone: true, cloneMethod: CloneMethod.SHALLOW});
+      const citems = cdb.addCollection<User>("items", {clone: true, cloneMethod: CloneMethod.SHALLOW});
       const oldObject = new Item("mjolnir", "thor", "dwarves");
       const insObject = citems.insert(oldObject);
 
@@ -100,7 +106,7 @@ describe("cloning behavior", () => {
   describe("collection find() cloning works", () => {
     it("works", () => {
       const cdb = new Loki("cloningEnabled");
-      const citems = cdb.addCollection("items", {
+      const citems = cdb.addCollection<User>("items", {
         clone: true
         //, clonemethod: "parse-stringify"
       });
@@ -123,7 +129,7 @@ describe("cloning behavior", () => {
   describe("collection findOne() cloning works", () => {
     it("works", () => {
       const cdb = new Loki("cloningEnabled");
-      const citems = cdb.addCollection("items", {
+      const citems = cdb.addCollection<User>("items", {
         clone: true
         //, clonemethod: "parse-stringify"
       });
@@ -147,7 +153,7 @@ describe("cloning behavior", () => {
   describe("collection where() cloning works", () => {
     it("works", () => {
       const cdb = new Loki("cloningEnabled");
-      const citems = cdb.addCollection("items", {
+      const citems = cdb.addCollection<User>("items", {
         clone: true
         //, clonemethod: "parse-stringify"
       });
@@ -170,7 +176,7 @@ describe("cloning behavior", () => {
   describe("collection by() cloning works", () => {
     it("works", () => {
       const cdb = new Loki("cloningEnabled");
-      const citems = cdb.addCollection("items", {
+      const citems = cdb.addCollection<User>("items", {
         clone: true,
         unique: ["name"]
         //, clonemethod: "parse-stringify"
@@ -195,7 +201,7 @@ describe("cloning behavior", () => {
   describe("collection by() cloning works with no data", () => {
     it("works", () => {
       const cdb = new Loki("cloningEnabled");
-      const citems = cdb.addCollection("items", {
+      const citems = cdb.addCollection<User>("items", {
         clone: true,
         unique: ["name"]
       });
@@ -213,7 +219,7 @@ describe("cloning behavior", () => {
   describe("resultset data cloning works", () => {
     it("works", () => {
       const cdb = new Loki("cloningEnabled");
-      const citems = cdb.addCollection("items", {
+      const citems = cdb.addCollection<User>("items", {
         clone: true
         //, clonemethod: "parse-stringify"
       });

@@ -7,7 +7,13 @@ describe("Constraints", () => {
 
   it("should retrieve records with by()", () => {
     const db = new Loki();
-    const coll = db.addCollection("users", {
+
+    interface User {
+      username: string;
+      name: string;
+    }
+
+    const coll = db.addCollection<User>("users", {
       unique: ["username"]
     });
     coll.insert({
@@ -20,7 +26,7 @@ describe("Constraints", () => {
     });
     expect(coll.by("username", "joe").name).toEqual("Joe");
 
-    const byUsername = coll.by("username");
+    const byUsername = (value: string) => coll.by("username", value);
     expect(byUsername("jack").name).toEqual("Jack");
 
     const joe = coll.by("username", "joe");
