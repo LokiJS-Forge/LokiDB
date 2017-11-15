@@ -25,4 +25,8 @@ export namespace lokijs {
     [index: number]: T;
   }
 
+
+  export interface Query {
+
+  }
 }

@@ -50,8 +50,9 @@ describe("collection", () => {
     const coll = db.addCollection<CL>("testcoll");
     coll.insert([{a: 3, b: 3}, {a: 6, b: 7}, {a: 1, b: 2}, {a: 7, b: 8}, {a: 6, b: 4}]);
 
-    coll.findAndUpdate({a: 6}, (obj: ANY) => {
+    coll.findAndUpdate({a: 6}, (obj: CL) => {
       obj.b += 1;
+      return obj;
     });
 
     const result = coll.chain().find({a: 6}).simplesort("b").data();
