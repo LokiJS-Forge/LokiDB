@@ -367,7 +367,7 @@ export class Resultset<E extends object = object> {
   transform(transform: string | any[], parameters?: object): Resultset<E> {
     let idx;
     let step;
-    let rs = this as Resultset<E>;
+    let rs = this as Resultset;
 
     // if transform is name, then do lookup first
     if (typeof transform === "string") {
@@ -431,8 +431,7 @@ export class Resultset<E extends object = object> {
           break;
       }
     }
-
-    return rs;
+    return rs as Resultset<E>;
   }
 
   /**
@@ -568,12 +567,12 @@ export class Resultset<E extends object = object> {
   /**
    * Helper function for compoundsort(), performing individual object comparisons
    *
-   * @param {array} properties - array of property names, in order, by which to evaluate sort order
+   * @param {Array} properties - array of property names, in order, by which to evaluate sort order
    * @param {object} obj1 - first object to compare
    * @param {object} obj2 - second object to compare
-   * @returns {integer} 0, -1, or 1 to designate if identical (sortwise) or which should be first
+   * @returns {number} 0, -1, or 1 to designate if identical (sortwise) or which should be first
    */
-  public compoundeval(properties: [string, boolean][], obj1: E, obj2: E) {
+  public compoundeval(properties: [string, boolean][], obj1: E, obj2: E): number {
     let res = 0;
     let prop;
     let field;
@@ -611,7 +610,7 @@ export class Resultset<E extends object = object> {
    * @param {array} expressionArray - array of expressions
    * @returns {Resultset} this resultset for further chain ops.
    */
-  public findOr(expressionArray?: lokijs.Query[]) {
+  public findOr(expressionArray: lokijs.Query[]): Resultset<E> {
     let fr = null;
     let fri = 0;
     let frlen = 0;
@@ -647,8 +646,8 @@ export class Resultset<E extends object = object> {
     return this;
   }
 
-  public $or(...args: ANY[]) {
-    return this.findOr(...args);
+  public $or(expressionArray: lokijs.Query[]): Resultset<E> {
+    return this.findOr(expressionArray);
   }
 
   /**
@@ -660,7 +659,7 @@ export class Resultset<E extends object = object> {
    * @param {array} expressionArray - array of expressions
    * @returns {Resultset} this resultset for further chain ops.
    */
-  public findAnd(expressionArray?: lokijs.Query[]) {
+  public findAnd(expressionArray: lokijs.Query[]): Resultset<E> {
     // we have already implementing method chaining in this (our Resultset class)
     // so lets just progressively apply user supplied and filters
     for (let i = 0, len = expressionArray.length; i < len; i++) {
@@ -672,8 +671,8 @@ export class Resultset<E extends object = object> {
     return this;
   }
 
-  public $and(...args: ANY[]) {
-    return this.findAnd(...args);
+  public $and(expressionArray: lokijs.Query[]): Resultset<E> {
+    return this.findAnd(expressionArray);
   }
 
   /**
@@ -877,10 +876,10 @@ export class Resultset<E extends object = object> {
           }
         }
       } else {
-        // search by index
-        const segm = this.collection.calculateRange(operator, property, value);
-
         if (operator !== "$in") {
+          // search by index
+          const segm = this.collection.calculateRange(operator, property, value);
+
           for (i = segm[0]; i <= segm[1]; i++) {
             if (indexedOps[operator] !== true) {
               // must be a function, implying 2nd phase filtering of results from calculateRange
@@ -903,12 +902,20 @@ export class Resultset<E extends object = object> {
             }
           }
         } else {
-          for (i = 0, len = segm.length; i < len; i++) {
-            result.push(index.values[segm[i]]);
-            if (firstOnly) {
-              this.filteredrows = result;
-              this.filterInitialized = true;
-              return this;
+          const idxset = [];
+          // query each value '$eq' operator and merge the seqment results.
+          for (let j = 0, len = value.length; j < len; j++) {
+            const seg = this.collection.calculateRange("$eq", property, value[j]);
+            for (let i = seg[0]; i <= seg[1]; i++) {
+              if (idxset[i] === undefined) {
+                idxset[i] = true;
+                result.push(index.values[i]);
+              }
+              if (firstOnly) {
+                this.filteredrows = result;
+                this.filterInitialized = true;
+                return this;
+              }
             }
           }
         }
@@ -975,7 +982,7 @@ export class Resultset<E extends object = object> {
    * Returns the number of documents in the resultset.
    * @returns {number} The number of documents in the resultset.
    */
-  public count() {
+  public count(): number {
     if (this.filterInitialized) {
       return this.filteredrows.length;
     }
@@ -1079,7 +1086,7 @@ export class Resultset<E extends object = object> {
    * @param {function} updateFunction - User supplied updateFunction(obj) will be executed for each document object.
    * @returns {Resultset} this resultset for further chain ops.
    */
-  update(updateFunction: (obj: E) => E) {
+  update(updateFunction: (obj: E) => E): Resultset<E> {
     // if this has no filters applied, we need to populate filteredrows first
     if (!this.filterInitialized && this.filteredrows.length === 0) {
       this.filteredrows = this.collection.prepareFullDocIndex();
@@ -1104,7 +1111,7 @@ export class Resultset<E extends object = object> {
    *
    * @returns {Resultset} this (empty) resultset for further chain ops.
    */
-  public remove() {
+  public remove(): Resultset<E> {
     // if this has no filters applied, we need to populate filteredrows first
     if (!this.filterInitialized && this.filteredrows.length === 0) {
       this.filteredrows = this.collection.prepareFullDocIndex();
@@ -1121,7 +1128,7 @@ export class Resultset<E extends object = object> {
    * @param {function} reduceFunction - this function accepts many (array of map outputs) and returns single value
    * @returns {value} The output of your reduceFunction
    */
-  mapReduce(mapFunction: ANY, reduceFunction: Function) {
+  public mapReduce<T, U>(mapFunction: (item: E, index: number, array: E[]) => T, reduceFunction: (array: T[]) => U): U {
     try {
       return reduceFunction(this.data().map(mapFunction));
     } catch (err) {

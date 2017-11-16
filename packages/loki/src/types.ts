@@ -29,4 +29,10 @@ export namespace lokijs {
   export interface Query {
 
   }
+
+  export interface Filter<E> {
+    type: string; /*'find', 'where'*/
+    val: Query | ((obj: E, index: number, array: E[]) => boolean);
+    uid: number | string;
+  }
 }

@@ -243,16 +243,16 @@ describe("binary indices", () => {
       // force index build
       items.find({name: "mjolnir"});
 
-      let pos = items.calculateRangeStart("name", "fff", true);
+      let pos = items["_calculateRangeStart"]("name", "fff", true);
       expect(pos).toBe(1);
 
-      pos = items.calculateRangeStart("name", "zzz", true);
+      pos = items["_calculateRangeStart"]("name", "zzz", true);
       expect(pos).toBe(4);
 
-      pos = items.calculateRangeStart("name", "aaa", true);
+      pos = items["_calculateRangeStart"]("name", "aaa", true);
       expect(pos).toBe(0);
 
-      pos = items.calculateRangeStart("name", "gungnir", true);
+      pos = items["_calculateRangeStart"]("name", "gungnir", true);
       expect(pos).toBe(1);
     });
   });

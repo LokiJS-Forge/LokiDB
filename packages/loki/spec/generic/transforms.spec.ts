@@ -137,7 +137,12 @@ describe("transforms", () => {
 
   describe("dynamic view named transform", () => {
     it("works", () => {
-      const testColl = db.addCollection("test");
+      interface AB {
+        a: string;
+        b: number;
+      }
+
+      const testColl = db.addCollection<AB>("test");
 
       testColl.insert({
         a: "first",
@@ -203,7 +208,6 @@ describe("transforms", () => {
       testColl.addTransform("desc4limit2", tx);
 
       const results = dv.branchResultset("desc4limit2").data();
-
       expect(results.length).toBe(2);
       expect(results[0].a).toBe("third");
       expect(results[1].a).toBe("second");

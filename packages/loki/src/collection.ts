@@ -143,8 +143,8 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    */
   public ttl: ANY;
 
-  private maxId: ANY;
-  private _dynamicViews: ANY;
+  private maxId: number;
+  private _dynamicViews: DynamicView<E>[];
 
   /**
    * Changes are tracked by collection and aggregated by the db.
@@ -663,8 +663,8 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {number} options.minRebuildInterval - minimum rebuild interval (need clarification to docs here)
    * @returns {DynamicView} reference to the dynamic view added
    **/
-  addDynamicView(name: string, options?: ANY) {
-    const dv = new DynamicView(this, name, options);
+  addDynamicView(name: string, options?: DynamicView.Options): DynamicView<E> {
+    const dv = new DynamicView<E>(this, name, options);
     this._dynamicViews.push(dv);
 
     return dv;
@@ -902,7 +902,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       // now that we can efficiently determine the data[] position of newly added document,
       // submit it for all registered DynamicViews to evaluate for inclusion/exclusion
       for (let idx = 0; idx < this._dynamicViews.length; idx++) {
-        this._dynamicViews[idx].evaluateDocument(position, false);
+        this._dynamicViews[idx]._evaluateDocument(position, false);
       }
 
       let key;
@@ -987,7 +987,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       // submit it for all registered DynamicViews to evaluate for inclusion/exclusion
       const dvlen = this._dynamicViews.length;
       for (let i = 0; i < dvlen; i++) {
-        this._dynamicViews[i].evaluateDocument(addedPos, true);
+        this._dynamicViews[i]._evaluateDocument(addedPos, true);
       }
 
       if (this.adaptiveBinaryIndices) {
@@ -1093,7 +1093,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       // now that we can efficiently determine the data[] position of newly added document,
       // submit it for all registered DynamicViews to remove
       for (let idx = 0; idx < this._dynamicViews.length; idx++) {
-        this._dynamicViews[idx].removeDocument(position);
+        this._dynamicViews[idx]._removeDocument(position);
       }
 
       if (this.adaptiveBinaryIndices) {
@@ -1290,9 +1290,9 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @returns {(object|array|null)} Object reference if document was found, null if not,
    *     or an array if 'returnPosition' was passed.
    */
-  get(id: number): lokijs.Doc<E>;
-  get(id: number, returnPosition: boolean): lokijs.Doc<E> | [lokijs.Doc<E>, number];
-  get(id: number, returnPosition = false) {
+  public get(id: number): lokijs.Doc<E>;
+  public get(id: number, returnPosition: boolean): lokijs.Doc<E> | [lokijs.Doc<E>, number];
+  public get(id: number, returnPosition = false) {
     const data = this.idIndex;
     let max = data.length - 1;
     let min = 0;
@@ -1330,7 +1330,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {int} dataPosition : coll.data array index/position
    * @param {string} binaryIndexName : index to search for dataPosition in
    */
-  getBinaryIndexPosition(dataPosition: number, binaryIndexName: string) {
+  public getBinaryIndexPosition(dataPosition: number, binaryIndexName: string) {
     const val = this.data[dataPosition][binaryIndexName];
     const index = this.binaryIndices[binaryIndexName].values;
 
@@ -1373,7 +1373,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       val = this.data[dataPosition][binaryIndexName];
     }
 
-    const idxPos = (index.length === 0) ? 0 : this.calculateRangeStart(binaryIndexName, val, true);
+    const idxPos = (index.length === 0) ? 0 : this._calculateRangeStart(binaryIndexName, val, true);
 
     // insert new data index into our binary index at the proper sorted location for relevant property calculated by idxPos.
     // doing this after adjusting dataPositions so no clash with previous item at that position.
@@ -1453,7 +1453,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {any} val - value to find within index
    * @param {bool?} adaptive - if true, we will return insert position
    */
-  calculateRangeStart(prop: string, val: ANY, adaptive = false) {
+  private _calculateRangeStart(prop: string, val: ANY, adaptive = false): number {
     const rcd = this.data;
     const index = this.binaryIndices[prop].values;
     let min = 0;
@@ -1495,7 +1495,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * Internal method used for indexed $between.  Given a prop (index name), and a value
    * (which may or may not yet exist) this will find the final position of that upper range value.
    */
-  calculateRangeEnd(prop: string, val: ANY) {
+  private _calculateRangeEnd(prop: string, val: ANY) {
     const rcd = this.data;
     const index = this.binaryIndices[prop].values;
     let min = 0;
@@ -1539,7 +1539,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   }
 
   /**
-   * calculateRange() - Binary Search utility method to find range/segment of values matching criteria.
+   * Binary Search utility method to find range/segment of values matching criteria.
    *    this is used for collection.find() and first find filter of resultset/dynview
    *    slightly different than get() binary search in that get() hones in on 1 value,
    *    but we have to hone in on many (range)
@@ -1548,7 +1548,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {object} val - value to use for range calculation.
    * @returns {array} [start, end] index array positions
    */
-  calculateRange(op: string, prop: string, val: ANY): ANY {
+  calculateRange(op: string, prop: string, val: ANY): [number, number] {
     const rcd = this.data;
     const index = this.binaryIndices[prop].values;
     const min = 0;
@@ -1628,8 +1628,8 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
           return [0, -1];
         }
 
-        lbound = this.calculateRangeStart(prop, val[0]);
-        ubound = this.calculateRangeEnd(prop, val[1]);
+        lbound = this._calculateRangeStart(prop, val[0]);
+        ubound = this._calculateRangeEnd(prop, val[1]);
 
         if (lbound < 0) lbound++;
         if (ubound > max) ubound--;
@@ -1640,22 +1640,6 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
         if (ubound < lbound) return [0, -1];
 
         return ([lbound, ubound]);
-      case "$in": {
-        const idxset = [];
-        const segResult = [];
-        // query each value '$eq' operator and merge the seqment results.
-        for (let j = 0, len = val.length; j < len; j++) {
-          const seg = this.calculateRange("$eq", prop, val[j]);
-
-          for (let i = seg[0]; i <= seg[1]; i++) {
-            if (idxset[i] === undefined) {
-              idxset[i] = true;
-              segResult.push(i);
-            }
-          }
-        }
-        return segResult;
-      }
     }
 
     // determine lbound where needed
@@ -1665,7 +1649,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       case "$dteq":
       case "$gte":
       case "$lt":
-        lbound = this.calculateRangeStart(prop, val);
+        lbound = this._calculateRangeStart(prop, val);
         lval = rcd[index[lbound]][prop];
         break;
       default:
@@ -1679,7 +1663,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       case "$dteq":
       case "$lte":
       case "$gt":
-        ubound = this.calculateRangeEnd(prop, val);
+        ubound = this._calculateRangeEnd(prop, val);
         break;
       default:
         break;
@@ -1756,7 +1740,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {any} value - unique value to search for
    * @returns {object} document matching the value passed
    */
-  by(field: string, value?: ANY): lokijs.Doc<E> {
+  public by(field: string, value?: ANY): lokijs.Doc<E> {
     const result = this.constraints.unique[field].get(value);
     if (!this.cloneObjects) {
       return result as lokijs.Doc<E>;
@@ -1770,7 +1754,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {object} query - query object used to perform search with
    * @returns {(object|null)} First matching document, or null if none
    */
-  findOne(query: object): lokijs.Doc<E> {
+  public findOne(query: object): lokijs.Doc<E> {
     query = query || {};
 
     // Instantiate Resultset and exec find op passing firstOnly = true param
@@ -1795,14 +1779,13 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {object} parameters - Object containing properties representing parameters to substitute
    * @returns {Resultset} (this) resultset, or data array if any map or join functions where called
    */
-  chain(transform?: ANY, parameters?: ANY): Resultset<E> {
+  public chain(transform?: string | ANY[], parameters?: ANY): Resultset<E> {
     const rs = new Resultset<E>(this);
 
     if (typeof transform === "undefined") {
       return rs;
     }
-
-    return rs.transform(transform, parameters);
+    return rs.transform(transform, parameters) as Resultset<E>;
   }
 
   /**
@@ -1812,7 +1795,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {object} query - 'mongo-like' query object
    * @returns {array} Array of matching documents
    */
-  find(query?: object) {
+  public find(query?: lokijs.Query) {
     return this.chain().find(query).data();
   }
 
@@ -1820,7 +1803,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * Find object by unindexed field by property equal to value,
    * simply iterates and returns the first element matching the query
    */
-  findOneUnindexed(prop: string, value: ANY) {
+  public findOneUnindexed(prop: string, value: ANY) {
     let i = this.data.length;
     let doc;
     while (i--) {
@@ -1837,7 +1820,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    */
 
   /** start the transation */
-  startTransaction() {
+  public startTransaction(): void {
     if (this.transactional) {
       this.cachedData = clone(this.data, this.cloneMethod);
       this.cachedIndex = this.idIndex;
@@ -1851,7 +1834,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   }
 
   /** commit the transation */
-  commit() {
+  public commit(): void {
     if (this.transactional) {
       this.cachedData = null;
       this.cachedIndex = null;
@@ -1865,7 +1848,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   }
 
   /** roll back the transation */
-  rollback() {
+  public rollback(): void {
     if (this.transactional) {
       if (this.cachedData !== null && this.cachedIndex !== null) {
         this.data = this.cachedData;
@@ -1890,7 +1873,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {function} fun - filter function to run against all collection docs
    * @returns {array} all documents which pass your filter function
    */
-  where(fun: (obj: E) => boolean) {
+  public where(fun: (obj: E) => boolean): lokijs.Doc<E>[] {
     return this.chain().where(fun).data();
   }
 
@@ -1901,7 +1884,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {function} reduceFunction - function to use as reduce function
    * @returns {data} The result of your mapReduce operation
    */
-  mapReduce(mapFunction: ANY, reduceFunction: Function) {
+  mapReduce<T, U>(mapFunction: (value: E, index: number, array: E[]) => T, reduceFunction: (array: T[]) => U): U {
     try {
       return reduceFunction(this.data.map(mapFunction));
     } catch (err) {
@@ -1921,7 +1904,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   //eqJoin<T extends object>(joinData: T[] | Resultset<T>, leftJoinProp: string | ((obj: E) => string), rightJoinProp: string | ((obj: T) => string)): Resultset<{ left: E; right: T; }>;
   // eqJoin<T extends object, U extends object>(joinData: T[] | Resultset<T>, leftJoinProp: string | ((obj: E) => string), rightJoinProp: string | ((obj: T) => string), mapFun?: (a: E, b: T) => U): Resultset<U> {
   //eqJoin<T extends object, U extends object>(joinData: T[] | Resultset<T>, leftJoinKey: string | ((obj: E) => string), rightJoinKey: string | ((obj: T) => string), mapFun?: (a: E, b: T) => U, dataOptions?: Resultset.DataOptions): Resultset<{ left: E; right: T; }> {
-  eqJoin(joinData: ANY[], leftJoinProp: string, rightJoinProp: string, mapFun?: Function) : Resultset {
+  eqJoin(joinData: ANY[], leftJoinProp: string, rightJoinProp: string, mapFun?: Function): Resultset {
     // logic in Resultset class
     return new Resultset(this).eqJoin(joinData, leftJoinProp, rightJoinProp, mapFun);
   }

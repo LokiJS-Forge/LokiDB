@@ -114,7 +114,6 @@ describe("dynamicviews", () => {
       const items = db.addCollection<User>("users");
       items.insert(testRecords);
       const dv = items.addDynamicView("ownr");
-
       dv.applyFind({"owner": "odin"});
       dv.applyWhere((obj: ANY) => obj.maker === "elves");
 
