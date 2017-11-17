@@ -262,7 +262,7 @@ function dotSubScan(root: object, paths: string[], fun: Function, value: ANY, pa
 export class Resultset<E extends object = object> {
 
   public collection: Collection<E>;
-  public filteredrows: any[];
+  public filteredrows: number[];
   public filterInitialized: boolean;
 
   /**
@@ -690,21 +690,14 @@ export class Resultset<E extends object = object> {
     }
 
     const queryObject = query || "getAll";
-    let p;
     let property;
     let queryObjectOp;
-    let obj;
-    let operator;
     let value;
-    let key;
-    let searchByIndex = false;
-    let result = [];
-    let filters = [];
-    let index = null;
 
     if (typeof queryObject === "object") {
-      for (p in queryObject) {
-        obj = {};
+      let filters = [];
+      for (let p in queryObject) {
+        let obj = {};
         obj[p] = queryObject[p];
         filters.push(obj);
 
@@ -742,11 +735,12 @@ export class Resultset<E extends object = object> {
     }
 
     // see if query object is in shorthand mode (assuming eq operator)
+    let operator;
     if (queryObjectOp === null || (typeof queryObjectOp !== "object" || queryObjectOp instanceof Date)) {
       operator = "$eq";
       value = queryObjectOp;
     } else if (typeof queryObjectOp === "object") {
-      for (key in queryObjectOp) {
+      for (let key in queryObjectOp) {
         if (queryObjectOp[key] !== undefined) {
           operator = key;
           value = queryObjectOp[key];
@@ -788,6 +782,7 @@ export class Resultset<E extends object = object> {
     // for now only enabling where it is the first filter applied and prop is indexed
     const doIndexCheck = !usingDotNotation && !this.filterInitialized;
 
+    let searchByIndex = false;
     if (doIndexCheck && this.collection.binaryIndices[property] && indexedOps[operator]) {
       // this is where our lazy index rebuilding will take place
       // basically we will leave all indexes dirty until we need them
@@ -796,21 +791,14 @@ export class Resultset<E extends object = object> {
       if (this.collection.adaptiveBinaryIndices !== true) {
         this.collection.ensureIndex(property);
       }
-
       searchByIndex = true;
-      index = this.collection.binaryIndices[property];
     }
 
     // the comparison function
     const fun = LokiOps[operator];
 
     // "shortcut" for collection data
-    const t = this.collection.data;
-
-    // filter data length
-    let i = 0;
-
-    let len = 0;
+    const data = this.collection.data;
 
     // Query executed differently depending on :
     //    - whether the property being queried has an index defined
@@ -818,112 +806,98 @@ export class Resultset<E extends object = object> {
     //
     // For performance reasons, each case has its own if block to minimize in-loop calculations
 
-    let filter;
-
-    let rowIdx = 0;
-
+    let result: number[] = [];
     // If the filteredrows[] is already initialized, use it
     if (this.filterInitialized) {
-      filter = this.filteredrows;
-      len = filter.length;
-
+      let filter = this.filteredrows;
       // currently supporting dot notation for non-indexed conditions only
       if (usingDotNotation) {
         property = property.split(".");
-        for (i = 0; i < len; i++) {
-          rowIdx = filter[i];
-          if (dotSubScan(t[rowIdx], property, fun, value)) {
+        for (let i = 0; i < filter.length; i++) {
+          let rowIdx = filter[i];
+          if (dotSubScan(data[rowIdx], property, fun, value)) {
             result.push(rowIdx);
           }
         }
       } else {
-        for (i = 0; i < len; i++) {
-          rowIdx = filter[i];
-          if (fun(t[rowIdx][property], value)) {
+        for (let i = 0; i < filter.length; i++) {
+          let rowIdx = filter[i];
+          if (fun(data[rowIdx][property], value)) {
             result.push(rowIdx);
           }
         }
       }
-    }
-    // first chained query so work against data[] but put results in filteredrows
-    else {
-      // if not searching by index
-      if (!searchByIndex) {
-        len = t.length;
 
-        if (usingDotNotation) {
-          property = property.split(".");
-          for (i = 0; i < len; i++) {
-            if (dotSubScan(t[i], property, fun, value)) {
-              result.push(i);
-              if (firstOnly) {
-                this.filteredrows = result;
-                this.filterInitialized = true;
-                return this;
-              }
-            }
-          }
-        } else {
-          for (i = 0; i < len; i++) {
-            if (fun(t[i][property], value)) {
-              result.push(i);
-              if (firstOnly) {
-                this.filteredrows = result;
-                this.filterInitialized = true;
-                return this;
-              }
-            }
-          }
-        }
-      } else {
-        if (operator !== "$in") {
-          // search by index
-          const segm = this.collection.calculateRange(operator, property, value);
-
-          for (i = segm[0]; i <= segm[1]; i++) {
-            if (indexedOps[operator] !== true) {
-              // must be a function, implying 2nd phase filtering of results from calculateRange
-              if (indexedOps[operator](t[index.values[i]][property], value)) {
-                result.push(index.values[i]);
-                if (firstOnly) {
-                  this.filteredrows = result;
-                  this.filterInitialized = true;
-                  return this;
-                }
-              }
-            }
-            else {
-              result.push(index.values[i]);
-              if (firstOnly) {
-                this.filteredrows = result;
-                this.filterInitialized = true;
-                return this;
-              }
-            }
-          }
-        } else {
-          const idxset = [];
-          // query each value '$eq' operator and merge the seqment results.
-          for (let j = 0, len = value.length; j < len; j++) {
-            const seg = this.collection.calculateRange("$eq", property, value[j]);
-            for (let i = seg[0]; i <= seg[1]; i++) {
-              if (idxset[i] === undefined) {
-                idxset[i] = true;
-                result.push(index.values[i]);
-              }
-              if (firstOnly) {
-                this.filteredrows = result;
-                this.filterInitialized = true;
-                return this;
-              }
-            }
-          }
-        }
-      }
+      this.filteredrows = result;
+      this.filterInitialized = true; // next time work against filteredrows[]
+      return this;
     }
 
     this.filteredrows = result;
     this.filterInitialized = true; // next time work against filteredrows[]
+
+    // first chained query so work against data[] but put results in filteredrows
+    // if not searching by index
+    if (!searchByIndex) {
+      if (usingDotNotation) {
+        property = property.split(".");
+        for (let i = 0; i < data.length; i++) {
+          if (dotSubScan(data[i], property, fun, value)) {
+            result.push(i);
+            if (firstOnly) {
+              return this;
+            }
+          }
+        }
+      } else {
+        for (let i = 0; i < data.length; i++) {
+          if (fun(data[i][property], value)) {
+            result.push(i);
+            if (firstOnly) {
+              return this;
+            }
+          }
+        }
+      }
+      return this;
+    }
+
+    let index = this.collection.binaryIndices[property];
+    if (operator !== "$in") {
+      // search by index
+      const segm = this.collection.calculateRange(operator, property, value);
+      for (let i = segm[0]; i <= segm[1]; i++) {
+        if (indexedOps[operator] !== true) {
+          // must be a function, implying 2nd phase filtering of results from calculateRange
+          if (indexedOps[operator](data[index.values[i]][property], value)) {
+            result.push(index.values[i]);
+            if (firstOnly) {
+              return this;
+            }
+          }
+        } else {
+          result.push(index.values[i]);
+          if (firstOnly) {
+            return this;
+          }
+        }
+      }
+    } else {
+      const idxset = [];
+      // query each value '$eq' operator and merge the segment results.
+      for (let j = 0, len = value.length; j < len; j++) {
+        const segm = this.collection.calculateRange("$eq", property, value[j]);
+        for (let i = segm[0]; i <= segm[1]; i++) {
+          if (idxset[i] === undefined) {
+            idxset[i] = true;
+            result.push(index.values[i]);
+          }
+          if (firstOnly) {
+            return this;
+          }
+        }
+      }
+    }
     return this;
   }
 
