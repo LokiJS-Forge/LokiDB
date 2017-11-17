@@ -3,7 +3,7 @@ import {Loki} from "../../src/loki";
 import {LokiMemoryAdapter} from "../../src/memory_adapter";
 import {Collection} from "../../src/collection";
 import SerializationMethod = Loki.SerializationMethod;
-import {lokijs} from "../../src/types";
+import {Storage} from "../../src/types";
 
 export type ANY = any;
 
@@ -334,7 +334,7 @@ describe("testing adapter functionality", () => {
       n: number;
     }
 
-    class MyFakeReferenceAdapter implements lokijs.Storage {
+    class MyFakeReferenceAdapter implements Storage {
       mode = "reference";
 
       loadDatabase(dbname: string) {

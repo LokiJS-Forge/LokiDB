@@ -7,7 +7,7 @@ import {clone, CloneMethod} from "./clone";
 import {ltHelper, gtHelper, aeqHelper} from "./helper";
 import {Loki} from "./loki";
 import {copyProperties} from "./utils";
-import {lokijs} from "./types";
+import {Doc, Dict, Query} from "./types";
 
 /*
  'isDeepProperty' is not defined              no-undef
@@ -67,9 +67,9 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
 
   public name: string;
   // the data held by the collection
-  public data: lokijs.Doc<E>[];
+  public data: Doc<E>[];
   private idIndex: number[]; // index of id
-  public binaryIndices: lokijs.Dict<Collection.BinaryIndex>; // user defined indexes
+  public binaryIndices: Dict<Collection.BinaryIndex>; // user defined indexes
   public constraints = {
     unique: {},
     exact: {}
@@ -294,15 +294,15 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     this.setChangesApi(this.disableChangesApi, this.disableDeltaChangesApi);
 
     // Add change api to event callback.
-    this.on("insert", (obj: lokijs.Doc<E>) => {
+    this.on("insert", (obj: Doc<E>) => {
       this.insertHandler(obj);
     });
 
-    this.on("update", (obj: lokijs.Doc<E>, old: lokijs.Doc<E>) => {
+    this.on("update", (obj: Doc<E>, old: Doc<E>) => {
       this.updateHandler(obj, old);
     });
 
-    this.on("delete", (obj: lokijs.Doc<E>) => {
+    this.on("delete", (obj: Doc<E>) => {
       if (!this.disableChangesApi) {
         this._createChange(this.name, "R", obj);
       }
@@ -705,7 +705,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {object|function} filterObject - 'mongo-like' query object (or deprecated filterFunction mode)
    * @param {function} updateFunction - update function to run against filtered documents
    */
-  findAndUpdate(filterObject: lokijs.Query | ((obj: E) => boolean), updateFunction: (obj: E) => E) {
+  findAndUpdate(filterObject: Query | ((obj: E) => boolean), updateFunction: (obj: E) => E) {
     if (typeof(filterObject) === "function") {
       this.updateWhere(filterObject, updateFunction);
     } else {
@@ -727,8 +727,8 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {(object|array)} doc - the document (or array of documents) to be inserted
    * @returns {(object|array)} document or documents inserted
    */
-  insert(doc: E | E[]): lokijs.Doc<E>;
-  insert(doc: E[]): lokijs.Doc<E>[];
+  insert(doc: E | E[]): Doc<E>;
+  insert(doc: E[]): Doc<E>[];
   insert(doc: E | E[]) {
     if (!Array.isArray(doc)) {
       return this.insertOne(doc);
@@ -761,7 +761,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {boolean} bulkInsert - quiet pre-insert and insert event emits
    * @returns {object} document or 'undefined' if there was a problem inserting it
    */
-  insertOne(doc: E, bulkInsert = false): lokijs.Doc<E> {
+  insertOne(doc: E, bulkInsert = false): Doc<E> {
     let err = null;
     let returnObj;
 
@@ -806,7 +806,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       returnObj = this.cloneObjects ? clone(obj, this.cloneMethod) : obj;
     }
 
-    return returnObj as lokijs.Doc<E>;
+    return returnObj as Doc<E>;
   }
 
   /**
@@ -963,7 +963,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
         this.maxId = (this.data[this.data.length - 1].$loki + 1);
       }
 
-      const newDoc = obj as lokijs.Doc<E>;
+      const newDoc = obj as Doc<E>;
       newDoc.$loki = this.maxId;
       newDoc.meta.version = 0;
 
@@ -1039,7 +1039,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * For 'mongo-like' querying you should migrate to [findAndRemove()]{@link Collection#findAndRemove}.
    * @param {function|object} query - query object to filter on
    */
-  removeWhere(query: lokijs.Query | ((obj: E) => boolean)) {
+  removeWhere(query: Query | ((obj: E) => boolean)) {
     let list;
     if (typeof query === "function") {
       list = this.data.filter(query);
@@ -1167,7 +1167,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     this.changes = [];
   }
 
-  private _getObjectDelta(oldObject: lokijs.Doc<E>, newObject: lokijs.Doc<E>) {
+  private _getObjectDelta(oldObject: Doc<E>, newObject: Doc<E>) {
     const propertyNames = newObject !== null && typeof newObject === "object" ? Object.keys(newObject) : null;
     if (propertyNames && propertyNames.length && ["string", "boolean", "number"].indexOf(typeof(newObject)) < 0) {
       const delta = {};
@@ -1195,7 +1195,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   /**
    * Compare changed object (which is a forced clone) with existing object and return the delta
    */
-  private _getChangeDelta(obj: lokijs.Doc<E>, old: lokijs.Doc<E>) {
+  private _getChangeDelta(obj: Doc<E>, old: Doc<E>) {
     if (old) {
       return this._getObjectDelta(old, obj);
     }
@@ -1208,7 +1208,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * This method creates a clone of the current status of an object and associates operation and collection name,
    * so the parent db can aggregate and generate a changes object for the entire db
    */
-  private _createChange(name: string, op: string, obj: lokijs.Doc<E>, old?: lokijs.Doc<E>) {
+  private _createChange(name: string, op: string, obj: Doc<E>, old?: Doc<E>) {
     this.changes.push({
       name,
       operation: op,
@@ -1216,14 +1216,14 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     });
   }
 
-  private _createInsertChange(obj: lokijs.Doc<E>) {
+  private _createInsertChange(obj: Doc<E>) {
     this._createChange(this.name, "I", obj);
   }
 
   /**
    * If the changes API is disabled make sure only metadata is added without re-evaluating everytime if the changesApi is enabled
    */
-  private _insertMeta(obj: lokijs.Doc<E>) {
+  private _insertMeta(obj: Doc<E>) {
     let len;
     let idx;
 
@@ -1256,7 +1256,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     obj.meta.revision = 0;
   }
 
-  private _updateMeta(obj: lokijs.Doc<E>) {
+  private _updateMeta(obj: Doc<E>) {
     if (!obj) {
       return;
     }
@@ -1265,16 +1265,16 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   }
 
 
-  private _createUpdateChange(obj: lokijs.Doc<E>, old: lokijs.Doc<E>) {
+  private _createUpdateChange(obj: Doc<E>, old: Doc<E>) {
     this._createChange(this.name, "U", obj, old);
   }
 
-  private _insertMetaWithChange(obj: lokijs.Doc<E>) {
+  private _insertMetaWithChange(obj: Doc<E>) {
     this._insertMeta(obj);
     this._createInsertChange(obj);
   }
 
-  private _updateMetaWithChange(obj: lokijs.Doc<E>, old: lokijs.Doc<E>) {
+  private _updateMetaWithChange(obj: Doc<E>, old: Doc<E>) {
     this._updateMeta(obj);
     this._createUpdateChange(obj, old);
   }
@@ -1290,8 +1290,8 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @returns {(object|array|null)} Object reference if document was found, null if not,
    *     or an array if 'returnPosition' was passed.
    */
-  public get(id: number): lokijs.Doc<E>;
-  public get(id: number, returnPosition: boolean): lokijs.Doc<E> | [lokijs.Doc<E>, number];
+  public get(id: number): Doc<E>;
+  public get(id: number, returnPosition: boolean): Doc<E> | [Doc<E>, number];
   public get(id: number, returnPosition = false) {
     const data = this.idIndex;
     let max = data.length - 1;
@@ -1740,12 +1740,12 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {any} value - unique value to search for
    * @returns {object} document matching the value passed
    */
-  public by(field: string, value?: ANY): lokijs.Doc<E> {
+  public by(field: string, value?: ANY): Doc<E> {
     const result = this.constraints.unique[field].get(value);
     if (!this.cloneObjects) {
-      return result as lokijs.Doc<E>;
+      return result as Doc<E>;
     } else {
-      return clone(result, this.cloneMethod) as any as lokijs.Doc<E>;
+      return clone(result, this.cloneMethod) as any as Doc<E>;
     }
   }
 
@@ -1754,7 +1754,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {object} query - query object used to perform search with
    * @returns {(object|null)} First matching document, or null if none
    */
-  public findOne(query: object): lokijs.Doc<E> {
+  public findOne(query: object): Doc<E> {
     query = query || {};
 
     // Instantiate Resultset and exec find op passing firstOnly = true param
@@ -1764,9 +1764,9 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       return null;
     } else {
       if (!this.cloneObjects) {
-        return result[0] as any as lokijs.Doc<E>;
+        return result[0] as any as Doc<E>;
       } else {
-        return clone(result[0], this.cloneMethod) as any as lokijs.Doc<E>;
+        return clone(result[0], this.cloneMethod) as any as Doc<E>;
       }
     }
   }
@@ -1795,7 +1795,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {object} query - 'mongo-like' query object
    * @returns {array} Array of matching documents
    */
-  public find(query?: lokijs.Query) {
+  public find(query?: Query) {
     return this.chain().find(query).data();
   }
 
@@ -1873,7 +1873,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {function} fun - filter function to run against all collection docs
    * @returns {array} all documents which pass your filter function
    */
-  public where(fun: (obj: E) => boolean): lokijs.Doc<E>[] {
+  public where(fun: (obj: E) => boolean): Doc<E>[] {
     return this.chain().where(fun).data();
   }
 

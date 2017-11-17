@@ -2,7 +2,7 @@ import {clone, CloneMethod} from "./clone";
 import {Collection} from "./collection";
 import {resolveTransformParams} from "./utils";
 import {ltHelper, gtHelper, aeqHelper, sortHelper} from "./helper";
-import {lokijs} from "./types";
+import {Doc, Query} from "./types";
 
 export type ANY = any;
 
@@ -610,7 +610,7 @@ export class Resultset<E extends object = object> {
    * @param {array} expressionArray - array of expressions
    * @returns {Resultset} this resultset for further chain ops.
    */
-  public findOr(expressionArray: lokijs.Query[]): Resultset<E> {
+  public findOr(expressionArray: Query[]): Resultset<E> {
     let fr = null;
     let fri = 0;
     let frlen = 0;
@@ -646,7 +646,7 @@ export class Resultset<E extends object = object> {
     return this;
   }
 
-  public $or(expressionArray: lokijs.Query[]): Resultset<E> {
+  public $or(expressionArray: Query[]): Resultset<E> {
     return this.findOr(expressionArray);
   }
 
@@ -659,7 +659,7 @@ export class Resultset<E extends object = object> {
    * @param {array} expressionArray - array of expressions
    * @returns {Resultset} this resultset for further chain ops.
    */
-  public findAnd(expressionArray: lokijs.Query[]): Resultset<E> {
+  public findAnd(expressionArray: Query[]): Resultset<E> {
     // we have already implementing method chaining in this (our Resultset class)
     // so lets just progressively apply user supplied and filters
     for (let i = 0, len = expressionArray.length; i < len; i++) {
@@ -671,7 +671,7 @@ export class Resultset<E extends object = object> {
     return this;
   }
 
-  public $and(expressionArray: lokijs.Query[]): Resultset<E> {
+  public $and(expressionArray: Query[]): Resultset<E> {
     return this.findAnd(expressionArray);
   }
 
@@ -682,7 +682,7 @@ export class Resultset<E extends object = object> {
    * @param {boolean} firstOnly - (Optional) Used by collection.findOne() - flag if this was invoked via findOne()
    * @returns {Resultset} this resultset for further chain ops.
    */
-  public find(query?: lokijs.Query, firstOnly = false): Resultset<E> {
+  public find(query?: Query, firstOnly = false): Resultset<E> {
     if (this.collection.data.length === 0) {
       this.filteredrows = [];
       this.filterInitialized = true;
@@ -974,7 +974,7 @@ export class Resultset<E extends object = object> {
    *
    * @returns {Array} Array of documents in the resultset
    */
-  public data(options: Resultset.DataOptions = {}): lokijs.Doc<E>[] {
+  public data(options: Resultset.DataOptions = {}): Doc<E>[] {
     let forceClones: boolean;
     let forceCloneMethod: CloneMethod;
     let removeMeta: boolean;

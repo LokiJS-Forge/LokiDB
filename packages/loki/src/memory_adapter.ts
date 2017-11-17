@@ -1,4 +1,4 @@
-import {lokijs} from "./types";
+import {Storage} from "./types";
 
 export type ANY = any;
 
@@ -12,7 +12,7 @@ export type ANY = any;
  *
  * @constructor LokiMemoryAdapter
  */
-export class LokiMemoryAdapter implements lokijs.Storage {
+export class LokiMemoryAdapter implements Storage {
 
   private hashStore: object;
   private options: ANY;

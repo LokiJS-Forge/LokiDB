@@ -1,7 +1,7 @@
 import {LokiEventEmitter} from "./event_emitter";
 import {Resultset} from "./resultset";
 import {Collection} from "./collection";
-import {lokijs} from './types';
+import {Doc, Filter} from "./types";
 
 /*
  applySortCriteria -> like Resultset::compoundsort
@@ -36,12 +36,12 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
   private _rebuildPending: boolean;
 
   private _resultset: Resultset<E>;
-  private _resultdata: lokijs.Doc<E>[];
+  private _resultdata: Doc<E>[];
   private _resultsdirty: boolean;
 
   private _cachedresultset: Resultset<E>;
 
-  private _filterPipeline: lokijs.Filter<E>[];
+  private _filterPipeline: Filter<E>[];
 
 
   private _sortFunction: (lhs: E, rhs: E) => number;
@@ -352,7 +352,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    *
    * @param {object} filter - The filter object. Refer to applyFilter() for extra details.
    */
-  private _addFilter(filter: lokijs.Filter<E>): void {
+  private _addFilter(filter: Filter<E>): void {
     this._filterPipeline.push(filter);
     this._resultset[filter.type](filter.val);
   }
@@ -394,7 +394,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    *    The object is in the format { 'type': filter_type, 'val', filter_param, 'uid', optional_filter_id }
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public applyFilter(filter: lokijs.Filter<E>): DynamicView<E> {
+  public applyFilter(filter: Filter<E>): DynamicView<E> {
     const idx = this._indexOfFilterWithId(filter.uid);
     if (idx >= 0) {
       this._filterPipeline[idx] = filter;
@@ -493,7 +493,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    *
    * @returns {Array} An array of documents representing the current DynamicView contents.
    */
-  data(options: object = {}): lokijs.Doc<E>[] {
+  data(options: object = {}): Doc<E>[] {
     // using final sort phase as 'catch all' for a few use cases which require full rebuild
     if (this._sortDirty || this._resultsdirty) {
       this.performSortPhase({

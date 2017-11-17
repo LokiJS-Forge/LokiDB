@@ -1,6 +1,6 @@
 import {LokiEventEmitter} from "./event_emitter";
 import {Collection} from "./collection";
-import {lokijs} from "./types";
+import {Doc, Storage} from "./types";
 
 /*
  'LokiFsAdapter' is not defined                 no-undef	x
@@ -61,7 +61,7 @@ export class Loki extends LokiEventEmitter {
   private _serializationMethod: Loki.SerializationMethod;
   private _destructureDelimiter: string;
   private _persistenceMethod: Loki.PersistenceMethod;
-  private _persistenceAdapter: lokijs.Storage;
+  private _persistenceAdapter: Storage;
 
   private _throttledSaves: boolean;
   private _throttledSaveRunning: Promise<void>;
@@ -697,7 +697,7 @@ export class Loki extends LokiEventEmitter {
     for (let idx = 0; idx < workarray.length; idx++) {
       workarray[idx] = JSON.parse(workarray[idx]);
     }
-    return workarray as any as lokijs.Doc<T>;
+    return workarray as any as Doc<T>;
   }
 
   /**
@@ -1066,7 +1066,7 @@ export namespace Loki {
   }
 
   export interface PersistenceOptions {
-    adapter?: lokijs.Storage;
+    adapter?: Storage;
     autosave?: boolean;
     autosaveInterval?: number;
     autoload?: boolean;

@@ -2,7 +2,7 @@
 import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
 import {Resultset} from "../../src/resultset";
-import {lokijs} from "../../src/types";
+import {Doc} from "../../src/types";
 
 export type ANY = any;
 
@@ -119,8 +119,8 @@ describe("joins", () => {
     expect(joined.data()[0].filmTitle).toEqual("Jaws");
 
     interface Join2 {
-      left: lokijs.Doc<Director>;
-      right: lokijs.Doc<Film>;
+      left: Doc<Director>;
+      right: Doc<Film>;
     }
 
     //Test calculated keys
@@ -132,7 +132,7 @@ describe("joins", () => {
     expect(joined[0].right.name).toEqual("Steven Spielberg");
   });
 });
-// var Loki = require('../src/lokijs.js'),
+// var Loki = require('../src/js'),
 //   gordian = require('gordian'),
 //   suite = new gordian('testJoins'),
 
