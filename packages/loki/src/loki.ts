@@ -1,6 +1,6 @@
 import {LokiEventEmitter} from "./event_emitter";
 import {Collection} from "./collection";
-import {Doc, Storage} from "./types";
+import {Doc, StorageAdapter} from "./types";
 
 /*
  'LokiFsAdapter' is not defined                 no-undef	x
@@ -61,7 +61,7 @@ export class Loki extends LokiEventEmitter {
   private _serializationMethod: Loki.SerializationMethod;
   private _destructureDelimiter: string;
   private _persistenceMethod: Loki.PersistenceMethod;
-  private _persistenceAdapter: Storage;
+  private _persistenceAdapter: StorageAdapter;
 
   private _throttledSaves: boolean;
   private _throttledSaveRunning: Promise<void>;
@@ -898,6 +898,7 @@ export class Loki extends LokiEventEmitter {
           this.loadJSON(dbString, options);
           this.emit("load", this);
         } else {
+          dbString = dbString as object;
           // if adapter has returned an js object (other than null or error) attempt to load from JSON object
           if (typeof (dbString) === "object" && dbString !== null && !(dbString instanceof Error)) {
             this.loadJSONObject(dbString, options);
@@ -928,7 +929,7 @@ export class Loki extends LokiEventEmitter {
    * @returns {Promise} a Promise that resolves after the database is loaded
    */
   // TODO??
-  loadDatabase(options: Loki.ThrottledSaveDrainOptions = {}) {
+  loadDatabase(options: Loki.ThrottledSaveDrainOptions = {}): Promise<void> {
     // if throttling disabled, just call internal
     if (!this._throttledSaves) {
       return this._loadDatabase(options);
@@ -1066,7 +1067,7 @@ export namespace Loki {
   }
 
   export interface PersistenceOptions {
-    adapter?: Storage;
+    adapter?: StorageAdapter;
     autosave?: boolean;
     autosaveInterval?: number;
     autoload?: boolean;

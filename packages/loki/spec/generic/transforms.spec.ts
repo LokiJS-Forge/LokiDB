@@ -1,7 +1,6 @@
 /* global describe, beforeEach, it, expect */
 import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
-import {lokijs} from "../../src/types";
 
 export type ANY = any;
 

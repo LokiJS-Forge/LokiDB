@@ -3,7 +3,7 @@ import {Loki} from "../../src/loki";
 import {LokiMemoryAdapter} from "../../src/memory_adapter";
 import {Collection} from "../../src/collection";
 import SerializationMethod = Loki.SerializationMethod;
-import {Storage} from "../../src/types";
+import {StorageAdapter} from "../../src/types";
 
 export type ANY = any;
 
@@ -334,7 +334,7 @@ describe("testing adapter functionality", () => {
       n: number;
     }
 
-    class MyFakeReferenceAdapter implements Storage {
+    class MyFakeReferenceAdapter implements StorageAdapter {
       mode = "reference";
 
       loadDatabase(dbname: string) {
@@ -369,6 +369,7 @@ describe("testing adapter functionality", () => {
         dbref["_collections"][0].name = "see1";
         // (accidentally?) updating a document should...
         dbref["_collections"][0].findOne({a: 1})["b"] = 3;
+        return Promise.resolve();
       }
     }
 

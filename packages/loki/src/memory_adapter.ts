@@ -1,4 +1,4 @@
-import {Storage} from "./types";
+import {StorageAdapter} from "./types";
 
 export type ANY = any;
 
@@ -12,7 +12,7 @@ export type ANY = any;
  *
  * @constructor LokiMemoryAdapter
  */
-export class LokiMemoryAdapter implements Storage {
+export class LokiMemoryAdapter implements StorageAdapter {
 
   private hashStore: object;
   private options: ANY;
@@ -37,7 +37,7 @@ export class LokiMemoryAdapter implements Storage {
    * @param {string} dbname - name of the database (filename/keyname)
    * @returns {Promise} a Promise that resolves after the database was loaded
    */
-  loadDatabase(dbname: string) {
+  loadDatabase(dbname: string): Promise<string> {
     if (this.options.asyncResponses) {
       return new Promise((resolve, reject) => {
         setTimeout(() => {
@@ -67,7 +67,7 @@ export class LokiMemoryAdapter implements Storage {
    * @param {string} dbname - name of the database (filename/keyname)
    * @returns {Promise} a Promise that resolves after the database was persisted
    */
-  saveDatabase(dbname: string, dbstring: string) {
+  saveDatabase(dbname: string, dbstring: string): Promise<void> {
     let saveCount;
 
     if (this.options.asyncResponses) {
@@ -83,6 +83,7 @@ export class LokiMemoryAdapter implements Storage {
 
           resolve();
         }, this.options.asyncTimeout);
+        return Promise.resolve();
       });
     } else {
       saveCount = (this.hashStore[dbname] !== undefined ? this.hashStore[dbname].savecount : 0);

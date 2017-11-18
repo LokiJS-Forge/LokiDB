@@ -1,4 +1,5 @@
 import {Loki} from "../../loki/src/loki";
+import {ANY, StorageAdapter} from "../../loki/src/types";
 
 /**
  * An adapter for adapters. Converts a non reference mode adapter into a reference mode adapter
@@ -10,14 +11,25 @@ import {Loki} from "../../loki/src/loki";
  * single IndexedDB row. If a single document update causes the collection to be flagged as dirty, all
  * of that collection's pages will be written on next save.
  */
-export class LokiPartitioningAdapter {
+export class LokiPartitioningAdapter implements StorageAdapter {
+
+  public mode: string;
+  private _adapter: StorageAdapter;
+  private _dbref: ANY;
+  private _dbname: string;
+  private _pageIterator: LokiPartitioningAdapter.PageIterator;
+  private _paging: boolean;
+  private _pageSize: number;
+  private _delimiter: string;
+  private _dirtyPartitions: number[];
+
   /**
    * @param {object} adapter - reference to a 'non-reference' mode loki adapter instance.
    * @param {boolean} paging - (default: false) set to true to enable paging collection data.
    * @param {number} pageSize - (default : 25MB) you can use this to limit size of strings passed to inner adapter.
    * @param {string} delimiter - allows you to override the default delimiter
    */
-  constructor(adapter, {paging = false, pageSize = 25 * 1024 * 1024, delimiter = "$<\n"} = {}) {
+  constructor(adapter: StorageAdapter, {paging = false, pageSize = 25 * 1024 * 1024, delimiter = "$<\n"} = {}) {
     this.mode = "reference";
     this._adapter = null;
     this._dbref = null;
@@ -41,18 +53,18 @@ export class LokiPartitioningAdapter {
   }
 
   /**
-	 * Loads a database which was partitioned into several key/value saves.
-	 * (Loki persistence adapter interface function)
-	 *
-	 * @param {string} dbname - name of the database (filename/keyname)
-	 * @returns {Promise} a Promise that resolves after the database was loaded
-	 */
-  loadDatabase(dbname) {
+   * Loads a database which was partitioned into several key/value saves.
+   * (Loki persistence adapter interface function)
+   *
+   * @param {string} dbname - name of the database (filename/keyname)
+   * @returns {Promise} a Promise that resolves after the database was loaded
+   */
+  public loadDatabase(dbname: string): Promise<any> {
     this._dbname = dbname;
     this._dbref = new Loki(dbname);
 
     // load the db container (without data)
-    return this._adapter.loadDatabase(dbname).then((result) => {
+    return this._adapter.loadDatabase(dbname).then((result: string) => {
       if (typeof result !== "string") {
         throw new Error("LokiPartitioningAdapter received an unexpected response from inner adapter loadDatabase()");
       }
@@ -71,25 +83,25 @@ export class LokiPartitioningAdapter {
         pageIndex: 0
       };
 
-      return this.loadNextPartition(0).then(() => this._dbref);
+      return this._loadNextPartition(0).then(() => this._dbref);
     });
   }
 
   /**
-	 * Used to sequentially load each collection partition, one at a time.
-	 *
-	 * @param {int} partition - ordinal collection position to load next
-	 * @returns {Promise} a Promise that resolves after the next partition is loaded
-	 */
-  loadNextPartition(partition) {
+   * Used to sequentially load each collection partition, one at a time.
+   *
+   * @param {int} partition - ordinal collection position to load next
+   * @returns {Promise} a Promise that resolves after the next partition is loaded
+   */
+  private _loadNextPartition(partition: number): Promise<void> {
     const keyname = this._dbname + "." + partition;
 
     if (this._paging === true) {
       this._pageIterator.pageIndex = 0;
-      return this.loadNextPage();
+      return this._loadNextPage();
     }
 
-    return this._adapter.loadDatabase(keyname).then((result) => {
+    return this._adapter.loadDatabase(keyname).then((result: string) => {
       const data = this._dbref.deserializeCollection(result, {
         delimited: true,
         collectionIndex: partition
@@ -97,22 +109,22 @@ export class LokiPartitioningAdapter {
       this._dbref._collections[partition].data = data;
 
       if (++partition < this._dbref._collections.length) {
-        return this.loadNextPartition(partition);
+        return this._loadNextPartition(partition);
       }
     });
   }
 
   /**
-	 * Used to sequentially load the next page of collection partition, one at a time.
-	 *
-	 * @returns {Promise} a Promise that resolves after the next page is loaded
-	 */
-  loadNextPage() {
+   * Used to sequentially load the next page of collection partition, one at a time.
+   *
+   * @returns {Promise} a Promise that resolves after the next page is loaded
+   */
+  private _loadNextPage(): Promise<void> {
     // calculate name for next saved page in sequence
     const keyname = this._dbname + "." + this._pageIterator.collection + "." + this._pageIterator.pageIndex;
 
     // load whatever page is next in sequence
-    return this._adapter.loadDatabase(keyname).then((result) => {
+    return this._adapter.loadDatabase(keyname).then((result: string) => {
       let data = result.split(this._delimiter);
       result = ""; // free up memory now that we have split it into array
       let dlen = data.length;
@@ -141,25 +153,25 @@ export class LokiPartitioningAdapter {
       if (isLastPage) {
         // if there are more partitions, kick off next partition load
         if (++this._pageIterator.collection < this._dbref._collections.length) {
-          return this.loadNextPartition(this._pageIterator.collection);
+          return this._loadNextPartition(this._pageIterator.collection);
         }
       } else {
         this._pageIterator.pageIndex++;
-        return this.loadNextPage();
+        return this._loadNextPage();
       }
     });
   }
 
   /**
-	 * Saves a database by partioning into separate key/value saves.
-	 * (Loki 'reference mode' persistence adapter interface function)
-	 *
-	 * @param {string} dbname - name of the database (filename/keyname)
-	 * @param {object} dbref - reference to database which we will partition and save.
-	 * @returns {Promise} a Promise that resolves after the database was deleted
-	 *
-	 */
-  exportDatabase(dbname, dbref) {
+   * Saves a database by partioning into separate key/value saves.
+   * (Loki 'reference mode' persistence adapter interface function)
+   *
+   * @param {string} dbname - name of the database (filename/keyname)
+   * @param {object} dbref - reference to database which we will partition and save.
+   * @returns {Promise} a Promise that resolves after the database was deleted
+   *
+   */
+  public exportDatabase(dbname: string, dbref: ANY): Promise<void> {
     let idx;
     const clen = dbref._collections.length;
 
@@ -167,23 +179,23 @@ export class LokiPartitioningAdapter {
     this._dbname = dbname;
 
     // queue up dirty partitions to be saved
-    this.dirtyPartitions = [-1];
+    this._dirtyPartitions = [-1];
     for (idx = 0; idx < clen; idx++) {
       if (dbref._collections[idx].dirty) {
-        this.dirtyPartitions.push(idx);
+        this._dirtyPartitions.push(idx);
       }
     }
 
-    return this.saveNextPartition();
+    return this._saveNextPartition();
   }
 
   /**
-	 * Helper method used internally to save each dirty collection, one at a time.
-	 *
-	 * @returns {Promise} a Promise that resolves after the next partition is saved
-	 */
-  saveNextPartition() {
-    const partition = this.dirtyPartitions.shift();
+   * Helper method used internally to save each dirty collection, one at a time.
+   *
+   * @returns {Promise} a Promise that resolves after the next partition is saved
+   */
+  private _saveNextPartition(): Promise<void> {
+    const partition = this._dirtyPartitions.shift();
     const keyname = this._dbname + ((partition === -1) ? "" : ("." + partition));
 
     // if we are doing paging and this is collection partition
@@ -195,9 +207,9 @@ export class LokiPartitioningAdapter {
       };
 
       // since saveNextPage recursively calls itself until done, our callback means this whole paged partition is finished
-      return this.saveNextPage().then(() => {
-        if (this.dirtyPartitions.length !== 0) {
-          return this.saveNextPartition();
+      return this._saveNextPage().then(() => {
+        if (this._dirtyPartitions.length !== 0) {
+          return this._saveNextPartition();
         }
       });
     }
@@ -210,18 +222,18 @@ export class LokiPartitioningAdapter {
     });
 
     return this._adapter.saveDatabase(keyname, result).then(() => {
-      if (this.dirtyPartitions.length !== 0) {
-        return this.saveNextPartition();
+      if (this._dirtyPartitions.length !== 0) {
+        return this._saveNextPartition();
       }
     });
   }
 
   /**
-	 * Helper method used internally to generate and save the next page of the current (dirty) partition.
-	 *
-	 * @returns {Promise} a Promise that resolves after the next partition is saved
-	 */
-  saveNextPage() {
+   * Helper method used internally to generate and save the next page of the current (dirty) partition.
+   *
+   * @returns {Promise} a Promise that resolves after the next partition is saved
+   */
+  private _saveNextPage(): Promise<void> {
     const coll = this._dbref._collections[this._pageIterator.collection];
     const keyname = this._dbname + "." + this._pageIterator.collection + "." + this._pageIterator.pageIndex;
     let pageLen = 0;
@@ -238,7 +250,7 @@ export class LokiPartitioningAdapter {
       // update meta properties then continue process by invoking callback
       if (!doneWithPartition) {
         this._pageIterator.pageIndex++;
-        return this.saveNextPage();
+        return this._saveNextPage();
       }
     };
 
@@ -268,6 +280,14 @@ export class LokiPartitioningAdapter {
     }
     // if we are done with page save it and pass off to next recursive call or callback
     return this._adapter.saveDatabase(keyname, pageBuilder).then(pageSaveCallback);
+  }
+}
+
+namespace LokiPartitioningAdapter {
+  export interface PageIterator {
+    collection?: ANY;
+    docIndex?: number;
+    pageIndex?: number;
   }
 }
 
