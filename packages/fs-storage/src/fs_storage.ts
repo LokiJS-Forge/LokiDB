@@ -1,16 +1,17 @@
 import {Loki} from "../../loki/src/loki";
-import fs from "fs";
+import {StorageAdapter} from "../../loki/src/types";
+import * as fs from "fs";
 
 /**
  * A loki persistence adapter which persists using node fs module.
  */
-export class LokiFSStorage {
+export class LokiFSStorage implements StorageAdapter {
   /**
-   * loadDatabase() - Load data from file, will throw an error if the file does not exist
+   * Load data from file, will throw an error if the file does not exist
    * @param {string} dbname - the filename of the database to load
    * @returns {Promise} a Promise that resolves after the database was loaded
    */
-  loadDatabase(dbname) {
+  loadDatabase(dbname: string): Promise<any> {
     return new Promise((resolve, reject) => {
       fs.stat(dbname, (err, stats) => {
         if (!err && stats.isFile()) {
@@ -31,14 +32,13 @@ export class LokiFSStorage {
   }
 
   /**
-   * saveDatabase() - save data to file, will throw an error if the file can't be saved
+   * Save data to file, will throw an error if the file can't be saved
    * might want to expand this to avoid dataloss on partial save
    * @param {string} dbname - the filename of the database to load
    * @returns {Promise} a Promise that resolves after the database was persisted
    */
-  saveDatabase(dbname, dbstring) {
+  saveDatabase(dbname: string, dbstring: string): Promise<void> {
     const tmpdbname = dbname + "~";
-
     return new Promise((resolve, reject) => {
       fs.writeFile(tmpdbname, dbstring, (err) => {
         if (err) {
@@ -53,16 +53,16 @@ export class LokiFSStorage {
           });
         }
       });
-    });
+    }) as any as Promise<void>;
   }
 
   /**
-   * deleteDatabase() - delete the database file, will throw an error if the
+   * Delete the database file, will throw an error if the
    * file can't be deleted
    * @param {string} dbname - the filename of the database to delete
    * @returns {Promise} a Promise that resolves after the database was deleted
    */
-  deleteDatabase(dbname) {
+  deleteDatabase(dbname: string): Promise<void> {
     return new Promise((resolve, reject) => {
       fs.unlink(dbname, function deleteDatabaseCallback(err) {
         if (err) {
@@ -75,6 +75,6 @@ export class LokiFSStorage {
   }
 }
 
-Loki.LokiFSStorage = LokiFSStorage;
+Loki["LokiFSStorage"] = LokiFSStorage;
 
 export default LokiFSStorage;

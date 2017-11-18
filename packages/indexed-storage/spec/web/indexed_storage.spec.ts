@@ -1,16 +1,19 @@
 /* global describe, it, expect */
 import {Loki} from "../../../loki/src/loki";
-import {LokiLocalStorage} from "../../src/local_storage";
+import {LokiIndexedStorage} from "../../src/indexed_storage";
 
-describe("testing local storage", function () {
-  it("LokiLocalStorage", function (done) {
+describe("testing indexed storage", function () {
+
+  interface Name {
+    name: string;
+  }
+
+  it("LokiIndexedStorage", function (done) {
     const db = new Loki("myTestApp");
-
-    const adapter = {adapter: new LokiLocalStorage()};
-
+    const adapter = {adapter: new LokiIndexedStorage()};
     db.initializePersistence(adapter)
       .then(() => {
-        db.addCollection("myColl").insert({name: "Hello World"});
+        db.addCollection<Name>("myColl").insert({name: "Hello World"});
         return db.saveDatabase();
       })
       .then(() => {
@@ -19,7 +22,7 @@ describe("testing local storage", function () {
           .then(() => {
             return db2.loadDatabase();
           }).then(() => {
-            expect(db2.getCollection("myColl").find()[0].name).toEqual("Hello World");
+            expect(db2.getCollection<Name>("myColl").find()[0].name).toEqual("Hello World");
           });
       })
       .then(() => {
@@ -39,7 +42,7 @@ describe("testing local storage", function () {
       .then(() => {
         return db.loadDatabase()
           .then(() => {
-            expect(db.getCollection("myColl").find()[0].name).toEqual("Hello World");
+            expect(db.getCollection<Name>("myColl").find()[0].name).toEqual("Hello World");
             expect(false).toEqual(true);
             done();
           }, () => {

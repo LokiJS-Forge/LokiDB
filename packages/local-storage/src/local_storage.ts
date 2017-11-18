@@ -1,29 +1,18 @@
-//import {Loki} from "../../loki/src/loki";
-
-function localStorageAvailable() {
-  try {
-    return (window && window.localStorage !== undefined && window.localStorage !== null);
-  } catch (e) {
-    return false;
-  }
-}
+import {Loki} from "../../loki/src/loki";
+import {StorageAdapter} from "../../loki/src/types";
 
 /**
  * A loki persistence adapter which persists to web browser's local storage object
  * @constructor LokiLocalStorageAdapter
  */
-export class LokiLocalStorage {
+export class LokiLocalStorage implements StorageAdapter {
   /**
    * loadDatabase() - Load data from localstorage
    * @param {string} dbname - the name of the database to load
    * @returns {Promise} a Promise that resolves after the database was loaded
    */
   loadDatabase(dbname: string) {
-    if (localStorageAvailable()) {
-      return Promise.resolve(localStorage.getItem(dbname));
-    }
-
-    return Promise.reject(new Error("localStorage is not available"));
+    return Promise.resolve(localStorage.getItem(dbname));
   }
 
   /**
@@ -33,13 +22,7 @@ export class LokiLocalStorage {
    * @returns {Promise} a Promise that resolves after the database was saved
    */
   saveDatabase(dbname: string, dbstring: string) {
-    if (localStorageAvailable()) {
-      localStorage.setItem(dbname, dbstring);
-
-      return Promise.resolve();
-    }
-
-    return Promise.reject(new Error("localStorage is not available"));
+    return Promise.resolve(localStorage.setItem(dbname, dbstring));
   }
 
   /**
@@ -49,16 +32,10 @@ export class LokiLocalStorage {
    * @returns {Promise} a Promise that resolves after the database was deleted
    */
   deleteDatabase(dbname: string) {
-    if (localStorageAvailable()) {
-      localStorage.removeItem(dbname);
-
-      return Promise.resolve();
-    }
-
-    return Promise.reject(new Error("localStorage is not available"));
+    return Promise.resolve(localStorage.removeItem(dbname));
   }
 }
 
-//Loki.LokiLocalStorage = LokiLocalStorage;
+Loki["LokiLocalStorage"] = LokiLocalStorage;
 
 export default LokiLocalStorage;

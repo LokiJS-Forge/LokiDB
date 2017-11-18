@@ -1,4 +1,5 @@
 import {Loki} from "../../loki/src/loki";
+import {StorageAdapter} from "../../loki/src/types";
 
 /*
  Loki IndexedDb Adapter (need to include this script to use it)
@@ -12,6 +13,8 @@ import {Loki} from "../../loki/src/loki";
  Should usercallback be still used?
  */
 
+declare type ANY = any;
+
 /**
  * Loki persistence adapter class for indexedDb.
  *     This class fulfills abstract adapter interface which can be applied to other storage methods.
@@ -19,54 +22,42 @@ import {Loki} from "../../loki/src/loki";
  *     IndexedDb storage is provided per-domain, so we implement app/key/value database to
  *     allow separate contexts for separate apps within a domain.
  */
-export class LokiIndexedStorage {
+export class LokiIndexedStorage implements StorageAdapter {
+  private _appname: string;
+  private catalog: any;
+
   /**
    * @param {string} [appname=loki] - Application name context can be used to distinguish subdomains, "loki" by default
    */
-  constructor(appname = "loki") {
-    this.app = appname;
+  constructor(appname: string = "loki") {
+    this._appname = appname;
 
     // keep reference to catalog class for base AKV operations
     this.catalog = null;
-
-    if (!this.checkAvailability()) {
-      throw new Error("indexedDB does not seem to be supported for your environment");
-    }
   }
 
   /**
-	 * Used to check if adapter is available
-	 *
-	 * @returns {boolean} true if indexeddb is available, false if not.
-	 */
-  checkAvailability() {
-    if (typeof indexedDB !== "undefined" && indexedDB) return true;
-
-    return false;
-  }
-
-  /**
-	 * Retrieves a serialized db string from the catalog.
-	 *
-	 * @example
-	 * // LOAD
-	 * var idbAdapter = new LokiIndexedAdapter("finance");
-	 * var db = new loki("test", { adapter: idbAdapter });
-	 *   db.base(function(result) {
+   * Retrieves a serialized db string from the catalog.
+   *
+   * @example
+   * // LOAD
+   * var idbAdapter = new LokiIndexedAdapter("finance");
+   * var db = new loki("test", { adapter: idbAdapter });
+   *   db.base(function(result) {
 	 *   console.log("done");
 	 * });
-	 *
-	 * @param {string} dbname - the name of the database to retrieve.
-	 * @returns {Promise} a Promise that resolves after the database was loaded
-	 */
-  loadDatabase(dbname) {
-    const appName = this.app;
+   *
+   * @param {string} dbname - the name of the database to retrieve.
+   * @returns {Promise} a Promise that resolves after the database was loaded
+   */
+  loadDatabase(dbname: string) {
+    const appName = this._appname;
     const adapter = this;
 
     // lazy open/create db reference so dont -need- callback in constructor
     if (this.catalog === null || this.catalog.db === null) {
       return new Promise((resolve) => {
-        adapter.catalog = new LokiCatalog((cat) => {
+        adapter.catalog = new LokiCatalog((cat: LokiCatalog) => {
           adapter.catalog = cat;
           resolve(adapter.loadDatabase(dbname));
         });
@@ -74,7 +65,7 @@ export class LokiIndexedStorage {
     }
     // lookup up db string in AKV db
     return new Promise((resolve) => {
-      this.catalog.getAppKey(appName, dbname, (result) => {
+      this.catalog.getAppKey(appName, dbname, (result: ANY) => {
         if (result.id === 0) {
           resolve();
           return;
@@ -84,38 +75,33 @@ export class LokiIndexedStorage {
     });
   }
 
-  // alias
-  loadKey(dbname) {
-    return this.loadDatabase(dbname);
-  }
-
   /**
-	 * Saves a serialized db to the catalog.
-	 *
-	 * @example
-	 * // SAVE : will save App/Key/Val as "finance"/"test"/{serializedDb}
-	 * let idbAdapter = new LokiIndexedAdapter("finance");
-	 * let db = new loki("test", { adapter: idbAdapter });
-	 * let coll = db.addCollection("testColl");
-	 * coll.insert({test: "val"});
-	 * db.saveDatabase();  // could pass callback if needed for async complete
-	 *
-	 * @param {string} dbname - the name to give the serialized database within the catalog.
-	 * @param {string} dbstring - the serialized db string to save.
-	 * @returns {Promise} a Promise that resolves after the database was persisted
-	 */
-  saveDatabase(dbname, dbstring) {
-    const appName = this.app;
+   * Saves a serialized db to the catalog.
+   *
+   * @example
+   * // SAVE : will save App/Key/Val as "finance"/"test"/{serializedDb}
+   * let idbAdapter = new LokiIndexedAdapter("finance");
+   * let db = new loki("test", { adapter: idbAdapter });
+   * let coll = db.addCollection("testColl");
+   * coll.insert({test: "val"});
+   * db.saveDatabase();  // could pass callback if needed for async complete
+   *
+   * @param {string} dbname - the name to give the serialized database within the catalog.
+   * @param {string} dbstring - the serialized db string to save.
+   * @returns {Promise} a Promise that resolves after the database was persisted
+   */
+  saveDatabase(dbname: string, dbstring: string): Promise<void> {
+    const appName = this._appname;
     const adapter = this;
 
-    let resolve;
-    let reject;
-    const result = new Promise((res, rej) => {
+    let resolve: ANY;
+    let reject: ANY;
+    const result = new Promise((res: ANY, rej: ANY) => {
       resolve = res;
       reject = rej;
     });
 
-    function saveCallback(result) {
+    function saveCallback(result: ANY) {
       if (result && result.success === true) {
         resolve();
       } else {
@@ -125,48 +111,43 @@ export class LokiIndexedStorage {
 
     // lazy open/create db reference so dont -need- callback in constructor
     if (this.catalog === null || this.catalog.db === null) {
-      this.catalog = new LokiCatalog((cat) => {
+      this.catalog = new LokiCatalog((cat: LokiCatalog) => {
         adapter.catalog = cat;
 
         // now that catalog has been initialized, set (add/update) the AKV entry
         cat.setAppKey(appName, dbname, dbstring, saveCallback);
       });
 
-      return result;
+      return Promise.resolve() as Promise<void>;
     }
 
     // set (add/update) entry to AKV database
     this.catalog.setAppKey(appName, dbname, dbstring, saveCallback);
 
-    return result;
-  }
-
-  // alias
-  saveKey(dbname, dbstring) {
-    return this.saveDatabase(dbname, dbstring);
+    return Promise.resolve() as Promise<void>;
   }
 
   /**
-	 * Deletes a serialized db from the catalog.
-	 *
-	 * @example
-	 * // DELETE DATABASE
-	 * // delete "finance"/"test" value from catalog
-	 * idbAdapter.deleteDatabase("test", function {
+   * Deletes a serialized db from the catalog.
+   *
+   * @example
+   * // DELETE DATABASE
+   * // delete "finance"/"test" value from catalog
+   * idbAdapter.deleteDatabase("test", function {
 	 *   // database deleted
 	 * });
-	 *
-	 * @param {string} dbname - the name of the database to delete from the catalog.
-	 * @returns {Promise} a Promise that resolves after the database was deleted
-	 */
-  deleteDatabase(dbname) {
-    const appName = this.app;
+   *
+   * @param {string} dbname - the name of the database to delete from the catalog.
+   * @returns {Promise} a Promise that resolves after the database was deleted
+   */
+  deleteDatabase(dbname: string): Promise<void> {
+    const appName = this._appname;
     const adapter = this;
 
     // lazy open/create db reference and pass callback ahead
     if (this.catalog === null || this.catalog.db === null) {
       return new Promise((resolve) => {
-        adapter.catalog = new LokiCatalog((cat) => {
+        adapter.catalog = new LokiCatalog((cat: LokiCatalog) => {
           adapter.catalog = cat;
 
           resolve(adapter.deleteDatabase(dbname));
@@ -176,7 +157,7 @@ export class LokiIndexedStorage {
 
     // catalog was already initialized, so just lookup object and delete by id
     return new Promise((resolve) => {
-      this.catalog.getAppKey(appName, dbname, (result) => {
+      this.catalog.getAppKey(appName, dbname, (result: ANY) => {
         const id = result.id;
 
         if (id !== 0) {
@@ -188,19 +169,14 @@ export class LokiIndexedStorage {
     });
   }
 
-  // alias
-  deleteKey(dbname) {
-    return this.deleteDatabase(dbname);
-  }
-
   /**
-	 * Removes all database partitions and pages with the base filename passed in.
-	 * This utility method does not (yet) guarantee async deletions will be completed before returning
-	 *
-	 * @param {string} dbname - the base filename which container, partitions, or pages are derived
-	 */
-  deleteDatabasePartitions(dbname) {
-    this.getDatabaseList((result) => {
+   * Removes all database partitions and pages with the base filename passed in.
+   * This utility method does not (yet) guarantee async deletions will be completed before returning
+   *
+   * @param {string} dbname - the base filename which container, partitions, or pages are derived
+   */
+  deleteDatabasePartitions(dbname: string) {
+    this.getDatabaseList((result: string[]) => {
       result.forEach((str) => {
         if (str.startsWith(dbname)) {
           this.deleteDatabase(str);
@@ -210,25 +186,25 @@ export class LokiIndexedStorage {
   }
 
   /**
-	 * Retrieves object array of catalog entries for current app.
-	 *
-	 * @example
-	 * idbAdapter.getDatabaseList(function(result) {
+   * Retrieves object array of catalog entries for current app.
+   *
+   * @example
+   * idbAdapter.getDatabaseList(function(result) {
 	 *   // result is array of string names for that appcontext ("finance")
 	 *   result.forEach(function(str) {
 	 *     console.log(str);
 	 *   });
 	 * });
-	 *
-	 * @param {function} callback - should accept array of database names in the catalog for current app.
-	 */
-  getDatabaseList(callback) {
-    const appName = this.app;
+   *
+   * @param {function} callback - should accept array of database names in the catalog for current app.
+   */
+  getDatabaseList(callback: (names: string[]) => void) {
+    const appName = this._appname;
     const adapter = this;
 
     // lazy open/create db reference so dont -need- callback in constructor
     if (this.catalog === null || this.catalog.db === null) {
-      this.catalog = new LokiCatalog((cat) => {
+      this.catalog = new LokiCatalog((cat: LokiCatalog) => {
         adapter.catalog = cat;
 
         adapter.getDatabaseList(callback);
@@ -239,7 +215,7 @@ export class LokiIndexedStorage {
 
     // catalog already initialized
     // get all keys for current appName, and transpose results so just string array
-    this.catalog.getAppKeys(appName, (results) => {
+    this.catalog.getAppKeys(appName, (results: ANY) => {
       const names = [];
 
       for (let idx = 0; idx < results.length; idx++) {
@@ -256,22 +232,16 @@ export class LokiIndexedStorage {
     });
   }
 
-  // alias
-  getKeyList(callback) {
-    return this.getDatabaseList(callback);
-  }
-
   /**
-	 * Allows retrieval of list of all keys in catalog along with size
-	 *
-	 * @param {function} callback - (Optional) callback to accept result array.
-	 */
-  getCatalogSummary(callback) {
+   * Allows retrieval of list of all keys in catalog along with size
+   * @param {function} callback - (Optional) callback to accept result array.
+   */
+  public getCatalogSummary(callback: (entry: Entry[]) => void) {
     const adapter = this;
 
     // lazy open/create db reference
     if (this.catalog === null || this.catalog.db === null) {
-      this.catalog = new LokiCatalog((cat) => {
+      this.catalog = new LokiCatalog((cat: LokiCatalog) => {
         adapter.catalog = cat;
 
         adapter.getCatalogSummary(callback);
@@ -282,7 +252,7 @@ export class LokiIndexedStorage {
 
     // catalog already initialized
     // get all keys for current appName, and transpose results so just string array
-    this.catalog.getAllKeys((results) => {
+    this.catalog.getAllKeys((results: ANY) => {
       const entries = [];
       let obj;
       let size;
@@ -317,23 +287,31 @@ export class LokiIndexedStorage {
   }
 }
 
+export interface Entry {
+  app: string;
+  key: string;
+  size: number;
+}
+
 /**
  * LokiCatalog - underlying App/Key/Value catalog persistence
  *    This non-interface class implements the actual persistence.
  *    Used by the LokiIndexedStorage class.
  */
 class LokiCatalog {
-  constructor(callback) {
+  public db: ANY;
+
+  constructor(callback: any) {
     this.db = null;
     this.initializeLokiCatalog(callback);
   }
 
-  initializeLokiCatalog(callback) {
+  initializeLokiCatalog(callback: any) {
     const openRequest = indexedDB.open("LokiCatalog", 1);
     const cat = this;
 
     // If database doesn't exist yet or its version is lower than our version specified above (2nd param in line above)
-    openRequest.onupgradeneeded = (e) => {
+    openRequest.onupgradeneeded = (e: ANY) => {
       const thisDB = e.target.result;
       if (thisDB.objectStoreNames.contains("LokiAKV")) {
         thisDB.deleteObjectStore("LokiAKV");
@@ -360,25 +338,26 @@ class LokiCatalog {
       }
     };
 
-    openRequest.onsuccess = (e) => {
+    openRequest.onsuccess = (e: ANY) => {
       cat.db = e.target.result;
 
-      if (typeof(callback) === "function") callback(cat);
+      if (typeof(callback) === "function")
+        callback(cat);
     };
 
-    openRequest.onerror = (e) => {
+    openRequest.onerror = (e: ANY) => {
       throw e;
     };
   }
 
-  getAppKey(app, key, callback) {
+  getAppKey(app: string, key: string, callback: any) {
     const transaction = this.db.transaction(["LokiAKV"], "readonly");
     const store = transaction.objectStore("LokiAKV");
     const index = store.index("appkey");
     const appkey = app + "," + key;
     const request = index.get(appkey);
 
-    request.onsuccess = (((usercallback) => (e) => {
+    request.onsuccess = (((usercallback) => (e: ANY) => {
       let lres = e.target.result;
 
       if (lres === null || typeof(lres) === "undefined") {
@@ -395,7 +374,7 @@ class LokiCatalog {
       }
     }))(callback);
 
-    request.onerror = (((usercallback) => (e) => {
+    request.onerror = (((usercallback) => (e: ANY) => {
       if (typeof(usercallback) === "function") {
         usercallback({
           id: 0,
@@ -407,12 +386,12 @@ class LokiCatalog {
     }))(callback);
   }
 
-  getAppKeyById(id, callback, data) {
+  getAppKeyById(id: string, callback: ANY, data: ANY) {
     const transaction = this.db.transaction(["LokiAKV"], "readonly");
     const store = transaction.objectStore("LokiAKV");
     const request = store.get(id);
 
-    request.onsuccess = (((data, usercallback) => (e) => {
+    request.onsuccess = (((data, usercallback) => (e: ANY) => {
       if (typeof(usercallback) === "function") {
         usercallback(e.target.result, data);
       } else {
@@ -421,7 +400,7 @@ class LokiCatalog {
     }))(data, callback);
   }
 
-  setAppKey(app, key, val, callback) {
+  setAppKey(app: string, key: string, val: string, callback: any) {
     const transaction = this.db.transaction(["LokiAKV"], "readwrite");
     const store = transaction.objectStore("LokiAKV");
     const index = store.index("appkey");
@@ -430,7 +409,7 @@ class LokiCatalog {
 
     // first try to retrieve an existing object by that key
     // need to do this because to update an object you need to have id in object, otherwise it will append id with new autocounter and clash the unique index appkey
-    request.onsuccess = (e) => {
+    request.onsuccess = (e: ANY) => {
       let res = e.target.result;
 
       if (res === null || res === undefined) {
@@ -478,7 +457,7 @@ class LokiCatalog {
     }))(callback);
   }
 
-  deleteAppKey(id, callback) {
+  deleteAppKey(id: string, callback: any) {
     const transaction = this.db.transaction(["LokiAKV"], "readwrite");
     const store = transaction.objectStore("LokiAKV");
     const request = store.delete(id);
@@ -499,7 +478,7 @@ class LokiCatalog {
     }))(callback);
   }
 
-  getAppKeys(app, callback) {
+  getAppKeys(app: string, callback: any) {
     const transaction = this.db.transaction(["LokiAKV"], "readonly");
     const store = transaction.objectStore("LokiAKV");
     const index = store.index("app");
@@ -512,9 +491,9 @@ class LokiCatalog {
 
     // cursor internally, pushing results into this.data[] and return
     // this.data[] when done (similar to service)
-    const localdata = [];
+    const localdata: any[] = [];
 
-    cursor.onsuccess = (((data, callback) => (e) => {
+    cursor.onsuccess = (((data, callback) => (e: ANY) => {
       const cursor = e.target.result;
       if (cursor) {
         const currObject = cursor.value;
@@ -543,14 +522,14 @@ class LokiCatalog {
   }
 
   // Hide "cursoring" and return array of { id: id, key: key }
-  getAllKeys(callback) {
+  getAllKeys(callback: any) {
     const transaction = this.db.transaction(["LokiAKV"], "readonly");
     const store = transaction.objectStore("LokiAKV");
     const cursor = store.openCursor();
 
-    const localdata = [];
+    const localdata: ANY[] = [];
 
-    cursor.onsuccess = (((data, callback) => (e) => {
+    cursor.onsuccess = (((data, callback) => (e: ANY) => {
       const cursor = e.target.result;
       if (cursor) {
         const currObject = cursor.value;
@@ -573,6 +552,6 @@ class LokiCatalog {
   }
 }
 
-Loki.LokiIndexedStorage = LokiIndexedStorage;
+Loki["LokiIndexedStorage"] = LokiIndexedStorage;
 
 export default LokiIndexedStorage;
