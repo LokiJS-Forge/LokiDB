@@ -8,11 +8,11 @@ const stream = require("stream");
 const conventionalChangelog = require("conventional-changelog");
 
 const PACKAGES = [
-  // "loki",
-  // "partitioning-adapter",
-  // "local-storage",
-  // "indexed-storage",
-  // "fs-storage",
+  "loki",
+  "partitioning-adapter",
+  "local-storage",
+  "indexed-storage",
+  "fs-storage",
   "full-text-search"
 ];
 

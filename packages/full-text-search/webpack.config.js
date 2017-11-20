@@ -1,29 +1,12 @@
 /* global __dirname, module, require */
 const path = require("path");
+const webpackConigCreator = require('../../config/webpack-config-creator.js');
 
-module.exports = {
-  devtool: "source-map",
-  entry: path.join(__dirname, "src", "full_text_search.js"),
-  output: {
-    filename: "lokijs.full-text-search.js",
-    library: "@lokijs/full-text-search",
-    libraryTarget: "umd2",
-    umdNamedDefine: false
-  },
+module.exports = webpackConigCreator({
+  entry: path.join(__dirname, "src", "index.ts"),
+  filename: "lokijs.full-text-search.js",
+  library: "@lokijs/full-text-search",
   externals: {
-    "../../loki/src/loki": "@lokijs/loki",
-    "fs": "fs"
+    "../../loki/src/loki": "@lokijs/loki"
   },
-  module: {
-    loaders: [
-      {
-        test: /(\.js)$/,
-        loader: "eslint-loader",
-        exclude: /(node_modules|bower_components)/,
-        options: {
-          configFile: path.join("config", "eslintrc.js")
-        }
-      }
-    ]
-  }
-};
+});

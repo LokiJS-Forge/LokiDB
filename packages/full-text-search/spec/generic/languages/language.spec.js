@@ -1,7 +1,7 @@
 /* global describe, it, expect */
 import {de} from "./de";
 import {FullTextSearch} from "../../../src/full_text_search";
-import {QueryBuilder} from "../../../src/queries";
+import {QueryBuilder} from "../../../src/query_builder";
 
 let testData = {
   de: de
@@ -34,11 +34,9 @@ for (let key of Object.keys(testData)) {
 
     for (let i = 0; i < testDatum.tests.length; i++) {
       let test = testDatum.tests[i];
-      it(test.what + " " + test.search, (done) => {
+      it(test.what + " " + test.search, () => {
         let query = new QueryBuilder().match("body", test.search).build();
         assertMatches(fts, query, test.found);
-
-        done();
       });
     }
   });

@@ -1,0 +1,21 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "outDir": "../types/",
+    "sourceMap": true,
+    "declaration": true,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "noImplicitAny": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "target": "es6",
+    "lib": [
+      "es2017",
+      "dom"
+    ]
+  },
+  "include": [
+    "../packages/*/src/**/*.ts"
+  ]
+}
