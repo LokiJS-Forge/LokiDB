@@ -1,20 +1,20 @@
 import {Scorer} from "./scorer";
 import {InvertedIndex} from "./inverted_index";
 import {QueryBuilder} from "./query_builder";
-import {Dictionary} from "./full_text_search";
+import {Dict} from "../../loki/src/types";
 
 type Tree = any;
 export type ANY = any;
 
 export class IndexSearcher {
-  private _invIdxs: Dictionary<InvertedIndex>;
+  private _invIdxs: Dict<InvertedIndex>;
   private _docs: ANY;
   private _scorer: Scorer;
 
   /**
    * @param {object} invIdxs
    */
-  constructor(invIdxs: Dictionary<InvertedIndex>, docs: ANY) {
+  constructor(invIdxs: Dict<InvertedIndex>, docs: ANY) {
     this._invIdxs = invIdxs;
     this._docs = docs;
     this._scorer = new Scorer(this._invIdxs);

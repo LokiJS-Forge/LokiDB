@@ -1,18 +1,19 @@
 import {InvertedIndex} from "./inverted_index";
 import {IndexSearcher} from "./index_searcher";
 import {Tokenizer} from "./tokenizer";
+import {ANY, Dict} from "../../loki/src/types";
 
-export type ANY = any;
-
-export interface Dictionary<T> {
-  [Key: string]: T;
+let Loki: any;
+try {
+  Loki = require("../../loki/src/loki").Loki;
+} catch {
 }
 
 export class FullTextSearch {
   private _id: string;
   private _docs: Set<any>;
   private _idxSearcher: IndexSearcher;
-  private _invIdxs: Dictionary<InvertedIndex> = {};
+  private _invIdxs: Dict<InvertedIndex> = {};
 
   /**
    * Initialize the full text search for the given fields.
@@ -103,6 +104,10 @@ export namespace FullTextSearch {
   export interface FieldOption extends InvertedIndex.FieldOption {
     name: string;
   }
+}
+
+if (Loki) {
+  Loki["FullTextSearch"] = FullTextSearch;
 }
 
 export default FullTextSearch;

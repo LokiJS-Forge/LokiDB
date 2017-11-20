@@ -1,13 +1,13 @@
 import {InvertedIndex} from "./inverted_index";
-import {Dictionary} from "./full_text_search";
+import {Dict} from "../../loki/src/types";
 
 export type ANY = any;
 
 export class Scorer {
-  private _invIdxs: Dictionary<InvertedIndex>;
+  private _invIdxs: Dict<InvertedIndex>;
   private _cache: object = {};
 
-  constructor(invIdxs: Dictionary<InvertedIndex>) {
+  constructor(invIdxs: Dict<InvertedIndex>) {
     this._invIdxs = invIdxs;
   }
 
