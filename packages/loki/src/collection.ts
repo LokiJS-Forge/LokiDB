@@ -8,6 +8,7 @@ import {ltHelper, gtHelper, aeqHelper} from "./helper";
 import {Loki} from "./loki";
 import {copyProperties} from "./utils";
 import {Doc, Dict, Query} from "./types";
+import {FullTextSearch} from "../../full-text-search/src/full_text_search";
 
 /*
  'isDeepProperty' is not defined              no-undef
@@ -159,6 +160,8 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   private stages: object;
   private commitLog: ANY[];
 
+  public _fullTextSearch: FullTextSearch;
+
   /**
    * @param {string} name - collection name
    * @param {(object)} [options={}] - a configuration object
@@ -222,11 +225,12 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     }
 
     // Full text search
-    // this._fullTextSearch = null;
-    // if (Loki.FullTextSearch !== undefined) {
-    //   this._fullTextSearch = options.fullTextSearch !== undefined
-    //     ? new (Loki.FullTextSearch.FullTextSearch)(options.fullTextSearch) : null;
-    // }
+    if (Loki["FullTextSearch"] !== undefined) {
+       this._fullTextSearch = options.fullTextSearch !== undefined
+         ? new (Loki["FullTextSearch"])(options.fullTextSearch) : null;
+    } else {
+      this._fullTextSearch = null;
+    }
 
     // .
     this.adaptiveBinaryIndices = options.adaptiveBinaryIndices !== undefined ? options.adaptiveBinaryIndices : true;
@@ -238,9 +242,6 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     this.cloneObjects = options.clone !== undefined ? options.clone : false;
 
     // .
-    this.cloneMethod = options.cloneMethod !== undefined ? options.cloneMethod : CloneMethod.PARSE_STRINGIFY;
-
-    // .
     this.asyncListeners = options.asyncListeners !== undefined ? options.asyncListeners : false;
 
     // .
@@ -248,6 +249,9 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
 
     // .
     this.disableDeltaChangesApi = options.disableDeltaChangesApi !== undefined ? options.disableDeltaChangesApi : true;
+
+    // .
+    this.cloneMethod = options.cloneMethod !== undefined ? options.cloneMethod : CloneMethod.PARSE_STRINGIFY;
     if (this.disableChangesApi) {
       this.disableDeltaChangesApi = true;
     }
@@ -351,11 +355,12 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       cloneObjects: this.cloneObjects,
       cloneMethod: this.cloneMethod,
       changes: this.changes,
+      _fullTextSearch: this._fullTextSearch
     };
   }
 
   // TODO: Force rebuild?
-  static fromJSONObject(obj: ANY, options: Collection.DeserializeOptions) {
+  static fromJSONObject(obj: ANY, options?: Collection.DeserializeOptions) {
     let coll = new Collection(obj.name, {
       disableChangesApi: obj.disableChangesApi,
       disableDeltaChangesApi: obj.disableDeltaChangesApi
@@ -369,7 +374,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     coll.cloneMethod = obj.cloneMethod || "parse-stringify";
     coll.changes = obj.changes;
 
-    coll.dirty = (options.retainDirtyFlags === true) ? obj.dirty : false;
+    coll.dirty = (options && options.retainDirtyFlags === true) ? obj.dirty : false;
 
     function makeLoader(coll: ANY) {
       const collOptions = options[coll.name];
@@ -429,6 +434,10 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     // reinflate DynamicViews and attached Resultsets
     for (let idx = 0; idx < obj._dynamicViews.length; idx++) {
       coll._dynamicViews.push(DynamicView.fromJSONObject(coll, obj._dynamicViews[idx]));
+    }
+
+    if (obj._fullTextSearch) {
+      coll._fullTextSearch = FullTextSearch.fromJSONObject(obj._fullTextSearch);
     }
 
     return coll;
@@ -795,10 +804,10 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       return undefined;
     }
 
-    // FullTextSearch TODO.
-    // if (this._fullTextSearch !== null) {
-    //   this._fullTextSearch.addDocument(doc);
-    // }
+    // FullTextSearch.
+    if (this._fullTextSearch !== null) {
+       this._fullTextSearch.addDocument(doc);
+    }
 
     returnObj = obj;
     if (!bulkInsert) {
@@ -920,9 +929,9 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       //this.flagBinaryIndexesDirty();
 
       // FullTextSearch.
-      // if (this._fullTextSearch !== null) {
-      //   this._fullTextSearch.updateDocument(doc);
-      // }
+      if (this._fullTextSearch !== null) {
+         this._fullTextSearch.updateDocument(doc);
+      }
 
       this.commit();
       this.dirty = true; // for autosave scenarios
@@ -1114,9 +1123,9 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       this.idIndex.splice(position, 1);
 
       // FullTextSearch.
-      /*if (this._fullTextSearch != null) {
+      if (this._fullTextSearch != null) {
         this._fullTextSearch.removeDocument(doc);
-      }*/
+      }
 
       this.commit();
       this.dirty = true; // for autosave scenarios
@@ -1795,7 +1804,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {object} query - 'mongo-like' query object
    * @returns {array} Array of matching documents
    */
-  public find(query?: Query) {
+  public find(query?: Query): Doc<E>[] {
     return this.chain().find(query).data();
   }
 
@@ -2130,6 +2139,7 @@ export namespace Collection {
     transactional?: boolean;
     ttl?: number;
     ttlInterval?: number;
+    fullTextSearch?: FullTextSearch.FieldOptions[];
   }
 
   export interface DeserializeOptions {

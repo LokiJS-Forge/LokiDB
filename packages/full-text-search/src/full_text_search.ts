@@ -26,7 +26,7 @@ export class FullTextSearch {
    * @param {Tokenizer=Tokenizer} fields.tokenizer - the tokenizer of the field
    * @param {string=$loki} id - the property name of the document index
    */
-  constructor(fields: FullTextSearch.FieldOption[] = [], id = "$loki") {
+  constructor(fields: FullTextSearch.FieldOptions[] = [], id = "$loki") {
     // Create inverted indices for each field.
     for (let i = 0; i < fields.length; i++) {
       let field = fields[i];
@@ -85,12 +85,11 @@ export class FullTextSearch {
     return serialized;
   }
 
-  static fromJSONObject(serialized: ANY, tokenizers: Tokenizer[]) {
-    let db = JSON.parse(serialized);
+  static fromJSONObject(serialized: ANY, tokenizers: Tokenizer[] = []) {
     let fts = new FullTextSearch();
-    let fieldNames = Object.keys(db);
+    let fieldNames = Object.keys(serialized);
     for (let i = 0, fieldName; i < fieldNames.length, fieldName = fieldNames[i]; i++) {
-      fts._invIdxs[fieldName] = InvertedIndex.fromJSONObject(db[fieldName], tokenizers[fieldName]);
+      fts._invIdxs[fieldName] = InvertedIndex.fromJSONObject(serialized[fieldName], tokenizers[fieldName]);
     }
     return fts;
   }
@@ -101,7 +100,7 @@ export class FullTextSearch {
 }
 
 export namespace FullTextSearch {
-  export interface FieldOption extends InvertedIndex.FieldOption {
+  export interface FieldOptions extends InvertedIndex.FieldOptions {
     name: string;
   }
 }
