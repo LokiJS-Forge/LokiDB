@@ -68,6 +68,47 @@ describe("Constraints", () => {
     expect(Object.keys(coll3["constraints"].unique["username"].keyMap).length).toEqual(1);
   });
 
+  fit("chained search", () => {
+    const db = new Loki();
+    const coll = db.addCollection("morenullusers", {
+      unique: ["username", "name"]
+    });
+    coll.insert({
+      numb: 1,
+      username: "jacky",
+      name: "Joe"
+    });
+    coll.insert({
+      numb: 1,
+      username: "jacky",
+      name: "Jack"
+    });
+
+    expect(coll.find({"name": "Joe"}).length).toBe(1);
+    expect(coll.find({"numb": 1}).length).toBe(2);
+
+    expect(coll.chain()
+      .find({"numb": 1})
+      .find({"name": "Jack"}).data().length).toBe(1);
+
+    expect(coll.chain()
+      .find({"name": "Jack"})
+      .find({"numb": 1}).data().length).toBe(1);
+
+    expect(coll.chain()
+      .find({"name": "Jack"})
+      .find({"numb": 1})
+      .find({"username": "jacky"}).data().length).toBe(1);
+
+    expect(coll.chain()
+      .find({"username": "jacky"})
+      .find({"name": "Jack"}).data().length).toBe(1);
+
+    expect(coll.chain()
+      .find({"name": "Joe"})
+      .find({"name": "Jack"}).data().length).toBe(0);
+  });
+
   it("should not throw an error id multiple nulls are added", () => {
     const db = new Loki();
     const coll4 = db.addCollection("morenullusers", {

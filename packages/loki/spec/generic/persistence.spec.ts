@@ -363,16 +363,12 @@ describe("testing adapter functionality", () => {
 
         expect(dbref["_persistenceAdapter"]).toEqual(null);
         expect(dbref["_collections"].length).toEqual(2);
-        expect(dbref.getCollection<AB>("c1").findOne({a: 1}).b).toEqual(2);
         // these changes should not affect original database
         dbref["filename"] = "somethingelse";
         dbref["_collections"][0].name = "see1";
-        // (accidentally?) updating a document should...
-        dbref["_collections"][0].findOne({a: 1})["b"] = 3;
         return Promise.resolve();
       }
     }
-
 
     const adapter = new MyFakeReferenceAdapter();
     const db = new Loki("rma test");
@@ -387,7 +383,7 @@ describe("testing adapter functionality", () => {
       expect(db["persistenceAdapter"]).not.toEqual(null);
       expect(db["filename"]).toEqual("rma test");
       expect(db["_collections"][0].name).toEqual("c1");
-      expect(db.getCollection<AB>("c1").findOne({a: 1}).b).toEqual(3);
+      expect(db.getCollection<AB>("c1").findOne({a: 1}).b).toEqual(2);
 
       db2 = new Loki("other name");
       db2.initializePersistence({adapter: adapter});

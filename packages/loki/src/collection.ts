@@ -1,6 +1,5 @@
 import {LokiEventEmitter} from "./event_emitter";
 import {UniqueIndex} from "./unique_index";
-import {ExactIndex} from "./exact_index";
 import {Resultset} from "./resultset";
 import {DynamicView} from "./dynamic_view";
 import {clone, CloneMethod} from "./clone";
@@ -73,8 +72,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   private idIndex: number[]; // index of id
   public binaryIndices: Dict<Collection.BinaryIndex>; // user defined indexes
   public constraints = {
-    unique: {},
-    exact: {}
+    unique: {}
   };
 
   /**
@@ -191,7 +189,6 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     this.binaryIndices = {}; // user defined indexes
     this.constraints = {
       unique: {},
-      exact: {}
     };
     // .
     this.uniqueNames = [];
@@ -216,12 +213,6 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       options.unique.forEach((prop: string) => {
         this.uniqueNames.push(prop); // used to regenerate on subsequent database loads
         this.constraints.unique[prop] = new UniqueIndex(prop);
-      });
-    }
-
-    if (options.exact !== undefined) {
-      options.exact.forEach((prop: string) => {
-        this.constraints.exact[prop] = new ExactIndex(prop);
       });
     }
 
@@ -604,9 +595,9 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
 
     // if index already existed, (re)loading it will likely cause collisions, rebuild always
     this.constraints.unique[field] = index = new UniqueIndex(field);
-    this.data.forEach((obj) => {
-      index.set(obj);
-    });
+    for (let i = 0; i < this.data.length; i++) {
+      index.set(this.data[i], i);
+    }
     return index;
   }
 
@@ -835,7 +826,6 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
 
       this.constraints = {
         unique: {},
-        exact: {}
       };
       this.uniqueNames = [];
     }
@@ -851,7 +841,6 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       // clear entire unique indices definition
       this.constraints = {
         unique: {},
-        exact: {}
       };
 
       // add definitions back
@@ -902,7 +891,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       this.emit("pre-update", doc);
 
       Object.keys(this.constraints.unique).forEach((key) => {
-        this.constraints.unique[key].update(oldInternal, newInternal);
+        this.constraints.unique[key].update(oldInternal, newInternal, position);
       });
 
       // operate the update
@@ -979,7 +968,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       const constrUnique = this.constraints.unique;
       for (key in constrUnique) {
         if (constrUnique[key] !== undefined) {
-          constrUnique[key].set(newDoc);
+          constrUnique[key].set(newDoc, this.data.length);
         }
       }
 
@@ -1752,13 +1741,8 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {any} value - unique value to search for
    * @returns {object} document matching the value passed
    */
-  public by(field: string, value?: ANY): Doc<E> {
-    const result = this.constraints.unique[field].get(value);
-    if (!this.cloneObjects) {
-      return result as Doc<E>;
-    } else {
-      return clone(result, this.cloneMethod) as any as Doc<E>;
-    }
+  public by(field: string, value: ANY): Doc<E> {
+    return this.findOne({[field]: value});
   }
 
   /**
@@ -2130,7 +2114,6 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
 export namespace Collection {
   export interface Options {
     unique?: string[];
-    exact?: string[];
     indices?: string[];
     adaptiveBinaryIndices?: boolean;
     asyncListeners?: boolean;
