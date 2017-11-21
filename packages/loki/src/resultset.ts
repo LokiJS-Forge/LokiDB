@@ -760,23 +760,6 @@ export class Resultset<E extends object = object> {
       }
     }
 
-    if (query["$fts"]) {
-      let res = this.collection._fullTextSearch.search(query["$fts"]);
-      let docIds = Object.keys(res);
-      let results = [];
-      for (let i = 0; i < docIds.length; i++) {
-        let docId = parseInt(docIds[i]);
-        for (let j = 0; j < this.collection.data.length; j++) {
-          if (this.collection.data[j].$loki === docId) {
-            results.push(j);
-          }
-        }
-      }
-      this.filteredrows = results;
-      this.filterInitialized = true;
-      return this;
-    }
-
     // if user is deep querying the object such as find('name.first': 'odin')
     const usingDotNotation = (property.indexOf(".") !== -1);
 
@@ -812,6 +795,7 @@ export class Resultset<E extends object = object> {
     // If the filteredrows[] is already initialized, use it
     if (this.filterInitialized) {
       let filter = this.filteredrows;
+
       // currently supporting dot notation for non-indexed conditions only
       if (usingDotNotation) {
         property = property.split(".");
@@ -819,6 +803,14 @@ export class Resultset<E extends object = object> {
           let rowIdx = filter[i];
           if (dotSubScan(data[rowIdx], property, fun, value)) {
             result.push(rowIdx);
+          }
+        }
+      } else if (property === "$fts") {
+        let res = this.collection._fullTextSearch.search(query["$fts"]);
+        let keys = Object.keys(res);
+        for (let i = 0; i < keys.length; i++) {
+          if (filter.includes(+keys[i])) {
+            result.push(+keys[i]);
           }
         }
       } else {
@@ -837,6 +829,15 @@ export class Resultset<E extends object = object> {
 
     this.filteredrows = result;
     this.filterInitialized = true; // next time work against filteredrows[]
+
+    if (property === "$fts") {
+      let res = this.collection._fullTextSearch.search(query["$fts"]);
+      let keys = Object.keys(res);
+      for (let i = 0; i < keys.length; i++) {
+        result.push(+keys[i]);
+      }
+      return this;
+    }
 
     // first chained query so work against data[] but put results in filteredrows
     // if not searching by index

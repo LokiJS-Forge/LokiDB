@@ -804,11 +804,6 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       return undefined;
     }
 
-    // FullTextSearch.
-    if (this._fullTextSearch !== null) {
-       this._fullTextSearch.addDocument(doc);
-    }
-
     returnObj = obj;
     if (!bulkInsert) {
       this.emit("insert", obj);
@@ -862,6 +857,10 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       this.uniqueNames.forEach((uiname) => {
         this.ensureUniqueIndex(uiname);
       });
+    }
+
+    if (this._fullTextSearch !== null) {
+      this._fullTextSearch.clear();
     }
   }
 
@@ -926,11 +925,10 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       }
 
       this.idIndex[position] = newInternal.$loki;
-      //this.flagBinaryIndexesDirty();
 
       // FullTextSearch.
       if (this._fullTextSearch !== null) {
-         this._fullTextSearch.updateDocument(doc);
+         this._fullTextSearch.updateDocument(doc, position);
       }
 
       this.commit();
@@ -1007,6 +1005,11 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
         }
       } else {
         this.flagBinaryIndexesDirty();
+      }
+
+      // FullTextSearch.
+      if (this._fullTextSearch !== null) {
+        this._fullTextSearch.addDocument(newDoc, addedPos);
       }
 
       this.commit();
@@ -1091,8 +1094,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       this.startTransaction();
       const arr = this.get(doc.$loki, true);
 
-      const // obj = arr[0],
-        position = arr[1];
+      const position = arr[1];
 
       Object.keys(this.constraints.unique).forEach((key) => {
         if (doc[key] !== null && typeof doc[key] !== "undefined") {
@@ -1124,7 +1126,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
 
       // FullTextSearch.
       if (this._fullTextSearch != null) {
-        this._fullTextSearch.removeDocument(doc);
+        this._fullTextSearch.removeDocument(doc, position);
       }
 
       this.commit();

@@ -37,39 +37,35 @@ export class FullTextSearch {
     this._idxSearcher = new IndexSearcher(this._invIdxs, this._docs);
   }
 
-  addDocument(doc: ANY) {
-    if (doc[this._id] === undefined) {
-      throw new Error("Document is not stored in the collection.");
-    }
-
+  addDocument(doc: ANY, id: number = doc[this._id]) {
     let fieldNames = Object.keys(doc);
     for (let i = 0, fieldName; i < fieldNames.length, fieldName = fieldNames[i]; i++) {
       if (this._invIdxs[fieldName] !== undefined) {
-        this._invIdxs[fieldName].insert(doc[fieldName], doc[this._id]);
+        this._invIdxs[fieldName].insert(doc[fieldName], id);
       }
     }
-
-    this._docs.add(doc[this._id]);
+    this._docs.add(id);
     this.setDirty();
   }
 
-  removeDocument(doc: ANY) {
-    if (doc[this._id] === undefined) {
-      throw new Error("Document is not stored in the collection.");
-    }
-
+  removeDocument(doc: ANY, id: number = doc[this._id]) {
     let fieldNames = Object.keys(this._invIdxs);
     for (let i = 0; i < fieldNames.length; i++) {
-      this._invIdxs[fieldNames[i]].remove(doc[this._id]);
+      this._invIdxs[fieldNames[i]].remove(id);
     }
-
-    this._docs.delete(doc[this._id]);
+    this._docs.delete(id);
     this.setDirty();
   }
 
-  updateDocument(doc: ANY) {
-    this.removeDocument(doc);
-    this.addDocument(doc);
+  updateDocument(doc: ANY, id: number = doc[this._id]) {
+    this.removeDocument(doc, id);
+    this.addDocument(doc, id);
+  }
+
+  clear() {
+    for (let id of this._docs) {
+      this.removeDocument(null, id);
+    }
   }
 
   search(query: ANY) {
