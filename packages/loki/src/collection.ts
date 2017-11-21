@@ -873,7 +873,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       this.emit("pre-update", doc);
 
       Object.keys(this.constraints.unique).forEach((key) => {
-        this.constraints.unique[key].update(oldInternal, newInternal, position);
+        this.constraints.unique[key].update(newInternal, position);
       });
 
       // operate the update
