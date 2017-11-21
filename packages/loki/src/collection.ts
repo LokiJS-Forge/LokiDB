@@ -71,15 +71,14 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   public data: Doc<E>[];
   private idIndex: number[]; // index of id
   public binaryIndices: Dict<Collection.BinaryIndex>; // user defined indexes
-  public constraints = {
-    unique: {}
-  };
 
   /**
    * Unique contraints contain duplicate object references, so they are not persisted.
    * We will keep track of properties which have unique contraint applied here, and regenerate on load.
    */
-  private uniqueNames: string[];
+  public constraints = {
+    unique: {}
+  };
 
   /**
    * Transforms will be used to store frequently used query chains as a series of steps which itself can be stored along
@@ -190,8 +189,6 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     this.constraints = {
       unique: {},
     };
-    // .
-    this.uniqueNames = [];
 
     // .
     this.transforms = {};
@@ -211,15 +208,14 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
         options.unique = [options.unique];
       }
       options.unique.forEach((prop: string) => {
-        this.uniqueNames.push(prop); // used to regenerate on subsequent database loads
         this.constraints.unique[prop] = new UniqueIndex(prop);
       });
     }
 
     // Full text search
     if (PLUGINS["FullTextSearch"] !== undefined) {
-       this._fullTextSearch = options.fullTextSearch !== undefined
-         ? new (PLUGINS["FullTextSearch"])(options.fullTextSearch) : null;
+      this._fullTextSearch = options.fullTextSearch !== undefined
+        ? new (PLUGINS["FullTextSearch"])(options.fullTextSearch) : null;
     } else {
       this._fullTextSearch = null;
     }
@@ -333,7 +329,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     return {
       name: this.name,
       _dynamicViews: this._dynamicViews,
-      uniqueNames: this.uniqueNames,
+      uniqueNames: Object.keys(this.constraints.unique),
       transforms: this.transforms,
       binaryIndices: this.binaryIndices,
       data: this.data,
@@ -411,21 +407,18 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     coll.ensureId();
 
     // regenerate unique indexes
-    coll.uniqueNames = [];
     if (obj.uniqueNames !== undefined) {
-      coll.uniqueNames = obj.uniqueNames;
-      for (j = 0; j < coll.uniqueNames.length; j++) {
-        coll.ensureUniqueIndex(coll.uniqueNames[j]);
+      for (j = 0; j < obj.uniqueNames.length; j++) {
+        coll.ensureUniqueIndex(obj.uniqueNames[j]);
       }
     }
 
     // in case they are loading a database created before we added dynamic views, handle undefined
-    if (obj._dynamicViews === undefined)
-      return coll;
-
-    // reinflate DynamicViews and attached Resultsets
-    for (let idx = 0; idx < obj._dynamicViews.length; idx++) {
-      coll._dynamicViews.push(DynamicView.fromJSONObject(coll, obj._dynamicViews[idx]));
+    if (obj._dynamicViews !== undefined) {
+      // reinflate DynamicViews and attached Resultsets
+      for (let idx = 0; idx < obj._dynamicViews.length; idx++) {
+        coll._dynamicViews.push(DynamicView.fromJSONObject(coll, obj._dynamicViews[idx]));
+      }
     }
 
     if (obj._fullTextSearch) {
@@ -585,16 +578,10 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   }
 
   ensureUniqueIndex(field: string) {
-    let index = this.constraints.unique[field];
-    if (!index) {
-      // keep track of new unique index for regenerate after database (re)load.
-      if (this.uniqueNames.indexOf(field) == -1) {
-        this.uniqueNames.push(field);
-      }
-    }
+    let index = new UniqueIndex(field);
 
     // if index already existed, (re)loading it will likely cause collisions, rebuild always
-    this.constraints.unique[field] = index = new UniqueIndex(field);
+    this.constraints.unique[field] = index;
     for (let i = 0; i < this.data.length; i++) {
       index.set(this.data[i], i);
     }
@@ -827,7 +814,6 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       this.constraints = {
         unique: {},
       };
-      this.uniqueNames = [];
     }
     // clear indices but leave definitions in place
     else {
@@ -839,14 +825,10 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       });
 
       // clear entire unique indices definition
-      this.constraints = {
-        unique: {},
-      };
-
-      // add definitions back
-      this.uniqueNames.forEach((uiname) => {
-        this.ensureUniqueIndex(uiname);
-      });
+      const uniqueNames = Object.keys(this.constraints.unique);
+      for (let i = 0; i < uniqueNames.length; i++) {
+        this.constraints.unique[uniqueNames[i]].clear();
+      }
     }
 
     if (this._fullTextSearch !== null) {
@@ -918,7 +900,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
 
       // FullTextSearch.
       if (this._fullTextSearch !== null) {
-         this._fullTextSearch.updateDocument(doc, position);
+        this._fullTextSearch.updateDocument(doc, position);
       }
 
       this.commit();
@@ -1175,7 +1157,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       for (let i = 0; i < propertyNames.length; i++) {
         const propertyName = propertyNames[i];
         if (newObject.hasOwnProperty(propertyName)) {
-          if (!oldObject.hasOwnProperty(propertyName) || this.uniqueNames.indexOf(propertyName) >= 0 || propertyName === "$loki" || propertyName === "meta") {
+          if (!oldObject.hasOwnProperty(propertyName) || this.constraints.unique[propertyName] !== undefined || propertyName === "$loki" || propertyName === "meta") {
             delta[propertyName] = newObject[propertyName];
           }
           else {

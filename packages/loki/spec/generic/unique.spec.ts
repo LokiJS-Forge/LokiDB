@@ -1,5 +1,6 @@
 /* global describe, it, expect */
 import {Loki} from "../../src/loki";
+import {LokiMemoryAdapter} from "../../src/memory_adapter";
 
 export type ANY = any;
 
@@ -68,7 +69,7 @@ describe("Constraints", () => {
     expect(Object.keys(coll3["constraints"].unique["username"].keyMap).length).toEqual(1);
   });
 
-  fit("chained search", () => {
+  it("chained search", () => {
     const db = new Loki();
     const coll = db.addCollection("morenullusers", {
       unique: ["username", "name"]
@@ -132,12 +133,10 @@ describe("Constraints", () => {
   it("coll.clear should affect unique indices correctly", () => {
     let db = new Loki();
     let coll = db.addCollection("users", {unique: ["username"]});
-
     coll.insert({username: "joe", name: "Joe"});
     coll.insert({username: "jack", name: "Jack"});
     coll.insert({username: "jake", name: "Jake"});
     expect(Object.keys(coll["constraints"].unique["username"].keyMap).length).toEqual(3);
-    expect(coll["uniqueNames"].length).toEqual(1);
     coll.clear();
     expect(Object.keys(coll["constraints"].unique["username"].keyMap).length).toEqual(0);
     coll.insert({username: "joe", name: "Joe"});
@@ -145,7 +144,6 @@ describe("Constraints", () => {
     expect(Object.keys(coll["constraints"].unique["username"].keyMap).length).toEqual(2);
     coll.insert({username: "jake", name: "Jake"});
     expect(Object.keys(coll["constraints"].unique["username"].keyMap).length).toEqual(3);
-    expect(coll["uniqueNames"].length).toEqual(1);
 
     db = new Loki();
     coll = db.addCollection("users", {unique: ["username"]});
@@ -154,14 +152,46 @@ describe("Constraints", () => {
     coll.insert({username: "jack", name: "Jack"});
     coll.insert({username: "jake", name: "Jake"});
     expect(Object.keys(coll["constraints"].unique["username"].keyMap).length).toEqual(3);
-    expect(coll["uniqueNames"].length).toEqual(1);
     coll.clear({removeIndices: true});
     expect(coll["constraints"].unique.hasOwnProperty("username")).toEqual(false);
-    expect(coll["uniqueNames"].length).toEqual(0);
     coll.insert({username: "joe", name: "Joe"});
     coll.insert({username: "jack", name: "Jack"});
     coll.insert({username: "jake", name: "Jake"});
     expect(coll["constraints"].unique.hasOwnProperty("username")).toEqual(false);
-    expect(coll["uniqueNames"].length).toEqual(0);
+  });
+
+  it("persistence check", () => {
+    let db = new Loki("TestUnique");
+    let coll = db.addCollection("users", {unique: ["name"]});
+    coll.insert({
+      name: "Joe"
+    });
+    coll.insert({
+      name: "Jack"
+    });
+
+    let mem = new LokiMemoryAdapter();
+
+    expect(() => coll.insert({name: "Jack"})).toThrow();
+
+    db.initializePersistence({adapter: mem})
+      .then(() => {
+        return db.saveDatabase();
+      })
+      .then(() => {
+        const db2 = new Loki("TestUnique");
+        return db2.initializePersistence({adapter: mem})
+          .then(() => {
+            return db2.loadDatabase();
+          })
+          .then(() => {
+            const coll2 = db2.getCollection("users");
+            expect(() => coll2.insert({name: "Jack"})).toThrow();
+          });
+      })
+      .catch(() => {
+        expect(false).toBe(true);
+      });
+
   });
 });
