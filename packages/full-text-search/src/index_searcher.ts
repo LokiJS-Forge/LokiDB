@@ -1,7 +1,7 @@
 import {Scorer} from "./scorer";
 import {InvertedIndex} from "./inverted_index";
 import {QueryBuilder} from "./query_builder";
-import {Dict} from "../../loki/src/types";
+import {Dict} from "../../common/types";
 
 type Tree = any;
 export type ANY = any;

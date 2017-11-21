@@ -1,6 +1,7 @@
 import {LokiEventEmitter} from "./event_emitter";
 import {Collection} from "./collection";
-import {Doc, StorageAdapter} from "./types";
+import {Doc, StorageAdapter} from "../../common/types";
+import {PLUGINS} from "../../common/plugin";
 
 /*
  'LokiFsAdapter' is not defined                 no-undef	x
@@ -169,17 +170,17 @@ export class Loki extends LokiEventEmitter {
     };
 
     const PERSISTENCE_METHODS = {
-      [Loki.PersistenceMethod.FS_STORAGE]: Loki["LokiFSStorage"],
-      [Loki.PersistenceMethod.LOCAL_STORAGE]: Loki["LokiLocalStorage"],
-      [Loki.PersistenceMethod.INDEXED_STORAGE]: Loki["LokiIndexedStorage"],
-      [Loki.PersistenceMethod.MEMORY_STORAGE]: Loki["LokiMemoryStorage"]
+      [Loki.PersistenceMethod.FS_STORAGE]: PLUGINS["LokiFSStorage"],
+      [Loki.PersistenceMethod.LOCAL_STORAGE]: PLUGINS["LokiLocalStorage"],
+      [Loki.PersistenceMethod.INDEXED_STORAGE]: PLUGINS["LokiIndexedStorage"],
+      [Loki.PersistenceMethod.MEMORY_STORAGE]: PLUGINS["LokiMemoryStorage"]
     };
 
     // process the options
     if (this._persistenceMethod !== undefined) {
       // check if the specified persistence method is known
       if (typeof(PERSISTENCE_METHODS[this._persistenceMethod]) === "function") {
-        this._persistenceAdapter = new PERSISTENCE_METHODS[this._persistenceMethod]();
+        this._persistenceAdapter = new (PERSISTENCE_METHODS[this._persistenceMethod]);
       } else {
         throw Error("Unknown persistence method.");
       }
@@ -196,14 +197,15 @@ export class Loki extends LokiEventEmitter {
       let possiblePersistenceMethods = DEFAULT_PERSISTENCE[this._env];
       if (possiblePersistenceMethods) {
         for (let i = 0; i < possiblePersistenceMethods.length; i++) {
-          if (possiblePersistenceMethods[PERSISTENCE_METHODS[this._persistenceMethod]]) {
-            this._persistenceMethod = possiblePersistenceMethods[PERSISTENCE_METHODS[this._persistenceMethod]];
-            this._persistenceAdapter = new PERSISTENCE_METHODS[this._persistenceMethod]();
+          if (PERSISTENCE_METHODS[possiblePersistenceMethods[i]]) {
+            this._persistenceMethod = possiblePersistenceMethods[i];
+            this._persistenceAdapter = new (PERSISTENCE_METHODS[possiblePersistenceMethods[i]]);
             break;
           }
         }
       }
     }
+
     this.autosaveDisable();
 
     // if they want to load database on loki instantiation, now is a good time to load... after adapter set and before possible autosave initiation

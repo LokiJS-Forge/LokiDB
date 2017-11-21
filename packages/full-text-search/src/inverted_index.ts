@@ -21,7 +21,7 @@ export class InvertedIndex {
    * @param {boolean} optimizeChanges
    * @param {Tokenizer} tokenizer
    */
-  constructor(options: InvertedIndex.FieldOption = {}) {
+  constructor(options: InvertedIndex.FieldOptions = {}) {
     (
       {
         store: this._store = true,
@@ -356,7 +356,7 @@ export class InvertedIndex {
 }
 
 export namespace InvertedIndex {
-  export interface FieldOption {
+  export interface FieldOptions {
     store?: boolean;
     optimizeChanges?: boolean;
     tokenizer?: Tokenizer;

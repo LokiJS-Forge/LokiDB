@@ -2,7 +2,7 @@
 import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
 import {Resultset} from "../../src/resultset";
-import {Doc} from "../../src/types";
+import {Doc} from "../../../common/types";
 
 export type ANY = any;
 

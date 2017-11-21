@@ -8,6 +8,14 @@ describe("testing fs storage", function () {
     name: string;
   }
 
+  beforeAll(() => {
+    LokiFSStorage.register();
+  });
+
+  afterAll(() => {
+    LokiFSStorage.deregister();
+  });
+
   it("LokiFSStorage", function (done) {
     const db = new Loki("myTestApp");
     const adapter = {adapter: new LokiFSStorage()};
@@ -18,7 +26,16 @@ describe("testing fs storage", function () {
       })
       .then(() => {
         const db2 = new Loki("myTestApp");
-        return db2.initializePersistence(adapter)
+        return db2.initializePersistence()
+          .then(() => {
+            return db2.loadDatabase();
+          }).then(() => {
+            expect(db2.getCollection<Name>("myColl").find()[0].name).toEqual("Hello World");
+          });
+      })
+      .then(() => {
+        const db2 = new Loki("myTestApp");
+        return db2.initializePersistence({persistenceMethod: Loki.PersistenceMethod.FS_STORAGE})
           .then(() => {
             return db2.loadDatabase();
           }).then(() => {
@@ -27,7 +44,7 @@ describe("testing fs storage", function () {
       })
       .then(() => {
         const db3 = new Loki("other");
-        return db3.initializePersistence(adapter)
+        return db3.initializePersistence()
           .then(() => {
             return db3.loadDatabase();
           }).then(() => {

@@ -1,11 +1,25 @@
-import {Loki} from "../../loki/src/loki";
-import {StorageAdapter} from "../../loki/src/types";
+import {PLUGINS} from "../../common/plugin";
+import {StorageAdapter} from "../../common/types";
 
 /**
  * A loki persistence adapter which persists to web browser's local storage object
  * @constructor LokiLocalStorageAdapter
  */
 export class LokiLocalStorage implements StorageAdapter {
+  /**
+   * Registers the local storage as plugin.
+   */
+  static register(): void {
+    PLUGINS["LokiLocalStorage"] = LokiLocalStorage;
+  }
+
+  /**
+   * Deregisters the local storage as plugin.
+   */
+  static deregister(): void {
+    delete PLUGINS["LokiLocalStorage"];
+  }
+
   /**
    * loadDatabase() - Load data from localstorage
    * @param {string} dbname - the name of the database to load
@@ -35,7 +49,5 @@ export class LokiLocalStorage implements StorageAdapter {
     return Promise.resolve(localStorage.removeItem(dbname));
   }
 }
-
-Loki["LokiLocalStorage"] = LokiLocalStorage;
 
 export default LokiLocalStorage;

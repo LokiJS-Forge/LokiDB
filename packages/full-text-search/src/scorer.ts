@@ -1,5 +1,5 @@
 import {InvertedIndex} from "./inverted_index";
-import {Dict} from "../../loki/src/types";
+import {Dict} from "../../common/types";
 
 export type ANY = any;
 
@@ -80,10 +80,10 @@ export class Scorer {
           }
           case "constant":
             res = docResult.value * docResult.boost;
-            /*console.log(
-             "Constant: " + res,
-             "\n\tboost: " + docResult.boost,
-             "\n\tvalue : " + docResult.value);*/
+            // console.log(
+            //  "Constant: " + res,
+            //  "\n\tboost: " + docResult.boost,
+            //  "\n\tvalue : " + docResult.value);
             break;
         }
         docScore += res;
@@ -94,26 +94,8 @@ export class Scorer {
     return result;
   }
 
-  static _calculateFieldLength(fieldLength: number) {
-    // Lucene uses a SmallFloat (size of 1 byte) to store the field length in scoring.
-    // This is useless in javascript, because every number is represented as a double (8 byte).
-    // To align the scoring result with lucene, this calculation is still needed.
-    // Lucene also includes the field boost, but field boost is deprecated and not supported by Loki.
-
-    // Find closest value in array.
-    const lockUp = [1, 1.30612242, 1.77777779, 2.55999994, 4, 5.22448969, 7.11111116, 10.2399998, 16, 20.8979588,
-      28.4444447, 40.9599991, 64, 83.591835, 113.777779, 163.839996, 256, 334.36734, 455.111115, 655.359985, 1024,
-      1337.46936, 1820.44446, 2621.43994, 4096, 5349.87744, 7281.77783, 10485.7598, 16384, 21399.5098, 29127.1113,
-      41943.0391, 65536, 85598.0391, 116508.445, 167772.156, 262144, 342392.156, 466033.781, 671088.625, 1048576,
-      1369568.62, 1864135.12, 2684354.5, 4194304, 5478274.5, 7456540.5, 10737418, 16777216, 21913098, 29826162,
-      42949672, 67108864, 87652392, 119304648, 171798688, 268435456, 350609568, 477218592, 687194752];
-
-    for (let i = 0; i < lockUp.length; i++) {
-      if (lockUp[i] >= fieldLength) {
-        return lockUp[i];
-      }
-    }
-    throw RangeError("Unsupported field length.");
+  private static _calculateFieldLength(fieldLength: number) {
+    return fieldLength;
   }
 
   private _getCache(fieldName: string) {

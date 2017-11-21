@@ -1,0 +1,20 @@
+function getGlobal(): any {
+  let glob;
+  (function (global) {
+    glob = global;
+  })(typeof global !== "undefined" && global || this);
+  return glob;
+}
+
+
+function create(): void {
+  const global = getGlobal();
+  const sym = Symbol.for("LOKI") as any;
+  if (global[sym] === undefined) {
+    global[sym] = {
+    };
+  }
+  return global[sym];
+}
+
+export const PLUGINS = create();
