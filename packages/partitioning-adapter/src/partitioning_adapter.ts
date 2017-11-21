@@ -1,5 +1,6 @@
 import {Loki} from "../../loki/src/loki";
-import {ANY, StorageAdapter} from "../../loki/src/types";
+import {ANY, StorageAdapter} from "../../common/types";
+import {PLUGINS} from "../../common/plugin";
 
 /**
  * An adapter for adapters. Converts a non reference mode adapter into a reference mode adapter
@@ -22,6 +23,20 @@ export class LokiPartitioningAdapter implements StorageAdapter {
   private _pageSize: number;
   private _delimiter: string;
   private _dirtyPartitions: number[];
+
+  /**
+   * Registers the partitioning adapter as plugin.
+   */
+  static register(): void {
+    PLUGINS["LokiPartitioningAdapter"] = LokiPartitioningAdapter;
+  }
+
+  /**
+   * Deregisters the partitioning storage as plugin.
+   */
+  static deregister(): void {
+    delete PLUGINS["LokiPartitioningAdapter"];
+  }
 
   /**
    * @param {object} adapter - reference to a 'non-reference' mode loki adapter instance.

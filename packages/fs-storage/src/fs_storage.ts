@@ -1,11 +1,25 @@
-import {Loki} from "../../loki/src/loki";
-import {StorageAdapter} from "../../loki/src/types";
+import {PLUGINS} from "../../common/plugin";
+import {StorageAdapter} from "../../common/types";
 import * as fs from "fs";
 
 /**
  * A loki persistence adapter which persists using node fs module.
  */
 export class LokiFSStorage implements StorageAdapter {
+  /**
+   * Registers the fs storage as plugin.
+   */
+  static register(): void {
+    PLUGINS["LokiFSStorage"] = LokiFSStorage;
+  }
+
+  /**
+   * Deregisters the fs storage as plugin.
+   */
+  static deregister(): void {
+    delete PLUGINS["LokiFSStorage"];
+  }
+
   /**
    * Load data from file, will throw an error if the file does not exist
    * @param {string} dbname - the filename of the database to load
@@ -74,7 +88,5 @@ export class LokiFSStorage implements StorageAdapter {
     });
   }
 }
-
-Loki["LokiFSStorage"] = LokiFSStorage;
 
 export default LokiFSStorage;

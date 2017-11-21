@@ -1,19 +1,21 @@
 import {InvertedIndex} from "./inverted_index";
 import {IndexSearcher} from "./index_searcher";
 import {Tokenizer} from "./tokenizer";
-import {ANY, Dict} from "../../loki/src/types";
-
-let Loki: any;
-try {
-  Loki = require("../../loki/src/loki").Loki;
-} catch {
-}
+import {ANY, Dict} from "../../common/types";
+import {PLUGINS} from "../../common/plugin";
 
 export class FullTextSearch {
   private _id: string;
   private _docs: Set<any>;
   private _idxSearcher: IndexSearcher;
   private _invIdxs: Dict<InvertedIndex> = {};
+
+  /**
+   * Registers the full text search as plugin.
+   */
+  static register(): void {
+    PLUGINS["FullTextSearch"] = FullTextSearch;
+  }
 
   /**
    * Initialize the full text search for the given fields.
@@ -101,8 +103,5 @@ export namespace FullTextSearch {
   }
 }
 
-if (Loki) {
-  Loki["FullTextSearch"] = FullTextSearch;
-}
 
 export default FullTextSearch;

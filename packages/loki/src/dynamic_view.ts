@@ -1,7 +1,7 @@
 import {LokiEventEmitter} from "./event_emitter";
 import {Resultset} from "./resultset";
 import {Collection} from "./collection";
-import {Doc, Filter} from "./types";
+import {Doc, Filter} from "../../common/types";
 
 /*
  applySortCriteria -> like Resultset::compoundsort

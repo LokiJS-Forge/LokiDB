@@ -1,4 +1,4 @@
-import {StorageAdapter} from "./types";
+import {StorageAdapter} from "../../common/types";
 
 export type ANY = any;
 

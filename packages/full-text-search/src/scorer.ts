@@ -1,5 +1,5 @@
 import {InvertedIndex} from "./inverted_index";
-import {Dict} from "../../loki/src/types";
+import {Dict} from "../../common/types";
 
 export type ANY = any;
 

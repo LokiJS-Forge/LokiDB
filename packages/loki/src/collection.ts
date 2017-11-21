@@ -7,8 +7,9 @@ import {clone, CloneMethod} from "./clone";
 import {ltHelper, gtHelper, aeqHelper} from "./helper";
 import {Loki} from "./loki";
 import {copyProperties} from "./utils";
-import {Doc, Dict, Query} from "./types";
+import {Doc, Dict, Query} from "../../common/types";
 import {FullTextSearch} from "../../full-text-search/src/full_text_search";
+import {PLUGINS} from "../../common/plugin";
 
 /*
  'isDeepProperty' is not defined              no-undef
@@ -225,9 +226,9 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     }
 
     // Full text search
-    if (Loki["FullTextSearch"] !== undefined) {
+    if (PLUGINS["FullTextSearch"] !== undefined) {
        this._fullTextSearch = options.fullTextSearch !== undefined
-         ? new (Loki["FullTextSearch"])(options.fullTextSearch) : null;
+         ? new (PLUGINS["FullTextSearch"])(options.fullTextSearch) : null;
     } else {
       this._fullTextSearch = null;
     }

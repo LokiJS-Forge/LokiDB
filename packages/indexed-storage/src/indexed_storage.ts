@@ -1,5 +1,5 @@
-import {Loki} from "../../loki/src/loki";
-import {StorageAdapter} from "../../loki/src/types";
+import {PLUGINS} from "../../common/plugin";
+import {StorageAdapter} from "../../common/types";
 
 /*
  Loki IndexedDb Adapter (need to include this script to use it)
@@ -25,6 +25,20 @@ declare type ANY = any;
 export class LokiIndexedStorage implements StorageAdapter {
   private _appname: string;
   private catalog: any;
+
+  /**
+   * Registers the indexed storage as plugin.
+   */
+  static register(): void {
+    PLUGINS["LokiIndexedStorage"] = LokiIndexedStorage;
+  }
+
+  /**
+   * Deregisters the indexed storage as plugin.
+   */
+  static deregister(): void {
+    delete PLUGINS["LokiIndexedStorage"];
+  }
 
   /**
    * @param {string} [appname=loki] - Application name context can be used to distinguish subdomains, "loki" by default
@@ -551,7 +565,5 @@ class LokiCatalog {
     }))(callback);
   }
 }
-
-Loki["LokiIndexedStorage"] = LokiIndexedStorage;
 
 export default LokiIndexedStorage;

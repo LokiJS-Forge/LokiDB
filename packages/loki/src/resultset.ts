@@ -2,7 +2,7 @@ import {clone, CloneMethod} from "./clone";
 import {Collection} from "./collection";
 import {resolveTransformParams} from "./utils";
 import {ltHelper, gtHelper, aeqHelper, sortHelper} from "./helper";
-import {Doc, Query} from "./types";
+import {Doc, Query} from "../../common/types";
 
 export type ANY = any;
 

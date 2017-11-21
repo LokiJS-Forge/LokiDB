@@ -1,14 +1,12 @@
 /* global describe, ddescribe, it, expect */
-import {FullTextSearch} from "../../src/full_text_search";
 import {Loki} from "../../../loki/src/loki";
 import {QueryBuilder} from "../../src/query_builder";
 import {LokiMemoryAdapter} from "../../../loki/src/memory_adapter";
 import {Collection} from "../../../loki/src/collection";
+import {FullTextSearch} from "../../src/full_text_search";
 
 describe("full text search", () => {
-
-  // Force usage.
-  FullTextSearch;
+  FullTextSearch.register();
 
   interface User {
     name: string;
@@ -63,7 +61,7 @@ describe("full text search", () => {
     coll.updateWhere((user: User) => {
       return user.name == "quak";
     }, (user: User) => {
-      user.name = "quaaak"
+      user.name = "quaaak";
       return user;
     });
 
