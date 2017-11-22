@@ -1,4 +1,5 @@
-import {DE} from "../../../src/language/de";
+import {DE} from "../../src/de";
+import {Tokenizer} from "../../../full-text-search/src/index";
 
 export const de = {
   tokenizer: DE,

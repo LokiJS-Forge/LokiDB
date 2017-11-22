@@ -2,8 +2,8 @@
  * From MihaiValentin/lunr-languages.
  * Last update from 04/16/2017 - 19af41fb9bd644d9081ad274f96f700b21464290
  */
-import {generateTrimmer, generateStopWordFilter, Among, SnowballProgram} from "./support";
-import {Tokenizer} from "../tokenizer";
+import {generateTrimmer, generateStopWordFilter, Among, SnowballProgram} from "../../full-text-search-language/src/language";
+import {Tokenizer} from "../../full-text-search/src/index";
 
 let wordCharacters = "A-Za-z\xAA\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02B8\u02E0-\u02E4\u1D00-\u1D25\u1D2C-\u1D5C\u1D62-\u1D65\u1D6B-\u1D77\u1D79-\u1DBE\u1E00-\u1EFF\u2071\u207F\u2090-\u209C\u212A\u212B\u2132\u214E\u2160-\u2188\u2C60-\u2C7F\uA722-\uA787\uA78B-\uA7AD\uA7B0-\uA7B7\uA7F7-\uA7FF\uAB30-\uAB5A\uAB5C-\uAB64\uFB00-\uFB06\uFF21-\uFF3A\uFF41-\uFF5A";
 let trimmer = generateTrimmer(wordCharacters);
@@ -14,7 +14,7 @@ tkz.add("trimmer-de", trimmer);
 
 let stemmer = ((() => {
   /* create the wrapped stemmer object */
-  let st = new (function GermanStemmer() {
+  let st: any = new (function GermanStemmer() {
     let a_0 = [new Among("", -1, 6), new Among("U", 0, 2),
       new Among("Y", 0, 1), new Among("\u00E4", 0, 3),
       new Among("\u00F6", 0, 4), new Among("\u00FC", 0, 5)
@@ -53,16 +53,16 @@ let stemmer = ((() => {
       117, 30, 4
     ];
 
-    let I_x;
-    let I_p2;
-    let I_p1;
+    let I_x: number;
+    let I_p2: number;
+    let I_p1: number;
     let sbp = new SnowballProgram();
-    this.setCurrent = (word) => {
+    this.setCurrent = (word: string) => {
       sbp.setCurrent(word);
     };
     this.getCurrent = () => sbp.getCurrent();
 
-    function habr1(c1, c2, v_1) {
+    function habr1(c1: string, c2: string, v_1: number) {
       if (sbp.eq_s(1, c1)) {
         sbp.ket = sbp.cursor;
         if (sbp.in_grouping(g_v, 97, 252)) {
@@ -306,10 +306,10 @@ let stemmer = ((() => {
       r_postlude();
       return true;
     };
-  });
+  } as any);
 
   /* and return a function that stems a word for the current locale */
-  return (token) => {
+  return (token: string) => {
     st.setCurrent(token);
     st.stem();
     return st.getCurrent();

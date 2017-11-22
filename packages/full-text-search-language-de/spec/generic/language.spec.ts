@@ -1,13 +1,13 @@
 /* global describe, it, expect */
 import {de} from "./de";
-import {FullTextSearch} from "../../../src/full_text_search";
-import {QueryBuilder} from "../../../src/query_builder";
+import {FullTextSearch} from "../../../full-text-search/src/full_text_search";
+import {QueryBuilder} from "../../../full-text-search/src/query_builder";
 
 let testData = {
   de: de
 };
 
-let assertMatches = (searcher, query, docIds = []) => {
+let assertMatches = (searcher: any, query: any, docIds: number[] = []) => {
   let res = searcher.search(query);
   expect(Object.keys(res).length).toEqual(docIds.length);
   for (let i = 0; i < docIds.length; i++) {
@@ -20,7 +20,7 @@ let assertMatches = (searcher, query, docIds = []) => {
 for (let key of Object.keys(testData)) {
   let testDatum = testData[key];
 
-  describe("language " + key, () => {
+  fdescribe("language " + key, () => {
     let fts = new FullTextSearch([{
       name: "body",
       tokenizer: testDatum.tokenizer
@@ -40,5 +40,4 @@ for (let key of Object.keys(testData)) {
       });
     }
   });
-
 }

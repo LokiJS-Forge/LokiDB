@@ -2,31 +2,38 @@
  * From MihaiValentin/lunr-languages.
  * Last update from 04/16/2017 - 19af41fb9bd644d9081ad274f96f700b21464290
  */
-export function generateTrimmer(wordCharacters) {
+export function generateTrimmer(wordCharacters: string) {
   const regex = new RegExp("^[^" + wordCharacters + "]+|[^" + wordCharacters + "]+$", "g");
-  return (token) => token.replace(regex, "");
+  return (token: string) => token.replace(regex, "");
 }
 
-export function generateStopWordFilter(stopWords) {
+export function generateStopWordFilter(stopWords: string[]) {
   const words = new Set(stopWords);
-  return (token) => words.has(token) ? "" : token;
+  return (token: string) => words.has(token) ? "" : token;
 }
 
 export class Among {
-  constructor(s, substring_i, result, method) {
-    this.toCharArray = (s) => {
+  s_size: number;
+  s: number[];
+  substring_i: number;
+  result: number;
+  method: any;
+
+  constructor(s: string, substring_i: number, result: number, method?: any) {
+    let toCharArray = (s: string) => {
       let sLength = s.length;
       let charArr = new Array(sLength);
       for (let i = 0; i < sLength; i++)
-        charArr[i] = s.charCodeAt(i);
+        charArr[i] = +s.charCodeAt(i);
       return charArr;
     };
 
-    if ((!s && s !== "") || (!substring_i && (substring_i !== 0)) || !result)
-      throw ("Bad Among initialisation: s:" + s + ", substring_i: "
-   + substring_i + ", result: " + result);
+    if ((!s && s !== "") || (!substring_i && (substring_i !== 0)) || !result) {
+      throw ("Bad Among initialisation: s:" + s + ", substring_i: " + substring_i + ", result: " + result);
+    }
+
     this.s_size = s.length;
-    this.s = this.toCharArray(s);
+    this.s = toCharArray(s);
     this.substring_i = substring_i;
     this.result = result;
     this.method = method;
@@ -34,6 +41,13 @@ export class Among {
 }
 
 export class SnowballProgram {
+
+  current: string;
+  bra: number;
+  ket: number;
+  limit: number;
+  cursor: number;
+  limit_backward: number;
 
   constructor() {
     this.current = null;
@@ -44,7 +58,7 @@ export class SnowballProgram {
     this.limit_backward = 0;
   }
 
-  setCurrent(word) {
+  setCurrent(word: string) {
     this.current = word;
     this.cursor = 0;
     this.limit = word.length;
@@ -59,7 +73,7 @@ export class SnowballProgram {
     return result;
   }
 
-  in_grouping(s, min, max) {
+  in_grouping(s: number[], min: number, max: number) {
     if (this.cursor < this.limit) {
       let ch = this.current.charCodeAt(this.cursor);
       if (ch <= max && ch >= min) {
@@ -73,7 +87,7 @@ export class SnowballProgram {
     return false;
   }
 
-  in_grouping_b(s, min, max) {
+  in_grouping_b(s: number[], min: number, max: number) {
     if (this.cursor > this.limit_backward) {
       let ch = this.current.charCodeAt(this.cursor - 1);
       if (ch <= max && ch >= min) {
@@ -87,7 +101,7 @@ export class SnowballProgram {
     return false;
   }
 
-  out_grouping(s, min, max) {
+  out_grouping(s: number[], min: number, max: number) {
     if (this.cursor < this.limit) {
       let ch = this.current.charCodeAt(this.cursor);
       if (ch > max || ch < min) {
@@ -103,7 +117,7 @@ export class SnowballProgram {
     return false;
   }
 
-  out_grouping_b(s, min, max) {
+  out_grouping_b(s: number[], min: number, max: number) {
     if (this.cursor > this.limit_backward) {
       let ch = this.current.charCodeAt(this.cursor - 1);
       if (ch > max || ch < min) {
@@ -119,7 +133,7 @@ export class SnowballProgram {
     return false;
   }
 
-  eq_s(s_size, s) {
+  eq_s(s_size: number, s: string) {
     if (this.limit - this.cursor < s_size)
       return false;
     for (let i = 0; i < s_size; i++)
@@ -129,7 +143,7 @@ export class SnowballProgram {
     return true;
   }
 
-  eq_s_b(s_size, s) {
+  eq_s_b(s_size: number, s: string) {
     if (this.cursor - this.limit_backward < s_size)
       return false;
     for (let i = 0; i < s_size; i++)
@@ -139,7 +153,7 @@ export class SnowballProgram {
     return true;
   }
 
-  find_among(v, v_size) {
+  find_among(v: Among[], v_size: number) {
     let i = 0;
     let j = v_size;
     let c = this.cursor;
@@ -196,7 +210,7 @@ export class SnowballProgram {
     }
   }
 
-  find_among_b(v, v_size) {
+  find_among_b(v: Among[], v_size: number) {
     let i = 0;
     let j = v_size;
     let c = this.cursor;
@@ -253,7 +267,7 @@ export class SnowballProgram {
     }
   }
 
-  replace_s(c_bra, c_ket, s) {
+  replace_s(c_bra: number, c_ket: number, s: string) {
     let adjustment = s.length - (c_ket - c_bra);
 
     let left = this.current
@@ -271,11 +285,11 @@ export class SnowballProgram {
 
   slice_check() {
     if (this.bra < 0 || this.bra > this.ket || this.ket > this.limit
-   || this.limit > this.current.length)
+      || this.limit > this.current.length)
       throw ("faulty slice operation");
   }
 
-  slice_from(s) {
+  slice_from(s: string) {
     this.slice_check();
     this.replace_s(this.bra, this.ket, s);
   }
@@ -284,7 +298,7 @@ export class SnowballProgram {
     this.slice_from("");
   }
 
-  insert(c_bra, c_ket, s) {
+  insert(c_bra: number, c_ket: number, s: string) {
     let adjustment = this.replace_s(c_bra, c_ket, s);
     if (c_bra <= this.bra)
       this.bra += adjustment;
@@ -297,7 +311,7 @@ export class SnowballProgram {
     return this.current.substring(this.bra, this.ket);
   }
 
-  eq_v_b(s) {
+  eq_v_b(s: string) {
     return this.eq_s_b(s.length, s);
   }
 }
