@@ -1,17 +1,27 @@
-export type ANY = any;
+import {Dict, Doc} from "../../common/types";
 
 export class UniqueIndex {
+  // The property field to index.
+  private _field: number | string;
+  // The map with the indices rows of unique property fields.
+  private _keyMap: Dict<number>;
 
-  private _field: string;
-  private _keyMap: object;
-
-  constructor(uniqueField: string) {
-    this._field = uniqueField;
+  /**
+   * Constructs an unique index object.
+   * @param {number|string} propertyField - the property field to index
+   */
+  constructor(propertyField: number | string) {
+    this._field = propertyField;
     this._keyMap = {};
   }
 
-  set(obj: ANY, row: number) {
-    const fieldValue = obj[this._field];
+  /**
+   * Sets a document's unique index.
+   * @param {Doc} doc - the document
+   * @param {number} row - the data row of the document
+   */
+  public set(doc: Doc, row: number): void {
+    const fieldValue = doc[this._field];
     if (fieldValue !== null && fieldValue !== undefined) {
       if (this._keyMap[fieldValue] !== undefined) {
         throw new Error("Duplicate key for property " + this._field + ": " + fieldValue);
@@ -21,16 +31,21 @@ export class UniqueIndex {
     }
   }
 
-  get(key: string) {
-    return this._keyMap[key];
+  /**
+   * Returns the data row of an unique index.
+   * @param {number|string} index - the index
+   * @returns {number | string} - the row
+   */
+  public get(index: number | string): number {
+    return this._keyMap[index];
   }
 
   /**
-   * Updates a document's unique index given an updated object.
-   * @param  {Object} obj - Original document object
+   * Updates a document's unique index.
+   * @param  {Object} doc - the document
    * @param  {number} row - the data row of the document
    */
-  update(doc: object, row: number) {
+  public update(doc: Doc, row: number): void {
     // Find and remove current keyMap for row.
     const uniqueNames = Object.keys(this._keyMap);
     for (let i = 0; i < uniqueNames.length; i++) {
@@ -42,16 +57,22 @@ export class UniqueIndex {
     this.set(doc, row);
   }
 
-  remove(key: string) {
-    const obj = this._keyMap[key];
-    if (obj !== null && obj !== undefined) {
-      delete this._keyMap[key];
+  /**
+   * Removes an unique index.
+   * @param {number|string} index - the unique index
+   */
+  public remove(index: number | string): void {
+    if (this._keyMap[index] !== undefined) {
+      delete this._keyMap[index];
     } else {
       throw new Error("Key is not in unique index: " + this._field);
     }
   }
 
-  clear() {
+  /**
+   * Clears all unique indexes.
+   */
+  public clear(): void {
     this._keyMap = {};
   }
 }
