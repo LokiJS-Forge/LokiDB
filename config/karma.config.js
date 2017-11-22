@@ -19,47 +19,51 @@ module.exports = function (config) {
     coverageIstanbulReporter: {
       dir: "./coverage/karma/",
       reports: ["text-summary", "lcov", "html", "json"],
-      fixWebpackSourcePaths: false
+      fixWebpackSourcePaths: true
     },
     mime: {
-      'text/x-typescript': ['ts']
+      "text/x-typescript": ["ts"]
     },
     webpack: {
-      externals: {
-        "fs": "fs"
-      },
       resolve: {
-        extensions: ['.ts', '.js'],
+        extensions: [".ts"],
       },
-      devtool: "inline-source-map",
+      devtool: "source-map",
       module: {
-        // rules: [
-        //   {
-        //     test: /\.js$/,
-        //     use: [
-        //       {
-        //         loader: "istanbul-instrumenter-loader",
-        //         options: {
-        //           esModules: true
-        //         }
-        //       },
-        //     ]
-        //   }
-        // ],
         loaders: [
           {
+            enforce: "pre",
             test: /\.ts$/,
-            loader: "ts-loader"
+            loader: "tslint-loader",
+            exclude: /node_modules/,
+            options: {
+              failOnHint: true,
+              configFile: path.join("config", "tslint.json"),
+            }
           },
+          {
+            test: /\.ts$/,
+            loader: "ts-loader",
+            options: {
+              configFile: path.join("config", "tsconfig.webpack.json")
+            }
+          },
+          {
+            enforce: "post",
+            exclude: [
+              /node_modules/,
+              /\.(spec|helper)\.ts$/
+            ],
+            loader: "istanbul-instrumenter-loader?esModules=true",
+            test: /\.ts$/
+          }
         ]
       }
     },
 
     plugins: [
       "karma-chrome-launcher",
-      "karma-coverage",
       "karma-coverage-istanbul-reporter",
-      "istanbul-instrumenter-loader",
       "karma-jasmine",
       "karma-jasmine-matchers",
       "karma-webpack",

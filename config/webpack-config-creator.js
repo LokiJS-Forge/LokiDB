@@ -22,15 +22,15 @@ module.exports = (options) => {
     },
     externals: options.externals,
     resolve: {
-      extensions: [".ts", ".js"]
+      extensions: [".ts"]
     },
     devtool: "source-map",
     module: {
       loaders: [
         {
-          enforce: 'pre',
+          enforce: "pre",
           test: /\.ts$/,
-          loader: 'tslint-loader',
+          loader: "tslint-loader",
           exclude: /node_modules/,
           options: {
             failOnHint: true,
