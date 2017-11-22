@@ -1,43 +1,42 @@
-/* global describe, it, expect */
-import {de} from "./de";
-import {FullTextSearch} from "../../../full-text-search/src/full_text_search";
-import {QueryBuilder} from "../../../full-text-search/src/query_builder";
+import {DE} from "../../src/de";
+import {Tokenizer} from "../../../full-text-search/src/index";
+import {createLanguageTest} from "../../../full-text-search-language/spec/helper/create_lanuage_test";
 
-let testData = {
-  de: de
+export const de = {
+  tokenizer: DE,
+  docs: [
+    "An Deutschland grenzen neun Nachbarländer und naturräumlich im Norden die Gewässer der Nord- und Ostsee, im Süden das Bergland der Alpen. Es liegt in der gemäßigten Klimazone, zählt mit rund 80 Millionen Einwohnern zu den dicht besiedelten Flächenstaaten und gilt international als das Land mit der dritthöchsten Zahl von Einwanderern. aufeinanderfolgenden. auffassen.",
+    "Deutschland als Urlaubsziel verfügt über günstige Voraussetzungen: Gebirgslandschaften (Alpen und Mittelgebirge), See- und Flusslandschaften, die Küsten und Inseln der Nord- und Ostsee, zahlreiche Kulturdenkmäler und eine Vielzahl geschichtsträchtiger Städte sowie gut ausgebaute Infrastruktur. Vorteilhaft ist die zentrale Lage in Europa."
+  ],
+  tests: [{
+    what: "find the word",
+    search: "deutschland",
+    expected: [0, 1]
+  }, {
+    what: "find the word",
+    search: "urlaubsziel",
+    expected: [1]
+  }, {
+    what: "find the word",
+    search: "gewass",
+    expected: [0]
+  }, {
+    what: "find the word",
+    search: "verfugt",
+    expected: [1]
+  }, {
+    what: "never find a word that does not exist, like",
+    search: "inexistent",
+    expected: []
+  }, {
+    what: "never find a stop word like",
+    search: "und",
+    expected: []
+  }, {
+    what: "find a correctly stemmed word",
+    search: "auffassung",
+    expected: [0]
+  }]
 };
 
-let assertMatches = (searcher: any, query: any, docIds: number[] = []) => {
-  let res = searcher.search(query);
-  expect(Object.keys(res).length).toEqual(docIds.length);
-  for (let i = 0; i < docIds.length; i++) {
-    expect(res).toHaveMember(String(docIds[i]));
-    delete res[String(docIds[i])];
-  }
-  expect(res).toEqual({});
-};
-
-for (let key of Object.keys(testData)) {
-  let testDatum = testData[key];
-
-  fdescribe("language " + key, () => {
-    let fts = new FullTextSearch([{
-      name: "body",
-      tokenizer: testDatum.tokenizer
-    }]);
-    for (let i = 0; i < testDatum.docs.length; i++) {
-      fts.addDocument({
-        $loki: i,
-        body: testDatum.docs[i]
-      });
-    }
-
-    for (let i = 0; i < testDatum.tests.length; i++) {
-      let test = testDatum.tests[i];
-      it(test.what + " " + test.search, () => {
-        let query = new QueryBuilder().match("body", test.search).build();
-        assertMatches(fts, query, test.found);
-      });
-    }
-  });
-}
+createLanguageTest("de", de);
