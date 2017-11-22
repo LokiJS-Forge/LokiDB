@@ -1,6 +1,7 @@
-import {DE} from "../../../src/language/de";
+import {DE} from "../../src/de";
+import {createLanguageTest, LanguageTestData} from "../../../full-text-search-language/spec/helper/create_lanuage_test";
 
-export const de = {
+export const de: LanguageTestData = {
   tokenizer: DE,
   docs: [
     "An Deutschland grenzen neun Nachbarländer und naturräumlich im Norden die Gewässer der Nord- und Ostsee, im Süden das Bergland der Alpen. Es liegt in der gemäßigten Klimazone, zählt mit rund 80 Millionen Einwohnern zu den dicht besiedelten Flächenstaaten und gilt international als das Land mit der dritthöchsten Zahl von Einwanderern. aufeinanderfolgenden. auffassen.",
@@ -9,30 +10,32 @@ export const de = {
   tests: [{
     what: "find the word",
     search: "deutschland",
-    found: [0, 1]
+    expected: [0, 1]
   }, {
     what: "find the word",
     search: "urlaubsziel",
-    found: [1]
+    expected: [1]
   }, {
     what: "find the word",
     search: "gewass",
-    found: [0]
+    expected: [0]
   }, {
     what: "find the word",
     search: "verfugt",
-    found: [1]
+    expected: [1]
   }, {
     what: "never find a word that does not exist, like",
     search: "inexistent",
-    found: []
+    expected: []
   }, {
     what: "never find a stop word like",
     search: "und",
-    found: []
+    expected: []
   }, {
     what: "find a correctly stemmed word",
-    search: "auffassung",
-    found: [0]
+    search: "auffass",
+    expected: [0]
   }]
 };
+
+createLanguageTest("de", de);

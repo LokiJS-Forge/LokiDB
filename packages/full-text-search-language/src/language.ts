@@ -1,39 +1,49 @@
 /*
  * From MihaiValentin/lunr-languages.
- * Last update from 04/16/2017 - 19af41fb9bd644d9081ad274f96f700b21464290
+ * Last update from 2017/04/16 - 19af41fb9bd644d9081ad274f96f700b21464290
  */
-export function generateTrimmer(wordCharacters) {
+export function generateTrimmer(wordCharacters: string) {
   const regex = new RegExp("^[^" + wordCharacters + "]+|[^" + wordCharacters + "]+$", "g");
-  return (token) => token.replace(regex, "");
+  return (token: string) => token.replace(regex, "");
 }
 
-export function generateStopWordFilter(stopWords) {
+export function generateStopWordFilter(stopWords: string[]) {
   const words = new Set(stopWords);
-  return (token) => words.has(token) ? "" : token;
+  return (token: string) => words.has(token) ? "" : token;
 }
 
 export class Among {
-  constructor(s, substring_i, result, method) {
-    this.toCharArray = (s) => {
-      let sLength = s.length;
-      let charArr = new Array(sLength);
-      for (let i = 0; i < sLength; i++)
-        charArr[i] = s.charCodeAt(i);
-      return charArr;
-    };
+  s_size: number;
+  s: number[];
+  substring_i: number;
+  result: number;
+  method: any;
 
-    if ((!s && s !== "") || (!substring_i && (substring_i !== 0)) || !result)
-      throw ("Bad Among initialisation: s:" + s + ", substring_i: "
-   + substring_i + ", result: " + result);
+  constructor(s: string, substring_i: number, result: number, method?: any) {
+    if ((!s && s !== "") || (!substring_i && (substring_i !== 0)) || !result) {
+      throw ("Bad Among initialisation: s:" + s + ", substring_i: " + substring_i + ", result: " + result);
+    }
+
     this.s_size = s.length;
-    this.s = this.toCharArray(s);
     this.substring_i = substring_i;
     this.result = result;
     this.method = method;
+
+    // Split string into a numeric character array.
+    this.s = new Array(this.s_size);
+    for (let i = 0; i < this.s_size; i++) {
+      this.s[i] = +s.charCodeAt(i);
+    }
   }
 }
 
 export class SnowballProgram {
+  current: string;
+  bra: number;
+  ket: number;
+  limit: number;
+  cursor: number;
+  limit_backward: number;
 
   constructor() {
     this.current = null;
@@ -44,7 +54,7 @@ export class SnowballProgram {
     this.limit_backward = 0;
   }
 
-  setCurrent(word) {
+  setCurrent(word: string) {
     this.current = word;
     this.cursor = 0;
     this.limit = word.length;
@@ -59,7 +69,7 @@ export class SnowballProgram {
     return result;
   }
 
-  in_grouping(s, min, max) {
+  in_grouping(s: number[], min: number, max: number) {
     if (this.cursor < this.limit) {
       let ch = this.current.charCodeAt(this.cursor);
       if (ch <= max && ch >= min) {
@@ -73,7 +83,7 @@ export class SnowballProgram {
     return false;
   }
 
-  in_grouping_b(s, min, max) {
+  in_grouping_b(s: number[], min: number, max: number) {
     if (this.cursor > this.limit_backward) {
       let ch = this.current.charCodeAt(this.cursor - 1);
       if (ch <= max && ch >= min) {
@@ -87,7 +97,7 @@ export class SnowballProgram {
     return false;
   }
 
-  out_grouping(s, min, max) {
+  out_grouping(s: number[], min: number, max: number) {
     if (this.cursor < this.limit) {
       let ch = this.current.charCodeAt(this.cursor);
       if (ch > max || ch < min) {
@@ -103,7 +113,7 @@ export class SnowballProgram {
     return false;
   }
 
-  out_grouping_b(s, min, max) {
+  out_grouping_b(s: number[], min: number, max: number) {
     if (this.cursor > this.limit_backward) {
       let ch = this.current.charCodeAt(this.cursor - 1);
       if (ch > max || ch < min) {
@@ -119,27 +129,33 @@ export class SnowballProgram {
     return false;
   }
 
-  eq_s(s_size, s) {
-    if (this.limit - this.cursor < s_size)
+  eq_s(s_size: number, s: string) {
+    if (this.limit - this.cursor < s_size) {
       return false;
-    for (let i = 0; i < s_size; i++)
-      if (this.current.charCodeAt(this.cursor + i) !== s.charCodeAt(i))
+    }
+    for (let i = 0; i < s_size; i++) {
+      if (this.current.charCodeAt(this.cursor + i) !== s.charCodeAt(i)) {
         return false;
+      }
+    }
     this.cursor += s_size;
     return true;
   }
 
-  eq_s_b(s_size, s) {
-    if (this.cursor - this.limit_backward < s_size)
+  eq_s_b(s_size: number, s: string) {
+    if (this.cursor - this.limit_backward < s_size) {
       return false;
-    for (let i = 0; i < s_size; i++)
-      if (this.current.charCodeAt(this.cursor - s_size + i) !== s.charCodeAt(i))
+    }
+    for (let i = 0; i < s_size; i++) {
+      if (this.current.charCodeAt(this.cursor - s_size + i) !== s.charCodeAt(i)) {
         return false;
+      }
+    }
     this.cursor -= s_size;
     return true;
   }
 
-  find_among(v, v_size) {
+  find_among(v: Among[], v_size: number) {
     let i = 0;
     let j = v_size;
     let c = this.cursor;
@@ -150,10 +166,7 @@ export class SnowballProgram {
     while (true) {
       let k = i + ((j - i) >> 1);
       let diff = 0;
-
-      let common = common_i < common_j
-        ? common_i
-        : common_j;
+      let common = common_i < common_j ? common_i : common_j;
 
       let w = v[k];
       for (let i2 = common; i2 < w.s_size; i2++) {
@@ -162,8 +175,9 @@ export class SnowballProgram {
           break;
         }
         diff = this.current.charCodeAt(c + common) - w.s[i2];
-        if (diff)
+        if (diff) {
           break;
+        }
         common++;
       }
       if (diff < 0) {
@@ -174,8 +188,9 @@ export class SnowballProgram {
         common_i = common;
       }
       if (j - i <= 1) {
-        if (i > 0 || j === i || first_key_inspected)
+        if (i > 0 || j === i || first_key_inspected) {
           break;
+        }
         first_key_inspected = true;
       }
     }
@@ -183,20 +198,23 @@ export class SnowballProgram {
       let w = v[i];
       if (common_i >= w.s_size) {
         this.cursor = c + w.s_size;
-        if (!w.method)
+        if (!w.method) {
           return w.result;
+        }
         let res = w.method();
         this.cursor = c + w.s_size;
-        if (res)
+        if (res) {
           return w.result;
+        }
       }
       i = w.substring_i;
-      if (i < 0)
+      if (i < 0) {
         return 0;
+      }
     }
   }
 
-  find_among_b(v, v_size) {
+  find_among_b(v: Among[], v_size: number) {
     let i = 0;
     let j = v_size;
     let c = this.cursor;
@@ -253,7 +271,7 @@ export class SnowballProgram {
     }
   }
 
-  replace_s(c_bra, c_ket, s) {
+  replace_s(c_bra: number, c_ket: number, s: string) {
     let adjustment = s.length - (c_ket - c_bra);
 
     let left = this.current
@@ -271,11 +289,12 @@ export class SnowballProgram {
 
   slice_check() {
     if (this.bra < 0 || this.bra > this.ket || this.ket > this.limit
-   || this.limit > this.current.length)
+      || this.limit > this.current.length) {
       throw ("faulty slice operation");
+    }
   }
 
-  slice_from(s) {
+  slice_from(s: string) {
     this.slice_check();
     this.replace_s(this.bra, this.ket, s);
   }
@@ -284,7 +303,7 @@ export class SnowballProgram {
     this.slice_from("");
   }
 
-  insert(c_bra, c_ket, s) {
+  insert(c_bra: number, c_ket: number, s: string) {
     let adjustment = this.replace_s(c_bra, c_ket, s);
     if (c_bra <= this.bra)
       this.bra += adjustment;
@@ -297,7 +316,7 @@ export class SnowballProgram {
     return this.current.substring(this.bra, this.ket);
   }
 
-  eq_v_b(s) {
+  eq_v_b(s: string) {
     return this.eq_s_b(s.length, s);
   }
 }
