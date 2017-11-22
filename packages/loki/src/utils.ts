@@ -1,6 +1,5 @@
-/**
- * Created by toni on 1/27/17.
- */
+import {clone, CloneMethod} from "./clone";
+
 export type ANY = any;
 
 export function copyProperties(src: object, dest: object) {
@@ -41,8 +40,8 @@ export function resolveTransformParams(transform: ANY, params: object) {
 
   // iterate all steps in the transform array
   for (idx = 0; idx < transform.length; idx++) {
-    // clone transform so our scan and replace can operate directly on cloned transform
-    clonedStep = JSON.parse(JSON.stringify(transform[idx]));
+    // clone transform so our scan/replace can operate directly on cloned transform
+    clonedStep = clone(transform[idx], CloneMethod.SHALLOW_RECURSE_OBJECTS);
     resolvedTransform.push(resolveTransformObject(clonedStep, params));
   }
 
