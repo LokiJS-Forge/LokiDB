@@ -88,6 +88,83 @@ describe("transforms", () => {
     });
   });
 
+  describe("parameterized transform with non-serializable non-params", function () {
+    it("works", function () {
+
+      interface Person {
+        name: string;
+        age: number;
+      }
+
+
+      const db = new Loki("tx.db");
+      const items = db.addCollection<Person>("items");
+
+      items.insert({name: "mjolnir", age: 5});
+      items.insert({name: "tyrfing", age: 9});
+
+      let mapper = function (item: Person) {
+        return item.age;
+      };
+
+      let averageReduceFunction = function (values: number[]) {
+        let sum = 0;
+
+        values.forEach(function (i) {
+          sum += i;
+        });
+
+        return sum / values.length;
+      };
+
+      // so ideally, transform params are useful for
+      // - extracting values that will change across multiple executions, and also
+      // - extracting values which are not serializable so that the transform can be
+      //   named and serialized along with the database.
+      //
+      // The transform used here is not serializable so this test is just to verify
+      // that our parameter substitution method does not have problem with
+      // non-serializable transforms.
+
+      let tx1 = [
+        {
+          type: "mapReduce",
+          mapFunction: mapper,
+          reduceFunction: averageReduceFunction
+        }
+      ];
+
+      let tx2 = [
+        {
+          type: "find",
+          value: {
+            age: {
+              "$gt": "[%lktxp]minimumAge"
+            },
+          }
+        },
+        {
+          type: "mapReduce",
+          mapFunction: mapper,
+          reduceFunction: averageReduceFunction
+        }
+      ] as any;
+
+      // no data() call needed to mapReduce
+      expect(items.chain(tx1) as any as number).toBe(7);
+      expect(items.chain(tx1, {foo: 5}) as any as number).toBe(7);
+      // params will cause a recursive shallow clone of objects before substitution
+      expect(items.chain(tx2, {minimumAge: 4}) as any as number).toBe(7);
+      
+      // make sure original transform is unchanged
+      expect(tx2[0].type).toEqual("find");
+      expect(tx2[0].value.age.$gt).toEqual("[%lktxp]minimumAge");
+      expect(tx2[1].type).toEqual("mapReduce");
+      expect(typeof tx2[1].mapFunction).toEqual("function");
+      expect(typeof tx2[1].reduceFunction).toEqual("function");
+    });
+  });
+
   describe("parameterized where", () => {
     it("works", () => {
 
