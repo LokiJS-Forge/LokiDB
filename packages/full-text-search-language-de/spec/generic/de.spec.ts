@@ -33,7 +33,7 @@ export const de: LanguageTestData = {
     expected: []
   }, {
     what: "find a correctly stemmed word",
-    search: "auffassung",
+    search: "auffass",
     expected: [0]
   }]
 };

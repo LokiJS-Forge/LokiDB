@@ -1,6 +1,6 @@
 /*
  * From MihaiValentin/lunr-languages.
- * Last update from 04/16/2017 - 19af41fb9bd644d9081ad274f96f700b21464290
+ * Last update from 2017/04/16 - 19af41fb9bd644d9081ad274f96f700b21464290
  */
 import {Tokenizer} from "../../full-text-search/src/index";
 import {
@@ -325,6 +325,7 @@ function splitter(str: string) {
 }
 
 const st = new GermanStemmer();
+
 function stemmer(token: string) {
   st.setCurrent(token);
   st.stem();
