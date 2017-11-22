@@ -28,9 +28,9 @@ module.exports = (options) => {
     module: {
       loaders: [
         {
-          enforce: 'pre',
+          enforce: "pre",
           test: /\.ts$/,
-          loader: 'tslint-loader',
+          loader: "tslint-loader",
           exclude: /node_modules/,
           options: {
             failOnHint: true,

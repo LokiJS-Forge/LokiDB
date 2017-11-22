@@ -9,7 +9,7 @@
     "lint:fix": "tslint -p 'tsconfig.json' -c 'config/tslint.json' --fix",
     "test": "npm run test:web && npm run test:node && npm run coverage",
     "test:web": "karma start config/karma.config.js --single-run",
-    "test:node": "nyc --temp-directory coverage/node jasmine --config='config/jasmine.json'",
+    "test:node": "nyc --report-dir coverage/node jasmine --config='config/jasmine.json'",
     "coverage": "istanbul report html lcov json text-summary",
     "build": "node config/build.js"
   },
@@ -42,6 +42,7 @@
     "elasticsearch": "^13.3.1",
     "eslint": "^4.11.0",
     "eslint-loader": "^1.9.0",
+    "istanbul": "^0.4.5",
     "istanbul-instrumenter-loader": "^3.0.0",
     "jasmine": "^2.8.0",
     "karma": "^1.7.1",

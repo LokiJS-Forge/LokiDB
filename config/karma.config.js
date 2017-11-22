@@ -22,19 +22,19 @@ module.exports = function (config) {
       fixWebpackSourcePaths: true
     },
     mime: {
-      'text/x-typescript': ['ts']
+      "text/x-typescript": ["ts"]
     },
     webpack: {
       resolve: {
-        extensions: ['.ts'],
+        extensions: [".ts"],
       },
       devtool: "source-map",
       module: {
         loaders: [
           {
-            enforce: 'pre',
+            enforce: "pre",
             test: /\.ts$/,
-            loader: 'tslint-loader',
+            loader: "tslint-loader",
             exclude: /node_modules/,
             options: {
               failOnHint: true,
@@ -49,12 +49,12 @@ module.exports = function (config) {
             }
           },
           {
-            enforce: 'post',
+            enforce: "post",
             exclude: [
               /node_modules/,
-              /\.(e2e|spec\.)ts$/
+              /\.(spec|helper)\.ts$/
             ],
-            loader: 'istanbul-instrumenter-loader?esModules=true',
+            loader: "istanbul-instrumenter-loader?esModules=true",
             test: /\.ts$/
           }
         ]

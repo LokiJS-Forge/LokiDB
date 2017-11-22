@@ -8,5 +8,9 @@
     "html",
     "json"
   ],
+  "exclude": [
+    "**/*.spec.ts",
+    "**/*.helper.ts"
+  ],
   "report-dir": "./coverage/node/"
 }
