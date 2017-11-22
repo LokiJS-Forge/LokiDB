@@ -22,7 +22,7 @@ module.exports = (options) => {
     },
     externals: options.externals,
     resolve: {
-      extensions: [".ts", ".js"]
+      extensions: [".ts"]
     },
     devtool: "source-map",
     module: {
