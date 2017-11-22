@@ -1,5 +1,5 @@
 {
-  "name": "@lokijs/full-text-search-language",
+  "name": "@lokijs/full-text-search-language-de",
   "description": "A persistence adapter which persists to web browser's indexed db storage.",
   "author": "Various authors",
   "license": "MIT",
@@ -9,6 +9,7 @@
   },
   "main": "lokijs.full-text-search-language-de.js",
   "dependencies": {
-    "@lokijs/loki": "0"
+    "@lokijs/full-text-search": "0",
+    "@lokijs/full-text-search-language": "0"
   }
 }

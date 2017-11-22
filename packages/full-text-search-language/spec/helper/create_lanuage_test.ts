@@ -26,7 +26,7 @@ export function createLanguageTest(language: string, data: LanguageTestData) {
     expect(res).toEqual({});
   };
 
-  fdescribe("language-" + language + ":", () => {
+  describe("language-" + language + ":", () => {
     // Setup full text search.
     let fts = new FullTextSearch([{
       name: "body",

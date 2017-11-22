@@ -8,13 +8,14 @@ const stream = require("stream");
 const conventionalChangelog = require("conventional-changelog");
 
 const PACKAGES = [
-  "full-text-search-language"
   // "loki",
   // "partitioning-adapter",
   // "local-storage",
   // "indexed-storage",
   // "fs-storage",
   // "full-text-search"
+  "full-text-search-language",
+  "full-text-search-language-de",
 ];
 
 const ROOT_DIR = process.cwd();
