@@ -813,6 +813,12 @@ export class Resultset<E extends object = object> {
             result.push(+keys[i]);
           }
         }
+      } else if (this.collection.constraints.unique[property] !== undefined && operator == "$eq") {
+        // Use unique constraint for search.
+        let row = this.collection.constraints.unique[property].get(value);
+        if (filter.includes(row)) {
+          result.push(row);
+        }
       } else {
         for (let i = 0; i < filter.length; i++) {
           let rowIdx = filter[i];
@@ -836,6 +842,12 @@ export class Resultset<E extends object = object> {
       for (let i = 0; i < keys.length; i++) {
         result.push(+keys[i]);
       }
+      return this;
+    }
+
+    // Use unique constraint for search.
+    if (this.collection.constraints.unique[property] !== undefined && operator == "$eq") {
+      result.push(this.collection.constraints.unique[property].get(value));
       return this;
     }
 

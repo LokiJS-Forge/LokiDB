@@ -1,65 +1,78 @@
-export type ANY = any;
+import {Dict, Doc} from "../../common/types";
 
 export class UniqueIndex {
+  // The property field to index.
+  private _field: number | string;
+  // The map with the indices rows of unique property fields.
+  private _keyMap: Dict<number>;
 
-  private field: string;
-  private keyMap: object;
-  private lokiMap: object;
-
-  constructor(uniqueField: string) {
-    this.field = uniqueField;
-    this.keyMap = {};
-    this.lokiMap = {};
+  /**
+   * Constructs an unique index object.
+   * @param {number|string} propertyField - the property field to index
+   */
+  constructor(propertyField: number | string) {
+    this._field = propertyField;
+    this._keyMap = {};
   }
 
-  set(obj: ANY) {
-    const fieldValue = obj[this.field];
-    if (fieldValue !== null && typeof(fieldValue) !== "undefined") {
-      if (this.keyMap[fieldValue]) {
-        throw new Error("Duplicate key for property " + this.field + ": " + fieldValue);
+  /**
+   * Sets a document's unique index.
+   * @param {Doc} doc - the document
+   * @param {number} row - the data row of the document
+   */
+  public set(doc: Doc, row: number): void {
+    const fieldValue = doc[this._field];
+    if (fieldValue !== null && fieldValue !== undefined) {
+      if (this._keyMap[fieldValue] !== undefined) {
+        throw new Error("Duplicate key for property " + this._field + ": " + fieldValue);
       } else {
-        this.keyMap[fieldValue] = obj;
-        this.lokiMap[obj.$loki] = fieldValue;
+        this._keyMap[fieldValue] = row;
       }
     }
   }
 
-  get(key: string) {
-    return this.keyMap[key];
-  }
-
-  byId(id: number) {
-    return this.keyMap[this.lokiMap[id]];
+  /**
+   * Returns the data row of an unique index.
+   * @param {number|string} index - the index
+   * @returns {number | string} - the row
+   */
+  public get(index: number | string): number {
+    return this._keyMap[index];
   }
 
   /**
-   * Updates a document's unique index given an updated object.
-   * @param  {Object} obj Original document object
-   * @param  {Object} doc New document object (likely the same as obj)
+   * Updates a document's unique index.
+   * @param  {Object} doc - the document
+   * @param  {number} row - the data row of the document
    */
-  update(obj: ANY, doc: object) {
-    if (this.lokiMap[obj.$loki] !== doc[this.field]) {
-      const old = this.lokiMap[obj.$loki];
-      this.set(doc);
-      // make the old key fail bool test, while avoiding the use of delete (mem-leak prone)
-      this.keyMap[old] = undefined;
+  public update(doc: Doc, row: number): void {
+    // Find and remove current keyMap for row.
+    const uniqueNames = Object.keys(this._keyMap);
+    for (let i = 0; i < uniqueNames.length; i++) {
+      if (row === this._keyMap[uniqueNames[i]]) {
+        delete this._keyMap[uniqueNames[i]];
+        break;
+      }
+    }
+    this.set(doc, row);
+  }
+
+  /**
+   * Removes an unique index.
+   * @param {number|string} index - the unique index
+   */
+  public remove(index: number | string): void {
+    if (this._keyMap[index] !== undefined) {
+      delete this._keyMap[index];
     } else {
-      this.keyMap[obj[this.field]] = doc;
+      throw new Error("Key is not in unique index: " + this._field);
     }
   }
 
-  remove(key: string) {
-    const obj = this.keyMap[key];
-    if (obj !== null && typeof obj !== "undefined") {
-      this.keyMap[key] = undefined;
-      this.lokiMap[obj.$loki] = undefined;
-    } else {
-      throw new Error("Key is not in unique index: " + this.field);
-    }
-  }
-
-  clear() {
-    this.keyMap = {};
-    this.lokiMap = {};
+  /**
+   * Clears all unique indexes.
+   */
+  public clear(): void {
+    this._keyMap = {};
   }
 }
