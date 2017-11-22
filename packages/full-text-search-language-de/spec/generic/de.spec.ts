@@ -1,8 +1,7 @@
 import {DE} from "../../src/de";
-import {Tokenizer} from "../../../full-text-search/src/index";
-import {createLanguageTest} from "../../../full-text-search-language/spec/helper/create_lanuage_test";
+import {createLanguageTest, LanguageTestData} from "../../../full-text-search-language/spec/helper/create_lanuage_test";
 
-export const de = {
+export const de: LanguageTestData = {
   tokenizer: DE,
   docs: [
     "An Deutschland grenzen neun Nachbarländer und naturräumlich im Norden die Gewässer der Nord- und Ostsee, im Süden das Bergland der Alpen. Es liegt in der gemäßigten Klimazone, zählt mit rund 80 Millionen Einwohnern zu den dicht besiedelten Flächenstaaten und gilt international als das Land mit der dritthöchsten Zahl von Einwanderern. aufeinanderfolgenden. auffassen.",

@@ -20,28 +20,24 @@ export class Among {
   method: any;
 
   constructor(s: string, substring_i: number, result: number, method?: any) {
-    let toCharArray = (s: string) => {
-      let sLength = s.length;
-      let charArr = new Array(sLength);
-      for (let i = 0; i < sLength; i++)
-        charArr[i] = +s.charCodeAt(i);
-      return charArr;
-    };
-
     if ((!s && s !== "") || (!substring_i && (substring_i !== 0)) || !result) {
       throw ("Bad Among initialisation: s:" + s + ", substring_i: " + substring_i + ", result: " + result);
     }
 
     this.s_size = s.length;
-    this.s = toCharArray(s);
     this.substring_i = substring_i;
     this.result = result;
     this.method = method;
+
+    // Split string into a numeric character array.
+    this.s = new Array(this.s_size);
+    for (let i = 0; i < this.s_size; i++) {
+      this.s[i] = +s.charCodeAt(i);
+    }
   }
 }
 
 export class SnowballProgram {
-
   current: string;
   bra: number;
   ket: number;
@@ -134,21 +130,27 @@ export class SnowballProgram {
   }
 
   eq_s(s_size: number, s: string) {
-    if (this.limit - this.cursor < s_size)
+    if (this.limit - this.cursor < s_size) {
       return false;
-    for (let i = 0; i < s_size; i++)
-      if (this.current.charCodeAt(this.cursor + i) !== s.charCodeAt(i))
+    }
+    for (let i = 0; i < s_size; i++) {
+      if (this.current.charCodeAt(this.cursor + i) !== s.charCodeAt(i)) {
         return false;
+      }
+    }
     this.cursor += s_size;
     return true;
   }
 
   eq_s_b(s_size: number, s: string) {
-    if (this.cursor - this.limit_backward < s_size)
+    if (this.cursor - this.limit_backward < s_size) {
       return false;
-    for (let i = 0; i < s_size; i++)
-      if (this.current.charCodeAt(this.cursor - s_size + i) !== s.charCodeAt(i))
+    }
+    for (let i = 0; i < s_size; i++) {
+      if (this.current.charCodeAt(this.cursor - s_size + i) !== s.charCodeAt(i)) {
         return false;
+      }
+    }
     this.cursor -= s_size;
     return true;
   }
@@ -164,10 +166,7 @@ export class SnowballProgram {
     while (true) {
       let k = i + ((j - i) >> 1);
       let diff = 0;
-
-      let common = common_i < common_j
-        ? common_i
-        : common_j;
+      let common = common_i < common_j ? common_i : common_j;
 
       let w = v[k];
       for (let i2 = common; i2 < w.s_size; i2++) {
@@ -176,8 +175,9 @@ export class SnowballProgram {
           break;
         }
         diff = this.current.charCodeAt(c + common) - w.s[i2];
-        if (diff)
+        if (diff) {
           break;
+        }
         common++;
       }
       if (diff < 0) {
@@ -188,8 +188,9 @@ export class SnowballProgram {
         common_i = common;
       }
       if (j - i <= 1) {
-        if (i > 0 || j === i || first_key_inspected)
+        if (i > 0 || j === i || first_key_inspected) {
           break;
+        }
         first_key_inspected = true;
       }
     }
@@ -197,16 +198,19 @@ export class SnowballProgram {
       let w = v[i];
       if (common_i >= w.s_size) {
         this.cursor = c + w.s_size;
-        if (!w.method)
+        if (!w.method) {
           return w.result;
+        }
         let res = w.method();
         this.cursor = c + w.s_size;
-        if (res)
+        if (res) {
           return w.result;
+        }
       }
       i = w.substring_i;
-      if (i < 0)
+      if (i < 0) {
         return 0;
+      }
     }
   }
 
@@ -285,8 +289,9 @@ export class SnowballProgram {
 
   slice_check() {
     if (this.bra < 0 || this.bra > this.ket || this.ket > this.limit
-      || this.limit > this.current.length)
+      || this.limit > this.current.length) {
       throw ("faulty slice operation");
+    }
   }
 
   slice_from(s: string) {

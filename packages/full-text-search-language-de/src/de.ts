@@ -2,19 +2,22 @@
  * From MihaiValentin/lunr-languages.
  * Last update from 04/16/2017 - 19af41fb9bd644d9081ad274f96f700b21464290
  */
-import {generateTrimmer, generateStopWordFilter, Among, SnowballProgram} from "../../full-text-search-language/src/language";
 import {Tokenizer} from "../../full-text-search/src/index";
+import {
+  generateTrimmer,
+  generateStopWordFilter,
+  Among,
+  SnowballProgram
+} from "../../full-text-search-language/src/language";
 
-const wordCharacters = "A-Za-z\xAA\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02B8\u02E0-\u02E4\u1D00-\u1D25\u1D2C-\u1D5C\u1D62-\u1D65\u1D6B-\u1D77\u1D79-\u1DBE\u1E00-\u1EFF\u2071\u207F\u2090-\u209C\u212A\u212B\u2132\u214E\u2160-\u2188\u2C60-\u2C7F\uA722-\uA787\uA78B-\uA7AD\uA7B0-\uA7B7\uA7F7-\uA7FF\uAB30-\uAB5A\uAB5C-\uAB64\uFB00-\uFB06\uFF21-\uFF3A\uFF41-\uFF5A";
-let trimmer = generateTrimmer(wordCharacters);
+class GermanStemmer {
+  public getCurrent: () => string;
+  public setCurrent: (word: string) => void;
+  public stem: () => void;
 
-let tkz = new Tokenizer();
-
-tkz.add("trimmer-de", trimmer);
-
-let stemmer = ((() => {
-  /* create the wrapped stemmer object */
-  let st: any = new (function GermanStemmer() {
+  constructor() {
+    // Write everything in the constructor to reduce code size and increase performance.
+    // The original implementation uses a ES5 anonymous function class.
     let a_0 = [new Among("", -1, 6), new Among("U", 0, 2),
       new Among("Y", 0, 1), new Among("\u00E4", 0, 3),
       new Among("\u00F6", 0, 4), new Among("\u00FC", 0, 5)
@@ -57,6 +60,7 @@ let stemmer = ((() => {
     let I_p2: number;
     let I_p1: number;
     let sbp = new SnowballProgram();
+
     this.setCurrent = (word: string) => {
       sbp.setCurrent(word);
     };
@@ -304,19 +308,12 @@ let stemmer = ((() => {
       r_standard_suffix();
       sbp.cursor = sbp.limit_backward;
       r_postlude();
-      return true;
     };
-  } as any);
+  }
+}
 
-  /* and return a function that stems a word for the current locale */
-  return (token: string) => {
-    st.setCurrent(token);
-    st.stem();
-    return st.getCurrent();
-  };
-}))();
-
-tkz.setSplitter("whitespace-splitter", function defaultSplitter(str) {
+// Split at whitespace and dashes.
+function splitter(str: string) {
   let trimmedTokens = [];
   let tokens = str.split(/[\s-]+/);
   for (let i = 0; i < tokens.length; i++) {
@@ -325,11 +322,21 @@ tkz.setSplitter("whitespace-splitter", function defaultSplitter(str) {
     }
   }
   return trimmedTokens;
-});
+}
 
-tkz.add("stemmer-de", stemmer);
+const st = new GermanStemmer();
+function stemmer(token: string) {
+  st.setCurrent(token);
+  st.stem();
+  return st.getCurrent();
+}
 
-let stopWordFilter = generateStopWordFilter(["aber", "alle", "allem", "allen", "aller", "alles", "als", "also", "am", "an", "ander", "andere", "anderem", "anderen", "anderer", "anderes", "anderm", "andern", "anderr", "anders", "auch", "auf", "aus", "bei", "bin", "bis", "bist", "da", "damit", "dann", "das", "dasselbe", "dazu", "daß", "dein", "deine", "deinem", "deinen", "deiner", "deines", "dem", "demselben", "den", "denn", "denselben", "der", "derer", "derselbe", "derselben", "des", "desselben", "dessen", "dich", "die", "dies", "diese", "dieselbe", "dieselben", "diesem", "diesen", "dieser", "dieses", "dir", "doch", "dort", "du", "durch", "ein", "eine", "einem", "einen", "einer", "eines", "einig", "einige", "einigem", "einigen", "einiger", "einiges", "einmal", "er", "es", "etwas", "euch", "euer", "eure", "eurem", "euren", "eurer", "eures", "für", "gegen", "gewesen", "hab", "habe", "haben", "hat", "hatte", "hatten", "hier", "hin", "hinter", "ich", "ihm", "ihn", "ihnen", "ihr", "ihre", "ihrem", "ihren", "ihrer", "ihres", "im", "in", "indem", "ins", "ist", "jede", "jedem", "jeden", "jeder", "jedes", "jene", "jenem", "jenen", "jener", "jenes", "jetzt", "kann", "kein", "keine", "keinem", "keinen", "keiner", "keines", "können", "könnte", "machen", "man", "manche", "manchem", "manchen", "mancher", "manches", "mein", "meine", "meinem", "meinen", "meiner", "meines", "mich", "mir", "mit", "muss", "musste", "nach", "nicht", "nichts", "noch", "nun", "nur", "ob", "oder", "ohne", "sehr", "sein", "seine", "seinem", "seinen", "seiner", "seines", "selbst", "sich", "sie", "sind", "so", "solche", "solchem", "solchen", "solcher", "solches", "soll", "sollte", "sondern", "sonst", "um", "und", "uns", "unse", "unsem", "unsen", "unser", "unses", "unter", "viel", "vom", "von", "vor", "war", "waren", "warst", "was", "weg", "weil", "weiter", "welche", "welchem", "welchen", "welcher", "welches", "wenn", "werde", "werden", "wie", "wieder", "will", "wir", "wird", "wirst", "wo", "wollen", "wollte", "während", "würde", "würden", "zu", "zum", "zur", "zwar", "zwischen", "über"]);
-tkz.add("stopWordFilter-de", stopWordFilter);
+const trimmer = generateTrimmer("A-Za-z\xAA\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02B8\u02E0-\u02E4\u1D00-\u1D25\u1D2C-\u1D5C\u1D62-\u1D65\u1D6B-\u1D77\u1D79-\u1DBE\u1E00-\u1EFF\u2071\u207F\u2090-\u209C\u212A\u212B\u2132\u214E\u2160-\u2188\u2C60-\u2C7F\uA722-\uA787\uA78B-\uA7AD\uA7B0-\uA7B7\uA7F7-\uA7FF\uAB30-\uAB5A\uAB5C-\uAB64\uFB00-\uFB06\uFF21-\uFF3A\uFF41-\uFF5A");
+const stopWordFilter = generateStopWordFilter(["aber", "alle", "allem", "allen", "aller", "alles", "als", "also", "am", "an", "ander", "andere", "anderem", "anderen", "anderer", "anderes", "anderm", "andern", "anderr", "anders", "auch", "auf", "aus", "bei", "bin", "bis", "bist", "da", "damit", "dann", "das", "dasselbe", "dazu", "daß", "dein", "deine", "deinem", "deinen", "deiner", "deines", "dem", "demselben", "den", "denn", "denselben", "der", "derer", "derselbe", "derselben", "des", "desselben", "dessen", "dich", "die", "dies", "diese", "dieselbe", "dieselben", "diesem", "diesen", "dieser", "dieses", "dir", "doch", "dort", "du", "durch", "ein", "eine", "einem", "einen", "einer", "eines", "einig", "einige", "einigem", "einigen", "einiger", "einiges", "einmal", "er", "es", "etwas", "euch", "euer", "eure", "eurem", "euren", "eurer", "eures", "für", "gegen", "gewesen", "hab", "habe", "haben", "hat", "hatte", "hatten", "hier", "hin", "hinter", "ich", "ihm", "ihn", "ihnen", "ihr", "ihre", "ihrem", "ihren", "ihrer", "ihres", "im", "in", "indem", "ins", "ist", "jede", "jedem", "jeden", "jeder", "jedes", "jene", "jenem", "jenen", "jener", "jenes", "jetzt", "kann", "kein", "keine", "keinem", "keinen", "keiner", "keines", "können", "könnte", "machen", "man", "manche", "manchem", "manchen", "mancher", "manches", "mein", "meine", "meinem", "meinen", "meiner", "meines", "mich", "mir", "mit", "muss", "musste", "nach", "nicht", "nichts", "noch", "nun", "nur", "ob", "oder", "ohne", "sehr", "sein", "seine", "seinem", "seinen", "seiner", "seines", "selbst", "sich", "sie", "sind", "so", "solche", "solchem", "solchen", "solcher", "solches", "soll", "sollte", "sondern", "sonst", "um", "und", "uns", "unse", "unsem", "unsen", "unser", "unses", "unter", "viel", "vom", "von", "vor", "war", "waren", "warst", "was", "weg", "weil", "weiter", "welche", "welchem", "welchen", "welcher", "welches", "wenn", "werde", "werden", "wie", "wieder", "will", "wir", "wird", "wirst", "wo", "wollen", "wollte", "während", "würde", "würden", "zu", "zum", "zur", "zwar", "zwischen", "über"]);
 
-export {tkz as DE};
+// Create, configure and export the tokenizer.
+export const DE: Tokenizer = new Tokenizer();
+DE.setSplitter("whitespace-splitter", splitter);
+DE.add("trimmer-de", trimmer);
+DE.add("stemmer-de", stemmer);
+DE.add("stopWordFilter-de", stopWordFilter);

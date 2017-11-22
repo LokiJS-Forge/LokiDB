@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/LokiJS-Forge/LokiJS2.git"
   },
-  "main": "lokijs.full-text-search-language.js",
+  "main": "lokijs.full-text-search-language-de.js",
   "dependencies": {
     "@lokijs/loki": "0"
   }
