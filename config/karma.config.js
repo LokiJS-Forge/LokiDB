@@ -37,7 +37,7 @@ module.exports = function (config) {
             loader: "tslint-loader",
             exclude: /node_modules/,
             options: {
-              failOnHint: true,
+              failOnHint: false,
               configFile: path.join("config", "tslint.json"),
             }
           },

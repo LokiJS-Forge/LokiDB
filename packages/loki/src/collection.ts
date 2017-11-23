@@ -650,7 +650,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {string} name - name of dynamic view to add
    * @param {object} options - (optional) options to configure dynamic view with
    * @param {boolean} [options.persistent=false] - indicates if view is to main internal results array in 'resultdata'
-   * @param {string} [options.sortPriority='passive'] - 'passive' (sorts performed on call to data) or 'active' (after updates)
+   * @param {string} [options.sortPriority=SortPriority.PASSIVE] - the sort priority
    * @param {number} options.minRebuildInterval - minimum rebuild interval (need clarification to docs here)
    * @returns {DynamicView} reference to the dynamic view added
    **/

@@ -30,7 +30,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
 
   private _collection: Collection<E>;
   private _persistent: boolean;
-  private _sortPriority: string;
+  private _sortPriority: DynamicView.SortPriority;
   private _minRebuildInterval: number;
   public name: string;
   private _rebuildPending: boolean;
@@ -46,6 +46,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
 
   private _sortFunction: (lhs: E, rhs: E) => number;
   private _sortCriteria: (string | [string, boolean])[];
+  private _sortByScoring: boolean;
   private _sortDirty: boolean;
 
   /**
@@ -54,7 +55,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * @param {string} name - the name of this dynamic view
    * @param {object} options - the options
    * @param {boolean} [options.persistent=false] - indicates if view is to main internal results array in 'resultdata'
-   * @param {string} [options.sortPriority='passive'] - 'passive' (sorts performed on call to data) or 'active' (after updates)
+   * @param {string} [options.sortPriority=SortPriority.PASSIVE] - the sort priority
    * @param {number} [options.minRebuildInterval=1] - minimum rebuild interval (need clarification to docs here)
    */
   constructor(collection: Collection<E>, name: string, options: DynamicView.Options = {}) {
@@ -62,7 +63,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
     (
       {
         persistent: this._persistent = false,
-        sortPriority: this._sortPriority = "passive",
+        sortPriority: this._sortPriority = DynamicView.SortPriority.PASSIVE,
         minRebuildInterval: this._minRebuildInterval = 1
       } = options
     );
@@ -73,7 +74,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
 
     // 'passive' will defer the sort phase until they call data(). (most efficient overall)
     // 'active' will sort async whenever next idle. (prioritizes read speeds)
-    // sortPriority: this._sortPriority = "passive",
+    // sortPriority: this._sortPriority = DynamicView.SortPriority.PASSIVE,
 
     this._resultset = new Resultset(collection);
     this._resultdata = [];
@@ -88,6 +89,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
     // we only support one active search, applied using applySort() or applySimpleSort()
     this._sortFunction = null;
     this._sortCriteria = null;
+    this._sortByScoring = null;
     this._sortDirty = false;
 
     // for now just have 1 event for when we finally rebuilt lazy view
@@ -117,7 +119,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
     this._resultsdirty = true;
     this._resultset = new Resultset(this._collection);
 
-    if (this._sortFunction || this._sortCriteria) {
+    if (this._sortFunction || this._sortCriteria || this._sortByScoring !== null) {
       this._sortDirty = true;
     }
 
@@ -166,7 +168,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    */
   branchResultset(transform: string | any[], parameters?: object): Resultset<E> {
     const rs = this._resultset.branch();
-    if (typeof transform === "undefined") {
+    if (transform === undefined) {
       return rs;
     }
     return rs.transform(transform, parameters);
@@ -186,6 +188,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
       _resultsdirty: true,
       _filterPipeline: this._filterPipeline,
       _sortCriteria: this._sortCriteria,
+      _sortByScoring: this._sortByScoring,
       _sortDirty: this._sortDirty,
     };
   }
@@ -197,6 +200,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
     dv._resultdata = [];
 
     dv._sortCriteria = obj._sortCriteria;
+    dv._sortByScoring = obj._sortByScoring;
     dv._sortDirty = obj._sortDirty;
     dv._resultset.filteredrows = obj._resultset.filteredrows;
     dv._resultset.filterInitialized = obj._resultset.filterInitialized;
@@ -226,10 +230,11 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
     // we only support one active search, applied using applySort() or applySimpleSort()
     this._sortFunction = null;
     this._sortCriteria = null;
+    this._sortByScoring = null;
     this._sortDirty = false;
 
     if (queueSortPhase === true) {
-      this.queueSortPhase();
+      this._queueSortPhase();
     }
   }
 
@@ -248,8 +253,23 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
   public applySort(comparefun: (lhs: E, rhs: E) => number): DynamicView<E> {
     this._sortFunction = comparefun;
     this._sortCriteria = null;
+    this._sortByScoring = null;
 
-    this.queueSortPhase();
+    this._queueSortPhase();
+
+    return this;
+  }
+
+  /**
+   * Used to apply a sort by the latest full-text-search scoring.
+   * @param {boolean} [ascending=false] - sort ascending
+   */
+  public applySortByScoring(ascending = false): DynamicView<E> {
+    this._sortFunction = null;
+    this._sortCriteria = null;
+    this._sortByScoring = ascending;
+
+    this._queueSortPhase();
 
     return this;
   }
@@ -268,8 +288,9 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
       [propname, isdesc || false]
     ];
     this._sortFunction = null;
+    this._sortByScoring = null;
 
-    this.queueSortPhase();
+    this._queueSortPhase();
 
     return this;
   }
@@ -287,10 +308,11 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * @param {Array} criteria - array of property names or subarray of [propertyname, isdesc] used evaluate sort order
    * @returns {DynamicView} Reference to this DynamicView, sorted, for future chain operations.
    */
-  public g(criteria: (string | [string, boolean])[]): DynamicView<E> {
+  public applySortCriteria(criteria: (string | [string, boolean])[]): DynamicView<E> {
     this._sortCriteria = criteria;
     this._sortFunction = null;
-    this.queueSortPhase();
+    this._sortByScoring = null;
+    this._queueSortPhase();
     return this;
   }
 
@@ -328,7 +350,6 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
     }
     return this;
   }
-
 
   /**
    * Find the index of a filter in the pipeline, by that filter's ID.
@@ -378,10 +399,10 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
       this._addFilter(filters[idx]);
     }
 
-    if (this._sortFunction || this._sortCriteria) {
-      this.queueSortPhase();
+    if (this._sortFunction || this._sortCriteria || this._sortByScoring !== null) {
+      this._queueSortPhase();
     } else {
-      this.queueRebuildEvent();
+      this._queueRebuildEvent();
     }
 
     return this;
@@ -409,10 +430,10 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
 
     this._addFilter(filter);
 
-    if (this._sortFunction || this._sortCriteria) {
-      this.queueSortPhase();
+    if (this._sortFunction || this._sortCriteria || this._sortByScoring !== null) {
+      this._queueSortPhase();
     } else {
-      this.queueRebuildEvent();
+      this._queueRebuildEvent();
     }
     return this;
   }
@@ -455,7 +476,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * @param {(string|number)} uid - The unique ID of the filter to be removed.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  removeFilter(uid: string | number): DynamicView<E> {
+  public removeFilter(uid: string | number): DynamicView<E> {
     const idx = this._indexOfFilterWithId(uid);
     if (idx < 0) {
       throw new Error("Dynamic view does not contain a filter with ID: " + uid);
@@ -470,7 +491,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * Returns the number of documents representing the current DynamicView contents.
    * @returns {number} The number of documents representing the current DynamicView contents.
    */
-  count(): number {
+  public count(): number {
     // in order to be accurate we will pay the minimum cost (and not alter dv state management)
     // recurring resultset data resolutions should know internally its already up to date.
     // for persistent data this will not update resultdata nor fire rebuild event.
@@ -496,7 +517,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
   data(options: object = {}): Doc<E>[] {
     // using final sort phase as 'catch all' for a few use cases which require full rebuild
     if (this._sortDirty || this._resultsdirty) {
-      this.performSortPhase({
+      this._performSortPhase({
         suppressRebuildEvent: true
       });
     }
@@ -504,10 +525,10 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
   }
 
   /**
-   * queueRebuildEvent() - When the view is not sorted we may still wish to be notified of rebuild events.
-   *     This event will throttle and queue a single rebuild event when batches of updates affect the view.
+   * When the view is not sorted we may still wish to be notified of rebuild events.
+   * This event will throttle and queue a single rebuild event when batches of updates affect the view.
    */
-  queueRebuildEvent(): void {
+  private _queueRebuildEvent(): void {
     if (this._rebuildPending) {
       return;
     }
@@ -522,33 +543,33 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
   }
 
   /**
-   * queueSortPhase : If the view is sorted we will throttle sorting to either :
+   * If the view is sorted we will throttle sorting to either :
    *    (1) passive - when the user calls data(), or
    *    (2) active - once they stop updating and yield js thread control
    */
-  queueSortPhase(): void {
+  private _queueSortPhase(): void {
     // already queued? exit without queuing again
     if (this._sortDirty) {
       return;
     }
     this._sortDirty = true;
 
-    if (this._sortPriority === "active") {
+    if (this._sortPriority === DynamicView.SortPriority.ACTIVE) {
       // active sorting... once they are done and yield js thread, run async performSortPhase()
       setTimeout(() => {
-        this.performSortPhase();
+        this._performSortPhase();
       }, this._minRebuildInterval);
     } else {
       // must be passive sorting... since not calling performSortPhase (until data call), lets use queueRebuildEvent to
       // potentially notify user that data has changed.
-      this.queueRebuildEvent();
+      this._queueRebuildEvent();
     }
   }
 
   /**
    * Invoked synchronously or asynchronously to perform final sort phase (if needed)
    */
-  performSortPhase(options: { suppressRebuildEvent?: boolean } = {}): void {
+  private _performSortPhase(options: { suppressRebuildEvent?: boolean } = {}): void {
     // async call to this may have been pre-empted by synchronous call to data before async could fire
     if (!this._sortDirty && !this._resultsdirty) {
       return;
@@ -559,6 +580,8 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
         this._resultset.sort(this._sortFunction);
       } else if (this._sortCriteria) {
         this._resultset.compoundsort(this._sortCriteria);
+      } else if (this._sortByScoring !== null) {
+        this._resultset.sortByScoring(this._sortByScoring);
       }
 
       this._sortDirty = false;
@@ -590,9 +613,9 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
       }
       // need to re-sort to sort new document
       if (this._sortFunction || this._sortCriteria) {
-        this.queueSortPhase();
+        this._queueSortPhase();
       } else {
-        this.queueRebuildEvent();
+        this._queueRebuildEvent();
       }
       return;
     }
@@ -628,9 +651,9 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
 
       // need to re-sort to sort new document
       if (this._sortFunction || this._sortCriteria) {
-        this.queueSortPhase();
+        this._queueSortPhase();
       } else {
-        this.queueRebuildEvent();
+        this._queueRebuildEvent();
       }
 
       return;
@@ -654,9 +677,9 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
 
       // in case changes to data altered a sort column
       if (this._sortFunction || this._sortCriteria) {
-        this.queueSortPhase();
+        this._queueSortPhase();
       } else {
-        this.queueRebuildEvent();
+        this._queueRebuildEvent();
       }
       return;
     }
@@ -670,9 +693,9 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
 
       // in case changes to data altered a sort column
       if (this._sortFunction || this._sortCriteria) {
-        this.queueSortPhase();
+        this._queueSortPhase();
       } else {
-        this.queueRebuildEvent();
+        this._queueRebuildEvent();
       }
     }
   }
@@ -688,9 +711,9 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
       }
       // in case changes to data altered a sort column
       if (this._sortFunction || this._sortCriteria) {
-        this.queueSortPhase();
+        this._queueSortPhase();
       } else {
-        this.queueRebuildEvent();
+        this._queueRebuildEvent();
       }
       return;
     }
@@ -722,9 +745,9 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
 
       // in case changes to data altered a sort column
       if (this._sortFunction || this._sortCriteria) {
-        this.queueSortPhase();
+        this._queueSortPhase();
       } else {
-        this.queueRebuildEvent();
+        this._queueRebuildEvent();
       }
     }
 
@@ -758,7 +781,12 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
 export namespace DynamicView {
   export interface Options {
     persistent?: boolean;
-    sortPriority?: string;
+    sortPriority?: SortPriority;
     minRebuildInterval?: number;
+  }
+
+  export enum SortPriority {
+    PASSIVE, // sorts performed on call to data
+    ACTIVE,  // or right after updates
   }
 }
