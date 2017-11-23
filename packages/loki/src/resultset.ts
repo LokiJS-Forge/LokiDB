@@ -1,6 +1,5 @@
-import {clone, CloneMethod} from "./clone";
 import {Collection} from "./collection";
-import {resolveTransformParams} from "./utils";
+import {clone, CloneMethod} from "./clone";
 import {ltHelper, gtHelper, aeqHelper, sortHelper} from "./helper";
 import {Doc, Query} from "../../common/types";
 
@@ -16,6 +15,45 @@ export type ANY = any;
 
 
  */
+
+// used to recursively scan hierarchical transform step object for param substitution
+function resolveTransformObject(subObj: object, params: object, depth: number = 0) {
+  let prop;
+  let pname;
+
+  if (++depth >= 10) return subObj;
+
+  for (prop in subObj) {
+    if (typeof subObj[prop] === "string" && subObj[prop].indexOf("[%lktxp]") === 0) {
+      pname = subObj[prop].substring(8);
+      if (params[pname] !== undefined) {
+        subObj[prop] = params[pname];
+      }
+    } else if (typeof subObj[prop] === "object") {
+      subObj[prop] = resolveTransformObject(subObj[prop], params, depth);
+    }
+  }
+
+  return subObj;
+}
+
+// top level utility to resolve an entire (single) transform (array of steps) for parameter substitution
+function resolveTransformParams(transform: any, params: object) {
+  let idx;
+  let clonedStep;
+  const resolvedTransform = [];
+
+  if (typeof params === "undefined") return transform;
+
+  // iterate all steps in the transform array
+  for (idx = 0; idx < transform.length; idx++) {
+    // clone transform so our scan/replace can operate directly on cloned transform
+    clonedStep = clone(transform[idx], CloneMethod.SHALLOW_RECURSE_OBJECTS);
+    resolvedTransform.push(resolveTransformObject(clonedStep, params));
+  }
+
+  return resolvedTransform;
+}
 
 function containsCheckFn(a: ANY) {
   if (typeof a === "string" || Array.isArray(a)) {
@@ -1014,10 +1052,10 @@ export class Resultset<E extends object = object> {
       forceCloneMethod = CloneMethod.SHALLOW;
     }
 
-    // if collection has delta changes active, then force clones and use 'parse-stringify' for effective change tracking of nested objects
+    // if collection has delta changes active, then force clones and use CloneMethod.DEEP for effective change tracking of nested objects
     if (!this.collection.disableDeltaChangesApi) {
       forceClones = true;
-      forceCloneMethod = CloneMethod.PARSE_STRINGIFY;
+      forceCloneMethod = CloneMethod.DEEP;
     }
 
     // if this has no filters applied, just return collection.data
@@ -1140,7 +1178,7 @@ export class Resultset<E extends object = object> {
    */
   //eqJoin<T extends object>(joinData: T[] | Resultset<T>, leftJoinKey: string | ((obj: E) => string), rightJoinKey: string | ((obj: T) => string)): Resultset<{ left: E; right: T; }>;
   // eqJoin<T extends object, U extends object>(joinData: T[] | Resultset<T>, leftJoinKey: string | ((obj: E) => string), rightJoinKey: string | ((obj: T) => string), mapFun?: (a: E, b: T) => U, dataOptions?: Resultset.DataOptions): Resultset<U> {
-  eqJoin(joinData: ANY, leftJoinKey: string | Function, rightJoinKey: string | Function, mapFun?: Function, dataOptions?: ANY) : ANY {
+  eqJoin(joinData: ANY, leftJoinKey: string | Function, rightJoinKey: string | Function, mapFun?: Function, dataOptions?: ANY): ANY {
 // eqJoin<T extends object, U extends object>(joinData: T[] | Resultset<T>, leftJoinKey: string | ((obj: E) => string), rightJoinKey: string | ((obj: T) => string), mapFun?: (a: E, b: T) => U, dataOptions?: Resultset.DataOptions): Resultset<U> {
     let leftData = [];
     let leftDataLength;
@@ -1204,7 +1242,7 @@ export class Resultset<E extends object = object> {
    * @param {boolean} dataOptions.forceClones - forcing the return of cloned objects to your map object
    * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method.
    */
-  map<U extends object>(mapFun: (obj: E, index: number, array: E[]) => U, dataOptions?: Resultset.DataOptions) : Resultset<U> {
+  map<U extends object>(mapFun: (obj: E, index: number, array: E[]) => U, dataOptions?: Resultset.DataOptions): Resultset<U> {
     let data = this.data(dataOptions).map(mapFun);
     //return return a new resultset with no filters
     this.collection = new Collection("mappedData");

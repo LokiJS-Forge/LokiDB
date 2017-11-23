@@ -1,4 +1,63 @@
-export type ANY = any;
+export enum CloneMethod {
+  PARSE_STRINGIFY,
+  DEEP,
+  SHALLOW,
+  SHALLOW_ASSIGN,
+  SHALLOW_RECURSE_OBJECTS,
+}
+
+function add(copy: any, key: any, value: any) {
+  if (copy instanceof Array) {
+    copy.push(value);
+    return copy[copy.length - 1];
+  }
+  else if (copy instanceof Object) {
+    copy[key] = value;
+    return copy[key];
+  }
+}
+
+function walk(target: any, copy: any) {
+  for (let key in target) {
+    let obj = target[key];
+    if (obj instanceof Date) {
+      let value = new Date(obj.getTime());
+      add(copy, key, value);
+    }
+    else if (obj instanceof Function) {
+      let value = obj;
+      add(copy, key, value);
+    }
+    else if (obj instanceof Array) {
+      let value: any[] = [];
+      let last = add(copy, key, value);
+      walk(obj, last);
+    }
+    else if (obj instanceof Object) {
+      let value = {};
+      let last = add(copy, key, value);
+      walk(obj, last);
+    }
+    else {
+      let value = obj;
+      add(copy, key, value);
+    }
+  }
+}
+
+// Deep copy from Simeon Velichkov.
+function deepCopy(target: any) {
+  if (/number|string|boolean/.test(typeof target)) {
+    return target;
+  }
+  if (target instanceof Date) {
+    return new Date(target.getTime());
+  }
+
+  const copy = (target instanceof Array) ? [] : {};
+  walk(target, copy);
+  return copy;
+}
 
 export function clone<T>(data: T, method: CloneMethod = CloneMethod.PARSE_STRINGIFY): T {
   if (data === null || data === undefined) {
@@ -11,19 +70,10 @@ export function clone<T>(data: T, method: CloneMethod = CloneMethod.PARSE_STRING
     case CloneMethod.PARSE_STRINGIFY:
       cloned = JSON.parse(JSON.stringify(data));
       break;
-    case CloneMethod.JQUERY_EXTEND_DEEP:
-      //cloned = jQuery.extend(true, {}, data);
-      // TODO
+    case CloneMethod.DEEP:
+      cloned = deepCopy(data);
       break;
     case CloneMethod.SHALLOW:
-      // more compatible method for older browsers
-      cloned = Object.create(data.constructor.prototype);
-      Object.keys(data).map((i) => {
-        cloned[i] = data[i];
-      });
-      break;
-    case CloneMethod.SHALLOW_ASSIGN:
-      // should be supported by newer environments/browsers
       cloned = Object.create(data.constructor.prototype);
       Object.assign(cloned, data);
       break;
@@ -44,29 +94,4 @@ export function clone<T>(data: T, method: CloneMethod = CloneMethod.PARSE_STRING
   }
 
   return cloned as any as T;
-}
-
-export function cloneObjectArray(objarray: object[], method: CloneMethod) {
-  let i;
-  const result = [];
-
-  if (method === CloneMethod.PARSE_STRINGIFY) {
-    return clone(objarray, method);
-  }
-
-  i = objarray.length - 1;
-
-  for (; i <= 0; i--) {
-    result.push(clone(objarray[i], method));
-  }
-
-  return result;
-}
-
-export enum CloneMethod {
-  PARSE_STRINGIFY,
-  JQUERY_EXTEND_DEEP,
-  SHALLOW,
-  SHALLOW_ASSIGN,
-  SHALLOW_RECURSE_OBJECTS,
 }

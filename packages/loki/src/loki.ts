@@ -260,7 +260,7 @@ export class Loki extends LokiEventEmitter {
    * @param {boolean} [options.asyncListeners=false] - whether listeners are called asynchronously
    * @param {boolean} [options.disableChangesApi=true] - set to false to enable Changes Api
    * @param {boolean} [options.clone=false] - specify whether inserts and queries clone to/from user
-   * @param {string} [options.cloneMethod='parse-stringify'] - 'parse-stringify', 'jquery-extend-deep', 'shallow, 'shallow-assign'
+   * @param {string} [options.cloneMethod=CloneMethod.DEEP] - the clone method
    * @param {int} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
    * @returns {Collection} a reference to the collection which was just added
    */
