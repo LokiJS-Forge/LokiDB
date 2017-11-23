@@ -1,7 +1,3 @@
-/*
- 'listen' is not defined  no-undef
- */
-
 export type ANY = any;
 
 /**

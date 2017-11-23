@@ -3,28 +3,14 @@ import {Collection} from "./collection";
 import {Doc, StorageAdapter} from "../../common/types";
 import {PLUGINS} from "../../common/plugin";
 
-/*
- 'LokiFsAdapter' is not defined                 no-undef	x
- 'LokiLocalStorageAdapter' is not defined       no-undef	x
- 'Collection' is not defined                    no-undef	x
- 'delim' is not defined                         no-undef	x
- 'Utils' is not defined                         no-undef	x
-
- TBD:
- * Default persistence should be not available.
- * getIndexedAdapter is also obsolet
- * Make some functions private.
- * Inflate? -> Utils.copyProperties
- */
-
 export type ANY = any;
 
 function getENV() {
-  if (typeof global !== "undefined" && (global["android"] || global["NSObject"])) {
+  if (global !== undefined && (global["android"] || global["NSObject"])) {
     return Loki.Environment.NATIVE_SCRIPT;
   }
 
-  const isNode = typeof global !== "undefined" && ({}).toString.call(global) === "[object global]";
+  const isNode = global !== undefined && ({}).toString.call(global) === "[object global]";
   if (isNode) {
     if (global["window"]) {
       return Loki.Environment.NODE_JS; //node-webkit
@@ -33,8 +19,8 @@ function getENV() {
     }
   }
 
-  const isBrowser = typeof window !== "undefined" && ({}).toString.call(window) === "[object Window]";
-  if (typeof document !== "undefined") {
+  const isBrowser = window !== undefined && ({}).toString.call(window) === "[object Window]";
+  if (document !== undefined) {
     if (document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) {
       return Loki.Environment.CORDOVA;
     }
@@ -930,7 +916,6 @@ export class Loki extends LokiEventEmitter {
    * @param {Date} [options.started=now()] - the start time of the recursive wait duration
    * @returns {Promise} a Promise that resolves after the database is loaded
    */
-  // TODO??
   loadDatabase(options: Loki.ThrottledSaveDrainOptions = {}): Promise<void> {
     // if throttling disabled, just call internal
     if (!this._throttledSaves) {

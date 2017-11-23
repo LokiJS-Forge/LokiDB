@@ -118,9 +118,9 @@ describe("collection", () => {
     coll.insert([{a: 3, b: 3}, {a: 6, b: 7}, {a: 1, b: 2}, {a: 7, b: 8}, {a: 6, b: 4}]);
 
     // seems mode returns string so loose equality
-    // TODO: const result = coll.mode("a") == 6;
+    const result = coll.mode("a") === "6";
 
-    //expect(result).toEqual(true);
+    expect(result).toEqual(true);
   });
 
   it("single inserts emit with meta when async listeners false", () => {

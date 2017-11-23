@@ -5,17 +5,6 @@ import {Dict, Doc, Query} from "../../common/types";
 
 export type ANY = any;
 
-/*
- 'Utils' is not defined                 no-undef	(resolveTransformParams)
- 'sortHelper' is not defined            no-undef
- 'indexedOpsList' is not defined        no-undef
- 'LokiOps' is not defined               no-undef
- 'dotSubScan' is not defined            no-undef
- 'clone' is not defined                 no-undef
-
-
- */
-
 // used to recursively scan hierarchical transform step object for param substitution
 function resolveTransformObject(subObj: object, params: object, depth: number = 0) {
   let prop;
@@ -43,7 +32,7 @@ function resolveTransformParams(transform: any, params: object) {
   let clonedStep;
   const resolvedTransform = [];
 
-  if (typeof params === "undefined") return transform;
+  if (params === undefined) return transform;
 
   // iterate all steps in the transform array
   for (idx = 0; idx < transform.length; idx++) {
@@ -422,7 +411,7 @@ export class Resultset<E extends object = object> {
       throw new Error("Invalid transform");
     }
 
-    if (typeof parameters !== "undefined") {
+    if (parameters !== undefined) {
       transform = resolveTransformParams(transform, parameters);
     }
 

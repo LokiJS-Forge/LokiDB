@@ -111,15 +111,12 @@ export class TermsQuery extends BaseQuery {
  * See also [Lucene#WildcardQuery]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/WildcardQuery.html}
  * and [Elasticsearch#WildcardQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-wildcard-query.html}.
  *
- * _TODO: Implement wildcard * (asterisk) to skip zero or more characters._
- * @todo Implement wildcard * (asterisk) to skip zero or more characters.
- *
  * @example
  * new QueryBuilder()
- *   .wildcard("question", "e?nste?n\?")
+ *   .wildcard("question", "e?nst*n\?")
  * .build();
  * // The resulting documents:
- * // contains the wildcard surname e?nste?n\? (like Einstein? or Eynsteyn? but not Einsteine or Ensten?)
+ * // contains the wildcard surname e?nst*n\? (like Einstein? or Eynsteyn? but not Einsteine or Ensten?)
  *
  * @extends BaseQuery
  */

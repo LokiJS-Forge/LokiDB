@@ -1,5 +1,5 @@
 import {DE} from "../../src/de";
-import {createLanguageTest, LanguageTestData} from "../../../full-text-search-language/spec/helper/create_lanuage_test.helper";
+import {createLanguageTest, LanguageTestData} from "../../../full-text-search-language/spec/helper/create_lanuage_test";
 
 export const de: LanguageTestData = {
   tokenizer: DE,

@@ -9,18 +9,6 @@ import {Doc, Dict, Query} from "../../common/types";
 import {FullTextSearch} from "../../full-text-search/src/full_text_search";
 import {PLUGINS} from "../../common/plugin";
 
-/*
- 'isDeepProperty' is not defined              no-undef
- 'deepProperty' is not defined                no-undef
- 'average' is not defined                     no-undef
- 'standardDeviation' is not defined           no-undef
- 'sub' is not defined                         no-undef
-
- byExample?
- indexing -> own class?
- remove data only?
- */
-
 export type ANY = any;
 export {CloneMethod} from "./clone";
 
@@ -346,7 +334,6 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     };
   }
 
-  // TODO: Force rebuild?
   static fromJSONObject(obj: ANY, options?: Collection.DeserializeOptions) {
     let coll = new Collection(obj.name, {
       disableChangesApi: obj.disableChangesApi,
@@ -1763,7 +1750,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   public chain(transform?: string | ANY[], parameters?: ANY): Resultset<E> {
     const rs = new Resultset<E>(this);
 
-    if (typeof transform === "undefined") {
+    if (transform === undefined) {
       return rs;
     }
     return rs.transform(transform, parameters) as Resultset<E>;
