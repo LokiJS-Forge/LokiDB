@@ -108,7 +108,27 @@ describe("cloning behavior", () => {
       const cdb = new Loki("cloningEnabled");
       const citems = cdb.addCollection<User>("items", {
         clone: true
-        //, clonemethod: "parse-stringify"
+      });
+
+      citems.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
+      citems.insert({name: "gungnir", owner: "odin", maker: "elves"});
+      citems.insert({name: "tyrfing", owner: "Svafrlami", maker: "dwarves"});
+      citems.insert({name: "draupnir", owner: "odin", maker: "elves"});
+
+      // just to prove that resultset.data() is not giving the user the actual object reference we keep internally
+      // we will modify the object and see if future requests for that object show the change
+      const mj = citems.find({name: "mjolnir"})[0];
+      mj.maker = "the dwarves";
+
+      const mj2 = citems.find({name: "mjolnir"})[0];
+      expect(mj2.maker).toBe("dwarves");
+    });
+
+    it("works with stringify", () => {
+      const cdb = new Loki("cloningEnabled");
+      const citems = cdb.addCollection<User>("items", {
+        clone: true,
+        cloneMethod: CloneMethod.PARSE_STRINGIFY
       });
 
       citems.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
@@ -131,7 +151,6 @@ describe("cloning behavior", () => {
       const cdb = new Loki("cloningEnabled");
       const citems = cdb.addCollection<User>("items", {
         clone: true
-        //, clonemethod: "parse-stringify"
       });
 
       citems.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
@@ -155,7 +174,6 @@ describe("cloning behavior", () => {
       const cdb = new Loki("cloningEnabled");
       const citems = cdb.addCollection<User>("items", {
         clone: true
-        //, clonemethod: "parse-stringify"
       });
 
       citems.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
@@ -179,7 +197,6 @@ describe("cloning behavior", () => {
       const citems = cdb.addCollection<User>("items", {
         clone: true,
         unique: ["name"]
-        //, clonemethod: "parse-stringify"
       });
 
       citems.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
@@ -221,7 +238,6 @@ describe("cloning behavior", () => {
       const cdb = new Loki("cloningEnabled");
       const citems = cdb.addCollection<User>("items", {
         clone: true
-        //, clonemethod: "parse-stringify"
       });
 
       citems.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
@@ -245,7 +261,6 @@ describe("cloning behavior", () => {
       // within resultset.data() options
       const mj = items.chain().find({name: "mjolnir"}).data({
         forceClones: true
-        //,forceCloneMethod: 'parse-stringify'
       })[0];
       mj.maker = "the dwarves";
 

@@ -155,7 +155,7 @@ describe("transforms", () => {
       expect(items.chain(tx1, {foo: 5}) as any as number).toBe(7);
       // params will cause a recursive shallow clone of objects before substitution
       expect(items.chain(tx2, {minimumAge: 4}) as any as number).toBe(7);
-      
+
       // make sure original transform is unchanged
       expect(tx2[0].type).toEqual("find");
       expect(tx2[0].value.age.$gt).toEqual("[%lktxp]minimumAge");

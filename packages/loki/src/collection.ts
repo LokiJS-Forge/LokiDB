@@ -2,10 +2,9 @@ import {LokiEventEmitter} from "./event_emitter";
 import {UniqueIndex} from "./unique_index";
 import {Resultset} from "./resultset";
 import {DynamicView} from "./dynamic_view";
-import {clone, CloneMethod} from "./clone";
 import {ltHelper, gtHelper, aeqHelper} from "./helper";
 import {Loki} from "./loki";
-import {copyProperties} from "./utils";
+import {clone, CloneMethod} from "./clone";
 import {Doc, Dict, Query} from "../../common/types";
 import {FullTextSearch} from "../../full-text-search/src/full_text_search";
 import {PLUGINS} from "../../common/plugin";
@@ -172,7 +171,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {boolean} [options.disableDeltaChangesApi=true] - set to false to enable Delta Changes API (requires Changes API, forces cloning)
    * @param {boolean} [options.clone=false] - specify whether inserts and queries clone to/from user
    * @param {boolean} [options.serializableIndices =true] - converts date values on binary indexed property values are serializable
-   * @param {string} [options.cloneMethod='parse-stringify'] - 'parse-stringify', 'jquery-extend-deep', 'shallow'
+   * @param {string} [options.cloneMethod=CloneMethod.DEEP] - the clone method
    * @param {number} [options.transactional=false] - ?
    * @param {number} options.ttl - ?
    * @param {number} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
@@ -239,7 +238,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     this.disableDeltaChangesApi = options.disableDeltaChangesApi !== undefined ? options.disableDeltaChangesApi : true;
 
     // .
-    this.cloneMethod = options.cloneMethod !== undefined ? options.cloneMethod : CloneMethod.PARSE_STRINGIFY;
+    this.cloneMethod = options.cloneMethod !== undefined ? options.cloneMethod : CloneMethod.DEEP;
     if (this.disableChangesApi) {
       this.disableDeltaChangesApi = true;
     }
@@ -359,7 +358,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     coll.asyncListeners = obj.asyncListeners;
     coll.disableChangesApi = obj.disableChangesApi;
     coll.cloneObjects = obj.cloneObjects;
-    coll.cloneMethod = obj.cloneMethod || "parse-stringify";
+    coll.cloneMethod = obj.cloneMethod || CloneMethod.DEEP;
     coll.changes = obj.changes;
 
     coll.dirty = (options && options.retainDirtyFlags === true) ? obj.dirty : false;
@@ -368,7 +367,11 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       const collOptions = options[coll.name];
 
       if (collOptions.proto) {
-        let inflater = collOptions.inflate || copyProperties;
+        let inflater = collOptions.inflate || ((src: object, dest: object) => {
+          for (let prop in src) {
+            dest[prop] = src[prop];
+          }
+        });
 
         return (data: ANY) => {
           const collObj = new (collOptions.proto)();
