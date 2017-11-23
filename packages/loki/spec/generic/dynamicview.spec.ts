@@ -180,8 +180,6 @@ describe("dynamicviews", () => {
       });
 
       expect(result1).toEqual(result2, "Result data Equality");
-
-      //TODO: expect(users.find(query) === view.data()).toBeTruthy('Strict Equality');
       expect(view["_resultset"]).toEqual(view["_resultset"].copy(), "View data equality");
       expect(view["_resultset"] === view["_resultset"].copy()).toBeFalsy("View data copy strict equality");
 

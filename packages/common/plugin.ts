@@ -2,7 +2,7 @@ function getGlobal(): any {
   let glob;
   (function (global) {
     glob = global;
-  })(typeof global !== "undefined" && global || this);
+  })(global !== undefined && global || this);
   return glob;
 }
 

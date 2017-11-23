@@ -3,12 +3,6 @@ import {Resultset} from "./resultset";
 import {Collection} from "./collection";
 import {Doc, Filter} from "../../common/types";
 
-/*
- applySortCriteria -> like Resultset::compoundsort
-
- queueRebuildEvent -> Promise?
- */
-
 export type ANY = any;
 
 /**

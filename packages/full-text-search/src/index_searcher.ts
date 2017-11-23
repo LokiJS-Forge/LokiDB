@@ -403,7 +403,6 @@ class WildcardSearch {
    * @returns {Array} - array with all matching term indices.
    */
   search(root: Tree) {
-    // Todo: Need an implementation for star operator in the middle.
     this._result = [];
     this._recursive(root);
     return this._result;

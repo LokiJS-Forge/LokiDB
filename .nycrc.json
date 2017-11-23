@@ -10,7 +10,7 @@
   ],
   "exclude": [
     "**/*.spec.ts",
-    "**/*.helper.ts"
+    "**/spec/**/*.ts"
   ],
   "report-dir": "./coverage/node/"
 }
