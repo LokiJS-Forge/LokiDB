@@ -1,7 +1,7 @@
 import {Collection} from "./collection";
 import {clone, CloneMethod} from "./clone";
 import {ltHelper, gtHelper, aeqHelper, sortHelper} from "./helper";
-import {Doc, Query} from "../../common/types";
+import {Dict, Doc, Query} from "../../common/types";
 
 export type ANY = any;
 
@@ -302,6 +302,8 @@ export class Resultset<E extends object = object> {
   public collection: Collection<E>;
   public filteredrows: number[];
   public filterInitialized: boolean;
+  // Holds the scoring result of the last full text search.
+  private _scoring: Dict<number>;
 
   /**
    * Constructor.
@@ -312,6 +314,7 @@ export class Resultset<E extends object = object> {
     this.collection = collection;
     this.filteredrows = [];
     this.filterInitialized = false;
+    this._scoring = null;
   }
 
   /**
@@ -595,7 +598,7 @@ export class Resultset<E extends object = object> {
     }
 
     const wrappedComparer =
-      (((props, data) => (a: number, b: number) => this.compoundeval(props, data[a], data[b])))(properties as [string, boolean][], this.collection.data);
+      (((props, data) => (a: number, b: number) => this._compoundeval(props, data[a], data[b])))(properties as [string, boolean][], this.collection.data);
 
     this.filteredrows.sort(wrappedComparer);
 
@@ -610,7 +613,7 @@ export class Resultset<E extends object = object> {
    * @param {object} obj2 - second object to compare
    * @returns {number} 0, -1, or 1 to designate if identical (sortwise) or which should be first
    */
-  public compoundeval(properties: [string, boolean][], obj1: E, obj2: E): number {
+  private _compoundeval(properties: [string, boolean][], obj1: E, obj2: E): number {
     let res = 0;
     let prop;
     let field;
@@ -638,6 +641,24 @@ export class Resultset<E extends object = object> {
     return 0;
   }
 
+  /**
+   * Sorts the resultset based on the last full-text-search scoring.
+   * @param {boolean} [ascending=false] - sort ascending
+   * @returns {Resultset<E extends Object>}
+   */
+  public sortByScoring(ascending = false): Resultset<E> {
+    if (this._scoring === null) {
+      throw new Error("No scoring available");
+    }
+
+    if (ascending) {
+      this.filteredrows.sort((a: number, b: number) => this._scoring[a] - this._scoring[b]);
+    } else {
+      this.filteredrows.sort((a: number, b: number) => this._scoring[b] - this._scoring[a]);
+    }
+
+    return this;
+  }
 
   /**
    * findOr() - oversee the operation of OR'ed query expressions.
@@ -844,8 +865,8 @@ export class Resultset<E extends object = object> {
           }
         }
       } else if (property === "$fts") {
-        let res = this.collection._fullTextSearch.search(query["$fts"]);
-        let keys = Object.keys(res);
+        this._scoring = this.collection._fullTextSearch.search(query["$fts"]);
+        let keys = Object.keys(this._scoring);
         for (let i = 0; i < keys.length; i++) {
           if (filter.includes(+keys[i])) {
             result.push(+keys[i]);
@@ -875,8 +896,8 @@ export class Resultset<E extends object = object> {
     this.filterInitialized = true; // next time work against filteredrows[]
 
     if (property === "$fts") {
-      let res = this.collection._fullTextSearch.search(query["$fts"]);
-      let keys = Object.keys(res);
+      this._scoring = this.collection._fullTextSearch.search(query["$fts"]);
+      let keys = Object.keys(this._scoring);
       for (let i = 0; i < keys.length; i++) {
         result.push(+keys[i]);
       }

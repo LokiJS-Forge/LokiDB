@@ -14,7 +14,7 @@ describe("full text search", () => {
   }
 
   let db: Loki;
-  let coll: Collection;
+  let coll: Collection<User>;
 
   beforeEach(() => {
     db = new Loki("MyDB");
@@ -93,6 +93,40 @@ describe("full text search", () => {
 
     query = new QueryBuilder().fuzzy("name", "abcde").fuzziness(1).build();
     expect(coll.find({"$fts": query}).length).toBe(3);
+  });
+
+  it("sort", () => {
+    let query = new QueryBuilder().fuzzy("name", "quak").fuzziness(3).build();
+
+    expect(coll.chain().sortByScoring).toThrowAnyError();
+
+    let res = coll.chain().find({"$fts": query});
+    expect(res.data().length).toBe(4);
+
+    const unsorted = res.data();
+    const sorted_desc = res.sortByScoring().data();
+    const sorted_asc = res.sortByScoring(true).data();
+
+    expect(unsorted.length).toBe(sorted_desc.length);
+    expect(sorted_desc.length).toBe(sorted_asc.length);
+    expect(unsorted).not.toEqual(sorted_desc);
+    expect(unsorted).not.toEqual(sorted_asc);
+
+    expect(sorted_desc[0].name).toBe("quak");
+    expect(sorted_desc[3].name).toBe("quarrk");
+
+    expect(sorted_asc[0].name).toBe("quarrk");
+    expect(sorted_asc[3].name).toBe("quak");
+
+    // With dynamic view.
+    const dv = coll.addDynamicView("MyScoringView");
+    expect(dv.data()).toEqual(unsorted);
+
+    expect(dv.applySortByScoring).toThrowAnyError();
+    dv.applyFind({"$fts": query});
+
+    expect(dv.applySortByScoring().data()).toEqual(sorted_desc);
+    expect(dv.applySortByScoring(true).data()).toEqual(sorted_asc);
   });
 
   it("save/load", (done) => {
