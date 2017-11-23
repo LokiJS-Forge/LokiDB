@@ -145,7 +145,7 @@ export class WildcardQuery extends BaseQuery {
 
 /**
  * A query which finds documents where the fuzzy term can be transformed into an existing document field term within a
- * given edit distance
+ * given edit distance.
  * ([Damerau–Levenshtein distance]{@link https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance}).
  *
  * The edit distance is the minimum number of an insertion, deletion or substitution of a single character
@@ -153,6 +153,8 @@ export class WildcardQuery extends BaseQuery {
  *
  * * To set the maximal allowed edit distance, use {@link FuzzyQuery#fuzziness} (default is AUTO).
  * * To set the initial word length, which should ignored for fuzziness, use {@link FuzzyQuery#prefixLength}.
+ * * To include longer document field terms than the fuzzy term and edit distance together, use
+ *   {@link FuzzyQuery#extended}.
  *
  * See also [Lucene#FuzzyQuery]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/FuzzyQuery.html}
  * and [Elasticsearch#FuzzyQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-fuzzy-query.html}.
@@ -211,6 +213,16 @@ export class FuzzyQuery extends BaseQuery {
     this._data.prefix_length = prefixLength;
     return this;
   }
+
+  /**
+   * This flag allows longer document field terms than the actual fuzzy.
+   * @param {boolean} extended - flag to enable or disable extended search
+   * @return {FuzzyQuery}
+   */
+  extended(extended: boolean) {
+    this._data.extended = extended;
+    return this;
+  }
 }
 
 /**
@@ -243,7 +255,7 @@ export class PrefixQuery extends BaseQuery {
   }
 
   /**
-   * This flag enables scoring for wildcard results, similar to {@link TermQuery}.
+   * This flag enables scoring for prefix results, similar to {@link TermQuery}.
    * @param {boolean} enable - flag to enable or disable scoring
    * @return {PrefixQuery}
    */
@@ -287,7 +299,8 @@ export class ExistsQuery extends BaseQuery {
  * or (default) | Finds documents which matches some tokens. The minimum amount of matches can be controlled with [minimumShouldMatch]{@link MatchQuery#minimumShouldMatch} (default is 1).
  * and | Finds documents which matches all tokens.
  *
- * To enable a [fuzzy query]{@link FuzzyQuery} for the tokens, use {@link MatchQuery#fuzziness} and {@link MatchQuery#prefixLength}.
+ * To enable a [fuzzy query]{@link FuzzyQuery} for the tokens, use {@link MatchQuery#fuzziness},
+ * {@link MatchQuery#prefixLength} and {@link MatchQuery#extended}
  *
  * See also [Lucene#?]{@link ?}
  * and [Elasticsearch#MatchQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html}.
@@ -382,6 +395,16 @@ export class MatchQuery extends BaseQuery {
       throw TypeError("Prefix length must be a positive number.");
     }
     this._data.prefix_length = prefixLength;
+    return this;
+  }
+
+  /**
+   * This flag allows longer document field terms than the actual fuzzy.
+   * @param {boolean} extended - flag to enable or disable extended search
+   * @return {MatchQuery}
+   */
+  extended(extended: boolean) {
+    this._data.extended = extended;
     return this;
   }
 }
@@ -698,43 +721,43 @@ export class QueryBuilder {
     return this;
   }
 
-  bool() {
+  bool(): BoolQuery {
     return this._prepare(BoolQuery);
   }
 
-  constantScore() {
+  constantScore(): ConstantScoreQuery {
     return this._prepare(ConstantScoreQuery);
   }
 
-  term(field: string, term: string) {
+  term(field: string, term: string): TermQuery {
     return this._prepare(TermQuery, field, term);
   }
 
-  terms(field: string, terms: Array<string>) {
+  terms(field: string, terms: Array<string>): TermsQuery {
     return this._prepare(TermsQuery, field, terms);
   }
 
-  wildcard(field: string, wildcard: string) {
+  wildcard(field: string, wildcard: string): WildcardQuery {
     return this._prepare(WildcardQuery, field, wildcard);
   }
 
-  fuzzy(field: string, fuzzy: string) {
+  fuzzy(field: string, fuzzy: string): FuzzyQuery {
     return this._prepare(FuzzyQuery, field, fuzzy);
   }
 
-  match(field: string, query: string) {
+  match(field: string, query: string): MatchQuery {
     return this._prepare(MatchQuery, field, query);
   }
 
-  matchAll() {
+  matchAll(): MatchAllQuery {
     return this._prepare(MatchAllQuery);
   }
 
-  prefix(field: string, prefix: string) {
+  prefix(field: string, prefix: string): PrefixQuery {
     return this._prepare(PrefixQuery, field, prefix);
   }
 
-  exists(field: string) {
+  exists(field: string): ExistsQuery {
     return this._prepare(ExistsQuery, field);
   }
 
