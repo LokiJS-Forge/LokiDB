@@ -63,6 +63,9 @@ function doQueryOp(val: ANY, op: ANY) {
 }
 
 
+/**
+ * @hidden
+ */
 export const LokiOps = {
   // comparison operators
   // a is the value in the collection

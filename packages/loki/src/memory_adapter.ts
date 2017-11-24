@@ -5,18 +5,18 @@ export type ANY = any;
 /**
  * In in-memory persistence adapter for an in-memory database.
  * This simple 'key/value' adapter is intended for unit testing and diagnostics.
- *
- * @param {object} options - memory adapter options
- * @param {boolean} [options.asyncResponses=false] - whether callbacks are invoked asynchronously (default: false)
- * @param {int} [options.asyncTimeout=50] - timeout in ms to queue callbacks (default: 50)
- *
- * @constructor LokiMemoryAdapter
  */
 export class LokiMemoryAdapter implements StorageAdapter {
 
   private hashStore: object;
   private options: ANY;
 
+  /**
+   * @param {object} options - memory adapter options
+   * @param {boolean} [options.asyncResponses=false] - whether callbacks are invoked asynchronously (default: false)
+   * @param {int} [options.asyncTimeout=50] - timeout in ms to queue callbacks (default: 50)
+   * @param {ANY} options
+   */
   constructor(options?: ANY) {
     this.hashStore = {};
     this.options = options || {};

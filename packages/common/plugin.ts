@@ -17,4 +17,7 @@ function create(): void {
   return global[sym];
 }
 
+/**
+ * @hidden
+ */
 export const PLUGINS = create();

@@ -1336,7 +1336,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {int} dataPosition : coll.data array index/position
    * @param {string} binaryIndexName : index to search for dataPosition in
    */
-  adaptiveBinaryIndexInsert(dataPosition: number, binaryIndexName: string) {
+  public adaptiveBinaryIndexInsert(dataPosition: number, binaryIndexName: string) {
     const index = this.binaryIndices[binaryIndexName].values;
     let val = this.data[dataPosition][binaryIndexName];
 
@@ -1358,7 +1358,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {int} dataPosition : coll.data array index/position
    * @param {string} binaryIndexName : index to search for dataPosition in
    */
-  adaptiveBinaryIndexUpdate(dataPosition: number, binaryIndexName: string) {
+  public adaptiveBinaryIndexUpdate(dataPosition: number, binaryIndexName: string) {
     // linear scan needed to find old position within index unless we optimize for clone scenarios later
     // within (my) node 5.6.0, the following for() loop with strict compare is -much- faster than indexOf()
     let idxPos;
@@ -1382,7 +1382,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {int} dataPosition : coll.data array index/position
    * @param {string} binaryIndexName : index to search for dataPosition in
    */
-  adaptiveBinaryIndexRemove(dataPosition: number, binaryIndexName: string, removedFromIndexOnly = false): ANY {
+  public adaptiveBinaryIndexRemove(dataPosition: number, binaryIndexName: string, removedFromIndexOnly = false): ANY {
     const idxPos = this.getBinaryIndexPosition(dataPosition, binaryIndexName);
     const index = this.binaryIndices[binaryIndexName].values;
     let len;
@@ -1521,7 +1521,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {object} val - value to use for range calculation.
    * @returns {array} [start, end] index array positions
    */
-  calculateRange(op: string, prop: string, val: ANY): [number, number] {
+  public calculateRange(op: string, prop: string, val: ANY): [number, number] {
     const rcd = this.data;
     const index = this.binaryIndices[prop].values;
     const min = 0;
@@ -1847,12 +1847,11 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
 
   /**
    * Map Reduce operation
-   *
    * @param {function} mapFunction - function to use as map function
    * @param {function} reduceFunction - function to use as reduce function
    * @returns {data} The result of your mapReduce operation
    */
-  mapReduce<T, U>(mapFunction: (value: E, index: number, array: E[]) => T, reduceFunction: (array: T[]) => U): U {
+  public mapReduce<T, U>(mapFunction: (value: E, index: number, array: E[]) => T, reduceFunction: (array: T[]) => U): U {
     try {
       return reduceFunction(this.data.map(mapFunction));
     } catch (err) {
@@ -1872,7 +1871,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   //eqJoin<T extends object>(joinData: T[] | Resultset<T>, leftJoinProp: string | ((obj: E) => string), rightJoinProp: string | ((obj: T) => string)): Resultset<{ left: E; right: T; }>;
   // eqJoin<T extends object, U extends object>(joinData: T[] | Resultset<T>, leftJoinProp: string | ((obj: E) => string), rightJoinProp: string | ((obj: T) => string), mapFun?: (a: E, b: T) => U): Resultset<U> {
   //eqJoin<T extends object, U extends object>(joinData: T[] | Resultset<T>, leftJoinKey: string | ((obj: E) => string), rightJoinKey: string | ((obj: T) => string), mapFun?: (a: E, b: T) => U, dataOptions?: Resultset.DataOptions): Resultset<{ left: E; right: T; }> {
-  eqJoin(joinData: ANY[], leftJoinProp: string, rightJoinProp: string, mapFun?: Function): Resultset {
+  public eqJoin(joinData: ANY[], leftJoinProp: string, rightJoinProp: string, mapFun?: Function): Resultset {
     // logic in Resultset class
     return new Resultset(this).eqJoin(joinData, leftJoinProp, rightJoinProp, mapFun);
   }
@@ -1902,7 +1901,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   /**
    * (Staging API) create a copy of an object and insert it into a stage
    */
-  stage(stageName: string, obj: ANY) {
+  public stage(stageName: string, obj: ANY) {
     const copy = JSON.parse(JSON.stringify(obj));
     this.getStage(stageName)[obj.$loki] = copy;
     return copy;
@@ -1914,7 +1913,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {string} stageName - name of stage
    * @param {string} message
    */
-  commitStage(stageName: string, message: string) {
+  public commitStage(stageName: string, message: string) {
     const stage = this.getStage(stageName);
     let prop;
     const timestamp = new Date().getTime();
@@ -1932,7 +1931,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
 
   /**
    */
-  extract(field: string) {
+  public extract(field: string) {
     let i = 0;
     const len = this.data.length;
     const isDotNotation = isDeepProperty(field);
@@ -1945,19 +1944,19 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
 
   /**
    */
-  max(field: string) {
+  public max(field: string) {
     return Math.max.apply(null, this.extract(field));
   }
 
   /**
    */
-  min(field: string) {
+  public min(field: string) {
     return Math.min.apply(null, this.extract(field));
   }
 
   /**
    */
-  maxRecord(field: string) {
+  public maxRecord(field: string) {
     let i = 0;
     const len = this.data.length;
     const deep = isDeepProperty(field);
@@ -2015,7 +2014,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
 
   /**
    */
-  extractNumerical(field: string) {
+  public extractNumerical(field: string) {
     return this.extract(field).map(parseFloat).filter(Number).filter((n) => !(isNaN(n)));
   }
 
@@ -2025,7 +2024,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {string} field - name of property in docs to average
    * @returns {number} average of property in all docs in the collection
    */
-  avg(field: string) {
+  public avg(field: string) {
     return average(this.extractNumerical(field));
   }
 
@@ -2033,14 +2032,14 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * Calculate standard deviation of a field
    * @param {string} field
    */
-  stdDev(field: string) {
+  public stdDev(field: string) {
     return standardDeviation(this.extractNumerical(field));
   }
 
   /**
    * @param {string} field
    */
-  mode(field: string) {
+  public mode(field: string) {
     const dict = {};
     const data = this.extract(field);
     data.forEach((obj) => {
@@ -2069,7 +2068,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   /**
    * @param {string} field - property name
    */
-  median(field: string) {
+  public median(field: string) {
     const values = this.extractNumerical(field);
     values.sort((a, b) => a - b);
 

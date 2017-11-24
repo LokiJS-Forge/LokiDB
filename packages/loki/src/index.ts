@@ -1,3 +1,6 @@
 import {Loki} from "./loki";
+import {Collection} from "./collection";
 
-export {Loki};
+export {Loki, Collection};
+
+export default {Loki};
