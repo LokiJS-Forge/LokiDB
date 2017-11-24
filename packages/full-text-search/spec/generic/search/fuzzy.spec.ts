@@ -121,7 +121,7 @@ describe("fuzzy query", () => {
     assertMatches(fts, query, [6, 8, 9, 10, 11, 12, 13, 14]);
   });
 
-  it("Fuzzy query extended.", () => {
+  fit("Fuzzy query extended.", () => {
     let docs = ["walker", "wbr", "we", "web", "webe", "weber", "webere", "webree", "weberei", "wbes", "wbert", "wbb",
       "xeb", "wrr"];
     let fts = new FullTextSearch([{name: "body"}]);
@@ -136,5 +136,18 @@ describe("fuzzy query", () => {
 
     query = new QB().match("body", "web").prefixLength(1).fuzziness(1).extended(true).build();
     assertMatches(fts, query, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+  });
+
+  it("Fuzzy query extended.", () => {
+    let docs = ["abca", "abcd", "abcde"];
+    let fts = new FullTextSearch([{name: "body"}]);
+    for (let i = 0; i < docs.length; i++) {
+      fts.addDocument({
+        $loki: i,
+        body: docs[i]
+      });
+    }
+    let query = new QB().fuzzy("body", "abcd").prefixLength(1).fuzziness(0).extended(true).build();
+    assertMatches(fts, query, [1, 2]);
   });
 });

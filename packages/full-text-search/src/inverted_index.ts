@@ -96,7 +96,7 @@ export class InvertedIndex {
       // Add term to index tree.
       let branch = this._root;
       for (let i = 0; i < term.length; i++) {
-        const c = term[i];
+        const c = term.codePointAt(i);
         if (branch[c] === undefined) {
           const child = {};
           if (this._optimizeChanges) {
