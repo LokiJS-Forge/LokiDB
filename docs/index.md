@@ -4,7 +4,7 @@
 # Welcome to LokiJS2
 
 
-Checkout our [API Reference](../api/index.html).
+Checkout our [API Reference](api/index.html).
 
 ```javascript
 // Runnable code
