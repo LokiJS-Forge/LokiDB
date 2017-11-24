@@ -14,7 +14,11 @@ Install with npm:
 npm install @lokijs/loki
 ```
 
-<h2 align="center">Concepts</h2>
+<h2 align="center">Documentation</h2>
+
+Check out our interactive [documentation](https://lokijs-forge.github.io/LokiJS2/).
+
+<h2 align="center">Plugins</h2>
 
 LokiJS has many plugins.
 

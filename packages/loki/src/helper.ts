@@ -1,3 +1,8 @@
+/**
+ * @hidden
+ */
+export type ANY = any;
+
 /** Helper function for determining 'loki' abstract equality which is a little more abstract than ==
  *     aeqHelper(5, '5') === true
  *     aeqHelper(5.0, '5') === true
@@ -7,8 +12,13 @@
  *     aeqHelper([1, 2, 3], [1, 2, 3]) === true
  *     aeqHelper(undefined, null) === true
  */
-export type ANY = any;
 
+/**
+ * @hidden
+ * @param {ANY} prop1
+ * @param {ANY} prop2
+ * @returns {boolean}
+ */
 export function aeqHelper(prop1: ANY, prop2: ANY) {
   let cv1;
   let cv2;
@@ -88,6 +98,7 @@ export function aeqHelper(prop1: ANY, prop2: ANY) {
  *     In the future we might want $lt and $gt ops to use their own functionality/helper.
  *     Since binary indices on a property might need to index [12, NaN, new Date(), Infinity], we
  *     need this function (as well as gtHelper) to always ensure one value is LT, GT, or EQ to another.
+ * @hidden
  */
 export function ltHelper(prop1: ANY, prop2: ANY, equal: boolean) {
   let cv1;
@@ -184,6 +195,13 @@ export function ltHelper(prop1: ANY, prop2: ANY, equal: boolean) {
   return false;
 }
 
+/**
+ * @hidden
+ * @param {ANY} prop1
+ * @param {ANY} prop2
+ * @param {boolean} equal
+ * @returns {boolean}
+ */
 export function gtHelper(prop1: ANY, prop2: ANY, equal: boolean) {
   let cv1;
   let cv2;
@@ -278,6 +296,13 @@ export function gtHelper(prop1: ANY, prop2: ANY, equal: boolean) {
   return false;
 }
 
+/**
+ * @hidden
+ * @param {ANY} prop1
+ * @param {ANY} prop2
+ * @param {ANY} desc
+ * @returns {number}
+ */
 export function sortHelper(prop1: ANY, prop2: ANY, desc: ANY) {
   if (aeqHelper(prop1, prop2)) return 0;
 

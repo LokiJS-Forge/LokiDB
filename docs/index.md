@@ -3,6 +3,9 @@
 
 # Welcome to LokiJS2
 
+
+Checkout our [API Reference](../api/index.html).
+
 ```javascript
 // Runnable code
 console.log("iii");

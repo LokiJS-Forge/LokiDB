@@ -46,6 +46,10 @@ function walk(target: any, copy: any) {
 }
 
 // Deep copy from Simeon Velichkov.
+/**
+ * @param target
+ * @returns {any}
+ */
 function deepCopy(target: any) {
   if (/number|string|boolean/.test(typeof target)) {
     return target;
@@ -59,6 +63,9 @@ function deepCopy(target: any) {
   return copy;
 }
 
+/**
+ * @hidden
+ */
 export function clone<T>(data: T, method: CloneMethod = CloneMethod.PARSE_STRINGIFY): T {
   if (data === null || data === undefined) {
     return null;

@@ -1,5 +1,5 @@
 {
-  "name": "@sample_test/lokijs-src",
+  "name": "@lokijs/lokijs-src",
   "version": "2.0.0-beta.2",
   "description": "Fast document oriented javascript in-memory database",
   "author": "Various authors",
@@ -11,6 +11,7 @@
     "test:web": "karma start config/karma.config.js --single-run",
     "test:node": "nyc --report-dir coverage/node jasmine --config='config/jasmine.json'",
     "coverage": "istanbul report html lcov json text-summary",
+    "docs": "typedoc packages/",
     "build": "node config/build.js"
   },
   "repository": {
@@ -58,6 +59,7 @@
     "tslint": "^5.7.0",
     "tslint-eslint-rules": "^4.1.1",
     "tslint-loader": "^3.5.3",
+    "typedoc": "^0.9.0",
     "typescript": "^2.5.3",
     "uglify-es": "^3.1.10",
     "vrsource-tslint-rules": "^5.8.0",
