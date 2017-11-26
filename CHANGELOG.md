@@ -1,3 +1,31 @@
+<a name="2.0.0-beta.3"></a>
+# [2.0.0-beta.3](https://github.com/LokiJS-Forge/LokiJS2/compare/2.0.0-beta.2...2.0.0-beta.3) (2017-11-26)
+
+
+### Bug Fixes
+
+* coverage ([#42](https://github.com/LokiJS-Forge/LokiJS2/issues/42)) ([3509429](https://github.com/LokiJS-Forge/LokiJS2/commit/3509429))
+* **full-text-search:** fix fuzzy extended to withdraw wrong results ([#51](https://github.com/LokiJS-Forge/LokiJS2/issues/51)) ([4d493ac](https://github.com/LokiJS-Forge/LokiJS2/commit/4d493ac))
+* **loki:** cloning method for specific classes ([#30](https://github.com/LokiJS-Forge/LokiJS2/issues/30)) ([4f4a182](https://github.com/LokiJS-Forge/LokiJS2/commit/4f4a182))
+* **loki:** fix error if passed parameters are not serializable for transform ([#43](https://github.com/LokiJS-Forge/LokiJS2/issues/43)) ([dde34ed](https://github.com/LokiJS-Forge/LokiJS2/commit/dde34ed))
+* **loki:** implement deep clone as default clone option ([#44](https://github.com/LokiJS-Forge/LokiJS2/issues/44)) ([2f3b718](https://github.com/LokiJS-Forge/LokiJS2/commit/2f3b718))
+
+
+### Features
+
+* **full-text-search:** add full-text-search as separate package ([#35](https://github.com/LokiJS-Forge/LokiJS2/issues/35)) ([14b9947](https://github.com/LokiJS-Forge/LokiJS2/commit/14b9947))
+* **full-text-search:** english and german language support ([3a93477](https://github.com/LokiJS-Forge/LokiJS2/commit/3a93477))
+* **full-text-search:** implement extended fuzzy ([#47](https://github.com/LokiJS-Forge/LokiJS2/issues/47)) ([0579026](https://github.com/LokiJS-Forge/LokiJS2/commit/0579026))
+* **loki:** add 'dataOptions' to eqJoin ([#33](https://github.com/LokiJS-Forge/LokiJS2/issues/33)) ([efa450e](https://github.com/LokiJS-Forge/LokiJS2/commit/efa450e))
+* **loki:** add optional flag for Changes API to limit update operation output to modified properties only ([#29](https://github.com/LokiJS-Forge/LokiJS2/issues/29)) ([a8abe99](https://github.com/LokiJS-Forge/LokiJS2/commit/a8abe99))
+* **loki:** allow sorting on nested properties ([#31](https://github.com/LokiJS-Forge/LokiJS2/issues/31)) ([9b426a4](https://github.com/LokiJS-Forge/LokiJS2/commit/9b426a4))
+* **loki:** chained/transform map op now accepts 'dataOptions' for clone/removeMeta ([#34](https://github.com/LokiJS-Forge/LokiJS2/issues/34)) ([67d61ac](https://github.com/LokiJS-Forge/LokiJS2/commit/67d61ac))
+* **loki:** make Resultset and DynamicView sortable by full-text-search scoring ([#45](https://github.com/LokiJS-Forge/LokiJS2/issues/45)) ([0a5b946](https://github.com/LokiJS-Forge/LokiJS2/commit/0a5b946))
+* **loki:** rename collection ([#32](https://github.com/LokiJS-Forge/LokiJS2/issues/32)) ([745e025](https://github.com/LokiJS-Forge/LokiJS2/commit/745e025))
+* integrate full-text-search to loki (insert/update/remove + search) ([8fbc174](https://github.com/LokiJS-Forge/LokiJS2/commit/8fbc174))
+* move to typescript ([#36](https://github.com/LokiJS-Forge/LokiJS2/issues/36)) ([d47f190](https://github.com/LokiJS-Forge/LokiJS2/commit/d47f190))
+
+
 <a name="2.0.0-beta.2"></a>
 # [2.0.0-beta.2](https://github.com/LokiJS-Forge/LokiJS2/compare/2.0.0-beta.1...2.0.0-beta.2) (2017-09-21)
 
