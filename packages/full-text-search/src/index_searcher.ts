@@ -356,6 +356,17 @@ function fuzzySearch(query: ANY, root: InvertedIndex.Index) {
     let index = stack.pop();
     let treeTerms = treeStack.pop();
 
+    // Check if fuzzy should be extended.
+    if (extended) {
+      if (treeTerms.length === fuzzy.length) {
+        extend_fuzzy = levenshteinDistance(fuzzy, treeTerms);
+      } else {
+        extend_fuzzy = extend_fuzzy <= fuzziness && treeTerms.length >= fuzzy.length
+          ? extend_fuzzy
+          : 1e10;
+      }
+    }
+
     // Compare tokens if they are in near distance.
     if (index.df !== undefined) {
       let matched = false;
@@ -376,15 +387,6 @@ function fuzzySearch(query: ANY, root: InvertedIndex.Index) {
         let boost = 1 - (extend_fuzzy + treeTerms.length - fuzzy.length) / Math.min(term.length, value.length);
         similarTokens.push({term: term, index: index, boost});
       }
-    }
-
-    // Check if fuzzy should be extended.
-    if (extended && treeTerms.length === fuzzy.length) {
-      extend_fuzzy = levenshteinDistance(fuzzy, treeTerms);
-    } else {
-      extend_fuzzy = extended && extend_fuzzy <= fuzziness && treeTerms.length >= fuzzy.length
-        ? extend_fuzzy
-        : 1e10;
     }
 
     // Iterate over all subtrees.

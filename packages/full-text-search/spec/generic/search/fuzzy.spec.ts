@@ -132,9 +132,9 @@ describe("fuzzy query", () => {
       });
     }
     let query = new QB().fuzzy("body", "web").prefixLength(1).fuzziness(1).extended(true).build();
-    assertMatches(fts, query, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+    assertMatches(fts, query, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
 
     query = new QB().match("body", "web").prefixLength(1).fuzziness(1).extended(true).build();
-    assertMatches(fts, query, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+    assertMatches(fts, query, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
   });
 });
