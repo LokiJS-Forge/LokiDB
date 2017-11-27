@@ -70,7 +70,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -1433,8 +1433,68 @@ class QueryBuilder {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/**
+ * Class supports 64Bit integer operations.
+ * A cut-down version of dcodeIO/long.js.
+ */
+class Long {
+    constructor(low = 0, high = 0) {
+        this.low = low;
+        this.high = high;
+    }
+    /**
+     * Returns this long with bits arithmetically shifted to the right by the given amount.
+     * @param {number} numBits - number of bits
+     * @returns {Long} the long
+     */
+    shiftRight(numBits) {
+        if ((numBits &= 63) === 0)
+            return this;
+        else if (numBits < 32)
+            return new Long((this.low >>> numBits) | (this.high << (32 - numBits)), this.high >> numBits);
+        else
+            return new Long((this.high >> (numBits - 32)), this.high >= 0 ? 0 : -1);
+    }
+    /**
+     * Returns this long with bits arithmetically shifted to the left by the given amount.
+     * @param {number} numBits - number of bits
+     * @returns {Long} the long
+     */
+    shiftLeft(numBits) {
+        if ((numBits &= 63) === 0)
+            return this;
+        else if (numBits < 32)
+            return new Long(this.low << numBits, (this.high << numBits) | (this.low >>> (32 - numBits)));
+        else
+            return new Long(0, this.low << (numBits - 32));
+    }
+    /**
+     * Returns the bitwise AND of this Long and the specified.
+     * @param {Long} other - the other Long
+     * @returns {Long} the long
+     */
+    and(other) {
+        return new Long(this.low & other.low, this.high & other.high);
+    }
+    /**
+     * Converts the Long to a 32 bit integer, assuming it is a 32 bit integer.
+     * @returns {number}
+     */
+    toInt() {
+        return this.low;
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Long;
+
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__full_text_search__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__full_text_search__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tokenizer__ = __webpack_require__(1);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Tokenizer", function() { return __WEBPACK_IMPORTED_MODULE_1__tokenizer__["a"]; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__query_builder__ = __webpack_require__(2);
@@ -1451,13 +1511,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__inverted_index__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__index_searcher__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__common_plugin__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__index_searcher__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__common_plugin__ = __webpack_require__(13);
 
 
 
@@ -1546,13 +1606,17 @@ class FullTextSearch {
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__scorer__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__scorer__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__inverted_index__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__query_builder__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__fuzzy_RunAutomaton__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__fuzzy_LevenshteinAutomata__ = __webpack_require__(9);
+
+
 
 
 
@@ -1663,9 +1727,9 @@ class IndexSearcher {
             }
             case "fuzzy": {
                 let f = fuzzySearch(query, root);
-                for (let i = 0; i < f.length; i++) {
-                    this._scorer.prepare(fieldName, boost * f[i].boost, f[i].index, doScoring, docResults, f[i].term);
-                }
+                // for (let i = 0; i < f.length; i++) {
+                //   this._scorer.prepare(fieldName, boost * f[i].boost, f[i].index, doScoring, docResults, f[i].term as any);
+                // }
                 break;
             }
             case "wildcard": {
@@ -1847,13 +1911,59 @@ function levenshteinDistance(a, b) {
     }
     return row[a.length];
 }
+function fuzzySearch(query, root) {
+    let res = [];
+    function calculateDistance(state, a, n) {
+        let ed = 0;
+        state = a.step(state, 0);
+        if (state !== -1) {
+            ed++;
+            state = a.step(state, 0);
+            if (state !== -1) {
+                ed++;
+            }
+        }
+        return n - ed;
+    }
+    function run(a, root) {
+        let edit_distance = 1;
+        function rec(state, key, idx, r) {
+            r[r.length - 1] = key;
+            state = a.step(state, key);
+            if (state === -1) {
+                //console.log("bad: ", String.fromCodePoint(...r));
+                return;
+            }
+            if (a.isAccept(state) && idx.df !== undefined) {
+                //console.log("found: ", String.fromCodePoint(...r));
+                res.push({ index: root, term: String.fromCodePoint(...r) });
+            }
+            r.push(0);
+            for (const child of idx) {
+                rec(state, child[0], child[1], r);
+            }
+            r.pop();
+        }
+        let r = [0];
+        for (const child of root) {
+            rec(0, child[0], child[1], r);
+        }
+        //rec(root)
+    }
+    let la = new __WEBPACK_IMPORTED_MODULE_4__fuzzy_LevenshteinAutomata__["a" /* LevenshteinAutomata */](Object(__WEBPACK_IMPORTED_MODULE_1__inverted_index__["b" /* toCodePoints */])(query.value));
+    let tr = la.run();
+    let ra = new __WEBPACK_IMPORTED_MODULE_3__fuzzy_RunAutomaton__["a" /* RunAutomaton */](tr);
+    run(ra, root);
+    throw res;
+    // return res;
+}
 /**
  * Performs a fuzzy search.
  * @param {ANY} query - the fuzzy query
  * @param {InvertedIndex.Index} root - the root index
  * @returns {Array}
  */
-function fuzzySearch(query, root) {
+function fuzzySearch2(query, root) {
     let value = query.value;
     let fuzziness = query.fuzziness !== undefined ? query.fuzziness : "AUTO";
     if (fuzziness === "AUTO") {
@@ -2001,7 +2111,7 @@ function wildcardSearch(query, root) {
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2118,7 +2228,523 @@ class Scorer {
 
 
 /***/ }),
-/* 7 */
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class RunAutomaton {
+    constructor(a) {
+        this.automaton = a;
+        this.points = a.getStartPoints();
+        this.size = a.getNumStates();
+        this.accept = [];
+        this.transitions = [];
+        for (let n = 0; n < this.size; n++) {
+            this.accept[n] = a.isAccept(n);
+            for (let c = 0; c < this.points.length; c++) {
+                let dest = a.step(n, this.points[c]);
+                if (dest !== -1 && dest >= this.size) {
+                    //exit(0);
+                    // console.log("bad1");
+                }
+                this.transitions[n * this.points.length + c] = dest;
+            }
+        }
+        this.alphabetSize = 256;
+        this.classmap = new Array(Math.min(256, this.alphabetSize));
+        let i = 0;
+        for (let j = 0; j < this.classmap.length; j++) {
+            if (i + 1 < this.points.length && j === this.points[i + 1]) {
+                i++;
+            }
+            this.classmap[j] = i;
+        }
+    }
+    getCharClass(c) {
+        // binary search
+        let a = 0;
+        let b = this.points.length;
+        while (b - a > 1) {
+            let d = (a + b) >>> 1;
+            if (this.points[d] > c)
+                b = d;
+            else if (this.points[d] < c)
+                a = d;
+            else
+                return d;
+        }
+        return a;
+    }
+    step(state, c) {
+        if (c >= this.classmap.length) {
+            return this.transitions[state * this.points.length + this.getCharClass(c)];
+        }
+        else {
+            return this.transitions[state * this.points.length + this.classmap[c]];
+        }
+    }
+    isAccept(state) {
+        return this.accept[state];
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = RunAutomaton;
+
+
+
+/***/ }),
+/* 9 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Automata__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Lev1TParametricDescription__ = __webpack_require__(11);
+
+
+class LevenshteinAutomata {
+    constructor(input, alphaMax = __WEBPACK_IMPORTED_MODULE_0__Automata__["b" /* MAX_CODE_POINT */]) {
+        this.word = input;
+        this.alphabet = Array.from(this.word).sort((a, b) => a - b);
+        this.numRanges = 0;
+        this.rangeLower = new Array(this.alphabet.length + 2);
+        this.rangeUpper = new Array(this.alphabet.length + 2);
+        // calculate the unicode range intervals that exclude the alphabet
+        // these are the ranges for all unicode characters not in the alphabet
+        let lower = 0;
+        for (let i = 0; i < this.alphabet.length; i++) {
+            const higher = this.alphabet[i];
+            if (higher > lower) {
+                this.rangeLower[this.numRanges] = lower;
+                this.rangeUpper[this.numRanges] = higher - 1;
+                this.numRanges++;
+            }
+            lower = higher + 1;
+        }
+        /* add the final endpoint */
+        if (lower <= alphaMax) {
+            this.rangeLower[this.numRanges] = lower;
+            this.rangeUpper[this.numRanges] = alphaMax;
+            this.numRanges++;
+        }
+        this.description = new __WEBPACK_IMPORTED_MODULE_1__Lev1TParametricDescription__["a" /* Lev1TParametricDescription */](input.length);
+    }
+    getVector(x, pos, end) {
+        let vector = 0;
+        for (let i = pos; i < end; i++) {
+            vector <<= 1;
+            if (this.word[i] === x) {
+                vector |= 1;
+            }
+        }
+        return vector;
+    }
+    run() {
+        let automat = new __WEBPACK_IMPORTED_MODULE_0__Automata__["a" /* Automaton */]();
+        const n = 1;
+        const range = 2 * n + 1;
+        // the number of states is based on the length of the word and n
+        const numStates = this.description.size();
+        // TODO: Prefix
+        automat.createState();
+        const stateOffset = 0;
+        // create all states, and mark as accept states if appropriate
+        for (let i = 1; i < numStates; i++) {
+            let state = automat.createState();
+            automat.setAccept(state, this.description.isAccept(i));
+        }
+        // console.log(automat.isAccept);
+        for (let k = 0; k < numStates; k++) {
+            const xpos = this.description.getPosition(k);
+            if (xpos < 0) {
+                continue;
+            }
+            const end = xpos + Math.min(this.word.length - xpos, range);
+            // console.log("k:", k, "xpos:", xpos, "end:", end);
+            for (let x = 0; x < this.alphabet.length; x++) {
+                const ch = this.alphabet[x];
+                const cvec = this.getVector(ch, xpos, end);
+                const dest = this.description.transition(k, xpos, cvec);
+                // console.log("x:", x, "ch:", ch, "cvec:", cvec, "dest:", dest);
+                if (dest >= 0) {
+                    // console.log("transition");
+                    automat.addTransition(stateOffset + k, stateOffset + dest, ch, ch);
+                }
+            }
+            // console.log("last trans, k:", k, "xpos", xpos);
+            const dest = this.description.transition(k, xpos, 0);
+            if (dest >= 0) {
+                for (let r = 0; r < this.numRanges; r++) {
+                    // console.log("transition", r);
+                    automat.addTransition(stateOffset + k, stateOffset + dest, this.rangeLower[r], this.rangeUpper[r]);
+                }
+            }
+        }
+        if (!automat.deterministic) {
+            //exit(0);
+            // console.log("bad d");
+        }
+        automat.finishState();
+        return automat;
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = LevenshteinAutomata;
+
+
+
+/***/ }),
+/* 10 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class Transition {
+    constructor(dest, min, max) {
+        this.dest = dest;
+        this.min = min;
+        this.max = max;
+    }
+}
+/* unused harmony export Transition */
+
+const MIN_CODE_POINT = 0;
+/* unused harmony export MIN_CODE_POINT */
+
+const MAX_CODE_POINT = 1114111;
+/* harmony export (immutable) */ __webpack_exports__["b"] = MAX_CODE_POINT;
+
+class Automaton {
+    constructor() {
+        this.transitions = [];
+        this.transitions = [];
+        this._isAccept = new Set();
+        this.nextState = 0;
+        this.currState = -1;
+        this.deterministic = true;
+        this.trans = {};
+    }
+    isAccept(n) {
+        return this._isAccept.has(n);
+    }
+    createState() {
+        return this.nextState++;
+    }
+    setAccept(state, accept) {
+        if (accept) {
+            this._isAccept.add(state);
+        }
+        else {
+            this._isAccept.delete(state);
+        }
+    }
+    finishState() {
+        if (this.currState !== -1) {
+            this.finishCurrentState();
+            this.currState = -1;
+        }
+    }
+    finishCurrentState() {
+        const destMinMax = (a, b) => {
+            if (a.dest < b.dest) {
+                return -1;
+            }
+            else if (a.dest > b.dest) {
+                return 1;
+            }
+            if (a.min < b.min) {
+                return -1;
+            }
+            else if (a.min > b.min) {
+                return 1;
+            }
+            if (a.max < b.max) {
+                return -1;
+            }
+            else if (a.max > b.max) {
+                return 1;
+            }
+            return 0;
+        };
+        const minMaxDest = (a, b) => {
+            if (a.min < b.min) {
+                return -1;
+            }
+            else if (a.min > b.min) {
+                return 1;
+            }
+            if (a.max < b.max) {
+                return -1;
+            }
+            else if (a.max > b.max) {
+                return 1;
+            }
+            if (a.dest < b.dest) {
+                return -1;
+            }
+            else if (a.dest > b.dest) {
+                return 1;
+            }
+            return 0;
+        };
+        // Sort all transitions
+        this.transitions.sort(destMinMax);
+        let offset = 0;
+        let upto = 0;
+        let p = new Transition(-1, -1, -1);
+        for (let i = 0, len = this.transitions.length; i < len; i++) {
+            // tDest = transitions[offset + 3 * i];
+            // tMin = transitions[offset + 3 * i + 1];
+            // tMax = transitions[offset + 3 * i + 2];
+            let t = this.transitions[i];
+            if (p.dest === t.dest) {
+                if (t.min <= p.max + 1) {
+                    if (t.max > p.max) {
+                        p.max = t.max;
+                    }
+                }
+                else {
+                    if (p.dest !== -1) {
+                        this.transitions[offset + upto].dest = p.dest;
+                        this.transitions[offset + upto].min = p.min;
+                        this.transitions[offset + upto].max = p.max;
+                        upto++;
+                    }
+                    p.min = t.min;
+                    p.max = t.max;
+                }
+            }
+            else {
+                if (p.dest !== -1) {
+                    this.transitions[offset + upto].dest = p.dest;
+                    this.transitions[offset + upto].min = p.min;
+                    this.transitions[offset + upto].max = p.max;
+                    upto++;
+                }
+                p.dest = t.dest;
+                p.min = t.min;
+                p.max = t.max;
+            }
+        }
+        if (p.dest !== -1) {
+            // Last transition
+            this.transitions[offset + upto].dest = p.dest;
+            this.transitions[offset + upto].min = p.min;
+            this.transitions[offset + upto].max = p.max;
+            upto++;
+        }
+        this.transitions = this.transitions.slice(0, upto);
+        this.transitions.sort(minMaxDest);
+        if (this.deterministic && upto > 1) {
+            let lastMax = this.transitions[0].max;
+            for (let i = 1; i < upto; i++) {
+                let min = this.transitions[i].min;
+                if (min <= lastMax) {
+                    this.deterministic = false;
+                    break;
+                }
+                lastMax = this.transitions[i].max;
+            }
+        }
+        this.trans[this.currState] = this.transitions.slice();
+        this.transitions = [];
+    }
+    getStartPoints() {
+        let pointset = new Set();
+        pointset.add(MIN_CODE_POINT);
+        const states = Object.keys(this.trans);
+        for (let i = 0; i < states.length; i++) {
+            let trans = this.trans[states[i]];
+            for (let j = 0; j < trans.length; j++) {
+                let tran = trans[j];
+                pointset.add(tran.min);
+                if (tran.max < MAX_CODE_POINT) {
+                    pointset.add(tran.max + 1);
+                }
+            }
+        }
+        return Array.from(pointset).sort((a, b) => a - b);
+    }
+    step(state, label) {
+        let trans = this.trans[state];
+        if (trans) {
+            for (let i = 0; i < trans.length; i++) {
+                let tran = trans[i];
+                if (tran.min <= label && label <= tran.max) {
+                    return tran.dest;
+                }
+            }
+        }
+        return -1;
+    }
+    getNumStates() {
+        return this.nextState;
+    }
+    addTransition(source, dest, min, max) {
+        if (this.currState !== source) {
+            if (this.currState !== -1) {
+                this.finishCurrentState();
+            }
+            this.currState = source;
+        }
+        this.transitions.push(new Transition(dest, min, max));
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Automaton;
+
+
+
+/***/ }),
+/* 11 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Long__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ParametricDescription__ = __webpack_require__(12);
+
+
+// 1 vectors; 2 states per vector; array length = 2
+const toStates0 = [new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x2)];
+const offsetIncrs0 = [new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x0)];
+// 2 vectors; 3 states per vector; array length = 6
+const toStates1 = [new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xa43)];
+const offsetIncrs1 = [new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x38)];
+// 4 vectors; 6 states per vector; array length = 24
+const toStates2 = [new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x82140003, 0x34534914), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x6d)];
+const offsetIncrs2 = [new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x55a20000, 0x5555)];
+// 8 vectors; 6 states per vector; array length = 48
+const toStates3 = [new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x900C0003, 0x21520854), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x4534916d, 0x5b4d19a2), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xda34)];
+const offsetIncrs3 = [new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x20fc0000, 0x5555ae0a), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x55555555)];
+// state map
+//   0 -> [(0, 0)]
+//   1 -> [(0, 1)]
+//   2 -> [(0, 1), (1, 1)]
+//   3 -> [(0, 1), (2, 1)]
+//   4 -> [t(0, 1), (0, 1), (1, 1), (2, 1)]
+//   5 -> [(0, 1), (1, 1), (2, 1)]
+class Lev1TParametricDescription extends __WEBPACK_IMPORTED_MODULE_1__ParametricDescription__["a" /* ParametricDescription */] {
+    constructor(w) {
+        super(w, 1, [0, 1, 0, -1, -1, -1]);
+    }
+    transition(absState, position, vector) {
+        // null absState should never be passed in
+        //assert absState != -1;
+        // decode absState -> state, offset
+        let state = Math.floor(absState / (this.w + 1));
+        let offset = absState % (this.w + 1);
+        //assert offset >= 0;
+        if (position === this.w) {
+            if (state < 2) {
+                const loc = vector * 2 + state;
+                offset += this.unpack(offsetIncrs0, loc, 1);
+                state = this.unpack(toStates0, loc, 2) - 1;
+            }
+        }
+        else if (position === this.w - 1) {
+            if (state < 3) {
+                const loc = vector * 3 + state;
+                offset += this.unpack(offsetIncrs1, loc, 1);
+                state = this.unpack(toStates1, loc, 2) - 1;
+            }
+        }
+        else if (position === this.w - 2) {
+            if (state < 6) {
+                const loc = vector * 6 + state;
+                offset += this.unpack(offsetIncrs2, loc, 2);
+                state = this.unpack(toStates2, loc, 3) - 1;
+            }
+        }
+        else {
+            if (state < 6) {
+                const loc = vector * 6 + state;
+                offset += this.unpack(offsetIncrs3, loc, 2);
+                state = this.unpack(toStates3, loc, 3) - 1;
+            }
+        }
+        if (state === -1) {
+            // null state
+            return -1;
+        }
+        else {
+            // translate back to abs
+            return state * (this.w + 1) + offset;
+        }
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Lev1TParametricDescription;
+
+
+
+/***/ }),
+/* 12 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Long__ = __webpack_require__(3);
+
+const MASKS = [new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x3), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x7), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xf),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1f), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x3f), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x7f), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1ff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x3ff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x7ff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xf, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xf, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xf, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xf, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xff, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfff, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffff, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffff, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffff, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffff, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffff, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffff, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffff, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffffff, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffffff, 0x7fff)];
+class ParametricDescription {
+    constructor(w, n, minErrors) {
+        this.w = w;
+        this.n = n;
+        this.minErrors = minErrors;
+    }
+    /**
+     * Return the number of states needed to compute a Levenshtein DFA
+     */
+    size() {
+        return this.minErrors.length * (this.w + 1);
+    }
+    /**
+     * Returns true if the <code>state</code> in any Levenshtein DFA is an accept state (final state).
+     */
+    isAccept(absState) {
+        // decode absState -> state, offset
+        let state = Math.floor(absState / (this.w + 1));
+        let offset = absState % (this.w + 1);
+        //assert offset >= 0;
+        return this.w - offset + this.minErrors[state] <= this.n;
+    }
+    /**
+     * Returns the position in the input word for a given <code>state</code>.
+     * This is the minimal boundary for the state.
+     */
+    getPosition(absState) {
+        return absState % (this.w + 1);
+    }
+    unpack(data, index, bitsPerValue) {
+        const bitLoc = bitsPerValue * index;
+        const dataLoc = (bitLoc >> 6);
+        const bitStart = (bitLoc & 63);
+        if (bitStart + bitsPerValue <= 64) {
+            // not split
+            return data[dataLoc].shiftRight(bitStart).and(MASKS[bitsPerValue - 1]).toInt();
+        }
+        else {
+            // split
+            const part = 64 - bitStart;
+            return (data[dataLoc].shiftRight(bitStart).and(MASKS[part - 1])).toInt()
+                + (data[1 + dataLoc].and(MASKS[bitsPerValue - part - 1]).shiftLeft(part)).toInt();
+        }
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = ParametricDescription;
+
+
+
+/***/ }),
+/* 13 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2144,10 +2770,10 @@ const PLUGINS = create();
 /* harmony export (immutable) */ __webpack_exports__["a"] = PLUGINS;
 
 
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(8)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(14)))
 
 /***/ }),
-/* 8 */
+/* 14 */
 /***/ (function(module, exports) {
 
 var g;

@@ -3,7 +3,6 @@ import {FullTextSearch} from "../../../src/full_text_search";
 import {QueryBuilder as QB, FuzzyQuery} from "../../../src/query_builder";
 
 describe("fuzzy query", () => {
-  return;
   // from lucene 6.4.0 core: TestFuzzyQuery
   let assertMatches = (searcher: FullTextSearch, query: object, docIds: number[] = []) => {
     let res = searcher.search(query);
@@ -25,6 +24,39 @@ describe("fuzzy query", () => {
     expect(() => q.fuzziness("3")).not.toThrowErrorOfType("TypeError");
     expect(() => q.prefixLength(-1)).toThrowErrorOfType("TypeError");
     expect(() => q.prefixLength("1")).not.toThrowErrorOfType("TypeError");
+  });
+
+  fit("Fuzzy query (0).", () => {
+    let docs = ["aaaaa", "aaaab", "aaabb", "aabbb", "abbbb", "bbbbb", "ddddd"];
+    let fts = new FullTextSearch([{name: "body"}]);
+    for (let i = 0; i < docs.length; i++) {
+      fts.addDocument({
+        $loki: i,
+        body: docs[i]
+      });
+    }
+    let query;
+    // With prefix.
+    query = new QB().fuzzy("body", "aaaaa").prefixLength(0).fuzziness(1).build();
+    assertMatches(fts, query, [0, 1]);
+
+    query = new QB().fuzzy("body", "aaaab").prefixLength(0).fuzziness(1).build();
+    assertMatches(fts, query, [0, 1, 2]);
+
+    query = new QB().fuzzy("body", "ababb").prefixLength(2).fuzziness(1).build();
+    assertMatches(fts, query, [4]);
+
+    query = new QB().fuzzy("body", "aaaaa").prefixLength(5).fuzziness(1).build();
+    assertMatches(fts, query, [0]);
+
+    query = new QB().fuzzy("body", "aaaaa").prefixLength(6).fuzziness(1).build();
+    assertMatches(fts, query, [0]);
+
+    query = new QB().fuzzy("body", "aaaaa").prefixLength(6).fuzziness(1).build();
+    assertMatches(fts, query, [0]);
+
+    query = new QB().fuzzy("body", "aaaaaa").prefixLength(6).fuzziness(1).build();
+    assertMatches(fts, query, []);
   });
 
   it("Fuzzy query (1).", () => {
