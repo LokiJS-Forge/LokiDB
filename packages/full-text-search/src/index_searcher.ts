@@ -2,6 +2,9 @@ import {Scorer} from "./scorer";
 import {InvertedIndex, toCodePoints} from "./inverted_index";
 import {QueryBuilder} from "./query_builder";
 import {Dict} from "../../common/types";
+import {RunAutomaton} from "./fuzzy/RunAutomaton";
+import {LevenshteinAutomata} from "./fuzzy/LevenshteinAutomata";
+import {Automaton} from "./fuzzy/Automata";
 
 type Tree = any;
 export type ANY = any;
@@ -123,14 +126,14 @@ export class IndexSearcher {
       case "fuzzy": {
         let f = fuzzySearch(query, root);
         for (let i = 0; i < f.length; i++) {
-          this._scorer.prepare(fieldName, boost * f[i].boost, f[i].index, doScoring, docResults, f[i].term as any);
+          this._scorer.prepare(fieldName, boost * f[i].boost, f[i].index, doScoring, docResults, f[i].term);
         }
         break;
       }
       case "wildcard": {
         let w = wildcardSearch(query, root);
         for (let i = 0; i < w.length; i++) {
-          this._scorer.prepare(fieldName, boost, w[i].index, doScoring && enableScoring, docResults, w[i].term as any);
+          this._scorer.prepare(fieldName, boost, w[i].index, doScoring && enableScoring, docResults, w[i].term);
         }
         break;
       }
@@ -255,67 +258,8 @@ export class IndexSearcher {
   }
 }
 
-/**
- * Calculates the levenshtein distance.
- * Copyright Kigiri: https://github.com/kigiri
- *           Milot Mirdita: https://github.com/milot-mirdita
- *           Toni Neubert:  https://github.com/Viatorus/
- * @param {string} a - a string
- * @param {string} b - a string
- */
-function levenshteinDistance(a: string, b: string) {
-  if (a.length === 0) return b.length;
-  if (b.length === 0) return a.length;
-  let tmp;
-  let i;
-  let j;
-  let prev;
-  let val;
-  // swap to save some memory O(min(a,b)) instead of O(a)
-  if (a.length > b.length) {
-    tmp = a;
-    a = b;
-    b = tmp;
-  }
-
-  const row = Array(a.length + 1);
-  // init the row
-  for (i = 0; i <= a.length; i++) {
-    row[i] = i;
-  }
-
-  // fill in the rest
-  for (i = 1; i <= b.length; i++) {
-    prev = i;
-    for (j = 1; j <= a.length; j++) {
-      if (b[i - 1] === a[j - 1]) {	// match
-        val = row[j - 1];
-      } else {
-        val = Math.min(row[j - 1] + 1, // substitution
-          Math.min(prev + 1,         // insertion
-            row[j] + 1));          // deletion
-
-        // transposition.
-        if (i > 1 && j > 1 && b[i - 2] === a[j - 1] && a[j - 2] === b[i - 1]) {
-          val = Math.min(val, row[j - 1] - (a[j - 1] === b[i - 1] ? 1 : 0));
-        }
-      }
-      row[j - 1] = prev;
-      prev = val;
-    }
-    row[a.length] = prev;
-  }
-  return row[a.length];
-}
-
-/**
- * Performs a fuzzy search.
- * @param {ANY} query - the fuzzy query
- * @param {InvertedIndex.Index} root - the root index
- * @returns {Array}
- */
-function fuzzySearch(query: ANY, root: InvertedIndex.Index) {
-  let value = query.value;
+function fuzzySearch(query: any, root: InvertedIndex.Index) {
+  let value = toCodePoints(query.value);
   let fuzziness = query.fuzziness !== undefined ? query.fuzziness : "AUTO";
   if (fuzziness === "AUTO") {
     if (value.length <= 2) {
@@ -329,11 +273,6 @@ function fuzzySearch(query: ANY, root: InvertedIndex.Index) {
   let prefixLength = query.prefix_length !== undefined ? query.prefix_length : 2;
   let extended = query.extended !== undefined ? query.extended : false;
 
-  // Todo: Include levenshtein to reduce similar iterations.
-  // Tree tokens at same depth share same row until depth (should works if recursive).
-  // Pregenerate tree token ?
-  // var treeToken = Array(token.length + maxDistance);
-
   let start = root;
   let pre = value.slice(0, prefixLength);
   let fuzzy = value;
@@ -345,68 +284,55 @@ function fuzzySearch(query: ANY, root: InvertedIndex.Index) {
     return [];
   }
   if (fuzzy.length === 0) {
-    // Return if prefixLength == value length.
-    return [{term: "", index: start, boost: 1}];
+    // Return if prefixLength === value length.
+    return [{term: value, index: start, boost: 1}];
   }
 
-  /// Fuzziness of the fuzzy without extension.
-  let extend_fuzzy = 1e10;
+  let res: any = [];
 
-  let similarTokens = [];
-  let stack = [start];
-  let treeStack = [""];
-  do {
-    let index = stack.pop();
-    let treeTerms = treeStack.pop();
+  let term = [0];
+  let automaton = new RunAutomaton(new LevenshteinAutomata(fuzzy, fuzziness).toAutomaton());
 
-    // Check if fuzzy should be extended.
-    if (extended) {
-      if (treeTerms.length === fuzzy.length) {
-        extend_fuzzy = levenshteinDistance(fuzzy, treeTerms);
-      } else {
-        extend_fuzzy = extend_fuzzy <= fuzziness && treeTerms.length >= fuzzy.length
-          ? extend_fuzzy
-          : 1e10;
+  function determineEditDistance(state: number) {
+    let ed = 0;
+    state = automaton.step(state, 0);
+    if (state !== -1) {
+      ed++;
+      state = automaton.step(state, 0);
+      if (state !== -1) {
+        ed++;
       }
     }
+    return fuzziness - ed;
+  }
 
-    // Compare tokens if they are in near distance.
-    if (index.df !== undefined) {
-      let matched = false;
-      if (Math.abs(fuzzy.length - treeTerms.length) <= fuzziness) {
-        const distance = levenshteinDistance(fuzzy, treeTerms);
-        if (distance <= fuzziness) {
-          let term = pre + treeTerms;
-          // Calculate boost.
-          let boost = 1 - distance / Math.min(term.length, value.length);
-          similarTokens.push({term, index: index, boost});
-          matched = true;
-        }
-      }
-      // Only include extended terms that did not previously match.
-      if (extend_fuzzy <= fuzziness && !matched) {
-        let term = pre + treeTerms;
-        // Calculate boost.
-        let boost = 1 - (extend_fuzzy + treeTerms.length - fuzzy.length) / Math.min(term.length, value.length);
-        similarTokens.push({term: term, index: index, boost});
-      }
+  function recursive(state: number, key: number, idx: InvertedIndex.Index) {
+    term[term.length - 1] = key;
+
+    state = automaton.step(state, key);
+    if (state === -1) {
+      return;
     }
 
-    // Iterate over all subtrees.
-    // If token from tree is not longer than maximal distance.
-    if ((treeTerms.length - fuzzy.length <= fuzziness) || extend_fuzzy <= fuzziness) {
-      // Iterate over all subtrees.
-      let keys = Object.keys(index);
-      for (let i = 0; i < keys.length; i++) {
-        if (keys[i].length === 1) {
-          stack.push(index[keys[i]]);
-          treeStack.push(treeTerms + keys[i]);
-        }
-      }
+    if (automaton.isAccept(state) && idx.df !== undefined) {
+      // Calculate boost.
+      let distance = determineEditDistance(state);
+      let boost = 1 - distance / Math.min(term.length, query.value.length);
+      res.push({index: idx, term: term.slice(), boost});
     }
-  } while (stack.length !== 0);
 
-  return similarTokens;
+    term.push(0);
+    for (const child of idx) {
+      recursive(state, child[0], child[1]);
+    }
+    term.pop();
+  }
+
+  for (const child of start) {
+    recursive(0, child[0], child[1]);
+  }
+
+  return res;
 }
 
 /**
@@ -461,6 +387,7 @@ function wildcardSearch(query: ANY, root: InvertedIndex.Index) {
       recursive(InvertedIndex.getTermIndex([wildcard[idx]], index), idx + 1, [...term, wildcard[idx]]);
     }
   }
+
   recursive(root);
 
   return result;

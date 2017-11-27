@@ -3,6 +3,9 @@
  * A cut-down version of dcodeIO/long.js.
  */
 export class Long {
+  private low: number;
+  private high: number;
+
   constructor(low: number = 0, high: number = 0) {
     this.low = low;
     this.high = high;
