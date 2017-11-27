@@ -1,6 +1,7 @@
 {
   "name": "@lokijs/lokijs-src",
   "version": "2.0.0-beta.3",
+  "typings": "./types/loki/src/index.d.ts",
   "description": "Fast document oriented javascript in-memory database",
   "author": "Various authors",
   "license": "MIT",
