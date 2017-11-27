@@ -1,5 +1,5 @@
 import {Scorer} from "./scorer";
-import {InvertedIndex} from "./inverted_index";
+import {InvertedIndex, toCodePoints} from "./inverted_index";
 import {QueryBuilder} from "./query_builder";
 import {Dict} from "../../common/types";
 
@@ -107,28 +107,30 @@ export class IndexSearcher {
         break;
       }
       case "term": {
-        let termIdx = InvertedIndex.getTermIndex(query.value, root);
-        this._scorer.prepare(fieldName, boost, termIdx, doScoring, docResults, query.value);
+        const cps = toCodePoints(query.value);
+        let termIdx = InvertedIndex.getTermIndex(cps, root);
+        this._scorer.prepare(fieldName, boost, termIdx, doScoring, docResults, cps);
         break;
       }
       case "terms": {
         for (let i = 0; i < query.value.length; i++) {
-          let termIdx = InvertedIndex.getTermIndex(query.value[i], root);
-          this._scorer.prepare(fieldName, boost, termIdx, doScoring, docResults, query.value[i]);
+          const cps = toCodePoints(query.value[i]);
+          let termIdx = InvertedIndex.getTermIndex(cps, root);
+          this._scorer.prepare(fieldName, boost, termIdx, doScoring, docResults, cps);
         }
         break;
       }
       case "fuzzy": {
         let f = fuzzySearch(query, root);
         for (let i = 0; i < f.length; i++) {
-          this._scorer.prepare(fieldName, boost * f[i].boost, f[i].index, doScoring, docResults, f[i].term);
+          this._scorer.prepare(fieldName, boost * f[i].boost, f[i].index, doScoring, docResults, f[i].term as any);
         }
         break;
       }
       case "wildcard": {
         let w = wildcardSearch(query, root);
         for (let i = 0; i < w.length; i++) {
-          this._scorer.prepare(fieldName, boost, w[i].index, doScoring && enableScoring, docResults, w[i].term);
+          this._scorer.prepare(fieldName, boost, w[i].index, doScoring && enableScoring, docResults, w[i].term as any);
         }
         break;
       }
@@ -148,11 +150,12 @@ export class IndexSearcher {
         break;
       }
       case "prefix": {
-        let termIdx = InvertedIndex.getTermIndex(query.value, root);
+        const cps = toCodePoints(query.value);
+        let termIdx = InvertedIndex.getTermIndex(cps, root);
         if (termIdx !== null) {
           const termIdxs = InvertedIndex.extendTermIndex(termIdx);
           for (let i = 0; i < termIdxs.length; i++) {
-            this._scorer.prepare(fieldName, boost, termIdxs[i].index, doScoring && enableScoring, docResults, query.value + termIdxs[i].term);
+            this._scorer.prepare(fieldName, boost, termIdxs[i].index, doScoring && enableScoring, docResults, [...cps, ...termIdxs[i].term]);
           }
         }
         break;
@@ -413,50 +416,49 @@ function fuzzySearch(query: ANY, root: InvertedIndex.Index) {
  * @returns {Array}
  */
 function wildcardSearch(query: ANY, root: InvertedIndex.Index) {
-  let wildcard = query.value;
+  let wildcard = toCodePoints(query.value);
   let result: ANY[] = [];
 
-  function recursive(index: Tree, idx: number = 0, term: string = "", escaped: boolean = false) {
+  function recursive(index: Tree, idx: number = 0, term: number[] = [], escaped: boolean = false) {
     if (index === null) {
       return;
     }
 
     if (idx === wildcard.length) {
       if (index.df !== undefined) {
-        result.push({index: index, term});
+        result.push({index: index, term: term.slice()});
       }
       return;
     }
 
-    if (!escaped && wildcard[idx] === "\\") {
+    // Escaped character.
+    if (!escaped && wildcard[idx] === 92 /* \ */) {
       recursive(index, idx + 1, term, true);
-    } else if (!escaped && wildcard[idx] === "?") {
-      let others = InvertedIndex.getNextTermIndex(index);
-      for (let i = 0; i < others.length; i++) {
-        recursive(others[i].index, idx + 1, term + others[i].term);
+    } else if (!escaped && wildcard[idx] === 63 /* ? */) {
+      for (const child of index) {
+        recursive(child[1], idx + 1, term + child[0]);
       }
-    } else if (!escaped && wildcard[idx] === "*") {
+    } else if (!escaped && wildcard[idx] === 42 /* * */) {
       // Check if asterisk is last wildcard character
       if (idx + 1 === wildcard.length) {
         const all = InvertedIndex.extendTermIndex(index);
         for (let i = 0; i < all.length; i++) {
-          recursive(all[i].index, idx + 1, term + all[i].term);
+          recursive(all[i].index, idx + 1, [...term, ...all[i].term]);
         }
-        return;
+      } else {
+        // Iterate over the whole tree.
+        recursive(index, idx + 1, term, false);
+        const indices = [{index: index, term: [] as number[]}];
+        do {
+          const index = indices.pop();
+          for (const child of index.index) {
+            recursive(child[1], idx + 1, [...term, ...index.term, child[0]]);
+            indices.push({index: child[1], term: [...index.term, child[0]]});
+          }
+        } while (indices.length !== 0);
       }
-      // Iterate over the whole tree.
-      recursive(index, idx + 1, term);
-      const indices = [{index: index, term: ""}];
-      do {
-        const index = indices.pop();
-        let others = InvertedIndex.getNextTermIndex(index.index);
-        for (let i = 0; i < others.length; i++) {
-          recursive(others[i].index, idx + 1, term + index.term + others[i].term);
-          indices.push({index: others[i].index, term: index.term + others[i].term});
-        }
-      } while (indices.length !== 0);
     } else {
-      recursive(InvertedIndex.getTermIndex(wildcard[idx], index), idx + 1, term + wildcard[idx]);
+      recursive(InvertedIndex.getTermIndex([wildcard[idx]], index), idx + 1, [...term, wildcard[idx]]);
     }
   }
   recursive(root);

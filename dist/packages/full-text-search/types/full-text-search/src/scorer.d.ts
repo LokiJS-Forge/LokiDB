@@ -6,7 +6,7 @@ export declare class Scorer {
     private _cache;
     constructor(invIdxs: Dict<InvertedIndex>);
     setDirty(): void;
-    prepare(fieldName: string, boost: number, termIdx: ANY, doScoring: boolean, docResults?: object, term?: string): object;
+    prepare(fieldName: string, boost: number, termIdx: ANY, doScoring: boolean, docResults?: object, term?: number[]): object;
     scoreConstant(boost: number, docId: string, docResults?: object): object;
     finalScore(query: ANY, docResults?: object): {};
     private static _calculateFieldLength(fieldLength);

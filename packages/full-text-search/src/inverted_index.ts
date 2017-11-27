@@ -3,6 +3,27 @@ import {Tokenizer} from "./tokenizer";
 export type ANY = any;
 
 /**
+ * Converts a string into an array of code points.
+ * @param str - the string
+ * @returns {number[]} to code points
+ */
+export function toCodePoints(str: string): number[] {
+  const r = [];
+  for (let i = 0; i < str.length;) {
+    const chr = str.charCodeAt(i++);
+    if(chr >= 0xD800 && chr <= 0xDBFF) {
+      // surrogate pair
+      const low = str.charCodeAt(i++);
+      r.push(0x10000 + ((chr - 0xD800) << 10) | (low - 0xDC00));
+    } else {
+      // ordinary character
+      r.push(chr);
+    }
+  }
+  return r;
+}
+
+/**
  * Inverted index class handles featured text search for specific document fields.
  * @constructor InvertedIndex
  * @param {boolean} [options.store=true] - inverted index will be stored at serialization rather than rebuilt on load.
@@ -14,7 +35,7 @@ export class InvertedIndex {
   private _docCount: number = 0;
   private _docStore: object = {};
   private _totalFieldLength: number = 0;
-  private _root: InvertedIndex.Index = {};
+  private _root: InvertedIndex.Index = new Map();
 
   /**
    * @param {boolean} store
@@ -33,6 +54,10 @@ export class InvertedIndex {
 
   get store() {
     return this._store;
+  }
+
+  set store(val: boolean) {
+    this._store = val;
   }
 
   get tokenizer() {
@@ -81,32 +106,33 @@ export class InvertedIndex {
     }
 
     // Iterate over all unique field terms.
-    for (const term of new Set(fieldTokens)) {
-      if (term === "") {
+    for (const token of new Set(fieldTokens)) {
+      if (token === "") {
         continue;
       }
       // Calculate term frequency.
       let tf = 0;
       for (let j = 0; j < fieldTokens.length; j++) {
-        if (fieldTokens[j] === term) {
+        if (fieldTokens[j] === token) {
           ++tf;
         }
       }
 
       // Add term to index tree.
       let branch = this._root;
-      for (let i = 0; i < term.length; i++) {
-        const c = term.codePointAt(i);
-        if (branch[c] === undefined) {
-          const child = {};
+
+      for (const c of toCodePoints(token)) {
+        let child = branch.get(c);
+        if (child === undefined) {
+          child = new Map();
           if (this._optimizeChanges) {
             Object.defineProperties(child, {
               pa: {enumerable: false, configurable: true, writable: true, value: branch}
             });
           }
-          branch[c] = child;
+          branch.set(c, child);
         }
-        branch = branch[c];
+        branch = child;
       }
       // Add term info to index leaf.
       if (branch.dc === undefined) {
@@ -153,12 +179,11 @@ export class InvertedIndex {
           delete index.dc;
 
           // Check for sub branches.
-          if (Object.keys(index).length !== 0) {
+          if (index.size !== 0) {
             continue;
           }
 
           // Delete term branch if not used anymore.
-          let keys = [];
           do {
             // Go tree upwards.
             const parent = index.pa;
@@ -166,34 +191,25 @@ export class InvertedIndex {
             delete index.pa;
 
             // Iterate over all children.
-            keys = Object.keys(parent);
-            for (let k = 0; k < keys.length; k++) {
-              const key = keys[k];
-              if (key.length !== 1) {
-                continue;
-              }
+            for (const key of parent.keys()) {
               // Remove previous child form parent.
-              if (parent[key] === index) {
-                delete parent[key];
+              if (parent.get(key) === index) {
+                parent.delete(key);
                 break;
               }
             }
             index = parent;
-          } while (index.pa !== undefined && keys.length === 1);
+          } while (index.pa !== undefined && index.size === 0 && index.df === undefined);
         }
       }
     } else {
       // Iterate over the whole inverted index and remove the document.
       // Delete branch if not needed anymore.
       const recursive = (root: InvertedIndex.Index) => {
-        const keys = Object.keys(root);
-        for (let i = 0; i < keys.length; i++) {
-          const key = keys[i];
-          if (key.length === 1) {
-            // Checkout branch.
-            if (recursive(root[key])) {
-              delete root[key];
-            }
+        for (const child of root) {
+          // Checkout branch.
+          if (recursive(child[1])) {
+            root.delete(child[0]);
           }
         }
         // Remove docId from docs and decrement document frequency.
@@ -209,7 +225,7 @@ export class InvertedIndex {
             }
           }
         }
-        return Object.keys(root).length === 0;
+        return root.size === 0 && root.dc === undefined;
       };
       recursive(this._root);
     }
@@ -217,38 +233,23 @@ export class InvertedIndex {
 
   /**
    * Gets the term index of a term.
-   * @param {string} term - the term.
+   * @param {string} term - the term
    * @param {object} root - the term index to start from
    * @param {number} start - the position of the term string to start from
    * @return {object} - The term index or null if the term is not in the term tree.
    */
-  static getTermIndex(term: string, root: InvertedIndex.Index, start: number = 0) {
+  static getTermIndex(term: number[], root: InvertedIndex.Index, start: number = 0) {
     if (start >= term.length) {
       return null;
     }
     for (let i = start; i < term.length; i++) {
-      if (root[term[i]] === undefined) {
+      let child = root.get(term[i]);
+      if (child === undefined) {
         return null;
       }
-      root = root[term[i]];
+      root = child;
     }
     return root;
-  }
-
-  /**
-   * Extends a term index for the one branch.
-   * @param {object} root - the term index to start from
-   * @return {Array} - array with term indices and extension
-   */
-  static getNextTermIndex(root: InvertedIndex.Index) {
-    const termIndices: ANY[] = [];
-    const keys = Object.keys(root);
-    for (let i = 0; i < keys.length; i++) {
-      if (keys[i].length === 1) {
-        termIndices.push({index: root[keys[i]], term: keys[i]});
-      }
-    }
-    return termIndices;
   }
 
   /**
@@ -258,26 +259,60 @@ export class InvertedIndex {
    */
   static extendTermIndex(root: InvertedIndex.Index) {
     const termIndices: ANY[] = [];
-    const stack = [root];
-    const treeStack = [""];
-    do {
-      const root = stack.pop();
-      const treeTerm = treeStack.pop();
 
-      if (root.df !== undefined) {
-        termIndices.push({index: root, term: treeTerm});
+    const rec = (idx: InvertedIndex.Index, r: number[]) => {
+      if (idx.df !== undefined) {
+        termIndices.push({index: idx, term: r.slice()});
       }
 
-      const keys = Object.keys(root);
-      for (let i = 0; i < keys.length; i++) {
-        if (keys[i].length === 1) {
-          stack.push(root[keys[i]]);
-          treeStack.push(treeTerm + keys[i]);
-        }
+      r.push(0);
+      for (const child of idx) {
+        r[r.length - 1] = child[0];
+        rec(child[1], r);
       }
-    } while (stack.length !== 0);
-
+      r.pop();
+    };
+    rec(root, []);
     return termIndices;
+  }
+
+  private static serializeIndex(index: InvertedIndex.Index): any[] {
+    const rec = (idx: InvertedIndex.Index): any[] => {
+
+      let k: ANY[] = [];
+      let v: ANY[] = [];
+      let r = {df: idx.df, dc: idx.dc};
+
+      if (idx.size === 0) {
+        return [k, v, r];
+      }
+
+      for (const child of idx) {
+        k.push(child[0]);
+        v.push(rec(child[1]));
+      }
+      return [k, v, r];
+    };
+
+    return rec(index);
+  }
+
+  private static deserializeIndex(ar: any): InvertedIndex.Index {
+    const rec = (arr: any): any => {
+      let idx: InvertedIndex.Index = new Map();
+
+      for (let i = 0; i < arr[0].length; i++) {
+        idx.set(arr[0][i], rec(arr[1][i]));
+      }
+      if (arr[2].df !== undefined) {
+        idx.df = arr[2].df;
+        idx.dc = arr[2].dc;
+      }
+
+      return idx;
+    };
+
+    return rec(ar);
   }
 
   /**
@@ -286,7 +321,15 @@ export class InvertedIndex {
    */
   toJSON() {
     if (this._store) {
-      return this;
+      return {
+        _store: true,
+        _optimizeChanges: this._optimizeChanges,
+        _tokenizer: this._tokenizer,
+        _docCount: this._docCount,
+        _docStore: this._docStore,
+        _totalFieldLength: this._totalFieldLength,
+        _root: InvertedIndex.serializeIndex(this._root)
+      };
     }
     return {
       _store: false,
@@ -311,7 +354,7 @@ export class InvertedIndex {
       invIdx._docCount = serialized._docCount;
       invIdx._docStore = serialized._docStore;
       invIdx._totalFieldLength = serialized._totalFieldLength;
-      invIdx._root = serialized._root;
+      invIdx._root = InvertedIndex.deserializeIndex(serialized._root);
     }
 
     const regenerate = (index: InvertedIndex.Index, parent: InvertedIndex.Index) => {
@@ -322,27 +365,24 @@ export class InvertedIndex {
         });
       }
 
-      // Iterate over all keys.
-      const keys = Object.keys(index);
-      for (let i = 0; i < keys.length; i++) {
-        // Found term, save in document store.
-        if (keys[i] === "dc") {
-          // Get documents of term.
-          const docIds = Object.keys(index.dc);
-          for (let j = 0; j < docIds.length; j++) {
-            // Get document store at specific document/field.
-            const ref = invIdx._docStore[docIds[j]];
-            if (ref.termRefs === undefined) {
-              Object.defineProperties(ref, {
-                termRefs: {enumerable: false, configurable: true, writable: true, value: []}
-              });
-            }
-            // Set reference to term index.
-            ref.termRefs.push(index);
+      // Iterate over subtree.
+      for (const child of index.values()) {
+        regenerate(child, index);
+      }
+
+      if (index.dc !== undefined) {
+        // Get documents of term.
+        const docIds = Object.keys(index.dc);
+        for (let j = 0; j < docIds.length; j++) {
+          // Get document store at specific document/field.
+          const ref = invIdx._docStore[docIds[j]];
+          if (ref.termRefs === undefined) {
+            Object.defineProperties(ref, {
+              termRefs: {enumerable: false, configurable: true, writable: true, value: []}
+            });
           }
-        } else if (keys[i].length === 1) {
-          // Iterate over subtree.
-          regenerate(index[keys[i]], index);
+          // Set reference to term index.
+          ref.termRefs.push(index);
         }
       }
     };
@@ -362,10 +402,7 @@ export namespace InvertedIndex {
     tokenizer?: Tokenizer;
   }
 
-  export interface Index {
-    dc?: object;
-    df?: number;
-  }
+  export type Index = Map<number, any> & { dc?: object, df?: number };
 
   export interface Serialization {
     _store: boolean;

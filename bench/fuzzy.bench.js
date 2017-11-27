@@ -1,7 +1,8 @@
 /* global suite, benchmark */
 const FTS = require("./../dist/packages/full-text-search/lokijs.full-text-search.min");
 const Benchmark = require("benchmark");
-const Long = require("long");
+
+//const Long = require("long");
 
 function make_word() {
   let text = "";
@@ -32,6 +33,61 @@ const suite = new Benchmark.Suite();
  *
  */
 
+/**
+ * Class supports 64Bit integer operations.
+ * A cut-down version of dcodeIO/long.js.
+ */
+class Long {
+  constructor(low = 0, high = 0) {
+    this.low = low;
+    this.high = high;
+  }
+
+  /**
+   * Returns this long with bits arithmetically shifted to the right by the given amount.
+   * @param {number} numBits - number of bits
+   * @returns {Long} the long
+   */
+  shiftRight(numBits) {
+    if ((numBits &= 63) === 0)
+      return this;
+    else if (numBits < 32)
+      return new Long((this.low >>> numBits) | (this.high << (32 - numBits)), this.high >> numBits);
+    else
+      return new Long((this.high >> (numBits - 32)), this.high >= 0 ? 0 : -1);
+  }
+
+  /**
+   * Returns this long with bits arithmetically shifted to the left by the given amount.
+   * @param {number} numBits - number of bits
+   * @returns {Long} the long
+   */
+  shiftLeft(numBits) {
+    if ((numBits &= 63) === 0)
+      return this;
+    else if (numBits < 32)
+      return new Long(this.low << numBits, (this.high << numBits) | (this.low >>> (32 - numBits)));
+    else
+      return new Long(0, this.low << (numBits - 32));
+  }
+
+  /**
+   * Returns the bitwise AND of this Long and the specified.
+   * @param {Long} other - the other Long
+   * @returns {Long} the long
+   */
+  and(other) {
+    return new Long(this.low & other.low, this.high & other.high);
+  }
+
+  /**
+   * Converts the Long to a 32 bit integer, assuming it is a 32 bit integer.
+   * @returns {number}
+   */
+  toInt() {
+    return this.low;
+  }
+}
 
 // 1 vectors; 2 states per vector; array length = 2
 const toStates0 = [new Long(0x2)];
@@ -129,7 +185,7 @@ class ParametricDescription {
     } else {
       // split
       const part = 64 - bitStart;
-      return (data[dataLoc].shiftRight(bitStart) & MASKS[part - 1])
+      return (data[dataLoc].shiftRight(bitStart).and(MASKS[part - 1]))
         + (data[1 + dataLoc].and(MASKS[bitsPerValue - part - 1]).shiftLeft(part)).toInt();
     }
   }
@@ -142,7 +198,7 @@ class L1 extends ParametricDescription {
 
   transition(absState, position, vector) {
     // console.log(absState, position, vector);
-    // null absState should never be passed in
+    // null absState should never be passed inN
     //assert absState != -1;
 
     // decode absState -> state, offset
@@ -159,10 +215,8 @@ class L1 extends ParametricDescription {
     } else if (position === this.w - 1) {
       if (state < 3) {
         const loc = vector * 3 + state;
-        console.log("###", vector, state);
         offset += this.unpack(offsetIncrs1, loc, 1);
         state = this.unpack(toStates1, loc, 2) - 1;
-        console.log("--->", loc, offset, state);
       }
     } else if (position === this.w - 2) {
       if (state < 6) {
@@ -322,16 +376,12 @@ class Automaton {
       for (let i = 1; i < upto; i++) {
         let min = this.transitions[i].min;
         if (min <= lastMax) {
-          console.log(min, lastMax);
-          console.log("########### bad ############");
           this.deterministic = false;
           break;
         }
         lastMax = this.transitions[i].max;
       }
     }
-
-    console.log(this.transitions);
 
     this.trans[this.currState] = this.transitions.slice();
     this.transitions = [];
@@ -454,7 +504,7 @@ class LevenshteinAutomata {
       let state = automat.createState();
       automat.setAccept(state, this.description.isAccept(i));
     }
-    console.log(automat.isAccept);
+    // console.log(automat.isAccept);
 
     for (let k = 0; k < numStates; k++) {
       const xpos = this.description.getPosition(k);
@@ -465,27 +515,27 @@ class LevenshteinAutomata {
 
       const end = xpos + Math.min(this.word.length - xpos, range);
 
-      console.log("k:", k, "xpos:", xpos, "end:", end);
+      // console.log("k:", k, "xpos:", xpos, "end:", end);
 
       for (let x = 0; x < this.alphabet.length; x++) {
         const ch = this.alphabet[x];
         const cvec = this.getVector(ch, xpos, end);
         const dest = this.description.transition(k, xpos, cvec);
 
-        console.log("x:", x, "ch:", ch, "cvec:", cvec, "dest:", dest);
+        // console.log("x:", x, "ch:", ch, "cvec:", cvec, "dest:", dest);
 
         if (dest >= 0) {
-          console.log("transition");
+          // console.log("transition");
           automat.addTransition(stateOffset + k, stateOffset + dest, ch, ch);
         }
       }
 
-      console.log("last trans, k:", k, "xpos", xpos);
+      // console.log("last trans, k:", k, "xpos", xpos);
       const dest = this.description.transition(k, xpos, 0);
 
       if (dest >= 0) {
         for (let r = 0; r < this.numRanges; r++) {
-          console.log("transition", r);
+          // console.log("transition", r);
           automat.addTransition(stateOffset + k, stateOffset + dest, this.rangeLower[r], this.rangeUpper[r]);
         }
       }
@@ -570,33 +620,39 @@ function calculateDistance(state, a, n) {
   return n - ed;
 }
 
+
 function run(a, root) {
   let edit_distance = 1;
 
-  function rec() {
-    let state = 0;
-    let lastState = -1;
+  function rec(state, key, idx, r) {
+    r[r.length - 1] = key;
 
-    for (let i = 0; i < token.length; i++) {
-      lastState = state;
-      state = a.step(state, token[i]);
-      console.log(state);
-      if (state === -1) {
-        return false;
-      }
+    state = a.step(state, key);
+    if (state === -1) {
+      console.log("bad: ", String.fromCodePoint(...r));
+      return false;
     }
 
-    if (a.isAccept(state)) {
-      console.log("found:", word, ": ", calculateDistance(state, a, edit_distance));
-      return true;
+    if (a.isAccept(state) && idx.df !== undefined) {
+      console.log("found: ", String.fromCodePoint(...r));
     }
+
+    r.push(0);
+    for (const child of idx) {
+      rec(state, child[0], child[1], r)
+    }
+    r.pop();
   }
 
-  console.log(root)
+  let r = [0];
+  for (const child of root) {
+    rec(0, child[0], child[1], r)
+  }
+
   //rec(root)
 }
 
-let la = new LevenshteinAutomata("xb€d");
+let la = new LevenshteinAutomata("abcd");
 let tr = la.run();
 let ra = new RunAutomaton(tr);
 
@@ -605,8 +661,26 @@ ii.insert("abcd", 1);
 ii.insert("abdc", 2);
 ii.insert("abc", 3);
 ii.insert("abcde", 4);
+ii.insert("bcd", 5);
+ii.insert("bacd", 6);
+ii.insert("badc", 7);
 
 run(ra, ii.root);
+
+QueryBuilder = FTS.QueryBuilder;
+
+// let fts = new FTS.FullTextSearch([{name: "body"}], "id");
+// fts.addDocument({body: "abcd"}, 1);
+// fts.addDocument({body: "abdc"}, 2);
+// fts.addDocument({body: "abc"}, 3);
+// fts.addDocument({body: "abcde"}, 4);
+// fts.addDocument({body: "bcd"}, 5);
+// fts.addDocument({body: "bacd"}, 6);
+// fts.addDocument({body: "badc"}, 7);
+//
+// let r = fts.search(new QueryBuilder().wildcard("body", "a*c*?").build());
+//
+// console.log(r);
 
 
 //

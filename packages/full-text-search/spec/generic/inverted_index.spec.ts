@@ -1,9 +1,7 @@
 /* global describe, it, expect */
-import {InvertedIndex} from "../../src/inverted_index";
+import {InvertedIndex, toCodePoints} from "../../src/inverted_index";
 
 describe("inverted index", () => {
-
-  let ii = new InvertedIndex();
 
   let field1 = "Hello world, how are you today?!";
   let field2 = "Well done world...";
@@ -12,14 +10,16 @@ describe("inverted index", () => {
   let field5 = "Good bye NO! for all worlds...";
 
   it("get", () => {
+    let ii = new InvertedIndex();
     expect(ii.documentCount).toBeNumber();
     expect(ii.documentStore).toBeObject();
     expect(ii.totalFieldLength).toBeNumber();
     expect(ii.tokenizer).toBeObject();
-    expect(ii.root).toBeObject();
+    expect(ii.root instanceof Map).toBeTrue();
   });
 
   it("insert", () => {
+    let ii = new InvertedIndex();
     ii.insert(field1, 1);
     expect(() => ii.insert(field2, 1)).toThrowErrorOfType("Error");
     ii.insert(field3, 2);
@@ -32,26 +32,32 @@ describe("inverted index", () => {
   });
 
   it("remove", () => {
+    let ii = new InvertedIndex();
+    ii.insert(field1, 1);
+    ii.insert(field2, 2);
     ii.remove(1);
-    ii.remove(4);
+    ii.remove(2);
     ii.remove(15);
   });
 
   it("getTermIndex", () => {
-    expect(InvertedIndex.getTermIndex("you", ii.root)).not.toBe(null);
-    expect(InvertedIndex.getTermIndex("ayou", ii.root, 1)).not.toBe(null);
-    expect(InvertedIndex.getTermIndex("you", ii.root, 10)).toBe(null);
-    expect(InvertedIndex.getTermIndex("xyz1234", ii.root)).toBe(null);
+    let ii = new InvertedIndex();
+    ii.insert(field1, 1);
+    ii.insert(field2, 2);
+    ii.insert(field3, 3);
+    ii.insert(field4, 4);
+
+    expect(InvertedIndex.getTermIndex(toCodePoints("you"), ii.root)).not.toBe(null);
+    expect(InvertedIndex.getTermIndex(toCodePoints("ayou"), ii.root, 1)).not.toBe(null);
+    expect(InvertedIndex.getTermIndex(toCodePoints("you"), ii.root, 10)).toBe(null);
+    expect(InvertedIndex.getTermIndex(toCodePoints("xyz1234"), ii.root)).toBe(null);
   });
 
-  it("getNextTermIndex", () => {
-    InvertedIndex.getNextTermIndex(ii.root);
-    let idx = InvertedIndex.getTermIndex("you", ii.root);
-    expect(InvertedIndex.getNextTermIndex(idx)).not.toBe(null);
-  });
 
   it("extendTermIndex", () => {
-    expect(InvertedIndex.extendTermIndex(ii.root)).toBeArray();
+    let ii = new InvertedIndex();
+    ii.insert(field1, 1);
+    expect(InvertedIndex.extendTermIndex(ii.root).length).toEqual(6);
   });
 
   it("serialize", () => {
@@ -118,10 +124,12 @@ describe("inverted index", () => {
     ii2.insert(field3, 3);
 
     expect(JSON.stringify(ii1)).toEqual(JSON.stringify(ii2));
-    expect(JSON.stringify(ii1.root)).toEqual(JSON.stringify(ii2.root));
+    ii1.store = true;
+    ii2.store = true;
+    expect(JSON.stringify(ii1)).toEqual(JSON.stringify(ii2));
 
     ii2.insert(field4, 4);
-    expect(JSON.stringify(ii1.root)).not.toEqual(JSON.stringify(ii2.root));
+    expect(JSON.stringify(ii1)).not.toEqual(JSON.stringify(ii2));
   });
 
   it("serialize without optimization", () => {
@@ -137,7 +145,6 @@ describe("inverted index", () => {
     ii2.insert(field4, 4);
 
     let ii3 = InvertedIndex.fromJSONObject(JSON.parse(JSON.stringify(ii2)));
-
     expect(JSON.stringify(ii3)).toEqual(JSON.stringify(ii2));
     ii2.remove(4);
     ii3.remove(4);

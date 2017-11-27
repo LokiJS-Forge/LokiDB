@@ -78,8 +78,30 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (immutable) */ __webpack_exports__["b"] = toCodePoints;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__tokenizer__ = __webpack_require__(1);
 
+/**
+ * Converts a string into an array of code points.
+ * @param str - the string
+ * @returns {number[]} to code points
+ */
+function toCodePoints(str) {
+    const r = [];
+    for (let i = 0; i < str.length;) {
+        const chr = str.charCodeAt(i++);
+        if (chr >= 0xD800 && chr <= 0xDBFF) {
+            // surrogate pair
+            const low = str.charCodeAt(i++);
+            r.push(0x10000 + ((chr - 0xD800) << 10) | (low - 0xDC00));
+        }
+        else {
+            // ordinary character
+            r.push(chr);
+        }
+    }
+    return r;
+}
 /**
  * Inverted index class handles featured text search for specific document fields.
  * @constructor InvertedIndex
@@ -95,7 +117,7 @@ class InvertedIndex {
         this._docCount = 0;
         this._docStore = {};
         this._totalFieldLength = 0;
-        this._root = {};
+        this._root = new Map();
         ({
             store: this._store = true,
             optimizeChanges: this._optimizeChanges = true,
@@ -104,6 +126,9 @@ class InvertedIndex {
     }
     get store() {
         return this._store;
+    }
+    set store(val) {
+        this._store = val;
     }
     get tokenizer() {
         return this._tokenizer;
@@ -142,31 +167,31 @@ class InvertedIndex {
             });
         }
         // Iterate over all unique field terms.
-        for (const term of new Set(fieldTokens)) {
-            if (term === "") {
+        for (const token of new Set(fieldTokens)) {
+            if (token === "") {
                 continue;
             }
             // Calculate term frequency.
             let tf = 0;
             for (let j = 0; j < fieldTokens.length; j++) {
-                if (fieldTokens[j] === term) {
+                if (fieldTokens[j] === token) {
                     ++tf;
                 }
             }
             // Add term to index tree.
             let branch = this._root;
-            for (let i = 0; i < term.length; i++) {
-                const c = term.codePointAt(i);
-                if (branch[c] === undefined) {
-                    const child = {};
+            for (const c of toCodePoints(token)) {
+                let child = branch.get(c);
+                if (child === undefined) {
+                    child = new Map();
                     if (this._optimizeChanges) {
                         Object.defineProperties(child, {
                             pa: { enumerable: false, configurable: true, writable: true, value: branch }
                         });
                     }
-                    branch[c] = child;
+                    branch.set(c, child);
                 }
-                branch = branch[c];
+                branch = child;
             }
             // Add term info to index leaf.
             if (branch.dc === undefined) {
@@ -207,31 +232,25 @@ class InvertedIndex {
                     delete index.df;
                     delete index.dc;
                     // Check for sub branches.
-                    if (Object.keys(index).length !== 0) {
+                    if (index.size !== 0) {
                         continue;
                     }
                     // Delete term branch if not used anymore.
-                    let keys = [];
                     do {
                         // Go tree upwards.
                         const parent = index.pa;
                         // Delete parent reference for preventing memory leak (cycle reference).
                         delete index.pa;
                         // Iterate over all children.
-                        keys = Object.keys(parent);
-                        for (let k = 0; k < keys.length; k++) {
-                            const key = keys[k];
-                            if (key.length !== 1) {
-                                continue;
-                            }
+                        for (const key of parent.keys()) {
                             // Remove previous child form parent.
-                            if (parent[key] === index) {
-                                delete parent[key];
+                            if (parent.get(key) === index) {
+                                parent.delete(key);
                                 break;
                             }
                         }
                         index = parent;
-                    } while (index.pa !== undefined && keys.length === 1);
+                    } while (index.pa !== undefined && index.size === 0 && index.df === undefined);
                 }
             }
         }
@@ -239,14 +258,10 @@ class InvertedIndex {
             // Iterate over the whole inverted index and remove the document.
             // Delete branch if not needed anymore.
             const recursive = (root) => {
-                const keys = Object.keys(root);
-                for (let i = 0; i < keys.length; i++) {
-                    const key = keys[i];
-                    if (key.length === 1) {
-                        // Checkout branch.
-                        if (recursive(root[key])) {
-                            delete root[key];
-                        }
+                for (const child of root) {
+                    // Checkout branch.
+                    if (recursive(child[1])) {
+                        root.delete(child[0]);
                     }
                 }
                 // Remove docId from docs and decrement document frequency.
@@ -261,14 +276,14 @@ class InvertedIndex {
                         }
                     }
                 }
-                return Object.keys(root).length === 0;
+                return root.size === 0 && root.dc === undefined;
             };
             recursive(this._root);
         }
     }
     /**
      * Gets the term index of a term.
-     * @param {string} term - the term.
+     * @param {string} term - the term
      * @param {object} root - the term index to start from
      * @param {number} start - the position of the term string to start from
      * @return {object} - The term index or null if the term is not in the term tree.
@@ -278,27 +293,13 @@ class InvertedIndex {
             return null;
         }
         for (let i = start; i < term.length; i++) {
-            if (root[term[i]] === undefined) {
+            let child = root.get(term[i]);
+            if (child === undefined) {
                 return null;
             }
-            root = root[term[i]];
+            root = child;
         }
         return root;
-    }
-    /**
-     * Extends a term index for the one branch.
-     * @param {object} root - the term index to start from
-     * @return {Array} - array with term indices and extension
-     */
-    static getNextTermIndex(root) {
-        const termIndices = [];
-        const keys = Object.keys(root);
-        for (let i = 0; i < keys.length; i++) {
-            if (keys[i].length === 1) {
-                termIndices.push({ index: root[keys[i]], term: keys[i] });
-            }
-        }
-        return termIndices;
     }
     /**
      * Extends a term index to all available term leafs.
@@ -307,23 +308,49 @@ class InvertedIndex {
      */
     static extendTermIndex(root) {
         const termIndices = [];
-        const stack = [root];
-        const treeStack = [""];
-        do {
-            const root = stack.pop();
-            const treeTerm = treeStack.pop();
-            if (root.df !== undefined) {
-                termIndices.push({ index: root, term: treeTerm });
+        const rec = (idx, r) => {
+            if (idx.df !== undefined) {
+                termIndices.push({ index: idx, term: r.slice() });
             }
-            const keys = Object.keys(root);
-            for (let i = 0; i < keys.length; i++) {
-                if (keys[i].length === 1) {
-                    stack.push(root[keys[i]]);
-                    treeStack.push(treeTerm + keys[i]);
-                }
+            r.push(0);
+            for (const child of idx) {
+                r[r.length - 1] = child[0];
+                rec(child[1], r);
             }
-        } while (stack.length !== 0);
+            r.pop();
+        };
+        rec(root, []);
         return termIndices;
+    }
+    static serializeIndex(index) {
+        const rec = (idx) => {
+            let k = [];
+            let v = [];
+            let r = { df: idx.df, dc: idx.dc };
+            if (idx.size === 0) {
+                return [k, v, r];
+            }
+            for (const child of idx) {
+                k.push(child[0]);
+                v.push(rec(child[1]));
+            }
+            return [k, v, r];
+        };
+        return rec(index);
+    }
+    static deserializeIndex(ar) {
+        const rec = (arr) => {
+            let idx = new Map();
+            for (let i = 0; i < arr[0].length; i++) {
+                idx.set(arr[0][i], rec(arr[1][i]));
+            }
+            if (arr[2].df !== undefined) {
+                idx.df = arr[2].df;
+                idx.dc = arr[2].dc;
+            }
+            return idx;
+        };
+        return rec(ar);
     }
     /**
      * Serialize the inverted index.
@@ -331,7 +358,15 @@ class InvertedIndex {
      */
     toJSON() {
         if (this._store) {
-            return this;
+            return {
+                _store: true,
+                _optimizeChanges: this._optimizeChanges,
+                _tokenizer: this._tokenizer,
+                _docCount: this._docCount,
+                _docStore: this._docStore,
+                _totalFieldLength: this._totalFieldLength,
+                _root: InvertedIndex.serializeIndex(this._root)
+            };
         }
         return {
             _store: false,
@@ -355,7 +390,7 @@ class InvertedIndex {
             invIdx._docCount = serialized._docCount;
             invIdx._docStore = serialized._docStore;
             invIdx._totalFieldLength = serialized._totalFieldLength;
-            invIdx._root = serialized._root;
+            invIdx._root = InvertedIndex.deserializeIndex(serialized._root);
         }
         const regenerate = (index, parent) => {
             // Set parent.
@@ -364,28 +399,23 @@ class InvertedIndex {
                     pa: { enumerable: false, configurable: true, writable: false, value: parent }
                 });
             }
-            // Iterate over all keys.
-            const keys = Object.keys(index);
-            for (let i = 0; i < keys.length; i++) {
-                // Found term, save in document store.
-                if (keys[i] === "dc") {
-                    // Get documents of term.
-                    const docIds = Object.keys(index.dc);
-                    for (let j = 0; j < docIds.length; j++) {
-                        // Get document store at specific document/field.
-                        const ref = invIdx._docStore[docIds[j]];
-                        if (ref.termRefs === undefined) {
-                            Object.defineProperties(ref, {
-                                termRefs: { enumerable: false, configurable: true, writable: true, value: [] }
-                            });
-                        }
-                        // Set reference to term index.
-                        ref.termRefs.push(index);
+            // Iterate over subtree.
+            for (const child of index.values()) {
+                regenerate(child, index);
+            }
+            if (index.dc !== undefined) {
+                // Get documents of term.
+                const docIds = Object.keys(index.dc);
+                for (let j = 0; j < docIds.length; j++) {
+                    // Get document store at specific document/field.
+                    const ref = invIdx._docStore[docIds[j]];
+                    if (ref.termRefs === undefined) {
+                        Object.defineProperties(ref, {
+                            termRefs: { enumerable: false, configurable: true, writable: true, value: [] }
+                        });
                     }
-                }
-                else if (keys[i].length === 1) {
-                    // Iterate over subtree.
-                    regenerate(index[keys[i]], index);
+                    // Set reference to term index.
+                    ref.termRefs.push(index);
                 }
             }
         };
@@ -1618,14 +1648,16 @@ class IndexSearcher {
                 break;
             }
             case "term": {
-                let termIdx = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].getTermIndex(query.value, root);
-                this._scorer.prepare(fieldName, boost, termIdx, doScoring, docResults, query.value);
+                const cps = Object(__WEBPACK_IMPORTED_MODULE_1__inverted_index__["b" /* toCodePoints */])(query.value);
+                let termIdx = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].getTermIndex(cps, root);
+                this._scorer.prepare(fieldName, boost, termIdx, doScoring, docResults, cps);
                 break;
             }
             case "terms": {
                 for (let i = 0; i < query.value.length; i++) {
-                    let termIdx = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].getTermIndex(query.value[i], root);
-                    this._scorer.prepare(fieldName, boost, termIdx, doScoring, docResults, query.value[i]);
+                    const cps = Object(__WEBPACK_IMPORTED_MODULE_1__inverted_index__["b" /* toCodePoints */])(query.value[i]);
+                    let termIdx = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].getTermIndex(cps, root);
+                    this._scorer.prepare(fieldName, boost, termIdx, doScoring, docResults, cps);
                 }
                 break;
             }
@@ -1659,11 +1691,12 @@ class IndexSearcher {
                 break;
             }
             case "prefix": {
-                let termIdx = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].getTermIndex(query.value, root);
+                const cps = Object(__WEBPACK_IMPORTED_MODULE_1__inverted_index__["b" /* toCodePoints */])(query.value);
+                let termIdx = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].getTermIndex(cps, root);
                 if (termIdx !== null) {
                     const termIdxs = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].extendTermIndex(termIdx);
                     for (let i = 0; i < termIdxs.length; i++) {
-                        this._scorer.prepare(fieldName, boost, termIdxs[i].index, doScoring && enableScoring, docResults, query.value + termIdxs[i].term);
+                        this._scorer.prepare(fieldName, boost, termIdxs[i].index, doScoring && enableScoring, docResults, [...cps, ...termIdxs[i].term]);
                     }
                 }
                 break;
@@ -1916,50 +1949,50 @@ function fuzzySearch(query, root) {
  * @returns {Array}
  */
 function wildcardSearch(query, root) {
-    let wildcard = query.value;
+    let wildcard = Object(__WEBPACK_IMPORTED_MODULE_1__inverted_index__["b" /* toCodePoints */])(query.value);
     let result = [];
-    function recursive(index, idx = 0, term = "", escaped = false) {
+    function recursive(index, idx = 0, term = [], escaped = false) {
         if (index === null) {
             return;
         }
         if (idx === wildcard.length) {
             if (index.df !== undefined) {
-                result.push({ index: index, term });
+                result.push({ index: index, term: term.slice() });
             }
             return;
         }
-        if (!escaped && wildcard[idx] === "\\") {
+        // Escaped character.
+        if (!escaped && wildcard[idx] === 92 /* \ */) {
             recursive(index, idx + 1, term, true);
         }
-        else if (!escaped && wildcard[idx] === "?") {
-            let others = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].getNextTermIndex(index);
-            for (let i = 0; i < others.length; i++) {
-                recursive(others[i].index, idx + 1, term + others[i].term);
+        else if (!escaped && wildcard[idx] === 63 /* ? */) {
+            for (const child of index) {
+                recursive(child[1], idx + 1, term + child[0]);
             }
         }
-        else if (!escaped && wildcard[idx] === "*") {
+        else if (!escaped && wildcard[idx] === 42 /* * */) {
             // Check if asterisk is last wildcard character
             if (idx + 1 === wildcard.length) {
                 const all = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].extendTermIndex(index);
                 for (let i = 0; i < all.length; i++) {
-                    recursive(all[i].index, idx + 1, term + all[i].term);
+                    recursive(all[i].index, idx + 1, [...term, ...all[i].term]);
                 }
-                return;
             }
-            // Iterate over the whole tree.
-            recursive(index, idx + 1, term);
-            const indices = [{ index: index, term: "" }];
-            do {
-                const index = indices.pop();
-                let others = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].getNextTermIndex(index.index);
-                for (let i = 0; i < others.length; i++) {
-                    recursive(others[i].index, idx + 1, term + index.term + others[i].term);
-                    indices.push({ index: others[i].index, term: index.term + others[i].term });
-                }
-            } while (indices.length !== 0);
+            else {
+                // Iterate over the whole tree.
+                recursive(index, idx + 1, term, false);
+                const indices = [{ index: index, term: [] }];
+                do {
+                    const index = indices.pop();
+                    for (const child of index.index) {
+                        recursive(child[1], idx + 1, [...term, ...index.term, child[0]]);
+                        indices.push({ index: child[1], term: [...index.term, child[0]] });
+                    }
+                } while (indices.length !== 0);
+            }
         }
         else {
-            recursive(__WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].getTermIndex(wildcard[idx], index), idx + 1, term + wildcard[idx]);
+            recursive(__WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].getTermIndex([wildcard[idx]], index), idx + 1, [...term, wildcard[idx]]);
         }
     }
     recursive(root);
