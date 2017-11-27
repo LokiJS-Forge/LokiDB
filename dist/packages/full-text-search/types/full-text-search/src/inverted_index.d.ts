@@ -1,6 +1,12 @@
 import { Tokenizer } from "./tokenizer";
 export declare type ANY = any;
 /**
+ * Converts a string into an array of code points.
+ * @param str - the string
+ * @returns {number[]} to code points
+ */
+export declare function toCodePoints(str: string): number[];
+/**
  * Inverted index class handles featured text search for specific document fields.
  * @constructor InvertedIndex
  * @param {boolean} [options.store=true] - inverted index will be stored at serialization rather than rebuilt on load.
@@ -19,7 +25,7 @@ export declare class InvertedIndex {
      * @param {Tokenizer} tokenizer
      */
     constructor(options?: InvertedIndex.FieldOptions);
-    readonly store: boolean;
+    store: boolean;
     readonly tokenizer: Tokenizer;
     readonly documentCount: number;
     readonly documentStore: object;
@@ -38,29 +44,33 @@ export declare class InvertedIndex {
     remove(docId: number): void;
     /**
      * Gets the term index of a term.
-     * @param {string} term - the term.
+     * @param {string} term - the term
      * @param {object} root - the term index to start from
      * @param {number} start - the position of the term string to start from
      * @return {object} - The term index or null if the term is not in the term tree.
      */
-    static getTermIndex(term: string, root: InvertedIndex.Index, start?: number): InvertedIndex.Index;
-    /**
-     * Extends a term index for the one branch.
-     * @param {object} root - the term index to start from
-     * @return {Array} - array with term indices and extension
-     */
-    static getNextTermIndex(root: InvertedIndex.Index): any[];
+    static getTermIndex(term: number[], root: InvertedIndex.Index, start?: number): InvertedIndex.Index;
     /**
      * Extends a term index to all available term leafs.
      * @param {object} root - the term index to start from
      * @returns {Array} - Array with term indices and extension
      */
     static extendTermIndex(root: InvertedIndex.Index): any[];
+    private static serializeIndex(index);
+    private static deserializeIndex(ar);
     /**
      * Serialize the inverted index.
      * @returns {{docStore: *, _fields: *, index: *}}
      */
-    toJSON(): this | {
+    toJSON(): {
+        _store: boolean;
+        _optimizeChanges: boolean;
+        _tokenizer: Tokenizer;
+        _docCount: number;
+        _docStore: object;
+        _totalFieldLength: number;
+        _root: any[];
+    } | {
         _store: boolean;
         _optimizeChanges: boolean;
         _tokenizer: Tokenizer;
@@ -79,10 +89,10 @@ export declare namespace InvertedIndex {
         optimizeChanges?: boolean;
         tokenizer?: Tokenizer;
     }
-    interface Index {
+    type Index = Map<number, any> & {
         dc?: object;
         df?: number;
-    }
+    };
     interface Serialization {
         _store: boolean;
         _optimizeChanges: boolean;

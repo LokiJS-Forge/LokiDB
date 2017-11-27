@@ -15,7 +15,7 @@ export class Scorer {
     this._cache = {};
   }
 
-  prepare(fieldName: string, boost: number, termIdx: ANY, doScoring: boolean, docResults: object = {}, term: string = null) {
+  prepare(fieldName: string, boost: number, termIdx: ANY, doScoring: boolean, docResults: object = {}, term: number[] = null) {
     if (termIdx === null || termIdx.dc === undefined) {
       return null;
     }
