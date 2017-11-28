@@ -16,13 +16,13 @@ describe("fuzzy query", () => {
   };
 
   it("Fuzzy query: QB", () => {
-    let q = new FuzzyQuery("user", "albrt").boost(5.5).fuzziness(3).prefixLength(3).build();
-    expect(q).toEqual({type: "fuzzy", field: "user", value: "albrt", boost: 5.5, fuzziness: 3, prefix_length: 3});
+    let q = new FuzzyQuery("user", "albrt").boost(5.5).fuzziness(2).prefixLength(3).extended(true).build();
+    expect(q).toEqual({type: "fuzzy", field: "user", value: "albrt", boost: 5.5, fuzziness: 2, prefix_length: 3, extended: true});
 
     q = new QB().fuzzy("a", "abc");
     expect(() => q.fuzziness("AUTO")).not.toThrowErrorOfType("TypeError");
     expect(() => q.fuzziness(-3)).toThrowErrorOfType("TypeError");
-    expect(() => q.fuzziness("3")).not.toThrowErrorOfType("TypeError");
+    expect(() => q.fuzziness("3")).toThrowErrorOfType("TypeError");
     expect(() => q.prefixLength(-1)).toThrowErrorOfType("TypeError");
     expect(() => q.prefixLength("1")).not.toThrowErrorOfType("TypeError");
   });

@@ -34,8 +34,8 @@ describe("query builder", () => {
     let q = new Query.MatchQuery("user", "albert einstein").boost(7.5).build();
     expect(q).toEqual({type: "match", field: "user", value: "albert einstein", boost: 7.5});
 
-    q = new Query.MatchQuery("1", "1").operator("and").fuzziness(3).prefixLength(3).build();
-    expect(q).toEqual({type: "match", field: "1", value: "1", operator: "and", fuzziness: 3, prefix_length: 3});
+    q = new Query.MatchQuery("1", "1").operator("and").fuzziness(2).prefixLength(3).build();
+    expect(q).toEqual({type: "match", field: "1", value: "1", operator: "and", fuzziness: 2, prefix_length: 3});
     q = new Query.MatchQuery("2", "2").operator("or").minimumShouldMatch(3).build();
     expect(q).toEqual({type: "match", field: "2", value: "2", operator: "or", minimum_should_match: 3});
     q = new Query.MatchQuery("1", "1");
@@ -46,6 +46,7 @@ describe("query builder", () => {
     q = new Query.MatchQuery("1", "1").operator("and");
     expect(() => q.minimumShouldMatch(3)).toThrowErrorOfType("SyntaxError");
     q = new Query.MatchQuery("1", "1");
+    expect(() => q.fuzziness(3)).toThrowErrorOfType("TypeError");
     expect(() => q.fuzziness(-3)).toThrowErrorOfType("TypeError");
     expect(() => q.prefixLength(-1)).toThrowErrorOfType("TypeError");
   });

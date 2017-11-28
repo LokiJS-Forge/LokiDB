@@ -96,7 +96,7 @@ describe("full text search", () => {
   });
 
   it("sort", () => {
-    let query = new QueryBuilder().fuzzy("name", "quak").fuzziness(3).build();
+    let query = new QueryBuilder().fuzzy("name", "quak").fuzziness(2).build();
 
     expect(coll.chain().sortByScoring).toThrowAnyError();
 

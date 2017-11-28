@@ -65,6 +65,21 @@ export const QUERIES = [
   },
   {
     fts: new QB()
+      .fuzzy(FIELD_NAME_1, "ege").prefixLength(3).fuzziness(2)
+      .build(),
+    es: {
+      fuzzy: {
+        [FIELD_NAME_1]: {
+          value: "ege",
+          prefix_length: 3,
+          fuzziness: 2
+        }
+      }
+    },
+    empty: true
+  },
+  {
+    fts: new QB()
       .fuzzy(FIELD_NAME_1, "est").fuzziness(0)
       .build(),
     es: {

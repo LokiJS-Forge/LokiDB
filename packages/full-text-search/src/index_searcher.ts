@@ -159,7 +159,7 @@ export class IndexSearcher {
         if (termIdx !== null) {
           const termIdxs = InvertedIndex.extendTermIndex(termIdx);
           for (let i = 0; i < termIdxs.length; i++) {
-            this._scorer.prepare(fieldName, boost, termIdxs[i].index, doScoring && enableScoring, docResults, [...cps, ...termIdxs[i].term]);
+            this._scorer.prepare(fieldName, boost, termIdxs[i][0], doScoring && enableScoring, docResults, [...cps, ...termIdxs[i][1]]);
           }
         }
         break;
@@ -301,7 +301,7 @@ function fuzzySearch(query: any, root: InvertedIndex.Index) {
     if (extended) {
       // Add all terms down the index.
       for (const child of InvertedIndex.extendTermIndex(startIdx)) {
-        result.push({term: child.term, index: child.index, boost: 1});
+        result.push({term: child[1], index: child[0], boost: 1});
       }
     } else if (startIdx.dc !== undefined) {
       // Add prefix search result.
@@ -349,7 +349,7 @@ function fuzzySearch(query: any, root: InvertedIndex.Index) {
       if (extended) {
         // Add all terms down the index.
         for (const child of InvertedIndex.extendTermIndex(idx)) {
-          result.push({term: child.term, index: child.index, boost: 1});
+          result.push({term: child[1], index: child[0], boost: 1});
         }
         return;
       } else if (idx.df !== undefined) {
@@ -408,7 +408,7 @@ function wildcardSearch(query: ANY, root: InvertedIndex.Index) {
       if (idx + 1 === wildcard.length) {
         const all = InvertedIndex.extendTermIndex(index);
         for (let i = 0; i < all.length; i++) {
-          recursive(all[i].index, idx + 1, [...term, ...all[i].term]);
+          recursive(all[i][0], idx + 1, [...term, ...all[i][1]]);
         }
       } else {
         // Iterate over the whole tree.
