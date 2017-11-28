@@ -6,6 +6,7 @@ export type ANY = any;
  * Converts a string into an array of code points.
  * @param str - the string
  * @returns {number[]} to code points
+ * @hidden
  */
 export function toCodePoints(str: string): number[] {
   const r = [];
@@ -25,8 +26,7 @@ export function toCodePoints(str: string): number[] {
 
 /**
  * Inverted index class handles featured text search for specific document fields.
- * @constructor InvertedIndex
- * @param {boolean} [options.store=true] - inverted index will be stored at serialization rather than rebuilt on load.
+ * @hidden
  */
 export class InvertedIndex {
   private _store: boolean;
@@ -38,7 +38,7 @@ export class InvertedIndex {
   private _root: InvertedIndex.Index = new Map();
 
   /**
-   * @param {boolean} store
+   * @param {boolean} [options.store=true] - inverted index will be stored at serialization rather than rebuilt on load.
    * @param {boolean} optimizeChanges
    * @param {Tokenizer} tokenizer
    */

@@ -8,6 +8,9 @@ import {LevenshteinAutomata} from "./fuzzy/LevenshteinAutomata";
 type Tree = any;
 export type ANY = any;
 
+/**
+ * @hidden
+ */
 export class IndexSearcher {
   private _invIdxs: Dict<InvertedIndex>;
   private _docs: ANY;

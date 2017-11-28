@@ -2,6 +2,10 @@ import {Automaton, MAX_CODE_POINT} from "./Automata";
 import {Lev1TParametricDescription} from "./Lev1TParametricDescription";
 import {Lev2TParametricDescription} from "./Lev2TParametricDescription";
 
+/**
+ * From org/apache/lucene/util/automaton/LevenshteinAutomata.java
+ * @hidden
+ */
 export class LevenshteinAutomata {
   private word: number[];
   private numRanges: number;

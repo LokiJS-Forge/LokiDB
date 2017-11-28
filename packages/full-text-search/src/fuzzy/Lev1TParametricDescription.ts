@@ -1,7 +1,6 @@
 import {Long} from "./Long";
 import {ParametricDescription} from "./ParametricDescription";
 
-
 // 1 vectors; 2 states per vector; array length = 2
 const toStates0 = [new Long(0x2)];
 const offsetIncrs0 = [new Long(0x0)];
@@ -27,6 +26,10 @@ const offsetIncrs3 = [new Long(0x20fc0000, 0x5555ae0a), new Long(0x55555555)];
 //   4 -> [t(0, 1), (0, 1), (1, 1), (2, 1)]
 //   5 -> [(0, 1), (1, 1), (2, 1)]
 
+/**
+ * From org/apache/lucene/util/automaton/Lev1TParametricDescription.java
+ * @hidden
+ */
 export class Lev1TParametricDescription extends ParametricDescription {
   constructor(w: number) {
     super(w, 1, [0, 1, 0, -1, -1, -1]);

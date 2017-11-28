@@ -1,7 +1,10 @@
 import {Automaton} from "./Automata";
 
+/**
+ * From org/apache/lucene/util/automaton/RunAutomaton.java
+ * @hidden
+ */
 export class RunAutomaton {
-
   private automaton: Automaton;
   private points: number[];
   private size: number;

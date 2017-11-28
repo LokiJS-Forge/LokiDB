@@ -3,6 +3,9 @@ import {Dict} from "../../common/types";
 
 export type ANY = any;
 
+/**
+ * @hidden
+ */
 export class Scorer {
   private _invIdxs: Dict<InvertedIndex>;
   private _cache: object = {};
