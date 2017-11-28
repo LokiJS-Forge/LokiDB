@@ -174,6 +174,10 @@ const offsetIncrs5 = /*3 bits per value */ [
 //   43 -> [(0, 2), (2, 2), (4, 2)]
 //   44 -> [(0, 2), (1, 2), t(1, 2), (2, 2), (3, 2), (4, 2)]
 
+/**
+ * From org/apache/lucene/util/automaton/Lev2TParametricDescription.java
+ * @hidden
+ */
 export class Lev2TParametricDescription extends ParametricDescription {
   constructor(w: number) {
     super(w, 2, [0, 2, 1, 0, 1, 0, -1, 0, 0, -1, 0, -1, -1, -1, -1, -1, -2, -1, -1, -1, -2, -1, -1, -2, -1, -1, -2, -1, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2]);

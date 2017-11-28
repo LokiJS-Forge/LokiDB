@@ -30,12 +30,7 @@ var doc = docs.sort(function (a, b) { return b.length - a.length; })[0];
 
 let query = new FTS.QueryBuilder().fuzzy("body", doc).prefixLength(1).fuzziness(1).extended(true).build();
 
-/**
- * Idea from:
- * * http://blog.mikemccandless.com/2011/03/lucenes-fuzzyquery-is-100-times-faster.html
- * * http://julesjacobs.github.io/2015/06/17/disqus-levenshtein-simple-and-fast.html
- *
- */
+
 
 
 

@@ -17,6 +17,10 @@ const MASKS = [new Long(0x1), new Long(0x3), new Long(0x7), new Long(0xf),
   new Long(0xfffffffffff, 0x1fff), new Long(0xfffffffffff, 0x3fff), new Long(0xfffffffffff, 0x7fff), new Long(0xfffffffffff, 0xffff),
   new Long(0xffffffffffff, 0x1fff), new Long(0xffffffffffff, 0x3fff), new Long(0xffffffffffff, 0x7fff)];
 
+/**
+ * From org/apache/lucene/util/automaton/LevenshteinAutomata.java#ParametricDescription
+ * @hidden
+ */
 export class ParametricDescription {
   protected w: number;
   private n: number;
