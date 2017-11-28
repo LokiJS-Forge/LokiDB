@@ -7,7 +7,6 @@ export class RunAutomaton {
   private size: number;
   private accept: boolean[];
   private transitions: number[];
-  private alphabetSize: number;
   private classmap: number[];
 
   constructor(a: Automaton) {
@@ -20,20 +19,13 @@ export class RunAutomaton {
     for (let n = 0; n < this.size; n++) {
       this.accept[n] = a.isAccept(n);
       for (let c = 0; c < this.points.length; c++) {
-        let dest = a.step(n, this.points[c]);
-        if (dest !== -1 && dest >= this.size) {
-          //exit(0);
-          // console.log("bad1");
-        }
-        this.transitions[n * this.points.length + c] = dest;
+        // assert dest == -1 || dest < size;
+        this.transitions[n * this.points.length + c] = a.step(n, this.points[c]);
       }
     }
 
-    this.alphabetSize = 256;
-
-    this.classmap = new Array(Math.min(256, this.alphabetSize));
-    let i = 0;
-    for (let j = 0; j < this.classmap.length; j++) {
+    this.classmap = new Array(256 /* alphaSize */);
+    for (let i = 0, j = 0; j < this.classmap.length; j++) {
       if (i + 1 < this.points.length && j === this.points[i + 1]) {
         i++;
       }
@@ -46,10 +38,14 @@ export class RunAutomaton {
     let a = 0;
     let b = this.points.length;
     while (b - a > 1) {
-      let d = (a + b) >>> 1;
-      if (this.points[d] > c) b = d;
-      else if (this.points[d] < c) a = d;
-      else return d;
+      const d = (a + b) >>> 1;
+      if (this.points[d] > c) {
+        b = d;
+      } else if (this.points[d] < c) {
+        a = d;
+      } else {
+        return d;
+      }
     }
     return a;
   }

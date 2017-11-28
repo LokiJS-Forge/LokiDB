@@ -4,7 +4,6 @@ import {QueryBuilder} from "./query_builder";
 import {Dict} from "../../common/types";
 import {RunAutomaton} from "./fuzzy/RunAutomaton";
 import {LevenshteinAutomata} from "./fuzzy/LevenshteinAutomata";
-import {Automaton} from "./fuzzy/Automata";
 
 type Tree = any;
 export type ANY = any;
@@ -258,6 +257,8 @@ export class IndexSearcher {
   }
 }
 
+let store = {};
+
 function fuzzySearch(query: any, root: InvertedIndex.Index) {
   let value = toCodePoints(query.value);
   let fuzziness = query.fuzziness !== undefined ? query.fuzziness : "AUTO";
@@ -273,52 +274,88 @@ function fuzzySearch(query: any, root: InvertedIndex.Index) {
   let prefixLength = query.prefix_length !== undefined ? query.prefix_length : 2;
   let extended = query.extended !== undefined ? query.extended : false;
 
-  let start = root;
-  let pre = value.slice(0, prefixLength);
+  // Do just a prefix search if zero fuzziness.
+  if (fuzziness === 0) {
+    prefixLength = value.length;
+  }
+
+  let result: any[] = [];
+  let startIdx = root;
+  let prefix = value.slice(0, prefixLength);
   let fuzzy = value;
+
+  // Perform a prefix search.
   if (prefixLength !== 0) {
-    start = InvertedIndex.getTermIndex(pre, start);
+    startIdx = InvertedIndex.getTermIndex(prefix, startIdx);
     fuzzy = fuzzy.slice(prefixLength);
   }
-  if (start === null) {
-    return [];
+
+  // No startIdx found.
+  if (startIdx === null) {
+    return result;
   }
+
+  // Fuzzy is not necessary anymore, because prefix search includes the whole query value.
   if (fuzzy.length === 0) {
-    // Return if prefixLength === value length.
-    return [{term: value, index: start, boost: 1}];
+    if (extended) {
+      // Add all terms down the index.
+      for (const child of InvertedIndex.extendTermIndex(startIdx)) {
+        result.push({term: child.term, index: child.index, boost: 1});
+      }
+    } else if (startIdx.dc !== undefined) {
+      // Add prefix search result.
+      result.push({term: value, index: startIdx, boost: 1});
+    }
+    return result;
   }
 
-  let res: any = [];
+  // The matching term.
+  const term = [0];
+  // Create an automaton from the fuzzy.
+  let automaton = store[query.value];
+  //if (!automaton) {
+    store[query.value] = new RunAutomaton(new LevenshteinAutomata(fuzzy, fuzziness).toAutomaton());
+    automaton = store[query.value];
+ // }
 
-  let term = [0];
-  let automaton = new RunAutomaton(new LevenshteinAutomata(fuzzy, fuzziness).toAutomaton());
-
-  function determineEditDistance(state: number) {
+  function determineEditDistance(state: number, termLength: number, fuzzyLength: number) {
+    // Check how many edits this fuzzy can still do.
     let ed = 0;
     state = automaton.step(state, 0);
-    if (state !== -1) {
+    if (state !== -1 && automaton.isAccept(state)) {
       ed++;
       state = automaton.step(state, 0);
-      if (state !== -1) {
+      if (state !== -1 && automaton.isAccept(state)) {
         ed++;
       }
     }
+    // Include the term and fuzzy length.
+    ed -= Math.abs(termLength - fuzzyLength);
     return fuzziness - ed;
   }
 
   function recursive(state: number, key: number, idx: InvertedIndex.Index) {
     term[term.length - 1] = key;
 
+    // Check the current key of term with the automaton.
     state = automaton.step(state, key);
     if (state === -1) {
       return;
     }
 
-    if (automaton.isAccept(state) && idx.df !== undefined) {
-      // Calculate boost.
-      let distance = determineEditDistance(state);
-      let boost = 1 - distance / Math.min(term.length, query.value.length);
-      res.push({index: idx, term: term.slice(), boost});
+    if (automaton.isAccept(state)) {
+      if (extended) {
+        // Add all terms down the index.
+        for (const child of InvertedIndex.extendTermIndex(idx)) {
+          result.push({term: child.term, index: child.index, boost: 1});
+        }
+        return;
+      } else if (idx.df !== undefined) {
+        // Calculate boost.
+        let distance = determineEditDistance(state, term.length, fuzzy.length);
+        let boost = 1 - distance / Math.min(prefix.length + term.length, value.length);
+        result.push({index: idx, term: [...prefix, ...term], boost});
+      }
     }
 
     term.push(0);
@@ -328,11 +365,11 @@ function fuzzySearch(query: any, root: InvertedIndex.Index) {
     term.pop();
   }
 
-  for (const child of start) {
+  for (const child of startIdx) {
     recursive(0, child[0], child[1]);
   }
 
-  return res;
+  return result;
 }
 
 /**

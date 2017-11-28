@@ -1,14 +1,5 @@
-export class Transition {
-  public dest: number;
-  public min: number;
-  public max: number;
-
-  constructor(dest: number, min: number, max: number) {
-    this.dest = dest;
-    this.min = min;
-    this.max = max;
-  }
-}
+// dest, min, max
+export declare type Transition = [number, number, number];
 
 export const MIN_CODE_POINT = 0;
 export const MAX_CODE_POINT = 1114111;
@@ -55,38 +46,38 @@ export class Automaton {
 
   finishCurrentState() {
     const destMinMax = (a: Transition, b: Transition) => {
-      if (a.dest < b.dest) {
+      if (a[0] < b[0]) {
         return -1;
-      } else if (a.dest > b.dest) {
+      } else if (a[0] > b[0]) {
         return 1;
       }
-      if (a.min < b.min) {
+      if (a[1] < b[1]) {
         return -1;
-      } else if (a.min > b.min) {
+      } else if (a[1] > b[1]) {
         return 1;
       }
-      if (a.max < b.max) {
+      if (a[2] < b[2]) {
         return -1;
-      } else if (a.max > b.max) {
+      } else if (a[2] > b[2]) {
         return 1;
       }
       return 0;
     };
 
     const minMaxDest = (a: Transition, b: Transition) => {
-      if (a.min < b.min) {
+      if (a[1] < b[1]) {
         return -1;
-      } else if (a.min > b.min) {
+      } else if (a[1] > b[1]) {
         return 1;
       }
-      if (a.max < b.max) {
+      if (a[2] < b[2]) {
         return -1;
-      } else if (a.max > b.max) {
+      } else if (a[2] > b[2]) {
         return 1;
       }
-      if (a.dest < b.dest) {
+      if (a[0] < b[0]) {
         return -1;
-      } else if (a.dest > b.dest) {
+      } else if (a[0] > b[0]) {
         return 1;
       }
       return 0;
@@ -97,7 +88,7 @@ export class Automaton {
 
     let offset = 0;
     let upto = 0;
-    let p = new Transition(-1, -1, -1);
+    let p: Transition = [-1, -1, -1];
 
     for (let i = 0, len = this.transitions.length; i < len; i++) {
       // tDest = transitions[offset + 3 * i];
@@ -105,56 +96,56 @@ export class Automaton {
       // tMax = transitions[offset + 3 * i + 2];
       let t = this.transitions[i];
 
-      if (p.dest === t.dest) {
-        if (t.min <= p.max + 1) {
-          if (t.max > p.max) {
-            p.max = t.max;
+      if (p[0] === t[0]) {
+        if (t[1] <= p[2] + 1) {
+          if (t[2] > p[2]) {
+            p[2] = t[2];
           }
         } else {
-          if (p.dest !== -1) {
-            this.transitions[offset + upto].dest = p.dest;
-            this.transitions[offset + upto].min = p.min;
-            this.transitions[offset + upto].max = p.max;
+          if (p[0] !== -1) {
+            this.transitions[offset + upto][0] = p[0];
+            this.transitions[offset + upto][1] = p[1];
+            this.transitions[offset + upto][2] = p[2];
             upto++;
           }
-          p.min = t.min;
-          p.max = t.max;
+          p[1] = t[1];
+          p[2] = t[2];
         }
       } else {
-        if (p.dest !== -1) {
-          this.transitions[offset + upto].dest = p.dest;
-          this.transitions[offset + upto].min = p.min;
-          this.transitions[offset + upto].max = p.max;
+        if (p[0] !== -1) {
+          this.transitions[offset + upto][0] = p[0];
+          this.transitions[offset + upto][1] = p[1];
+          this.transitions[offset + upto][2] = p[2];
           upto++;
         }
-        p.dest = t.dest;
-        p.min = t.min;
-        p.max = t.max;
+        p[0] = t[0];
+        p[1] = t[1];
+        p[2] = t[2];
       }
     }
 
-    if (p.dest !== -1) {
+    if (p[0] !== -1) {
       // Last transition
-      this.transitions[offset + upto].dest = p.dest;
-      this.transitions[offset + upto].min = p.min;
-      this.transitions[offset + upto].max = p.max;
+      this.transitions[offset + upto][0] = p[0];
+      this.transitions[offset + upto][1] = p[1];
+      this.transitions[offset + upto][2] = p[2];
       upto++;
     }
 
     this.transitions = this.transitions.slice(0, upto);
     this.transitions.sort(minMaxDest);
 
-    if (this.deterministic && upto > 1) {
-      let lastMax = this.transitions[0].max;
-      for (let i = 1; i < upto; i++) {
-        let min = this.transitions[i].min;
-        if (min <= lastMax) {
-          this.deterministic = false;
-          break;
-        }
-        lastMax = this.transitions[i].max;
-      }
-    }
+    // if (this.deterministic && upto > 1) {
+    //   let lastMax = this.transitions[0][2];
+    //   for (let i = 1; i < upto; i++) {
+    //     let min = this.transitions[i][1];
+    //     if (min <= lastMax) {
+    //       this.deterministic = false;
+    //       break;
+    //     }
+    //     lastMax = this.transitions[i][2];
+    //   }
+    // }
 
     this.trans[this.currState] = this.transitions.slice();
     this.transitions = [];
@@ -169,9 +160,9 @@ export class Automaton {
       let trans = this.trans[states[i]];
       for (let j = 0; j < trans.length; j++) {
         let tran = trans[j];
-        pointset.add(tran.min);
-        if (tran.max < MAX_CODE_POINT) {
-          pointset.add(tran.max + 1);
+        pointset.add(tran[1]);
+        if (tran[2] < MAX_CODE_POINT) {
+          pointset.add(tran[2] + 1);
         }
       }
     }
@@ -184,8 +175,8 @@ export class Automaton {
     if (trans) {
       for (let i = 0; i < trans.length; i++) {
         let tran = trans[i];
-        if (tran.min <= label && label <= tran.max) {
-          return tran.dest;
+        if (tran[1] <= label && label <= tran[2]) {
+          return tran[0];
         }
       }
     }
@@ -203,6 +194,6 @@ export class Automaton {
       }
       this.currState = source;
     }
-    this.transitions.push(new Transition(dest, min, max));
+    this.transitions.push([dest, min, max]);
   }
 }

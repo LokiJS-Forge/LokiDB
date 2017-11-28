@@ -6,7 +6,6 @@ import {Collection} from "../../../loki/src/collection";
 import {FullTextSearch} from "../../src/full_text_search";
 
 describe("full text search", () => {
-  return;
   FullTextSearch.register();
 
   interface User {

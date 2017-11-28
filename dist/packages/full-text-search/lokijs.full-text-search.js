@@ -70,7 +70,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -79,7 +79,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 "use strict";
 /* harmony export (immutable) */ __webpack_exports__["b"] = toCodePoints;
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__tokenizer__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__tokenizer__ = __webpack_require__(2);
 
 /**
  * Converts a string into an array of code points.
@@ -308,22 +308,22 @@ class InvertedIndex {
      */
     static extendTermIndex(root) {
         const termIndices = [];
-        const rec = (idx, r) => {
+        const recursive = (idx, r) => {
             if (idx.df !== undefined) {
                 termIndices.push({ index: idx, term: r.slice() });
             }
             r.push(0);
             for (const child of idx) {
                 r[r.length - 1] = child[0];
-                rec(child[1], r);
+                recursive(child[1], r);
             }
             r.pop();
         };
-        rec(root, []);
+        recursive(root, []);
         return termIndices;
     }
     static serializeIndex(index) {
-        const rec = (idx) => {
+        const recursive = (idx) => {
             let k = [];
             let v = [];
             let r = { df: idx.df, dc: idx.dc };
@@ -332,17 +332,17 @@ class InvertedIndex {
             }
             for (const child of idx) {
                 k.push(child[0]);
-                v.push(rec(child[1]));
+                v.push(recursive(child[1]));
             }
             return [k, v, r];
         };
-        return rec(index);
+        return recursive(index);
     }
     static deserializeIndex(ar) {
-        const rec = (arr) => {
+        const recursive = (arr) => {
             let idx = new Map();
             for (let i = 0; i < arr[0].length; i++) {
-                idx.set(arr[0][i], rec(arr[1][i]));
+                idx.set(arr[0][i], recursive(arr[1][i]));
             }
             if (arr[2].df !== undefined) {
                 idx.df = arr[2].df;
@@ -350,7 +350,7 @@ class InvertedIndex {
             }
             return idx;
         };
-        return rec(ar);
+        return recursive(ar);
     }
     /**
      * Serialize the inverted index.
@@ -431,6 +431,66 @@ class InvertedIndex {
 
 /***/ }),
 /* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/**
+ * Class supports 64Bit integer operations.
+ * A cut-down version of dcodeIO/long.js.
+ */
+class Long {
+    constructor(low = 0, high = 0) {
+        this.low = low;
+        this.high = high;
+    }
+    /**
+     * Returns this long with bits arithmetically shifted to the right by the given amount.
+     * @param {number} numBits - number of bits
+     * @returns {Long} the long
+     */
+    shiftRight(numBits) {
+        if ((numBits &= 63) === 0)
+            return this;
+        else if (numBits < 32)
+            return new Long((this.low >>> numBits) | (this.high << (32 - numBits)), this.high >> numBits);
+        else
+            return new Long((this.high >> (numBits - 32)), this.high >= 0 ? 0 : -1);
+    }
+    /**
+     * Returns this long with bits arithmetically shifted to the left by the given amount.
+     * @param {number} numBits - number of bits
+     * @returns {Long} the long
+     */
+    shiftLeft(numBits) {
+        if ((numBits &= 63) === 0)
+            return this;
+        else if (numBits < 32)
+            return new Long(this.low << numBits, (this.high << numBits) | (this.low >>> (32 - numBits)));
+        else
+            return new Long(0, this.low << (numBits - 32));
+    }
+    /**
+     * Returns the bitwise AND of this Long and the specified.
+     * @param {Long} other - the other Long
+     * @returns {Long} the long
+     */
+    and(other) {
+        return new Long(this.low & other.low, this.high & other.high);
+    }
+    /**
+     * Converts the Long to a 32 bit integer, assuming it is a 32 bit integer.
+     * @returns {number}
+     */
+    toInt() {
+        return this.low;
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Long;
+
+
+
+/***/ }),
+/* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -690,7 +750,7 @@ class Tokenizer {
 
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1429,75 +1489,87 @@ class QueryBuilder {
 
 
 /***/ }),
-/* 3 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/**
- * Class supports 64Bit integer operations.
- * A cut-down version of dcodeIO/long.js.
- */
-class Long {
-    constructor(low = 0, high = 0) {
-        this.low = low;
-        this.high = high;
-    }
-    /**
-     * Returns this long with bits arithmetically shifted to the right by the given amount.
-     * @param {number} numBits - number of bits
-     * @returns {Long} the long
-     */
-    shiftRight(numBits) {
-        if ((numBits &= 63) === 0)
-            return this;
-        else if (numBits < 32)
-            return new Long((this.low >>> numBits) | (this.high << (32 - numBits)), this.high >> numBits);
-        else
-            return new Long((this.high >> (numBits - 32)), this.high >= 0 ? 0 : -1);
-    }
-    /**
-     * Returns this long with bits arithmetically shifted to the left by the given amount.
-     * @param {number} numBits - number of bits
-     * @returns {Long} the long
-     */
-    shiftLeft(numBits) {
-        if ((numBits &= 63) === 0)
-            return this;
-        else if (numBits < 32)
-            return new Long(this.low << numBits, (this.high << numBits) | (this.low >>> (32 - numBits)));
-        else
-            return new Long(0, this.low << (numBits - 32));
-    }
-    /**
-     * Returns the bitwise AND of this Long and the specified.
-     * @param {Long} other - the other Long
-     * @returns {Long} the long
-     */
-    and(other) {
-        return new Long(this.low & other.low, this.high & other.high);
-    }
-    /**
-     * Converts the Long to a 32 bit integer, assuming it is a 32 bit integer.
-     * @returns {number}
-     */
-    toInt() {
-        return this.low;
-    }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = Long;
-
-
-
-/***/ }),
 /* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Long__ = __webpack_require__(1);
+
+const MASKS = [new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x3), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x7), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xf),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1f), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x3f), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x7f), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1ff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x3ff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x7ff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xf, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xf, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xf, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xf, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xff, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfff, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffff, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffff, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffff, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffff, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffff, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffff, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffff, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffffff, 0xffff),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffffff, 0x7fff)];
+class ParametricDescription {
+    constructor(w, n, minErrors) {
+        this.w = w;
+        this.n = n;
+        this.minErrors = minErrors;
+    }
+    /**
+     * Return the number of states needed to compute a Levenshtein DFA
+     */
+    size() {
+        return this.minErrors.length * (this.w + 1);
+    }
+    /**
+     * Returns true if the <code>state</code> in any Levenshtein DFA is an accept state (final state).
+     */
+    isAccept(absState) {
+        // decode absState -> state, offset
+        let state = Math.floor(absState / (this.w + 1));
+        let offset = absState % (this.w + 1);
+        //assert offset >= 0;
+        return this.w - offset + this.minErrors[state] <= this.n;
+    }
+    /**
+     * Returns the position in the input word for a given <code>state</code>.
+     * This is the minimal boundary for the state.
+     */
+    getPosition(absState) {
+        return absState % (this.w + 1);
+    }
+    unpack(data, index, bitsPerValue) {
+        const bitLoc = bitsPerValue * index;
+        const dataLoc = (bitLoc >> 6);
+        const bitStart = (bitLoc & 63);
+        if (bitStart + bitsPerValue <= 64) {
+            // not split
+            return data[dataLoc].shiftRight(bitStart).and(MASKS[bitsPerValue - 1]).toInt();
+        }
+        else {
+            // split
+            const part = 64 - bitStart;
+            return (data[dataLoc].shiftRight(bitStart).and(MASKS[part - 1])).toInt()
+                + (data[1 + dataLoc].and(MASKS[bitsPerValue - part - 1]).shiftLeft(part)).toInt();
+        }
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = ParametricDescription;
+
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__full_text_search__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tokenizer__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__full_text_search__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tokenizer__ = __webpack_require__(2);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Tokenizer", function() { return __WEBPACK_IMPORTED_MODULE_1__tokenizer__["a"]; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__query_builder__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__query_builder__ = __webpack_require__(3);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "QueryBuilder", function() { return __WEBPACK_IMPORTED_MODULE_2__query_builder__["a"]; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__inverted_index__ = __webpack_require__(0);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "InvertedIndex", function() { return __WEBPACK_IMPORTED_MODULE_3__inverted_index__["a"]; });
@@ -1511,13 +1583,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__inverted_index__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__index_searcher__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__common_plugin__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__index_searcher__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__common_plugin__ = __webpack_require__(14);
 
 
 
@@ -1606,15 +1678,15 @@ class FullTextSearch {
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__scorer__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__scorer__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__inverted_index__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__query_builder__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__fuzzy_RunAutomaton__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__fuzzy_LevenshteinAutomata__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__query_builder__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__fuzzy_RunAutomaton__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__fuzzy_LevenshteinAutomata__ = __webpack_require__(10);
 
 
 
@@ -1727,9 +1799,9 @@ class IndexSearcher {
             }
             case "fuzzy": {
                 let f = fuzzySearch(query, root);
-                // for (let i = 0; i < f.length; i++) {
-                //   this._scorer.prepare(fieldName, boost * f[i].boost, f[i].index, doScoring, docResults, f[i].term as any);
-                // }
+                for (let i = 0; i < f.length; i++) {
+                    this._scorer.prepare(fieldName, boost * f[i].boost, f[i].index, doScoring, docResults, f[i].term);
+                }
                 break;
             }
             case "wildcard": {
@@ -1859,112 +1931,9 @@ class IndexSearcher {
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = IndexSearcher;
 
-/**
- * Calculates the levenshtein distance.
- * Copyright Kigiri: https://github.com/kigiri
- *           Milot Mirdita: https://github.com/milot-mirdita
- *           Toni Neubert:  https://github.com/Viatorus/
- * @param {string} a - a string
- * @param {string} b - a string
- */
-function levenshteinDistance(a, b) {
-    if (a.length === 0)
-        return b.length;
-    if (b.length === 0)
-        return a.length;
-    let tmp;
-    let i;
-    let j;
-    let prev;
-    let val;
-    // swap to save some memory O(min(a,b)) instead of O(a)
-    if (a.length > b.length) {
-        tmp = a;
-        a = b;
-        b = tmp;
-    }
-    const row = Array(a.length + 1);
-    // init the row
-    for (i = 0; i <= a.length; i++) {
-        row[i] = i;
-    }
-    // fill in the rest
-    for (i = 1; i <= b.length; i++) {
-        prev = i;
-        for (j = 1; j <= a.length; j++) {
-            if (b[i - 1] === a[j - 1]) {
-                val = row[j - 1];
-            }
-            else {
-                val = Math.min(row[j - 1] + 1, // substitution
-                Math.min(prev + 1, // insertion
-                row[j] + 1)); // deletion
-                // transposition.
-                if (i > 1 && j > 1 && b[i - 2] === a[j - 1] && a[j - 2] === b[i - 1]) {
-                    val = Math.min(val, row[j - 1] - (a[j - 1] === b[i - 1] ? 1 : 0));
-                }
-            }
-            row[j - 1] = prev;
-            prev = val;
-        }
-        row[a.length] = prev;
-    }
-    return row[a.length];
-}
+let store = {};
 function fuzzySearch(query, root) {
-    let res = [];
-    function calculateDistance(state, a, n) {
-        let ed = 0;
-        state = a.step(state, 0);
-        if (state !== -1) {
-            ed++;
-            state = a.step(state, 0);
-            if (state !== -1) {
-                ed++;
-            }
-        }
-        return n - ed;
-    }
-    function run(a, root) {
-        let edit_distance = 1;
-        function rec(state, key, idx, r) {
-            r[r.length - 1] = key;
-            state = a.step(state, key);
-            if (state === -1) {
-                //console.log("bad: ", String.fromCodePoint(...r));
-                return;
-            }
-            if (a.isAccept(state) && idx.df !== undefined) {
-                //console.log("found: ", String.fromCodePoint(...r));
-                res.push({ index: root, term: String.fromCodePoint(...r) });
-            }
-            r.push(0);
-            for (const child of idx) {
-                rec(state, child[0], child[1], r);
-            }
-            r.pop();
-        }
-        let r = [0];
-        for (const child of root) {
-            rec(0, child[0], child[1], r);
-        }
-        //rec(root)
-    }
-    let la = new __WEBPACK_IMPORTED_MODULE_4__fuzzy_LevenshteinAutomata__["a" /* LevenshteinAutomata */](Object(__WEBPACK_IMPORTED_MODULE_1__inverted_index__["b" /* toCodePoints */])(query.value));
-    let tr = la.run();
-    let ra = new __WEBPACK_IMPORTED_MODULE_3__fuzzy_RunAutomaton__["a" /* RunAutomaton */](tr);
-    run(ra, root);
-    throw res;
-    // return res;
-}
-/**
- * Performs a fuzzy search.
- * @param {ANY} query - the fuzzy query
- * @param {InvertedIndex.Index} root - the root index
- * @returns {Array}
- */
-function fuzzySearch2(query, root) {
-    let value = query.value;
+    let value = Object(__WEBPACK_IMPORTED_MODULE_1__inverted_index__["b" /* toCodePoints */])(query.value);
     let fuzziness = query.fuzziness !== undefined ? query.fuzziness : "AUTO";
     if (fuzziness === "AUTO") {
         if (value.length <= 2) {
@@ -1979,78 +1948,92 @@ function fuzzySearch2(query, root) {
     }
     let prefixLength = query.prefix_length !== undefined ? query.prefix_length : 2;
     let extended = query.extended !== undefined ? query.extended : false;
-    // Todo: Include levenshtein to reduce similar iterations.
-    // Tree tokens at same depth share same row until depth (should works if recursive).
-    // Pregenerate tree token ?
-    // var treeToken = Array(token.length + maxDistance);
-    let start = root;
-    let pre = value.slice(0, prefixLength);
+    // Do just a prefix search if zero fuzziness.
+    if (fuzziness === 0) {
+        prefixLength = value.length;
+    }
+    let result = [];
+    let startIdx = root;
+    let prefix = value.slice(0, prefixLength);
     let fuzzy = value;
+    // Perform a prefix search.
     if (prefixLength !== 0) {
-        start = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].getTermIndex(pre, start);
+        startIdx = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].getTermIndex(prefix, startIdx);
         fuzzy = fuzzy.slice(prefixLength);
     }
-    if (start === null) {
-        return [];
+    // No startIdx found.
+    if (startIdx === null) {
+        return result;
     }
+    // Fuzzy is not necessary anymore, because prefix search includes the whole query value.
     if (fuzzy.length === 0) {
-        // Return if prefixLength == value length.
-        return [{ term: "", index: start, boost: 1 }];
-    }
-    /// Fuzziness of the fuzzy without extension.
-    let extend_fuzzy = 1e10;
-    let similarTokens = [];
-    let stack = [start];
-    let treeStack = [""];
-    do {
-        let index = stack.pop();
-        let treeTerms = treeStack.pop();
-        // Check if fuzzy should be extended.
         if (extended) {
-            if (treeTerms.length === fuzzy.length) {
-                extend_fuzzy = levenshteinDistance(fuzzy, treeTerms);
-            }
-            else {
-                extend_fuzzy = extend_fuzzy <= fuzziness && treeTerms.length >= fuzzy.length
-                    ? extend_fuzzy
-                    : 1e10;
+            // Add all terms down the index.
+            for (const child of __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].extendTermIndex(startIdx)) {
+                result.push({ term: child.term, index: child.index, boost: 1 });
             }
         }
-        // Compare tokens if they are in near distance.
-        if (index.df !== undefined) {
-            let matched = false;
-            if (Math.abs(fuzzy.length - treeTerms.length) <= fuzziness) {
-                const distance = levenshteinDistance(fuzzy, treeTerms);
-                if (distance <= fuzziness) {
-                    let term = pre + treeTerms;
-                    // Calculate boost.
-                    let boost = 1 - distance / Math.min(term.length, value.length);
-                    similarTokens.push({ term, index: index, boost });
-                    matched = true;
-                }
+        else if (startIdx.dc !== undefined) {
+            // Add prefix search result.
+            result.push({ term: value, index: startIdx, boost: 1 });
+        }
+        return result;
+    }
+    // The matching term.
+    const term = [0];
+    // Create an automaton from the fuzzy.
+    let automaton = store[query.value];
+    //if (!automaton) {
+    store[query.value] = new __WEBPACK_IMPORTED_MODULE_3__fuzzy_RunAutomaton__["a" /* RunAutomaton */](new __WEBPACK_IMPORTED_MODULE_4__fuzzy_LevenshteinAutomata__["a" /* LevenshteinAutomata */](fuzzy, fuzziness).toAutomaton());
+    automaton = store[query.value];
+    // }
+    function determineEditDistance(state, termLength, fuzzyLength) {
+        // Check how many edits this fuzzy can still do.
+        let ed = 0;
+        state = automaton.step(state, 0);
+        if (state !== -1 && automaton.isAccept(state)) {
+            ed++;
+            state = automaton.step(state, 0);
+            if (state !== -1 && automaton.isAccept(state)) {
+                ed++;
             }
-            // Only include extended terms that did not previously match.
-            if (extend_fuzzy <= fuzziness && !matched) {
-                let term = pre + treeTerms;
+        }
+        // Include the term and fuzzy length.
+        ed -= Math.abs(termLength - fuzzyLength);
+        return fuzziness - ed;
+    }
+    function recursive(state, key, idx) {
+        term[term.length - 1] = key;
+        // Check the current key of term with the automaton.
+        state = automaton.step(state, key);
+        if (state === -1) {
+            return;
+        }
+        if (automaton.isAccept(state)) {
+            if (extended) {
+                // Add all terms down the index.
+                for (const child of __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].extendTermIndex(idx)) {
+                    result.push({ term: child.term, index: child.index, boost: 1 });
+                }
+                return;
+            }
+            else if (idx.df !== undefined) {
                 // Calculate boost.
-                let boost = 1 - (extend_fuzzy + treeTerms.length - fuzzy.length) / Math.min(term.length, value.length);
-                similarTokens.push({ term: term, index: index, boost });
+                let distance = determineEditDistance(state, term.length, fuzzy.length);
+                let boost = 1 - distance / Math.min(prefix.length + term.length, value.length);
+                result.push({ index: idx, term: [...prefix, ...term], boost });
             }
         }
-        // Iterate over all subtrees.
-        // If token from tree is not longer than maximal distance.
-        if ((treeTerms.length - fuzzy.length <= fuzziness) || extend_fuzzy <= fuzziness) {
-            // Iterate over all subtrees.
-            let keys = Object.keys(index);
-            for (let i = 0; i < keys.length; i++) {
-                if (keys[i].length === 1) {
-                    stack.push(index[keys[i]]);
-                    treeStack.push(treeTerms + keys[i]);
-                }
-            }
+        term.push(0);
+        for (const child of idx) {
+            recursive(state, child[0], child[1]);
         }
-    } while (stack.length !== 0);
-    return similarTokens;
+        term.pop();
+    }
+    for (const child of startIdx) {
+        recursive(0, child[0], child[1]);
+    }
+    return result;
 }
 /**
  * Performs a wildcard search.
@@ -2111,7 +2094,7 @@ function wildcardSearch(query, root) {
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2170,7 +2153,7 @@ class Scorer {
                         const tfNorm = (tf * (k1 + 1)) / (tf + k1 * (1 - b + b * (fieldLength / avgFieldLength)));
                         res = docResult.idf * tfNorm * docResult.boost;
                         // console.log(
-                        // 	docId + ":" + docResult.fieldName + ":" + docResult.term + " = " + res,
+                        // 	docId + ":" + docResult.fieldName + ":" + String.fromCharCode(...docResult.term) + " = " + res,
                         // 	"\n\ttype: BM25",
                         // 	"\n\tboost: " + docResult.boost,
                         // 	"\n\tidf : " + docResult.idf,
@@ -2228,7 +2211,7 @@ class Scorer {
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2242,18 +2225,12 @@ class RunAutomaton {
         for (let n = 0; n < this.size; n++) {
             this.accept[n] = a.isAccept(n);
             for (let c = 0; c < this.points.length; c++) {
-                let dest = a.step(n, this.points[c]);
-                if (dest !== -1 && dest >= this.size) {
-                    //exit(0);
-                    // console.log("bad1");
-                }
-                this.transitions[n * this.points.length + c] = dest;
+                // assert dest == -1 || dest < size;
+                this.transitions[n * this.points.length + c] = a.step(n, this.points[c]);
             }
         }
-        this.alphabetSize = 256;
-        this.classmap = new Array(Math.min(256, this.alphabetSize));
-        let i = 0;
-        for (let j = 0; j < this.classmap.length; j++) {
+        this.classmap = new Array(256 /* alphaSize */);
+        for (let i = 0, j = 0; j < this.classmap.length; j++) {
             if (i + 1 < this.points.length && j === this.points[i + 1]) {
                 i++;
             }
@@ -2265,13 +2242,16 @@ class RunAutomaton {
         let a = 0;
         let b = this.points.length;
         while (b - a > 1) {
-            let d = (a + b) >>> 1;
-            if (this.points[d] > c)
+            const d = (a + b) >>> 1;
+            if (this.points[d] > c) {
                 b = d;
-            else if (this.points[d] < c)
+            }
+            else if (this.points[d] < c) {
                 a = d;
-            else
+            }
+            else {
                 return d;
+            }
         }
         return a;
     }
@@ -2292,17 +2272,20 @@ class RunAutomaton {
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Automata__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Lev1TParametricDescription__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Automata__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Lev1TParametricDescription__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Lev2TParametricDescription__ = __webpack_require__(13);
+
 
 
 class LevenshteinAutomata {
-    constructor(input, alphaMax = __WEBPACK_IMPORTED_MODULE_0__Automata__["b" /* MAX_CODE_POINT */]) {
+    constructor(input, editDistance) {
         this.word = input;
+        this.editDistance = editDistance;
         this.alphabet = Array.from(this.word).sort((a, b) => a - b);
         this.numRanges = 0;
         this.rangeLower = new Array(this.alphabet.length + 2);
@@ -2320,12 +2303,17 @@ class LevenshteinAutomata {
             lower = higher + 1;
         }
         /* add the final endpoint */
-        if (lower <= alphaMax) {
+        if (lower <= __WEBPACK_IMPORTED_MODULE_0__Automata__["b" /* MAX_CODE_POINT */]) {
             this.rangeLower[this.numRanges] = lower;
-            this.rangeUpper[this.numRanges] = alphaMax;
+            this.rangeUpper[this.numRanges] = __WEBPACK_IMPORTED_MODULE_0__Automata__["b" /* MAX_CODE_POINT */];
             this.numRanges++;
         }
-        this.description = new __WEBPACK_IMPORTED_MODULE_1__Lev1TParametricDescription__["a" /* Lev1TParametricDescription */](input.length);
+        if (editDistance == 1) {
+            this.description = new __WEBPACK_IMPORTED_MODULE_1__Lev1TParametricDescription__["a" /* Lev1TParametricDescription */](input.length);
+        }
+        else {
+            this.description = new __WEBPACK_IMPORTED_MODULE_2__Lev2TParametricDescription__["a" /* Lev2TParametricDescription */](input.length);
+        }
     }
     getVector(x, pos, end) {
         let vector = 0;
@@ -2337,51 +2325,44 @@ class LevenshteinAutomata {
         }
         return vector;
     }
-    run() {
+    /**
+     * @returns {Automaton}
+     */
+    toAutomaton() {
         let automat = new __WEBPACK_IMPORTED_MODULE_0__Automata__["a" /* Automaton */]();
-        const n = 1;
-        const range = 2 * n + 1;
-        // the number of states is based on the length of the word and n
+        const range = 2 * this.editDistance + 1;
+        // the number of states is based on the length of the word and the edit distance
         const numStates = this.description.size();
-        // TODO: Prefix
+        // Prefix is not needed to be handled by the automaton.
+        // stateOffset = 0;
         automat.createState();
-        const stateOffset = 0;
         // create all states, and mark as accept states if appropriate
         for (let i = 1; i < numStates; i++) {
             let state = automat.createState();
             automat.setAccept(state, this.description.isAccept(i));
         }
-        // console.log(automat.isAccept);
         for (let k = 0; k < numStates; k++) {
             const xpos = this.description.getPosition(k);
             if (xpos < 0) {
                 continue;
             }
             const end = xpos + Math.min(this.word.length - xpos, range);
-            // console.log("k:", k, "xpos:", xpos, "end:", end);
             for (let x = 0; x < this.alphabet.length; x++) {
                 const ch = this.alphabet[x];
                 const cvec = this.getVector(ch, xpos, end);
                 const dest = this.description.transition(k, xpos, cvec);
-                // console.log("x:", x, "ch:", ch, "cvec:", cvec, "dest:", dest);
                 if (dest >= 0) {
-                    // console.log("transition");
-                    automat.addTransition(stateOffset + k, stateOffset + dest, ch, ch);
+                    automat.addTransition(/*stateOffset +*/ k, /*stateOffset + */ dest, ch, ch);
                 }
             }
-            // console.log("last trans, k:", k, "xpos", xpos);
             const dest = this.description.transition(k, xpos, 0);
             if (dest >= 0) {
                 for (let r = 0; r < this.numRanges; r++) {
-                    // console.log("transition", r);
-                    automat.addTransition(stateOffset + k, stateOffset + dest, this.rangeLower[r], this.rangeUpper[r]);
+                    automat.addTransition(/*stateOffset + */ k, /*stateOffset + */ dest, this.rangeLower[r], this.rangeUpper[r]);
                 }
             }
         }
-        if (!automat.deterministic) {
-            //exit(0);
-            // console.log("bad d");
-        }
+        // assert automat.deterministic;
         automat.finishState();
         return automat;
     }
@@ -2391,19 +2372,10 @@ class LevenshteinAutomata {
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-class Transition {
-    constructor(dest, min, max) {
-        this.dest = dest;
-        this.min = min;
-        this.max = max;
-    }
-}
-/* unused harmony export Transition */
-
 const MIN_CODE_POINT = 0;
 /* unused harmony export MIN_CODE_POINT */
 
@@ -2442,43 +2414,43 @@ class Automaton {
     }
     finishCurrentState() {
         const destMinMax = (a, b) => {
-            if (a.dest < b.dest) {
+            if (a[0] < b[0]) {
                 return -1;
             }
-            else if (a.dest > b.dest) {
+            else if (a[0] > b[0]) {
                 return 1;
             }
-            if (a.min < b.min) {
+            if (a[1] < b[1]) {
                 return -1;
             }
-            else if (a.min > b.min) {
+            else if (a[1] > b[1]) {
                 return 1;
             }
-            if (a.max < b.max) {
+            if (a[2] < b[2]) {
                 return -1;
             }
-            else if (a.max > b.max) {
+            else if (a[2] > b[2]) {
                 return 1;
             }
             return 0;
         };
         const minMaxDest = (a, b) => {
-            if (a.min < b.min) {
+            if (a[1] < b[1]) {
                 return -1;
             }
-            else if (a.min > b.min) {
+            else if (a[1] > b[1]) {
                 return 1;
             }
-            if (a.max < b.max) {
+            if (a[2] < b[2]) {
                 return -1;
             }
-            else if (a.max > b.max) {
+            else if (a[2] > b[2]) {
                 return 1;
             }
-            if (a.dest < b.dest) {
+            if (a[0] < b[0]) {
                 return -1;
             }
-            else if (a.dest > b.dest) {
+            else if (a[0] > b[0]) {
                 return 1;
             }
             return 0;
@@ -2487,61 +2459,61 @@ class Automaton {
         this.transitions.sort(destMinMax);
         let offset = 0;
         let upto = 0;
-        let p = new Transition(-1, -1, -1);
+        let p = [-1, -1, -1];
         for (let i = 0, len = this.transitions.length; i < len; i++) {
             // tDest = transitions[offset + 3 * i];
             // tMin = transitions[offset + 3 * i + 1];
             // tMax = transitions[offset + 3 * i + 2];
             let t = this.transitions[i];
-            if (p.dest === t.dest) {
-                if (t.min <= p.max + 1) {
-                    if (t.max > p.max) {
-                        p.max = t.max;
+            if (p[0] === t[0]) {
+                if (t[1] <= p[2] + 1) {
+                    if (t[2] > p[2]) {
+                        p[2] = t[2];
                     }
                 }
                 else {
-                    if (p.dest !== -1) {
-                        this.transitions[offset + upto].dest = p.dest;
-                        this.transitions[offset + upto].min = p.min;
-                        this.transitions[offset + upto].max = p.max;
+                    if (p[0] !== -1) {
+                        this.transitions[offset + upto][0] = p[0];
+                        this.transitions[offset + upto][1] = p[1];
+                        this.transitions[offset + upto][2] = p[2];
                         upto++;
                     }
-                    p.min = t.min;
-                    p.max = t.max;
+                    p[1] = t[1];
+                    p[2] = t[2];
                 }
             }
             else {
-                if (p.dest !== -1) {
-                    this.transitions[offset + upto].dest = p.dest;
-                    this.transitions[offset + upto].min = p.min;
-                    this.transitions[offset + upto].max = p.max;
+                if (p[0] !== -1) {
+                    this.transitions[offset + upto][0] = p[0];
+                    this.transitions[offset + upto][1] = p[1];
+                    this.transitions[offset + upto][2] = p[2];
                     upto++;
                 }
-                p.dest = t.dest;
-                p.min = t.min;
-                p.max = t.max;
+                p[0] = t[0];
+                p[1] = t[1];
+                p[2] = t[2];
             }
         }
-        if (p.dest !== -1) {
+        if (p[0] !== -1) {
             // Last transition
-            this.transitions[offset + upto].dest = p.dest;
-            this.transitions[offset + upto].min = p.min;
-            this.transitions[offset + upto].max = p.max;
+            this.transitions[offset + upto][0] = p[0];
+            this.transitions[offset + upto][1] = p[1];
+            this.transitions[offset + upto][2] = p[2];
             upto++;
         }
         this.transitions = this.transitions.slice(0, upto);
         this.transitions.sort(minMaxDest);
-        if (this.deterministic && upto > 1) {
-            let lastMax = this.transitions[0].max;
-            for (let i = 1; i < upto; i++) {
-                let min = this.transitions[i].min;
-                if (min <= lastMax) {
-                    this.deterministic = false;
-                    break;
-                }
-                lastMax = this.transitions[i].max;
-            }
-        }
+        // if (this.deterministic && upto > 1) {
+        //   let lastMax = this.transitions[0][2];
+        //   for (let i = 1; i < upto; i++) {
+        //     let min = this.transitions[i][1];
+        //     if (min <= lastMax) {
+        //       this.deterministic = false;
+        //       break;
+        //     }
+        //     lastMax = this.transitions[i][2];
+        //   }
+        // }
         this.trans[this.currState] = this.transitions.slice();
         this.transitions = [];
     }
@@ -2553,9 +2525,9 @@ class Automaton {
             let trans = this.trans[states[i]];
             for (let j = 0; j < trans.length; j++) {
                 let tran = trans[j];
-                pointset.add(tran.min);
-                if (tran.max < MAX_CODE_POINT) {
-                    pointset.add(tran.max + 1);
+                pointset.add(tran[1]);
+                if (tran[2] < MAX_CODE_POINT) {
+                    pointset.add(tran[2] + 1);
                 }
             }
         }
@@ -2566,8 +2538,8 @@ class Automaton {
         if (trans) {
             for (let i = 0; i < trans.length; i++) {
                 let tran = trans[i];
-                if (tran.min <= label && label <= tran.max) {
-                    return tran.dest;
+                if (tran[1] <= label && label <= tran[2]) {
+                    return tran[0];
                 }
             }
         }
@@ -2583,7 +2555,7 @@ class Automaton {
             }
             this.currState = source;
         }
-        this.transitions.push(new Transition(dest, min, max));
+        this.transitions.push([dest, min, max]);
     }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Automaton;
@@ -2591,12 +2563,12 @@ class Automaton {
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Long__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ParametricDescription__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Long__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ParametricDescription__ = __webpack_require__(4);
 
 
 // 1 vectors; 2 states per vector; array length = 2
@@ -2672,79 +2644,249 @@ class Lev1TParametricDescription extends __WEBPACK_IMPORTED_MODULE_1__Parametric
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Long__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Long__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ParametricDescription__ = __webpack_require__(4);
 
-const MASKS = [new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x3), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x7), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xf),
-    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1f), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x3f), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x7f), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xff),
-    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1ff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x3ff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x7ff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfff),
-    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffff),
-    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xf, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xf, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xf, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xf, 0xffff),
-    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xff, 0xffff),
-    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfff, 0xffff),
-    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffff, 0xffff),
-    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffff, 0xffff),
-    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffff, 0xffff),
-    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffff, 0xffff),
-    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffff, 0xffff),
-    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffff, 0xffff),
-    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffff, 0xffff),
-    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffffff, 0xffff),
-    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffffff, 0x7fff)];
-class ParametricDescription {
-    constructor(w, n, minErrors) {
-        this.w = w;
-        this.n = n;
-        this.minErrors = minErrors;
+
+// 1 vectors; 3 states per vector; array length = 3
+const toStates0 = [
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x23)
+];
+const offsetIncrs0 = [
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x0)
+];
+// 2 vectors; 5 states per vector; array length = 10
+const toStates1 = [
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x13688b44)
+];
+const offsetIncrs1 = [
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x3e0)
+];
+// 4 vectors; 13 states per vector; array length = 52
+const toStates2 = [
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x5200b504, 0x60dbb0b0), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x27062227, 0x52332176), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x14323235, 0x23555432), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x4354)
+];
+const offsetIncrs2 = [
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x00002000, 0x555080a8), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x55555555, 0x55)
+];
+// 8 vectors; 28 states per vector; array length = 224
+const toStates3 = [
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x40059404, 0xe701c029), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x00a50000, 0xa0101620), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xa1416288, 0xb02c8c40), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x310858c0, 0xa821032),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x0d28b201, 0x31442398), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x847788e0, 0x5281e528), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x08c2280e, 0xa23980d3), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xa962278c, 0x1e3294b1),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x2288e528, 0x8c41309e), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x021aca21, 0x11444409), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x86b1086b, 0x11a46248), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1d6240c4, 0x2a625894),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x489074ad, 0x5024a50b), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x520c411a, 0x14821aca), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x0b594a44, 0x5888b589), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xc411a465, 0x941d6520),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xad6a62d4, 0x8b589075), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1a5055a4)
+];
+const offsetIncrs3 = [
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x00002000, 0x30c302), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xc3fc333c, 0x2a0030f3), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x8282a820, 0x233a0032), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x32b283a8, 0x55555555),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x55555555, 0x55555555), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x55555555, 0x55555555), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x55555555, 0x55555555)
+];
+// 16 vectors; 45 states per vector; array length = 720
+const toStates4 = [
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x002c5004, 0x3801450), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x00000e38, 0xc500014b), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x51401402, 0x514), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x0),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x14010000, 0x518000b), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x28e20230, 0x9f1c208), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x830a70c2, 0x219f0df0), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x08208200, 0x82000082),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x60800800, 0x8050501), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x02602643, 0x30820986), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x50508064, 0x45640142), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x20000831, 0x8500514),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x85002082, 0x41405820), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x0990c201, 0x45618098), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x50a01051, 0x8316d0c), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x050df0e0, 0x21451420),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x14508214, 0xd142140), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x50821c60, 0x3c21c018), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xcb142087, 0x1cb1403), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1851822c, 0x80082145),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x20800020, 0x200208), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x87180345, 0xd0061820), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24976b09, 0xcb0a81cb), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x624709d1, 0x8b1a60e),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x82249089, 0x2490820), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x00d2c024, 0xc31421c6), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x15454423, 0x3c314515), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xc21cb140, 0x31853c22),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x2c208214, 0x4514500b), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x508b0051, 0x8718034), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x5108f0c5, 0xb2cb4551), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1cb0a810, 0xe824715d),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x908b0e60, 0x1422cb14), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xc02cb145, 0x30812c22), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x0cb1420c, 0x84202202), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x20ce0850, 0x5c20ce08),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x8b0d70c2, 0x20820820), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x14214208, 0x42085082), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x50830c20, 0x9208340), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x13653592, 0xc6134dc6),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x6dc4db4d, 0xd309341c), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x54d34d34, 0x6424d908), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x030814c2, 0x92072c22), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24a30930, 0x4220724b),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x25c920e2, 0x2470d720), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x975c9082, 0x92c92d70), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x04924e08, 0xcb0880c2), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xc24c2481, 0x45739728),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xda6174da, 0xc6da4db5), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x5d30971d, 0x4b5d35d7), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x93825ce2, 0x1030815c), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x020cb145, 0x51442051),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x2c220e2c, 0xc538210e), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x52cb0d70, 0x8514214), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x85145142, 0x204b0850), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x4051440c, 0x92156083),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xa60e6595, 0x4d660e4d), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1c6dc658, 0x94d914e4), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1454d365, 0x82642659), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x51030813, 0x2892072c),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xcb2ca30b, 0xe2c22072), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x20538910, 0x452c70d7), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x708e3891, 0x8b2cb2d), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xc204b24e, 0x81cb1440),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x28c2ca24, 0xda44e38e), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x85d660e4, 0x1dc6da65), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x8e5d914e, 0xe2cb5d33), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x38938238)
+];
+const offsetIncrs4 = [
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x00080000, 0x30020000), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x20c060), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x04000000, 0x81490000), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x10824824, 0x40249241),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x60002082, 0xdb6030c3), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x301b0d80, 0x6c36c06c), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x000db0db, 0xb01861b0), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x9188e06d, 0x1b703620),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x06d86db7, 0x8009200), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x02402490, 0x4920c24), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x08249009, 0x490002), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x28124804, 0x49081281),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x124a44a2, 0x34800104), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x0d24020c, 0xc3093090), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24c24d24, 0x40009a09), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x9201061a, 0x4984a06),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x71269262, 0x494d0492), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x92492492, 0x24924924), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x49249249, 0x92492492), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24924924, 0x49249249),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x92492492, 0x24924924), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x49249249, 0x92492492), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24924924, 0x49249249), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x92492492, 0x24924924),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x49249249, 0x92492492), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24924924, 0x49249249), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x92492492, 0x24924924), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x49249249, 0x92492492),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24924924, 0x49249249), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x92492492, 0x24924924), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x49249249, 0x92492492), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24924924, 0x49249249),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x92492492, 0x24924924), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x49249249, 0x2492)
+];
+// 32 vectors; 45 states per vector; array length = 1440
+const toStates5 = [
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x002c5004, 0x3801450), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x00000e38, 0xc500014b), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x51401402, 0x514), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x0),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x14010000, 0x514000b), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x038e00e0, 0x550000), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x0600b180, 0x26451850), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x08208208, 0x82082082),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x40820820, 0x2c500), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x808c0146, 0x70820a38), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x9c30827c, 0xc37c20c2), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x20800867, 0x208208),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x02002080, 0xb1401020), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x00518000, 0x828e2023), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x209f1c20, 0x830a70c), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x853df0df, 0x51451450),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x14508214, 0x16142142), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x30805050, 0x60260264), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x43082098, 0x25050806), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x14564014, 0x42000083),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x20850051, 0x8500208), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x14140582, 0x80990c20), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x08261809, 0x82019202), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x90060941, 0x8920519),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xc22cb242, 0x22492492), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x0162492c, 0x43080505), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x86026026, 0x80414515), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xc5b43142, 0x37c38020),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x14508014, 0x42085085), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x50850051, 0x1414058), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x980990c2, 0x51456180), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x0c50a010, 0xe008316d),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x508b21f0, 0x2c52cb2c), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xc22cb249, 0x600d2c92), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1850821c, 0x873c21c0), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x03cb1420, 0x2c01cb14),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x45185182, 0x20800821), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x08208000, 0x45002002), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x20871803, 0x8700614), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x050821cf, 0x740500f5),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x18609000, 0x934d9646), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x30824d30, 0x4c24d34d), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xc600d642, 0x1860821), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x25dac274, 0xc2a072c9),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x91c27472, 0x2c698398), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x89242242, 0x92420820), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x34b00900, 0x82087180), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xb09d0061, 0x1cb24976),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x9d1cb0a8, 0x60e62470), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1574ce3e, 0xd31455d7), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x25c25d74, 0x1c600d38), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x423c3142, 0x51515454),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1403c314, 0xc22c21cb), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x21431853, 0xb2c208), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x05145145, 0x34508b0), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x0c508718, 0x5515108f),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xf2051454, 0x8740500), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x0618f090, 0xe2534d92), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x6592c238, 0x49382659), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x21c600d6, 0x4423c314),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xcb2d1545, 0x72c2a042), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xa091c574, 0x422c3983), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x508b2c52, 0xb2c514), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x8034b08b, 0xf0c50871),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x45515108, 0xa810b2cb), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x715d1cb0, 0x2260e824), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x8e2d74ce, 0xe6592c53), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x38938238, 0x420c3081),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x22020cb1, 0x8508420), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xce0820ce, 0x70c25c20), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x08208b0d, 0x42082082), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x50821421, 0xc204208),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x832c5083, 0x21080880), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x0838c214, 0xa5083882), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xa9c39430, 0xaaaaaaaa), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x9fa9faaa, 0x1aaa7eaa),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1420c308, 0x824820d0), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x84d94d64, 0x7184d371), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1b7136d3, 0x34c24d07), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1534d34d, 0x99093642),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x30c20530, 0x8340508), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x53592092, 0x34dc6136), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x4db4dc61, 0xa479c6dc), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x4924924a, 0x920a9f92),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x8192a82a, 0x72c22030), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x30930920, 0x724b24a), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x920e2422, 0xd72025c), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xc9082247, 0x92d70975),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24e0892c, 0x880c2049), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xc2481cb0, 0x2c928c24), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x89088749, 0x80a52488), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xaac74394, 0x6a861b2a),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xab27b278, 0x81b2ca6), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x072c2203, 0xa3093092), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x6915ce5c, 0xd76985d3), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x771b6936, 0x5d74c25c),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x892d74d7, 0x724e0973), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x0880c205, 0x4c2481cb), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x739728c2, 0x6174da45), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xda4db5da, 0x4aa175c6),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x86486186, 0x6a869b27), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x308186ca, 0xcb14510), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x44205102, 0x220e2c51), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x38210e2c, 0xcb0d70c5),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x51421452, 0x14514208), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x4b085085, 0x51440c20), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1440832c, 0xcb145108), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x488b0888, 0x94316208),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x9f7e79c3, 0xfaaa7dfa), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x7ea7df7d, 0x30819ea), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x20d01451, 0x65648558), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x93698399, 0x96135983),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x39071b71, 0xd9653645), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x96451534, 0x4e09909), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x051440c2, 0x21560834), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x60e65959, 0xd660e4da),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xc6dc6584, 0x9207e979), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xdf924820, 0xa82a8207), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x103081a6, 0x892072c5), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xb2ca30b2, 0x2c22072c),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x0538910e, 0x52c70d72), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x08e38914, 0x8b2cb2d7), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x204b24e0, 0x1cb1440c), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x8c2ca248, 0x874b2cb2),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24488b08, 0x43948162), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x9b1f7e77, 0x9e786aa6), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xeca6a9e7, 0x51030819), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x2892072c, 0x8e38a30b),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x83936913, 0x69961759), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x4538771b, 0x74ce3976), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x08e38b2d, 0xc204e24e), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x81cb1440, 0x28c2ca24),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xda44e38e, 0x85d660e4), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x75c6da65, 0x698607e9), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x99e7864a, 0xa6ca6aa6)
+];
+const offsetIncrs5 = [
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x00080000, 0x30020000), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x20c060), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x04000000, 0x1000000), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x50603018, 0xdb6db6db),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x00002db6, 0xa4800002), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x41241240, 0x12492088), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x00104120, 0x40000100), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x92092052, 0x2492c420),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x096592d9, 0xc30d800), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xc36036d8, 0xb01b0c06), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x6c36db0d, 0x186c0003), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xb01b6c06, 0xad860361),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x5b6dd6dd, 0x360001b7), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x0db6030c, 0xc412311c), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xb6e36e06, 0xdb0d), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xdb01861b, 0x9188e06),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x71b72b62, 0x6dd6db), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x00800920, 0x40240249), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x904920c2, 0x20824900), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x40049000, 0x12012480),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xa4906120, 0x5524ad4a), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x02480015, 0x40924020), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x48409409, 0x92522512), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24000820, 0x49201001),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x204a04a0, 0x29128924), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x00055549, 0x900830d2), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24c24034, 0x934930c), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x02682493, 0x4186900),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x61201a48, 0x9a498612), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x355249d4, 0xc348001), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x940d2402, 0x24c40930), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x0924e24d, 0x1a40009a),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x06920106, 0x6204984a), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x92712692, 0x92494d54), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24924924, 0x49249249), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x92492492, 0x24924924),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x49249249, 0x92492492), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24924924, 0x49249249), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x92492492, 0x24924924), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x49249249, 0x92492492),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24924924, 0x49249249), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x92492492, 0x24924924), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x49249249, 0x92492492), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24924924, 0x49249249),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x92492492, 0x24924924), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x49249249, 0x92492492), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24924924, 0x49249249), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x92492492, 0x24924924),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x49249249, 0x92492492), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24924924, 0x49249249), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x92492492, 0x24924924), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x49249249, 0x92492492),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24924924, 0x49249249), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x92492492, 0x24924924), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x49249249, 0x92492492), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24924924, 0x49249249),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x92492492, 0x24924924), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x49249249, 0x92492492), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24924924, 0x49249249), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x92492492, 0x24924924),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x49249249, 0x92492492), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24924924, 0x49249249), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x92492492, 0x24924924), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x49249249, 0x92492492),
+    new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24924924, 0x49249249), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x92492492, 0x24924924), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x49249249, 0x92492492), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x24924924)
+];
+// state map
+//   0 -> [(0, 0)]
+//   1 -> [(0, 2)]
+//   2 -> [(0, 1)]
+//   3 -> [(0, 1), (1, 1)]
+//   4 -> [(0, 2), (1, 2)]
+//   5 -> [t(0, 2), (0, 2), (1, 2), (2, 2)]
+//   6 -> [(0, 2), (2, 1)]
+//   7 -> [(0, 1), (2, 2)]
+//   8 -> [(0, 2), (2, 2)]
+//   9 -> [(0, 1), (1, 1), (2, 1)]
+//   10 -> [(0, 2), (1, 2), (2, 2)]
+//   11 -> [(0, 1), (2, 1)]
+//   12 -> [t(0, 1), (0, 1), (1, 1), (2, 1)]
+//   13 -> [(0, 2), (1, 2), (2, 2), (3, 2)]
+//   14 -> [t(0, 2), (0, 2), (1, 2), (2, 2), (3, 2)]
+//   15 -> [(0, 2), t(1, 2), (1, 2), (2, 2), (3, 2)]
+//   16 -> [(0, 2), (2, 1), (3, 1)]
+//   17 -> [(0, 1), t(1, 2), (2, 2), (3, 2)]
+//   18 -> [(0, 2), (3, 2)]
+//   19 -> [(0, 2), (1, 2), t(1, 2), (2, 2), (3, 2)]
+//   20 -> [t(0, 2), (0, 2), (1, 2), (3, 1)]
+//   21 -> [(0, 1), (1, 1), (3, 2)]
+//   22 -> [(0, 2), (2, 2), (3, 2)]
+//   23 -> [(0, 2), (1, 2), (3, 1)]
+//   24 -> [(0, 2), (1, 2), (3, 2)]
+//   25 -> [(0, 1), (2, 2), (3, 2)]
+//   26 -> [(0, 2), (3, 1)]
+//   27 -> [(0, 1), (3, 2)]
+//   28 -> [(0, 2), (2, 1), (4, 2)]
+//   29 -> [(0, 2), t(1, 2), (1, 2), (2, 2), (3, 2), (4, 2)]
+//   30 -> [(0, 2), (1, 2), (4, 2)]
+//   31 -> [(0, 2), (1, 2), (3, 2), (4, 2)]
+//   32 -> [(0, 2), (2, 2), (3, 2), (4, 2)]
+//   33 -> [(0, 2), (1, 2), t(2, 2), (2, 2), (3, 2), (4, 2)]
+//   34 -> [(0, 2), (1, 2), (2, 2), t(2, 2), (3, 2), (4, 2)]
+//   35 -> [(0, 2), (3, 2), (4, 2)]
+//   36 -> [(0, 2), t(2, 2), (2, 2), (3, 2), (4, 2)]
+//   37 -> [t(0, 2), (0, 2), (1, 2), (2, 2), (4, 2)]
+//   38 -> [(0, 2), (1, 2), (2, 2), (4, 2)]
+//   39 -> [t(0, 2), (0, 2), (1, 2), (2, 2), (3, 2), (4, 2)]
+//   40 -> [(0, 2), (1, 2), (2, 2), (3, 2), (4, 2)]
+//   41 -> [(0, 2), (4, 2)]
+//   42 -> [t(0, 2), (0, 2), (1, 2), (2, 2), t(2, 2), (3, 2), (4, 2)]
+//   43 -> [(0, 2), (2, 2), (4, 2)]
+//   44 -> [(0, 2), (1, 2), t(1, 2), (2, 2), (3, 2), (4, 2)]
+class Lev2TParametricDescription extends __WEBPACK_IMPORTED_MODULE_1__ParametricDescription__["a" /* ParametricDescription */] {
+    constructor(w) {
+        super(w, 2, [0, 2, 1, 0, 1, 0, -1, 0, 0, -1, 0, -1, -1, -1, -1, -1, -2, -1, -1, -1, -2, -1, -1, -2, -1, -1, -2, -1, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2]);
     }
-    /**
-     * Return the number of states needed to compute a Levenshtein DFA
-     */
-    size() {
-        return this.minErrors.length * (this.w + 1);
-    }
-    /**
-     * Returns true if the <code>state</code> in any Levenshtein DFA is an accept state (final state).
-     */
-    isAccept(absState) {
+    transition(absState, position, vector) {
+        // null absState should never be passed in
+        // assert absState != -1;
         // decode absState -> state, offset
         let state = Math.floor(absState / (this.w + 1));
         let offset = absState % (this.w + 1);
-        //assert offset >= 0;
-        return this.w - offset + this.minErrors[state] <= this.n;
-    }
-    /**
-     * Returns the position in the input word for a given <code>state</code>.
-     * This is the minimal boundary for the state.
-     */
-    getPosition(absState) {
-        return absState % (this.w + 1);
-    }
-    unpack(data, index, bitsPerValue) {
-        const bitLoc = bitsPerValue * index;
-        const dataLoc = (bitLoc >> 6);
-        const bitStart = (bitLoc & 63);
-        if (bitStart + bitsPerValue <= 64) {
-            // not split
-            return data[dataLoc].shiftRight(bitStart).and(MASKS[bitsPerValue - 1]).toInt();
+        // assert offset >= 0;
+        if (position === this.w) {
+            if (state < 3) {
+                const loc = vector * 3 + state;
+                offset += this.unpack(offsetIncrs0, loc, 1);
+                state = this.unpack(toStates0, loc, 2) - 1;
+            }
+        }
+        else if (position === this.w - 1) {
+            if (state < 5) {
+                const loc = vector * 5 + state;
+                offset += this.unpack(offsetIncrs1, loc, 1);
+                state = this.unpack(toStates1, loc, 3) - 1;
+            }
+        }
+        else if (position === this.w - 2) {
+            if (state < 13) {
+                const loc = vector * 13 + state;
+                offset += this.unpack(offsetIncrs2, loc, 2);
+                state = this.unpack(toStates2, loc, 4) - 1;
+            }
+        }
+        else if (position === this.w - 3) {
+            if (state < 28) {
+                const loc = vector * 28 + state;
+                offset += this.unpack(offsetIncrs3, loc, 2);
+                state = this.unpack(toStates3, loc, 5) - 1;
+            }
+        }
+        else if (position === this.w - 4) {
+            if (state < 45) {
+                const loc = vector * 45 + state;
+                offset += this.unpack(offsetIncrs4, loc, 3);
+                state = this.unpack(toStates4, loc, 6) - 1;
+            }
         }
         else {
-            // split
-            const part = 64 - bitStart;
-            return (data[dataLoc].shiftRight(bitStart).and(MASKS[part - 1])).toInt()
-                + (data[1 + dataLoc].and(MASKS[bitsPerValue - part - 1]).shiftLeft(part)).toInt();
+            if (state < 45) {
+                const loc = vector * 45 + state;
+                offset += this.unpack(offsetIncrs5, loc, 3);
+                state = this.unpack(toStates5, loc, 6) - 1;
+            }
+        }
+        if (state === -1) {
+            // null state
+            return -1;
+        }
+        else {
+            // translate back to abs
+            return state * (this.w + 1) + offset;
         }
     }
 }
-/* harmony export (immutable) */ __webpack_exports__["a"] = ParametricDescription;
+/* harmony export (immutable) */ __webpack_exports__["a"] = Lev2TParametricDescription;
 
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2770,10 +2912,10 @@ const PLUGINS = create();
 /* harmony export (immutable) */ __webpack_exports__["a"] = PLUGINS;
 
 
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(14)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(15)))
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports) {
 
 var g;
