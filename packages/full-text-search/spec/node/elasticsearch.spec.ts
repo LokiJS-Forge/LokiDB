@@ -203,8 +203,6 @@ describe("Compare scoring against elasticsearch", () => {
             let ftsScore = Math.round(ftsHits[esID] * COMPARE_PRECISION) / COMPARE_PRECISION;
 
             expect(esScore).toEqual(ftsScore);
-            // if (esScore !== ftsScore) {
-            //   throw undefined;
           }
           done();
         })

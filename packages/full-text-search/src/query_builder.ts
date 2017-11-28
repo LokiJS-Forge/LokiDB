@@ -162,7 +162,7 @@ export class WildcardQuery extends BaseQuery {
  * @example
  * new QueryBuilder()
  *   .fuzzy("surname", "einsten")
- *     .fuzziness(3)
+ *     .fuzziness(2)
  *     .prefixLength(3)
  * .build();
  * // The resulting documents:
@@ -184,7 +184,7 @@ export class FuzzyQuery extends BaseQuery {
 
   /**
    * Sets the maximal allowed fuzziness.
-   * @param {number|string} fuzziness - the edit distance as number or AUTO
+   * @param {number|string} fuzziness - the edit distance 0, 1, 2 or AUTO
    *
    * AUTO generates an edit distance based on the length of the term:
    * * 0..2 -> must match exactly
@@ -194,8 +194,8 @@ export class FuzzyQuery extends BaseQuery {
    * @return {FuzzyQuery} - object itself for cascading
    */
   fuzziness(fuzziness: number | string) {
-    if (fuzziness !== "AUTO" && fuzziness < 0) {
-      throw TypeError("Fuzziness must be a positive number or AUTO.");
+    if (fuzziness !== "AUTO" && (fuzziness < 0 || fuzziness > 2)) {
+      throw TypeError("Fuzziness must be 0, 1, 2 or AUTO.");
     }
     this._data.fuzziness = fuzziness;
     return this;
@@ -368,7 +368,7 @@ export class MatchQuery extends BaseQuery {
 
   /**
    * Sets the maximal allowed fuzziness.
-   * @param {number|string} fuzziness - the edit distance as number or AUTO
+   * @param {number|string} fuzziness - the edit distance 0, 1, 2 or AUTO
    *
    * AUTO generates an edit distance based on the length of the term:
    * * 0..2 -> must match exactly
@@ -378,8 +378,8 @@ export class MatchQuery extends BaseQuery {
    * @return {MatchQuery} - object itself for cascading
    */
   fuzziness(fuzziness: number | string) {
-    if (fuzziness !== "AUTO" && fuzziness < 0) {
-      throw TypeError("Fuzziness must be a positive number or AUTO.");
+    if (fuzziness !== "AUTO" && (fuzziness < 0 || fuzziness > 2)) {
+      throw TypeError("Fuzziness must be 0, 1, 2 or AUTO.");
     }
     this._data.fuzziness = fuzziness;
     return this;

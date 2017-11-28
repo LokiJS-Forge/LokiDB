@@ -24,7 +24,7 @@ export function toCodePoints(str: string): number[] {
   return r;
 }
 
-//TODO: export type IndexTerm = [InvertedIndex.Index, number[]];
+export type IndexTerm = [InvertedIndex.Index, number[]];
 
 /**
  * Inverted index class handles featured text search for specific document fields.
@@ -258,12 +258,12 @@ export class InvertedIndex {
    * @param {object} root - the term index to start from
    * @returns {Array} - Array with term indices and extension
    */
-  static extendTermIndex(root: InvertedIndex.Index) {
-    const termIndices: ANY[] = [];
+  static extendTermIndex(root: InvertedIndex.Index): IndexTerm[] {
+    const termIndices: IndexTerm[] = [];
 
     const recursive = (idx: InvertedIndex.Index, r: number[]) => {
       if (idx.df !== undefined) {
-        termIndices.push({index: idx, term: r.slice()});
+        termIndices.push([idx, r.slice()]);
       }
 
       r.push(0);

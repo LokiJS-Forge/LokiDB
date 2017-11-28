@@ -18,7 +18,7 @@ export class Scorer {
     this._cache = {};
   }
 
-  prepare(fieldName: string, boost: number, termIdx: ANY, doScoring: boolean, docResults: Map<number, any[]> = new Map(), term: number[] = null) {
+  prepare(fieldName: string, boost: number, termIdx: InvertedIndex.Index, doScoring: boolean, docResults: Map<number, any[]> = new Map(), term: number[] = null) {
     if (termIdx === null || termIdx.dc === undefined) {
       return null;
     }
