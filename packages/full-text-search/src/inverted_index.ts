@@ -11,7 +11,7 @@ export function toCodePoints(str: string): number[] {
   const r = [];
   for (let i = 0; i < str.length;) {
     const chr = str.charCodeAt(i++);
-    if(chr >= 0xD800 && chr <= 0xDBFF) {
+    if (chr >= 0xD800 && chr <= 0xDBFF) {
       // surrogate pair
       const low = str.charCodeAt(i++);
       r.push(0x10000 + ((chr - 0xD800) << 10) | (low - 0xDC00));
@@ -260,7 +260,7 @@ export class InvertedIndex {
   static extendTermIndex(root: InvertedIndex.Index) {
     const termIndices: ANY[] = [];
 
-    const rec = (idx: InvertedIndex.Index, r: number[]) => {
+    const recursive = (idx: InvertedIndex.Index, r: number[]) => {
       if (idx.df !== undefined) {
         termIndices.push({index: idx, term: r.slice()});
       }
@@ -268,16 +268,16 @@ export class InvertedIndex {
       r.push(0);
       for (const child of idx) {
         r[r.length - 1] = child[0];
-        rec(child[1], r);
+        recursive(child[1], r);
       }
       r.pop();
     };
-    rec(root, []);
+    recursive(root, []);
     return termIndices;
   }
 
   private static serializeIndex(index: InvertedIndex.Index): any[] {
-    const rec = (idx: InvertedIndex.Index): any[] => {
+    const recursive = (idx: InvertedIndex.Index): any[] => {
 
       let k: ANY[] = [];
       let v: ANY[] = [];
@@ -289,20 +289,20 @@ export class InvertedIndex {
 
       for (const child of idx) {
         k.push(child[0]);
-        v.push(rec(child[1]));
+        v.push(recursive(child[1]));
       }
       return [k, v, r];
     };
 
-    return rec(index);
+    return recursive(index);
   }
 
   private static deserializeIndex(ar: any): InvertedIndex.Index {
-    const rec = (arr: any): any => {
+    const recursive = (arr: any): any => {
       let idx: InvertedIndex.Index = new Map();
 
       for (let i = 0; i < arr[0].length; i++) {
-        idx.set(arr[0][i], rec(arr[1][i]));
+        idx.set(arr[0][i], recursive(arr[1][i]));
       }
       if (arr[2].df !== undefined) {
         idx.df = arr[2].df;
@@ -312,7 +312,7 @@ export class InvertedIndex {
       return idx;
     };
 
-    return rec(ar);
+    return recursive(ar);
   }
 
   /**

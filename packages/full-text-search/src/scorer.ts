@@ -68,7 +68,7 @@ export class Scorer {
             const tfNorm = (tf * (k1 + 1)) / (tf + k1 * (1 - b + b * (fieldLength / avgFieldLength)));
             res = docResult.idf * tfNorm * docResult.boost;
             // console.log(
-            // 	docId + ":" + docResult.fieldName + ":" + docResult.term + " = " + res,
+            // 	docId + ":" + docResult.fieldName + ":" + String.fromCharCode(...docResult.term) + " = " + res,
             // 	"\n\ttype: BM25",
             // 	"\n\tboost: " + docResult.boost,
             // 	"\n\tidf : " + docResult.idf,

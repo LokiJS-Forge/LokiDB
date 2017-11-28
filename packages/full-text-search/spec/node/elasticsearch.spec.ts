@@ -5,6 +5,7 @@ import {FullTextSearch} from "../../src/full_text_search";
 import {Tokenizer} from "../../src/tokenizer";
 import {Client} from "elasticsearch";
 import {Scorer} from "../../src/scorer";
+import * as util from "util";
 
 const INDEX_NAME = "test_index";
 const INDEX_TYPE = "MockUp";
@@ -204,7 +205,6 @@ describe("Compare scoring against elasticsearch", () => {
             expect(esScore).toEqual(ftsScore);
             // if (esScore !== ftsScore) {
             //   throw undefined;
-            // }
           }
           done();
         })

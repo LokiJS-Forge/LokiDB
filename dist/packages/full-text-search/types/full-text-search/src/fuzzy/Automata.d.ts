@@ -1,9 +1,4 @@
-export declare class Transition {
-    dest: number;
-    min: number;
-    max: number;
-    constructor(dest: number, min: number, max: number);
-}
+export declare type Transition = [number, number, number];
 export declare const MIN_CODE_POINT = 0;
 export declare const MAX_CODE_POINT = 1114111;
 export declare class Automaton {

@@ -6,7 +6,11 @@ export declare class LevenshteinAutomata {
     private rangeUpper;
     private description;
     private alphabet;
-    constructor(input: number[], alphaMax?: number);
+    private editDistance;
+    constructor(input: number[], editDistance: number);
     getVector(x: number, pos: number, end: number): number;
-    run(): Automaton;
+    /**
+     * @returns {Automaton}
+     */
+    toAutomaton(): Automaton;
 }

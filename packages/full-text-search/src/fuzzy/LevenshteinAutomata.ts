@@ -63,13 +63,12 @@ export class LevenshteinAutomata {
     let automat = new Automaton();
     const range = 2 * this.editDistance + 1;
 
-    // the number of states is based on the length of the word and n
+    // the number of states is based on the length of the word and the edit distance
     const numStates = this.description.size();
 
-    // Prefix is not needed to be handeld by the automat.
+    // Prefix is not needed to be handled by the automaton.
+    // stateOffset = 0;
     automat.createState();
-
-    const stateOffset = 0;
 
     // create all states, and mark as accept states if appropriate
     for (let i = 1; i < numStates; i++) {
@@ -91,22 +90,19 @@ export class LevenshteinAutomata {
         const dest = this.description.transition(k, xpos, cvec);
 
         if (dest >= 0) {
-          automat.addTransition(stateOffset + k, stateOffset + dest, ch, ch);
+          automat.addTransition(/*stateOffset +*/ k, /*stateOffset + */dest, ch, ch);
         }
       }
 
       const dest = this.description.transition(k, xpos, 0);
       if (dest >= 0) {
         for (let r = 0; r < this.numRanges; r++) {
-          automat.addTransition(stateOffset + k, stateOffset + dest, this.rangeLower[r], this.rangeUpper[r]);
+          automat.addTransition(/*stateOffset + */k, /*stateOffset + */dest, this.rangeLower[r], this.rangeUpper[r]);
         }
       }
     }
 
-    if (!automat.deterministic) {
-      //exit(0);
-      // console.log("bad d");
-    }
+    // assert automat.deterministic;
     automat.finishState();
 
     return automat;
