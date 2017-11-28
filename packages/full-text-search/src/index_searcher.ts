@@ -41,7 +41,7 @@ export class IndexSearcher {
   }
 
   private _recursive(query: ANY, doScoring: boolean) {
-    let docResults = {};
+    let docResults: Map<number, any[]> = new Map();
     let boost = query.boost !== undefined ? query.boost : 1;
     let fieldName = query.field !== undefined ? query.field : null;
     let enableScoring = query.enable_scoring !== undefined ? query.enable_scoring : false;
@@ -68,7 +68,7 @@ export class IndexSearcher {
 
           let empty = false;
           if (docResults === null) {
-            docResults = {};
+            docResults = new Map();
             empty = true;
           }
 
@@ -86,15 +86,16 @@ export class IndexSearcher {
             }
           }
           // Remove all docs with fewer matches.
-          let docs = Object.keys(shouldDocs);
-          for (let i = 0, docId; i < docs.length, docId = docs[i]; i++) {
-            if (shouldDocs[docId].length >= msm) {
-              if (docResults[docId] !== undefined) {
-                docResults[docId].push(...shouldDocs[docId]);
+          // let docs = Object.keys(shouldDocs);
+          // for (let i = 0, docId; i < docs.length, docId = docs[i]; i++) {
+          for (const [docId, res] of shouldDocs) {
+            if (res.length >= msm) {
+              if (docResults.has(docId)) {
+                docResults.get(docId).push(...res);
               } else if (empty) {
-                docResults[docId] = shouldDocs[docId];
+                docResults.set(docId, res);
               } else {
-                delete docResults[docId];
+                docResults.delete(docId);
               }
             }
           }
@@ -102,10 +103,9 @@ export class IndexSearcher {
         if (query.not !== undefined) {
           let notDocs = this._getAll(query.not.values, false);
           // Remove all docs.
-          let docs = Object.keys(notDocs);
-          for (let i = 0, docId; i < docs.length, docId = docs[i]; i++) {
-            if (docResults[docId] !== undefined) {
-              delete docResults[docId];
+          for (const docId of notDocs.keys()) {
+            if (docResults.has(docId)) {
+              docResults.delete(docId);
             }
           }
         }
@@ -147,10 +147,9 @@ export class IndexSearcher {
       }
       case "constant_score": {
         let tmpDocResults = this._getAll(query.filter.values, false);
-        let docs = Object.keys(tmpDocResults);
         // Add to each document a constant score.
-        for (let i = 0; i < docs.length; i++) {
-          this._scorer.scoreConstant(boost, docs[i], docResults);
+        for (const docId of tmpDocResults.keys()) {
+          this._scorer.scoreConstant(boost, docId, docResults);
         }
         break;
       }
@@ -167,9 +166,8 @@ export class IndexSearcher {
       }
       case "exists": {
         if (root !== null) {
-          let docs = Object.keys(this._invIdxs[fieldName].documentStore);
-          for (let i = 0; i < docs.length; i++) {
-            this._scorer.scoreConstant(boost, docs[i], docResults);
+          for (const docId of this._invIdxs[fieldName].documentStore.keys()) {
+            this._scorer.scoreConstant(boost, docId, docResults);
           }
         }
         break;
@@ -219,7 +217,7 @@ export class IndexSearcher {
     return docResults;
   }
 
-  private _getUnique(values: ANY[], doScoring: boolean, docResults: ANY) {
+  private _getUnique(values: ANY[], doScoring: boolean, docResults: Map<number, any[]>) {
     if (values.length === 0) {
       return docResults;
     }
@@ -231,12 +229,11 @@ export class IndexSearcher {
         continue;
       }
 
-      let docs = Object.keys(docResults);
-      for (let j = 0, docId; j < docs.length, docId = docs[j]; j++) {
-        if (currDocs[docId] === undefined) {
-          delete docResults[docId];
+      for (const docId of docResults.keys()) {
+        if (!currDocs.has(docId)) {
+          docResults.delete(docId);
         } else {
-          docResults[docId].push(...currDocs[docId]);
+          docResults.get(docId).push(...currDocs.get(docId));
         }
       }
     }
@@ -244,15 +241,16 @@ export class IndexSearcher {
   }
 
   private _getAll(values: ANY[], doScoring: boolean) {
-    let docResults = {};
+    let docResults: Map<number, any[]> = new Map();
     for (let i = 0; i < values.length; i++) {
       let currDocs = this._recursive(values[i], doScoring);
-      let docs = Object.keys(currDocs);
-      for (let j = 0, docId; j < docs.length, docId = docs[j]; j++) {
-        if (docResults[docId] === undefined) {
-          docResults[docId] = currDocs[docId];
+      // let docs = Object.keys(currDocs);
+      // for (let j = 0, docId; j < docs.length, docId = docs[j]; j++) {
+      for (const docId of currDocs.keys()) {
+        if (!docResults.has(docId)) {
+          docResults.set(docId, currDocs.get(docId));
         } else {
-          docResults[docId].push(...currDocs[docId]);
+          docResults.get(docId).push(...currDocs.get(docId));
         }
       }
     }
@@ -317,9 +315,10 @@ function fuzzySearch(query: any, root: InvertedIndex.Index) {
   // Create an automaton from the fuzzy.
   let automaton = store[query.value];
   //if (!automaton) {
-    store[query.value] = new RunAutomaton(new LevenshteinAutomata(fuzzy, fuzziness).toAutomaton());
-    automaton = store[query.value];
- // }
+  store[query.value] = new RunAutomaton(new LevenshteinAutomata(fuzzy, fuzziness).toAutomaton());
+  automaton = store[query.value];
+
+  // }
 
   function determineEditDistance(state: number, termLength: number, fuzzyLength: number) {
     // Check how many edits this fuzzy can still do.
