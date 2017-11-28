@@ -18,7 +18,7 @@ export class LevenshteinAutomata {
   constructor(input: number[], editDistance: number) {
     this.word = input;
     this.editDistance = editDistance;
-    this.alphabet = Array.from(this.word).sort((a, b) => a - b) as any;
+    this.alphabet = [...new Set(this.word)].sort((a, b) => a - b) as any;
 
     this.numRanges = 0;
     this.rangeLower = new Array(this.alphabet.length + 2);

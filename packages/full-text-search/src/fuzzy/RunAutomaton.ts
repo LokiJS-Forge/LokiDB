@@ -16,8 +16,8 @@ export class RunAutomaton {
     this.automaton = a;
     this.points = a.getStartPoints();
     this.size = a.getNumStates();
-    this.accept = [];
-    this.transitions = [];
+    this.accept = new Array(this.size);
+    this.transitions = new Array(this.size * this.points.length);
 
     for (let n = 0; n < this.size; n++) {
       this.accept[n] = a.isAccept(n);
