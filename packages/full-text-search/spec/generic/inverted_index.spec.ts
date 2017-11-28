@@ -12,7 +12,7 @@ describe("inverted index", () => {
   it("get", () => {
     let ii = new InvertedIndex();
     expect(ii.documentCount).toBeNumber();
-    expect(ii.documentStore).toBeObject();
+    expect(ii.documentStore instanceof Map).toBeTrue();
     expect(ii.totalFieldLength).toBeNumber();
     expect(ii.tokenizer).toBeObject();
     expect(ii.root instanceof Map).toBeTrue();

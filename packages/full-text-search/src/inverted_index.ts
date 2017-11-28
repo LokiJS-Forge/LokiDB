@@ -24,6 +24,8 @@ export function toCodePoints(str: string): number[] {
   return r;
 }
 
+//TODO: export type IndexTerm = [InvertedIndex.Index, number[]];
+
 /**
  * Inverted index class handles featured text search for specific document fields.
  * @hidden
@@ -33,7 +35,7 @@ export class InvertedIndex {
   private _optimizeChanges: boolean;
   private _tokenizer: Tokenizer;
   private _docCount: number = 0;
-  private _docStore: object = {};
+  private _docStore: Map<number, InvertedIndex.DocStore> = new Map();
   private _totalFieldLength: number = 0;
   private _root: InvertedIndex.Index = new Map();
 
@@ -86,22 +88,21 @@ export class InvertedIndex {
    * @param {number} docId - the doc id of the field
    */
   insert(field: string, docId: number) {
-    if (this._docStore[docId] !== undefined) {
+    if (this._docStore.has(docId)) {
       throw Error("Field already added.");
     }
-
-    this._docCount += 1;
-    this._docStore[docId] = {};
 
     // Tokenize document field.
     const fieldTokens = this._tokenizer.tokenize(field);
     this._totalFieldLength += fieldTokens.length;
+    this._docCount += 1;
+    this._docStore.set(docId, {fieldLength: fieldTokens.length});
 
-    const termRefs: ANY[] = [];
-    this._docStore[docId] = {fieldLength: fieldTokens.length};
+    // Holds references to each index of a document.
+    const indexRef: InvertedIndex.Index[] = [];
     if (this._optimizeChanges) {
-      Object.defineProperties(this._docStore[docId], {
-        termRefs: {enumerable: false, configurable: true, writable: true, value: termRefs}
+      Object.defineProperties(this._docStore.get(docId), {
+        indexRef: {enumerable: false, configurable: true, writable: true, value: indexRef}
       });
     }
 
@@ -136,14 +137,14 @@ export class InvertedIndex {
       }
       // Add term info to index leaf.
       if (branch.dc === undefined) {
-        branch.dc = {};
+        branch.dc = new Map();
         branch.df = 0;
       }
-      branch.dc[docId] = tf;
+      branch.dc.set(docId, tf);
       branch.df += 1;
 
       // Store index leaf for deletion.
-      termRefs.push(branch);
+      indexRef.push(branch);
     }
   }
 
@@ -152,12 +153,12 @@ export class InvertedIndex {
    * @param {number} docId - the document.
    */
   remove(docId: number) {
-    if (this._docStore[docId] === undefined) {
+    if (!this._docStore.has(docId)) {
       return;
     }
-    const docStore = this._docStore[docId];
+    const docStore = this._docStore.get(docId);
     // Remove document.
-    delete this._docStore[docId];
+    this._docStore.delete(docId);
     this._docCount -= 1;
 
     // Reduce total field length.
@@ -166,11 +167,11 @@ export class InvertedIndex {
     if (this._optimizeChanges) {
       // Iterate over all term references.
       // Remove docId from docs and decrement document frequency.
-      const termRefs = docStore.termRefs;
-      for (let j = 0; j < termRefs.length; j++) {
-        let index = termRefs[j];
+      const indexRef = docStore.indexRef;
+      for (let j = 0; j < indexRef.length; j++) {
+        let index = indexRef[j];
         index.df -= 1;
-        delete index.dc[docId];
+        index.dc.delete(docId);
 
         // Check if no document is left for current tree.
         if (index.df === 0) {
@@ -214,9 +215,9 @@ export class InvertedIndex {
         }
         // Remove docId from docs and decrement document frequency.
         if (root.df !== undefined) {
-          if (root.dc[docId] !== undefined) {
+          if (root.dc.has(docId)) {
             root.df -= 1;
-            delete root.dc[docId];
+            root.dc.delete(docId);
 
             // Delete unused meta data of branch.
             if (root.df === 0) {
@@ -281,7 +282,11 @@ export class InvertedIndex {
 
       let k: ANY[] = [];
       let v: ANY[] = [];
-      let r = {df: idx.df, dc: idx.dc};
+
+      let r = {};
+      if (idx.dc !== undefined) {
+        r = {df: idx.df, dc: [...idx.dc]};
+      }
 
       if (idx.size === 0) {
         return [k, v, r];
@@ -291,6 +296,7 @@ export class InvertedIndex {
         k.push(child[0]);
         v.push(recursive(child[1]));
       }
+
       return [k, v, r];
     };
 
@@ -306,7 +312,7 @@ export class InvertedIndex {
       }
       if (arr[2].df !== undefined) {
         idx.df = arr[2].df;
-        idx.dc = arr[2].dc;
+        idx.dc = new Map(arr[2].dc);
       }
 
       return idx;
@@ -326,7 +332,7 @@ export class InvertedIndex {
         _optimizeChanges: this._optimizeChanges,
         _tokenizer: this._tokenizer,
         _docCount: this._docCount,
-        _docStore: this._docStore,
+        _docStore: [...this._docStore],
         _totalFieldLength: this._totalFieldLength,
         _root: InvertedIndex.serializeIndex(this._root)
       };
@@ -352,7 +358,7 @@ export class InvertedIndex {
     });
     if (invIdx._store) {
       invIdx._docCount = serialized._docCount;
-      invIdx._docStore = serialized._docStore;
+      invIdx._docStore = new Map(serialized._docStore);
       invIdx._totalFieldLength = serialized._totalFieldLength;
       invIdx._root = InvertedIndex.deserializeIndex(serialized._root);
     }
@@ -372,17 +378,16 @@ export class InvertedIndex {
 
       if (index.dc !== undefined) {
         // Get documents of term.
-        const docIds = Object.keys(index.dc);
-        for (let j = 0; j < docIds.length; j++) {
+        for (const docId of index.dc.keys()) {
           // Get document store at specific document/field.
-          const ref = invIdx._docStore[docIds[j]];
-          if (ref.termRefs === undefined) {
+          const ref = invIdx._docStore.get(docId);
+          if (ref.indexRef === undefined) {
             Object.defineProperties(ref, {
-              termRefs: {enumerable: false, configurable: true, writable: true, value: []}
+              indexRef: {enumerable: false, configurable: true, writable: true, value: []}
             });
           }
           // Set reference to term index.
-          ref.termRefs.push(index);
+          ref.indexRef.push(index);
         }
       }
     };
@@ -402,15 +407,20 @@ export namespace InvertedIndex {
     tokenizer?: Tokenizer;
   }
 
-  export type Index = Map<number, any> & { dc?: object, df?: number };
+  export type Index = Map<number, any> & { dc?: Map<number, number>, df?: number, pa?: Index };
 
   export interface Serialization {
     _store: boolean;
     _optimizeChanges: boolean;
     _tokenizer: Tokenizer.Serialization;
     _docCount?: number;
-    _docStore?: object;
+    _docStore?: Map<number, DocStore>;
     _totalFieldLength?: number;
     _root?: Index;
+  }
+
+  export interface DocStore {
+    fieldLength?: number;
+    indexRef?: Index[];
   }
 }
