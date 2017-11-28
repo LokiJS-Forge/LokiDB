@@ -18,45 +18,44 @@ export class Scorer {
     this._cache = {};
   }
 
-  prepare(fieldName: string, boost: number, termIdx: ANY, doScoring: boolean, docResults: object = {}, term: number[] = null) {
+  prepare(fieldName: string, boost: number, termIdx: ANY, doScoring: boolean, docResults: Map<number, any[]> = new Map(), term: number[] = null) {
     if (termIdx === null || termIdx.dc === undefined) {
       return null;
     }
 
     const idf = this._idf(fieldName, termIdx.df);
     for (const [docId, tf] of termIdx.dc) {
-      if (docResults[docId] === undefined) {
-        docResults[docId] = [];
+      if (!docResults.has(docId)) {
+        docResults.set(docId, []);
       }
 
       if (doScoring) {
-        docResults[docId].push({type: "BM25", tf, idf, boost, fieldName, term});
+        docResults.get(docId).push({type: "BM25", tf, idf, boost, fieldName, term});
       } else {
-        docResults[docId] = [{type: "constant", value: 1, boost, fieldName}];
+        docResults.set(docId, [{type: "constant", value: 1, boost, fieldName}]);
       }
     }
 
     return docResults;
   }
 
-  scoreConstant(boost: number, docId: string, docResults: object = {}) {
-    if (docResults[docId] === undefined) {
-      docResults[docId] = [];
+  scoreConstant(boost: number, docId: number, docResults: Map<number, any[]> = new Map()) {
+    if (!docResults.has(docId)) {
+      docResults.set(docId, []);
     }
-    docResults[docId].push({type: "constant", value: 1, boost});
+    docResults.get(docId).push({type: "constant", value: 1, boost});
     return docResults;
   }
 
-  finalScore(query: ANY, docResults: object = {}) {
+  finalScore(query: ANY, docResults: Map<number, any[]> = new Map()) {
     const result = {};
     const k1 = query.scoring.k1;
     const b = query.scoring.b;
 
-    const docs = Object.keys(docResults);
-    for (let i = 0, docId; i < docs.length, docId = docs[i]; i++) {
+    for (const [docId, result1] of docResults) {
       let docScore = 0;
-      for (let j = 0; j < docResults[docId].length; j++) {
-        const docResult = docResults[docId][j];
+      for (let j = 0; j < result1.length; j++) {
+        const docResult = result1[j];
         let res = 0;
         switch (docResult.type) {
           case "BM25": {
