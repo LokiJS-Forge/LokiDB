@@ -24,15 +24,12 @@ export class Scorer {
     }
 
     const idf = this._idf(fieldName, termIdx.df);
-    const docIds = Object.keys(termIdx.dc);
-    for (let j = 0; j < docIds.length; j++) {
-      const docId = docIds[j];
+    for (const [docId, tf] of termIdx.dc) {
       if (docResults[docId] === undefined) {
         docResults[docId] = [];
       }
 
       if (doScoring) {
-        const tf = termIdx.dc[docId];
         docResults[docId].push({type: "BM25", tf, idf, boost, fieldName, term});
       } else {
         docResults[docId] = [{type: "constant", value: 1, boost, fieldName}];
@@ -60,12 +57,11 @@ export class Scorer {
       let docScore = 0;
       for (let j = 0; j < docResults[docId].length; j++) {
         const docResult = docResults[docId][j];
-
         let res = 0;
         switch (docResult.type) {
           case "BM25": {
             const tf = docResult.tf;
-            const fieldLength = Scorer._calculateFieldLength(this._invIdxs[docResult.fieldName].documentStore[docId]
+            const fieldLength = Scorer._calculateFieldLength(this._invIdxs[docResult.fieldName].documentStore.get(+docId)
               .fieldLength);
             const avgFieldLength = this._avgFieldLength(docResult.fieldName);
             const tfNorm = (tf * (k1 + 1)) / (tf + k1 * (1 - b + b * (fieldLength / avgFieldLength)));
