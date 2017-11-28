@@ -1,12 +1,20 @@
 /* global suite, benchmark */
-const FTS = require("./../dist/packages/full-text-search/lokijs.full-text-search.min");
-const FTS2 = require("./full-text-search2.min");
+const FTS = require("./lokijs.full-text-search-old.min");
+const FTS2 = require("./../dist/packages/full-text-search/lokijs.full-text-search.min");
 const Benchmark = require("benchmark");
+
+// const RunAutomaton = FTS2.RunAutomaton;
+// const LevenshteinAutomata = FTS2.LevenshteinAutomata;
+//
+// for (let i = 0; i < 1e3; i++)
+//   new RunAutomaton(new LevenshteinAutomata("aabbcc", 2).toAutomaton());
+
+
 
 function make_word() {
   let text = "";
   const possible = "abcdefghijklmnopqrstuvwxyz";
-  const length = Math.floor(Math.random() * 10);
+  const length = Math.floor(Math.random() * 10) + 1;
 
   for (let i = 0; i < length; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
@@ -28,45 +36,8 @@ for (let i = 0; i < 1e4; i++) {
 
 var doc = docs.sort(function (a, b) { return b.length - a.length; })[0];
 
-let query = new FTS.QueryBuilder().fuzzy("body", doc).prefixLength(1).fuzziness(1).extended(true).build();
+let query = new FTS.QueryBuilder().fuzzy("body", "aabbcc").prefixLength(1).fuzziness(1).build();
 
-
-
-
-
-// let ii = new FTS.InvertedIndex();
-// ii.insert("abcd", 1);
-// ii.insert("abdc", 2);
-// ii.insert("abc", 3);
-// ii.insert("abcde", 4);
-// ii.insert("bcd", 5);
-// ii.insert("bacd", 6);
-// ii.insert("badc", 7);
-
-// run(ra, ii.root);
-//
-// QueryBuilder = FTS.QueryBuilder;
-//
-// let fts = new FTS.FullTextSearch([{name: "body"}], "id");
-// fts.addDocument({body: "abcd"}, 1);
-// fts.addDocument({body: "abdc"}, 2);
-// fts.addDocument({body: "abc"}, 3);
-// fts.addDocument({body: "abcde"}, 4);
-// fts.addDocument({body: "bcd"}, 5);
-// fts.addDocument({body: "bacd"}, 6);
-// fts.addDocument({body: "\u{169}"}, 7);
-//
-//
-//
-//
-// try {
-//   //let r = fts.search(new QueryBuilder().fuzzy("body", "bcd").prefixLength(0).fuzziness(2).build());
-//   let r = fts.search(new QueryBuilder().prefix("body", "\u{169}").build());
-//   console.log(r);
-// } catch (e) {
-//   console.log(e);
-// }
-console.log("here");
 let r = fts.search(query);
 let f = fts2.search(query);
 console.log(JSON.stringify(Object.keys(r)) === JSON.stringify(Object.keys(f)));
@@ -78,9 +49,6 @@ suite
   })
   .add("b", () => {
     fts2.search(query);
-  })
-  .add("a", () => {
-    fts.search(query);
   })
   // add listeners
   .on('cycle', function (event) {

@@ -15,6 +15,44 @@ export const MIN_CODE_POINT = 0;
  */
 export const MAX_CODE_POINT = 1114111;
 
+function destMinMax(a: Transition, b: Transition) {
+  if (a[0] < b[0]) {
+    return -1;
+  } else if (a[0] > b[0]) {
+    return 1;
+  }
+  if (a[1] < b[1]) {
+    return -1;
+  } else if (a[1] > b[1]) {
+    return 1;
+  }
+  if (a[2] < b[2]) {
+    return -1;
+  } else if (a[2] > b[2]) {
+    return 1;
+  }
+  return 0;
+}
+
+function minMaxDest(a: Transition, b: Transition) {
+  if (a[1] < b[1]) {
+    return -1;
+  } else if (a[1] > b[1]) {
+    return 1;
+  }
+  if (a[2] < b[2]) {
+    return -1;
+  } else if (a[2] > b[2]) {
+    return 1;
+  }
+  if (a[0] < b[0]) {
+    return -1;
+  } else if (a[0] > b[0]) {
+    return 1;
+  }
+  return 0;
+}
+
 /**
  * From org/apache/lucene/util/automaton/Automaton.java
  * @hidden
@@ -60,45 +98,7 @@ export class Automaton {
   }
 
   finishCurrentState() {
-    const destMinMax = (a: Transition, b: Transition) => {
-      if (a[0] < b[0]) {
-        return -1;
-      } else if (a[0] > b[0]) {
-        return 1;
-      }
-      if (a[1] < b[1]) {
-        return -1;
-      } else if (a[1] > b[1]) {
-        return 1;
-      }
-      if (a[2] < b[2]) {
-        return -1;
-      } else if (a[2] > b[2]) {
-        return 1;
-      }
-      return 0;
-    };
-
-    const minMaxDest = (a: Transition, b: Transition) => {
-      if (a[1] < b[1]) {
-        return -1;
-      } else if (a[1] > b[1]) {
-        return 1;
-      }
-      if (a[2] < b[2]) {
-        return -1;
-      } else if (a[2] > b[2]) {
-        return 1;
-      }
-      if (a[0] < b[0]) {
-        return -1;
-      } else if (a[0] > b[0]) {
-        return 1;
-      }
-      return 0;
-    };
-
-    // Sort all transitions
+    // Sort all transitions.
     this.transitions.sort(destMinMax);
 
     let offset = 0;
@@ -106,9 +106,6 @@ export class Automaton {
     let p: Transition = [-1, -1, -1];
 
     for (let i = 0, len = this.transitions.length; i < len; i++) {
-      // tDest = transitions[offset + 3 * i];
-      // tMin = transitions[offset + 3 * i + 1];
-      // tMax = transitions[offset + 3 * i + 2];
       let t = this.transitions[i];
 
       if (p[0] === t[0]) {
@@ -147,8 +144,8 @@ export class Automaton {
       upto++;
     }
 
-    this.transitions = this.transitions.slice(0, upto);
-    this.transitions.sort(minMaxDest);
+    this.trans[this.currState] = this.transitions.slice(0, upto).sort(minMaxDest);
+    this.transitions = [];
 
     // if (this.deterministic && upto > 1) {
     //   let lastMax = this.transitions[0][2];
@@ -161,9 +158,6 @@ export class Automaton {
     //     lastMax = this.transitions[i][2];
     //   }
     // }
-
-    this.trans[this.currState] = this.transitions.slice();
-    this.transitions = [];
   }
 
   getStartPoints(): number[] {
@@ -181,7 +175,6 @@ export class Automaton {
         }
       }
     }
-
     return Array.from(pointset).sort((a, b) => a - b);
   }
 
