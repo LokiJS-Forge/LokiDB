@@ -42,9 +42,8 @@ export class IndexSearcher {
 
   private _recursive(query: ANY, doScoring: boolean) {
     let docResults: Map<number, any[]> = new Map();
-    let boost = query.boost !== undefined ? query.boost : 1;
-    let fieldName = query.field !== undefined ? query.field : null;
-    let enableScoring = query.enable_scoring !== undefined ? query.enable_scoring : false;
+    const boost = query.boost !== undefined ? query.boost : 1;
+    const fieldName = query.field !== undefined ? query.field : null;
 
     let root = null;
     let tokenizer = null;
@@ -124,14 +123,15 @@ export class IndexSearcher {
         break;
       }
       case "fuzzy": {
-        let f = fuzzySearch(query, root);
+        const f = fuzzySearch(query, root);
         for (let i = 0; i < f.length; i++) {
           this._scorer.prepare(fieldName, boost * f[i].boost, f[i].index, doScoring, docResults, f[i].term);
         }
         break;
       }
       case "wildcard": {
-        let w = wildcardSearch(query, root);
+        const enableScoring = query.enable_scoring !== undefined ? query.enable_scoring : false;
+        const w = wildcardSearch(query, root);
         for (let i = 0; i < w.length; i++) {
           this._scorer.prepare(fieldName, boost, w[i].index, doScoring && enableScoring, docResults, w[i].term);
         }
@@ -152,8 +152,9 @@ export class IndexSearcher {
         break;
       }
       case "prefix": {
+        const enableScoring = query.enable_scoring !== undefined ? query.enable_scoring : false;
         const cps = toCodePoints(query.value);
-        let termIdx = InvertedIndex.getTermIndex(cps, root);
+        const termIdx = InvertedIndex.getTermIndex(cps, root);
         if (termIdx !== null) {
           const termIdxs = InvertedIndex.extendTermIndex(termIdx);
           for (let i = 0; i < termIdxs.length; i++) {
@@ -337,8 +338,9 @@ function fuzzySearch(query: any, root: InvertedIndex.Index) {
     if (automaton.isAccept(state)) {
       if (extended) {
         // Add all terms down the index.
-        for (const child of InvertedIndex.extendTermIndex(idx)) {
-          result.push({term: child[1], index: child[0], boost: 1});
+        let all = InvertedIndex.extendTermIndex(idx);
+        for (let i = 0; i < all.length; i++) {
+          result.push({term: all[i][1], index: all[i][0], boost: 1});
         }
         return;
       } else if (idx.df !== undefined) {
@@ -402,12 +404,12 @@ function wildcardSearch(query: ANY, root: InvertedIndex.Index) {
       } else {
         // Iterate over the whole tree.
         recursive(index, idx + 1, term, false);
-        const indices = [{index: index, term: [] as number[]}];
+        const indices: InvertedIndex.IndexTerm[] = [[index, []]];
         do {
           const index = indices.pop();
-          for (const child of index.index) {
-            recursive(child[1], idx + 1, [...term, ...index.term, child[0]]);
-            indices.push({index: child[1], term: [...index.term, child[0]]});
+          for (const child of index[0]) {
+            recursive(child[1], idx + 1, [...term, ...index[1], child[0]]);
+            indices.push([child[1], [...index[1], child[0]]]);
           }
         } while (indices.length !== 0);
       }

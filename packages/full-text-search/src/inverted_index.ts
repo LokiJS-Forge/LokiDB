@@ -24,8 +24,6 @@ export function toCodePoints(str: string): number[] {
   return r;
 }
 
-export type IndexTerm = [InvertedIndex.Index, number[]];
-
 /**
  * Inverted index class handles featured text search for specific document fields.
  * @hidden
@@ -204,31 +202,7 @@ export class InvertedIndex {
         }
       }
     } else {
-      // Iterate over the whole inverted index and remove the document.
-      // Delete branch if not needed anymore.
-      const recursive = (root: InvertedIndex.Index) => {
-        for (const child of root) {
-          // Checkout branch.
-          if (recursive(child[1])) {
-            root.delete(child[0]);
-          }
-        }
-        // Remove docId from docs and decrement document frequency.
-        if (root.df !== undefined) {
-          if (root.dc.has(docId)) {
-            root.df -= 1;
-            root.dc.delete(docId);
-
-            // Delete unused meta data of branch.
-            if (root.df === 0) {
-              delete root.df;
-              delete root.dc;
-            }
-          }
-        }
-        return root.size === 0 && root.dc === undefined;
-      };
-      recursive(this._root);
+      this._remove(this._root, docId);
     }
   }
 
@@ -255,77 +229,30 @@ export class InvertedIndex {
 
   /**
    * Extends a term index to all available term leafs.
-   * @param {object} root - the term index to start from
+   * @param {object} idx - the term index to start from
+   * @param {number[]} [term=[]] - the current term
+   * @param {Array} termIndices - all extended indices with their term
    * @returns {Array} - Array with term indices and extension
    */
-  static extendTermIndex(root: InvertedIndex.Index): IndexTerm[] {
-    const termIndices: IndexTerm[] = [];
+  static extendTermIndex(idx: InvertedIndex.Index, term: number[] = [], termIndices: InvertedIndex.IndexTerm[] = []): InvertedIndex.IndexTerm[] {
+    if (idx.df !== undefined) {
+      termIndices.push([idx, term.slice()]);
+    }
 
-    const recursive = (idx: InvertedIndex.Index, r: number[]) => {
-      if (idx.df !== undefined) {
-        termIndices.push([idx, r.slice()]);
-      }
-
-      r.push(0);
-      for (const child of idx) {
-        r[r.length - 1] = child[0];
-        recursive(child[1], r);
-      }
-      r.pop();
-    };
-    recursive(root, []);
+    term.push(0);
+    for (const child of idx) {
+      term[term.length - 1] = child[0];
+      InvertedIndex.extendTermIndex(child[1], term, termIndices);
+    }
+    term.pop();
     return termIndices;
-  }
-
-  private static serializeIndex(index: InvertedIndex.Index): any[] {
-    const recursive = (idx: InvertedIndex.Index): any[] => {
-
-      let k: ANY[] = [];
-      let v: ANY[] = [];
-
-      let r = {};
-      if (idx.dc !== undefined) {
-        r = {df: idx.df, dc: [...idx.dc]};
-      }
-
-      if (idx.size === 0) {
-        return [k, v, r];
-      }
-
-      for (const child of idx) {
-        k.push(child[0]);
-        v.push(recursive(child[1]));
-      }
-
-      return [k, v, r];
-    };
-
-    return recursive(index);
-  }
-
-  private static deserializeIndex(ar: any): InvertedIndex.Index {
-    const recursive = (arr: any): any => {
-      let idx: InvertedIndex.Index = new Map();
-
-      for (let i = 0; i < arr[0].length; i++) {
-        idx.set(arr[0][i], recursive(arr[1][i]));
-      }
-      if (arr[2].df !== undefined) {
-        idx.df = arr[2].df;
-        idx.dc = new Map(arr[2].dc);
-      }
-
-      return idx;
-    };
-
-    return recursive(ar);
   }
 
   /**
    * Serialize the inverted index.
    * @returns {{docStore: *, _fields: *, index: *}}
    */
-  toJSON() {
+  public toJSON() {
     if (this._store) {
       return {
         _store: true,
@@ -350,7 +277,7 @@ export class InvertedIndex {
    * @param {Object.<string, function>|Tokenizer} funcTok[undefined] - the depending functions with labels
    *  or an equivalent tokenizer
    */
-  static fromJSONObject(serialized: InvertedIndex.Serialization, funcTok: ANY = undefined) {
+  public static fromJSONObject(serialized: InvertedIndex.Serialization, funcTok: ANY = undefined) {
     const invIdx = new InvertedIndex({
       store: serialized._store,
       optimizeChanges: serialized._optimizeChanges,
@@ -363,40 +290,109 @@ export class InvertedIndex {
       invIdx._root = InvertedIndex.deserializeIndex(serialized._root);
     }
 
-    const regenerate = (index: InvertedIndex.Index, parent: InvertedIndex.Index) => {
-      // Set parent.
-      if (parent !== null) {
-        Object.defineProperties(index, {
-          pa: {enumerable: false, configurable: true, writable: false, value: parent}
-        });
-      }
-
-      // Iterate over subtree.
-      for (const child of index.values()) {
-        regenerate(child, index);
-      }
-
-      if (index.dc !== undefined) {
-        // Get documents of term.
-        for (const docId of index.dc.keys()) {
-          // Get document store at specific document/field.
-          const ref = invIdx._docStore.get(docId);
-          if (ref.indexRef === undefined) {
-            Object.defineProperties(ref, {
-              indexRef: {enumerable: false, configurable: true, writable: true, value: []}
-            });
-          }
-          // Set reference to term index.
-          ref.indexRef.push(index);
-        }
-      }
-    };
-
     if (invIdx._optimizeChanges) {
-      regenerate(invIdx._root, null);
+      invIdx._regenerate(invIdx._root, null);
     }
 
     return invIdx;
+  }
+
+  private static serializeIndex(idx: InvertedIndex.Index): any[] {
+    const k: ANY[] = [];
+    const v: ANY[] = [];
+
+    let r = {};
+    if (idx.dc !== undefined) {
+      r = {df: idx.df, dc: [...idx.dc]};
+    }
+
+    if (idx.size === 0) {
+      return [k, v, r];
+    }
+
+    for (const child of idx) {
+      k.push(child[0]);
+      v.push(InvertedIndex.serializeIndex(child[1]));
+    }
+    return [k, v, r];
+  }
+
+  private static deserializeIndex(arr: any): InvertedIndex.Index {
+    const idx: InvertedIndex.Index = new Map();
+
+    for (let i = 0; i < arr[0].length; i++) {
+      idx.set(arr[0][i], InvertedIndex.deserializeIndex(arr[1][i]));
+    }
+    if (arr[2].df !== undefined) {
+      idx.df = arr[2].df;
+      idx.dc = new Map(arr[2].dc);
+    }
+    return idx;
+  }
+
+  /**
+   * Set parent of to each index and regenerate the indexRef.
+   * @param {InvertedIndex.Index} index - the index
+   * @param {InvertedIndex.Index} parent - the parent
+   */
+  private _regenerate(index: InvertedIndex.Index, parent: InvertedIndex.Index) {
+    // Set parent.
+    if (parent !== null) {
+      Object.defineProperties(index, {
+        pa: {enumerable: false, configurable: true, writable: false, value: parent}
+      });
+    }
+
+    // Iterate over subtree.
+    for (const child of index.values()) {
+      this._regenerate(child, index);
+    }
+
+    if (index.dc !== undefined) {
+      // Get documents of term.
+      for (const docId of index.dc.keys()) {
+        // Get document store at specific document/field.
+        const ref = this._docStore.get(docId);
+        if (ref.indexRef === undefined) {
+          Object.defineProperties(ref, {
+            indexRef: {enumerable: false, configurable: true, writable: true, value: []}
+          });
+        }
+        // Set reference to term index.
+        ref.indexRef.push(index);
+      }
+    }
+  }
+
+  /**
+   * Iterate over the whole inverted index and remove the document.
+   * Delete branch if not needed anymore.
+   * Function is needed if index is used without optimization.
+   * @param {InvertedIndex.Index} idx - the index
+   * @param {number} docId - the doc id
+   * @returns {boolean} true if index is empty
+   */
+  private _remove(idx: InvertedIndex.Index, docId: number) {
+    for (const child of idx) {
+      // Checkout branch.
+      if (this._remove(child[1], docId)) {
+        idx.delete(child[0]);
+      }
+    }
+    // Remove docId from docs and decrement document frequency.
+    if (idx.df !== undefined) {
+      if (idx.dc.has(docId)) {
+        idx.df -= 1;
+        idx.dc.delete(docId);
+
+        // Delete unused meta data of branch.
+        if (idx.df === 0) {
+          delete idx.df;
+          delete idx.dc;
+        }
+      }
+    }
+    return idx.size === 0 && idx.dc === undefined;
   }
 }
 
@@ -408,6 +404,8 @@ export namespace InvertedIndex {
   }
 
   export type Index = Map<number, any> & { dc?: Map<number, number>, df?: number, pa?: Index };
+
+  export type IndexTerm = [InvertedIndex.Index, number[]];
 
   export interface Serialization {
     _store: boolean;
