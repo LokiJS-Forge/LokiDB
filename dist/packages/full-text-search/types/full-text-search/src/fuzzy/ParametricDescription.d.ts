@@ -1,4 +1,8 @@
 import { Long } from "./Long";
+/**
+ * From org/apache/lucene/util/automaton/LevenshteinAutomata.java#ParametricDescription
+ * @hidden
+ */
 export declare class ParametricDescription {
     protected w: number;
     private n;

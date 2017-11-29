@@ -70,7 +70,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 5);
+/******/ 	return __webpack_require__(__webpack_require__.s = 8);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -85,6 +85,7 @@ return /******/ (function(modules) { // webpackBootstrap
  * Converts a string into an array of code points.
  * @param str - the string
  * @returns {number[]} to code points
+ * @hidden
  */
 function toCodePoints(str) {
     const r = [];
@@ -104,18 +105,17 @@ function toCodePoints(str) {
 }
 /**
  * Inverted index class handles featured text search for specific document fields.
- * @constructor InvertedIndex
- * @param {boolean} [options.store=true] - inverted index will be stored at serialization rather than rebuilt on load.
+ * @hidden
  */
 class InvertedIndex {
     /**
-     * @param {boolean} store
+     * @param {boolean} [options.store=true] - inverted index will be stored at serialization rather than rebuilt on load.
      * @param {boolean} optimizeChanges
      * @param {Tokenizer} tokenizer
      */
     constructor(options = {}) {
         this._docCount = 0;
-        this._docStore = {};
+        this._docStore = new Map();
         this._totalFieldLength = 0;
         this._root = new Map();
         ({
@@ -151,19 +151,19 @@ class InvertedIndex {
      * @param {number} docId - the doc id of the field
      */
     insert(field, docId) {
-        if (this._docStore[docId] !== undefined) {
+        if (this._docStore.has(docId)) {
             throw Error("Field already added.");
         }
-        this._docCount += 1;
-        this._docStore[docId] = {};
         // Tokenize document field.
         const fieldTokens = this._tokenizer.tokenize(field);
         this._totalFieldLength += fieldTokens.length;
-        const termRefs = [];
-        this._docStore[docId] = { fieldLength: fieldTokens.length };
+        this._docCount += 1;
+        this._docStore.set(docId, { fieldLength: fieldTokens.length });
+        // Holds references to each index of a document.
+        const indexRef = [];
         if (this._optimizeChanges) {
-            Object.defineProperties(this._docStore[docId], {
-                termRefs: { enumerable: false, configurable: true, writable: true, value: termRefs }
+            Object.defineProperties(this._docStore.get(docId), {
+                indexRef: { enumerable: false, configurable: true, writable: true, value: indexRef }
             });
         }
         // Iterate over all unique field terms.
@@ -195,13 +195,13 @@ class InvertedIndex {
             }
             // Add term info to index leaf.
             if (branch.dc === undefined) {
-                branch.dc = {};
+                branch.dc = new Map();
                 branch.df = 0;
             }
-            branch.dc[docId] = tf;
+            branch.dc.set(docId, tf);
             branch.df += 1;
             // Store index leaf for deletion.
-            termRefs.push(branch);
+            indexRef.push(branch);
         }
     }
     /**
@@ -209,23 +209,23 @@ class InvertedIndex {
      * @param {number} docId - the document.
      */
     remove(docId) {
-        if (this._docStore[docId] === undefined) {
+        if (!this._docStore.has(docId)) {
             return;
         }
-        const docStore = this._docStore[docId];
+        const docStore = this._docStore.get(docId);
         // Remove document.
-        delete this._docStore[docId];
+        this._docStore.delete(docId);
         this._docCount -= 1;
         // Reduce total field length.
         this._totalFieldLength -= docStore.fieldLength;
         if (this._optimizeChanges) {
             // Iterate over all term references.
             // Remove docId from docs and decrement document frequency.
-            const termRefs = docStore.termRefs;
-            for (let j = 0; j < termRefs.length; j++) {
-                let index = termRefs[j];
+            const indexRef = docStore.indexRef;
+            for (let j = 0; j < indexRef.length; j++) {
+                let index = indexRef[j];
                 index.df -= 1;
-                delete index.dc[docId];
+                index.dc.delete(docId);
                 // Check if no document is left for current tree.
                 if (index.df === 0) {
                     // Delete unused meta data of branch.
@@ -266,9 +266,9 @@ class InvertedIndex {
                 }
                 // Remove docId from docs and decrement document frequency.
                 if (root.df !== undefined) {
-                    if (root.dc[docId] !== undefined) {
+                    if (root.dc.has(docId)) {
                         root.df -= 1;
-                        delete root.dc[docId];
+                        root.dc.delete(docId);
                         // Delete unused meta data of branch.
                         if (root.df === 0) {
                             delete root.df;
@@ -310,7 +310,7 @@ class InvertedIndex {
         const termIndices = [];
         const recursive = (idx, r) => {
             if (idx.df !== undefined) {
-                termIndices.push({ index: idx, term: r.slice() });
+                termIndices.push([idx, r.slice()]);
             }
             r.push(0);
             for (const child of idx) {
@@ -326,7 +326,10 @@ class InvertedIndex {
         const recursive = (idx) => {
             let k = [];
             let v = [];
-            let r = { df: idx.df, dc: idx.dc };
+            let r = {};
+            if (idx.dc !== undefined) {
+                r = { df: idx.df, dc: [...idx.dc] };
+            }
             if (idx.size === 0) {
                 return [k, v, r];
             }
@@ -346,7 +349,7 @@ class InvertedIndex {
             }
             if (arr[2].df !== undefined) {
                 idx.df = arr[2].df;
-                idx.dc = arr[2].dc;
+                idx.dc = new Map(arr[2].dc);
             }
             return idx;
         };
@@ -363,7 +366,7 @@ class InvertedIndex {
                 _optimizeChanges: this._optimizeChanges,
                 _tokenizer: this._tokenizer,
                 _docCount: this._docCount,
-                _docStore: this._docStore,
+                _docStore: [...this._docStore],
                 _totalFieldLength: this._totalFieldLength,
                 _root: InvertedIndex.serializeIndex(this._root)
             };
@@ -388,7 +391,7 @@ class InvertedIndex {
         });
         if (invIdx._store) {
             invIdx._docCount = serialized._docCount;
-            invIdx._docStore = serialized._docStore;
+            invIdx._docStore = new Map(serialized._docStore);
             invIdx._totalFieldLength = serialized._totalFieldLength;
             invIdx._root = InvertedIndex.deserializeIndex(serialized._root);
         }
@@ -405,17 +408,16 @@ class InvertedIndex {
             }
             if (index.dc !== undefined) {
                 // Get documents of term.
-                const docIds = Object.keys(index.dc);
-                for (let j = 0; j < docIds.length; j++) {
+                for (const docId of index.dc.keys()) {
                     // Get document store at specific document/field.
-                    const ref = invIdx._docStore[docIds[j]];
-                    if (ref.termRefs === undefined) {
+                    const ref = invIdx._docStore.get(docId);
+                    if (ref.indexRef === undefined) {
                         Object.defineProperties(ref, {
-                            termRefs: { enumerable: false, configurable: true, writable: true, value: [] }
+                            indexRef: { enumerable: false, configurable: true, writable: true, value: [] }
                         });
                     }
                     // Set reference to term index.
-                    ref.termRefs.push(index);
+                    ref.indexRef.push(index);
                 }
             }
         };
@@ -437,6 +439,7 @@ class InvertedIndex {
 /**
  * Class supports 64Bit integer operations.
  * A cut-down version of dcodeIO/long.js.
+ * @hidden
  */
 class Long {
     constructor(low = 0, high = 0) {
@@ -915,7 +918,7 @@ class WildcardQuery extends BaseQuery {
  * @example
  * new QueryBuilder()
  *   .fuzzy("surname", "einsten")
- *     .fuzziness(3)
+ *     .fuzziness(2)
  *     .prefixLength(3)
  * .build();
  * // The resulting documents:
@@ -936,7 +939,7 @@ class FuzzyQuery extends BaseQuery {
     }
     /**
      * Sets the maximal allowed fuzziness.
-     * @param {number|string} fuzziness - the edit distance as number or AUTO
+     * @param {number|string} fuzziness - the edit distance 0, 1, 2 or AUTO
      *
      * AUTO generates an edit distance based on the length of the term:
      * * 0..2 -> must match exactly
@@ -946,8 +949,8 @@ class FuzzyQuery extends BaseQuery {
      * @return {FuzzyQuery} - object itself for cascading
      */
     fuzziness(fuzziness) {
-        if (fuzziness !== "AUTO" && fuzziness < 0) {
-            throw TypeError("Fuzziness must be a positive number or AUTO.");
+        if (fuzziness !== "AUTO" && (fuzziness < 0 || fuzziness > 2)) {
+            throw TypeError("Fuzziness must be 0, 1, 2 or AUTO.");
         }
         this._data.fuzziness = fuzziness;
         return this;
@@ -1117,7 +1120,7 @@ class MatchQuery extends BaseQuery {
     }
     /**
      * Sets the maximal allowed fuzziness.
-     * @param {number|string} fuzziness - the edit distance as number or AUTO
+     * @param {number|string} fuzziness - the edit distance 0, 1, 2 or AUTO
      *
      * AUTO generates an edit distance based on the length of the term:
      * * 0..2 -> must match exactly
@@ -1127,8 +1130,8 @@ class MatchQuery extends BaseQuery {
      * @return {MatchQuery} - object itself for cascading
      */
     fuzziness(fuzziness) {
-        if (fuzziness !== "AUTO" && fuzziness < 0) {
-            throw TypeError("Fuzziness must be a positive number or AUTO.");
+        if (fuzziness !== "AUTO" && (fuzziness < 0 || fuzziness > 2)) {
+            throw TypeError("Fuzziness must be 0, 1, 2 or AUTO.");
         }
         this._data.fuzziness = fuzziness;
         return this;
@@ -1493,6 +1496,372 @@ class QueryBuilder {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/**
+ * From org/apache/lucene/util/automaton/RunAutomaton.java
+ * @hidden
+ */
+class RunAutomaton {
+    constructor(a) {
+        this.automaton = a;
+        this.points = a.getStartPoints();
+        this.size = a.getNumStates();
+        this.accept = new Array(this.size);
+        this.transitions = new Array(this.size * this.points.length);
+        for (let n = 0; n < this.size; n++) {
+            this.accept[n] = a.isAccept(n);
+            for (let c = 0; c < this.points.length; c++) {
+                // assert dest == -1 || dest < size;
+                this.transitions[n * this.points.length + c] = a.step(n, this.points[c]);
+            }
+        }
+        this.classmap = new Array(256 /* alphaSize */);
+        for (let i = 0, j = 0; j < this.classmap.length; j++) {
+            if (i + 1 < this.points.length && j === this.points[i + 1]) {
+                i++;
+            }
+            this.classmap[j] = i;
+        }
+    }
+    getCharClass(c) {
+        // binary search
+        let a = 0;
+        let b = this.points.length;
+        while (b - a > 1) {
+            const d = (a + b) >>> 1;
+            if (this.points[d] > c) {
+                b = d;
+            }
+            else if (this.points[d] < c) {
+                a = d;
+            }
+            else {
+                return d;
+            }
+        }
+        return a;
+    }
+    step(state, c) {
+        if (c >= this.classmap.length) {
+            return this.transitions[state * this.points.length + this.getCharClass(c)];
+        }
+        else {
+            return this.transitions[state * this.points.length + this.classmap[c]];
+        }
+    }
+    isAccept(state) {
+        return this.accept[state];
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = RunAutomaton;
+
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Automaton__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Lev1TParametricDescription__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Lev2TParametricDescription__ = __webpack_require__(13);
+
+
+
+/**
+ * From org/apache/lucene/util/automaton/LevenshteinAutomata.java
+ * @hidden
+ */
+class LevenshteinAutomata {
+    constructor(input, editDistance) {
+        this.word = input;
+        this.editDistance = editDistance;
+        this.alphabet = [...new Set(this.word)].sort((a, b) => a - b);
+        this.numRanges = 0;
+        this.rangeLower = new Array(this.alphabet.length + 2);
+        this.rangeUpper = new Array(this.alphabet.length + 2);
+        // calculate the unicode range intervals that exclude the alphabet
+        // these are the ranges for all unicode characters not in the alphabet
+        let lower = 0;
+        for (let i = 0; i < this.alphabet.length; i++) {
+            const higher = this.alphabet[i];
+            if (higher > lower) {
+                this.rangeLower[this.numRanges] = lower;
+                this.rangeUpper[this.numRanges] = higher - 1;
+                this.numRanges++;
+            }
+            lower = higher + 1;
+        }
+        /* add the final endpoint */
+        if (lower <= __WEBPACK_IMPORTED_MODULE_0__Automaton__["b" /* MAX_CODE_POINT */]) {
+            this.rangeLower[this.numRanges] = lower;
+            this.rangeUpper[this.numRanges] = __WEBPACK_IMPORTED_MODULE_0__Automaton__["b" /* MAX_CODE_POINT */];
+            this.numRanges++;
+        }
+        if (editDistance == 1) {
+            this.description = new __WEBPACK_IMPORTED_MODULE_1__Lev1TParametricDescription__["a" /* Lev1TParametricDescription */](input.length);
+        }
+        else {
+            this.description = new __WEBPACK_IMPORTED_MODULE_2__Lev2TParametricDescription__["a" /* Lev2TParametricDescription */](input.length);
+        }
+    }
+    getVector(x, pos, end) {
+        let vector = 0;
+        for (let i = pos; i < end; i++) {
+            vector <<= 1;
+            if (this.word[i] === x) {
+                vector |= 1;
+            }
+        }
+        return vector;
+    }
+    /**
+     * @returns {Automaton}
+     */
+    toAutomaton() {
+        let automat = new __WEBPACK_IMPORTED_MODULE_0__Automaton__["a" /* Automaton */]();
+        const range = 2 * this.editDistance + 1;
+        // the number of states is based on the length of the word and the edit distance
+        const numStates = this.description.size();
+        // Prefix is not needed to be handled by the automaton.
+        // stateOffset = 0;
+        automat.createState();
+        // create all states, and mark as accept states if appropriate
+        for (let i = 1; i < numStates; i++) {
+            let state = automat.createState();
+            automat.setAccept(state, this.description.isAccept(i));
+        }
+        for (let k = 0; k < numStates; k++) {
+            const xpos = this.description.getPosition(k);
+            if (xpos < 0) {
+                continue;
+            }
+            const end = xpos + Math.min(this.word.length - xpos, range);
+            for (let x = 0; x < this.alphabet.length; x++) {
+                const ch = this.alphabet[x];
+                const cvec = this.getVector(ch, xpos, end);
+                const dest = this.description.transition(k, xpos, cvec);
+                if (dest >= 0) {
+                    automat.addTransition(k, dest, ch, ch);
+                }
+            }
+            const dest = this.description.transition(k, xpos, 0);
+            if (dest >= 0) {
+                for (let r = 0; r < this.numRanges; r++) {
+                    automat.addTransition(k, dest, this.rangeLower[r], this.rangeUpper[r]);
+                }
+            }
+        }
+        // assert automat.deterministic;
+        automat.finishState();
+        return automat;
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = LevenshteinAutomata;
+
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/**
+ * @type {number}
+ * @hidden
+ */
+const MIN_CODE_POINT = 0;
+/* unused harmony export MIN_CODE_POINT */
+
+/**
+ * @type {number}
+ * @hidden
+ */
+const MAX_CODE_POINT = 1114111;
+/* harmony export (immutable) */ __webpack_exports__["b"] = MAX_CODE_POINT;
+
+function sortByDestMinMax(a, b) {
+    if (a[0] < b[0]) {
+        return -1;
+    }
+    else if (a[0] > b[0]) {
+        return 1;
+    }
+    if (a[1] < b[1]) {
+        return -1;
+    }
+    else if (a[1] > b[1]) {
+        return 1;
+    }
+    if (a[2] < b[2]) {
+        return -1;
+    }
+    else if (a[2] > b[2]) {
+        return 1;
+    }
+    return 0;
+}
+function sortByMinMaxDest(a, b) {
+    if (a[1] < b[1]) {
+        return -1;
+    }
+    else if (a[1] > b[1]) {
+        return 1;
+    }
+    if (a[2] < b[2]) {
+        return -1;
+    }
+    else if (a[2] > b[2]) {
+        return 1;
+    }
+    if (a[0] < b[0]) {
+        return -1;
+    }
+    else if (a[0] > b[0]) {
+        return 1;
+    }
+    return 0;
+}
+/**
+ * From org/apache/lucene/util/automaton/Automaton.java
+ * @hidden
+ */
+class Automaton {
+    constructor() {
+        this.stateTransitions = [];
+        this.stateTransitions = [];
+        this._isAccept = new Set();
+        this.nextState = 0;
+        this.currState = -1;
+        // this.deterministic = true;
+        this.transitions = {};
+    }
+    isAccept(n) {
+        return this._isAccept.has(n);
+    }
+    createState() {
+        return this.nextState++;
+    }
+    setAccept(state, accept) {
+        if (accept) {
+            this._isAccept.add(state);
+        }
+        else {
+            this._isAccept.delete(state);
+        }
+    }
+    finishState() {
+        if (this.currState !== -1) {
+            this.finishCurrentState();
+            this.currState = -1;
+        }
+    }
+    finishCurrentState() {
+        // Sort all transitions.
+        this.stateTransitions.sort(sortByDestMinMax);
+        let upto = 0;
+        let p = [-1, -1, -1];
+        for (let i = 0, len = this.stateTransitions.length; i < len; i++) {
+            let t = this.stateTransitions[i];
+            if (p[0] === t[0]) {
+                if (t[1] <= p[2] + 1) {
+                    if (t[2] > p[2]) {
+                        p[2] = t[2];
+                    }
+                }
+                else {
+                    if (p[0] !== -1) {
+                        this.stateTransitions[upto][0] = p[0];
+                        this.stateTransitions[upto][1] = p[1];
+                        this.stateTransitions[upto][2] = p[2];
+                        upto++;
+                    }
+                    p[1] = t[1];
+                    p[2] = t[2];
+                }
+            }
+            else {
+                if (p[0] !== -1) {
+                    this.stateTransitions[upto][0] = p[0];
+                    this.stateTransitions[upto][1] = p[1];
+                    this.stateTransitions[upto][2] = p[2];
+                    upto++;
+                }
+                p[0] = t[0];
+                p[1] = t[1];
+                p[2] = t[2];
+            }
+        }
+        if (p[0] !== -1) {
+            // Last transition
+            this.stateTransitions[upto][0] = p[0];
+            this.stateTransitions[upto][1] = p[1];
+            this.stateTransitions[upto][2] = p[2];
+            upto++;
+        }
+        this.transitions[this.currState] = this.stateTransitions.slice(0, upto).sort(sortByMinMaxDest);
+        // if (this.deterministic && upto > 1) {
+        //   let lastMax = this.stateTransitions[0][2];
+        //   for (let i = 1; i < upto; i++) {
+        //     let min = this.stateTransitions[i][1];
+        //     if (min <= lastMax) {
+        //       this.deterministic = false;
+        //       break;
+        //     }
+        //     lastMax = this.stateTransitions[i][2];
+        //   }
+        // }
+        this.stateTransitions = [];
+    }
+    getStartPoints() {
+        let pointset = new Set();
+        pointset.add(MIN_CODE_POINT);
+        const states = Object.keys(this.transitions);
+        for (let i = 0; i < states.length; i++) {
+            let trans = this.transitions[states[i]];
+            for (let j = 0; j < trans.length; j++) {
+                let tran = trans[j];
+                pointset.add(tran[1]);
+                if (tran[2] < MAX_CODE_POINT) {
+                    pointset.add(tran[2] + 1);
+                }
+            }
+        }
+        return Array.from(pointset).sort((a, b) => a - b);
+    }
+    step(state, label) {
+        let trans = this.transitions[state];
+        if (trans) {
+            for (let i = 0; i < trans.length; i++) {
+                let tran = trans[i];
+                if (tran[1] <= label && label <= tran[2]) {
+                    return tran[0];
+                }
+            }
+        }
+        return -1;
+    }
+    getNumStates() {
+        return this.nextState;
+    }
+    addTransition(source, dest, min, max) {
+        if (this.currState !== source) {
+            if (this.currState !== -1) {
+                this.finishCurrentState();
+            }
+            this.currState = source;
+        }
+        this.stateTransitions.push([dest, min, max]);
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Automaton;
+
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Long__ = __webpack_require__(1);
 
 const MASKS = [new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x3), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x7), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xf),
@@ -1511,6 +1880,10 @@ const MASKS = [new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x1), new
     new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffff, 0xffff),
     new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffffff, 0x7fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xfffffffffff, 0xffff),
     new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffffff, 0x1fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffffff, 0x3fff), new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0xffffffffffff, 0x7fff)];
+/**
+ * From org/apache/lucene/util/automaton/LevenshteinAutomata.java#ParametricDescription
+ * @hidden
+ */
 class ParametricDescription {
     constructor(w, n, minErrors) {
         this.w = w;
@@ -1561,19 +1934,28 @@ class ParametricDescription {
 
 
 /***/ }),
-/* 5 */
+/* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__full_text_search__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__full_text_search__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tokenizer__ = __webpack_require__(2);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Tokenizer", function() { return __WEBPACK_IMPORTED_MODULE_1__tokenizer__["a"]; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__query_builder__ = __webpack_require__(3);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "QueryBuilder", function() { return __WEBPACK_IMPORTED_MODULE_2__query_builder__["a"]; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__inverted_index__ = __webpack_require__(0);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "InvertedIndex", function() { return __WEBPACK_IMPORTED_MODULE_3__inverted_index__["a"]; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__fuzzy_RunAutomaton__ = __webpack_require__(4);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "RunAutomaton", function() { return __WEBPACK_IMPORTED_MODULE_4__fuzzy_RunAutomaton__["a"]; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__fuzzy_Automaton__ = __webpack_require__(6);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Automaton", function() { return __WEBPACK_IMPORTED_MODULE_5__fuzzy_Automaton__["a"]; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__fuzzy_LevenshteinAutomata__ = __webpack_require__(5);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "LevenshteinAutomata", function() { return __WEBPACK_IMPORTED_MODULE_6__fuzzy_LevenshteinAutomata__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "FullTextSearch", function() { return __WEBPACK_IMPORTED_MODULE_0__full_text_search__["a"]; });
+
+
+
 
 
 
@@ -1583,12 +1965,12 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 /***/ }),
-/* 6 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__inverted_index__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__index_searcher__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__index_searcher__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__common_plugin__ = __webpack_require__(14);
 
 
@@ -1678,20 +2060,23 @@ class FullTextSearch {
 
 
 /***/ }),
-/* 7 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__scorer__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__scorer__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__inverted_index__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__query_builder__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__fuzzy_RunAutomaton__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__fuzzy_LevenshteinAutomata__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__fuzzy_RunAutomaton__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__fuzzy_LevenshteinAutomata__ = __webpack_require__(5);
 
 
 
 
 
+/**
+ * @hidden
+ */
 class IndexSearcher {
     /**
      * @param {object} invIdxs
@@ -1714,7 +2099,7 @@ class IndexSearcher {
         this._scorer.setDirty();
     }
     _recursive(query, doScoring) {
-        let docResults = {};
+        let docResults = new Map();
         let boost = query.boost !== undefined ? query.boost : 1;
         let fieldName = query.field !== undefined ? query.field : null;
         let enableScoring = query.enable_scoring !== undefined ? query.enable_scoring : false;
@@ -1737,7 +2122,7 @@ class IndexSearcher {
                     let shouldDocs = this._getAll(query.should.values, doScoring);
                     let empty = false;
                     if (docResults === null) {
-                        docResults = {};
+                        docResults = new Map();
                         empty = true;
                     }
                     let msm = 1;
@@ -1756,17 +2141,18 @@ class IndexSearcher {
                         }
                     }
                     // Remove all docs with fewer matches.
-                    let docs = Object.keys(shouldDocs);
-                    for (let i = 0, docId; i < docs.length, docId = docs[i]; i++) {
-                        if (shouldDocs[docId].length >= msm) {
-                            if (docResults[docId] !== undefined) {
-                                docResults[docId].push(...shouldDocs[docId]);
+                    // let docs = Object.keys(shouldDocs);
+                    // for (let i = 0, docId; i < docs.length, docId = docs[i]; i++) {
+                    for (const [docId, res] of shouldDocs) {
+                        if (res.length >= msm) {
+                            if (docResults.has(docId)) {
+                                docResults.get(docId).push(...res);
                             }
                             else if (empty) {
-                                docResults[docId] = shouldDocs[docId];
+                                docResults.set(docId, res);
                             }
                             else {
-                                delete docResults[docId];
+                                docResults.delete(docId);
                             }
                         }
                     }
@@ -1774,10 +2160,9 @@ class IndexSearcher {
                 if (query.not !== undefined) {
                     let notDocs = this._getAll(query.not.values, false);
                     // Remove all docs.
-                    let docs = Object.keys(notDocs);
-                    for (let i = 0, docId; i < docs.length, docId = docs[i]; i++) {
-                        if (docResults[docId] !== undefined) {
-                            delete docResults[docId];
+                    for (const docId of notDocs.keys()) {
+                        if (docResults.has(docId)) {
+                            docResults.delete(docId);
                         }
                     }
                 }
@@ -1819,10 +2204,9 @@ class IndexSearcher {
             }
             case "constant_score": {
                 let tmpDocResults = this._getAll(query.filter.values, false);
-                let docs = Object.keys(tmpDocResults);
                 // Add to each document a constant score.
-                for (let i = 0; i < docs.length; i++) {
-                    this._scorer.scoreConstant(boost, docs[i], docResults);
+                for (const docId of tmpDocResults.keys()) {
+                    this._scorer.scoreConstant(boost, docId, docResults);
                 }
                 break;
             }
@@ -1832,16 +2216,15 @@ class IndexSearcher {
                 if (termIdx !== null) {
                     const termIdxs = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].extendTermIndex(termIdx);
                     for (let i = 0; i < termIdxs.length; i++) {
-                        this._scorer.prepare(fieldName, boost, termIdxs[i].index, doScoring && enableScoring, docResults, [...cps, ...termIdxs[i].term]);
+                        this._scorer.prepare(fieldName, boost, termIdxs[i][0], doScoring && enableScoring, docResults, [...cps, ...termIdxs[i][1]]);
                     }
                 }
                 break;
             }
             case "exists": {
                 if (root !== null) {
-                    let docs = Object.keys(this._invIdxs[fieldName].documentStore);
-                    for (let i = 0; i < docs.length; i++) {
-                        this._scorer.scoreConstant(boost, docs[i], docResults);
+                    for (const docId of this._invIdxs[fieldName].documentStore.keys()) {
+                        this._scorer.scoreConstant(boost, docId, docResults);
                     }
                 }
                 break;
@@ -1900,29 +2283,29 @@ class IndexSearcher {
                 docResults = this._recursive(values[0], doScoring);
                 continue;
             }
-            let docs = Object.keys(docResults);
-            for (let j = 0, docId; j < docs.length, docId = docs[j]; j++) {
-                if (currDocs[docId] === undefined) {
-                    delete docResults[docId];
+            for (const docId of docResults.keys()) {
+                if (!currDocs.has(docId)) {
+                    docResults.delete(docId);
                 }
                 else {
-                    docResults[docId].push(...currDocs[docId]);
+                    docResults.get(docId).push(...currDocs.get(docId));
                 }
             }
         }
         return docResults;
     }
     _getAll(values, doScoring) {
-        let docResults = {};
+        let docResults = new Map();
         for (let i = 0; i < values.length; i++) {
             let currDocs = this._recursive(values[i], doScoring);
-            let docs = Object.keys(currDocs);
-            for (let j = 0, docId; j < docs.length, docId = docs[j]; j++) {
-                if (docResults[docId] === undefined) {
-                    docResults[docId] = currDocs[docId];
+            // let docs = Object.keys(currDocs);
+            // for (let j = 0, docId; j < docs.length, docId = docs[j]; j++) {
+            for (const docId of currDocs.keys()) {
+                if (!docResults.has(docId)) {
+                    docResults.set(docId, currDocs.get(docId));
                 }
                 else {
-                    docResults[docId].push(...currDocs[docId]);
+                    docResults.get(docId).push(...currDocs.get(docId));
                 }
             }
         }
@@ -1970,7 +2353,7 @@ function fuzzySearch(query, root) {
         if (extended) {
             // Add all terms down the index.
             for (const child of __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].extendTermIndex(startIdx)) {
-                result.push({ term: child.term, index: child.index, boost: 1 });
+                result.push({ term: child[1], index: child[0], boost: 1 });
             }
         }
         else if (startIdx.dc !== undefined) {
@@ -2013,7 +2396,7 @@ function fuzzySearch(query, root) {
             if (extended) {
                 // Add all terms down the index.
                 for (const child of __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].extendTermIndex(idx)) {
-                    result.push({ term: child.term, index: child.index, boost: 1 });
+                    result.push({ term: child[1], index: child[0], boost: 1 });
                 }
                 return;
             }
@@ -2068,7 +2451,7 @@ function wildcardSearch(query, root) {
             if (idx + 1 === wildcard.length) {
                 const all = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].extendTermIndex(index);
                 for (let i = 0; i < all.length; i++) {
-                    recursive(all[i].index, idx + 1, [...term, ...all[i].term]);
+                    recursive(all[i][0], idx + 1, [...term, ...all[i][1]]);
                 }
             }
             else {
@@ -2094,10 +2477,13 @@ function wildcardSearch(query, root) {
 
 
 /***/ }),
-/* 8 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/**
+ * @hidden
+ */
 class Scorer {
     constructor(invIdxs) {
         this._cache = {};
@@ -2106,48 +2492,44 @@ class Scorer {
     setDirty() {
         this._cache = {};
     }
-    prepare(fieldName, boost, termIdx, doScoring, docResults = {}, term = null) {
+    prepare(fieldName, boost, termIdx, doScoring, docResults = new Map(), term = null) {
         if (termIdx === null || termIdx.dc === undefined) {
             return null;
         }
         const idf = this._idf(fieldName, termIdx.df);
-        const docIds = Object.keys(termIdx.dc);
-        for (let j = 0; j < docIds.length; j++) {
-            const docId = docIds[j];
-            if (docResults[docId] === undefined) {
-                docResults[docId] = [];
+        for (const [docId, tf] of termIdx.dc) {
+            if (!docResults.has(docId)) {
+                docResults.set(docId, []);
             }
             if (doScoring) {
-                const tf = termIdx.dc[docId];
-                docResults[docId].push({ type: "BM25", tf, idf, boost, fieldName, term });
+                docResults.get(docId).push({ type: "BM25", tf, idf, boost, fieldName, term });
             }
             else {
-                docResults[docId] = [{ type: "constant", value: 1, boost, fieldName }];
+                docResults.set(docId, [{ type: "constant", value: 1, boost, fieldName }]);
             }
         }
         return docResults;
     }
-    scoreConstant(boost, docId, docResults = {}) {
-        if (docResults[docId] === undefined) {
-            docResults[docId] = [];
+    scoreConstant(boost, docId, docResults = new Map()) {
+        if (!docResults.has(docId)) {
+            docResults.set(docId, []);
         }
-        docResults[docId].push({ type: "constant", value: 1, boost });
+        docResults.get(docId).push({ type: "constant", value: 1, boost });
         return docResults;
     }
-    finalScore(query, docResults = {}) {
+    finalScore(query, docResults = new Map()) {
         const result = {};
         const k1 = query.scoring.k1;
         const b = query.scoring.b;
-        const docs = Object.keys(docResults);
-        for (let i = 0, docId; i < docs.length, docId = docs[i]; i++) {
+        for (const [docId, result1] of docResults) {
             let docScore = 0;
-            for (let j = 0; j < docResults[docId].length; j++) {
-                const docResult = docResults[docId][j];
+            for (let j = 0; j < result1.length; j++) {
+                const docResult = result1[j];
                 let res = 0;
                 switch (docResult.type) {
                     case "BM25": {
                         const tf = docResult.tf;
-                        const fieldLength = Scorer._calculateFieldLength(this._invIdxs[docResult.fieldName].documentStore[docId]
+                        const fieldLength = Scorer._calculateFieldLength(this._invIdxs[docResult.fieldName].documentStore.get(+docId)
                             .fieldLength);
                         const avgFieldLength = this._avgFieldLength(docResult.fieldName);
                         const tfNorm = (tf * (k1 + 1)) / (tf + k1 * (1 - b + b * (fieldLength / avgFieldLength)));
@@ -2211,364 +2593,12 @@ class Scorer {
 
 
 /***/ }),
-/* 9 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-class RunAutomaton {
-    constructor(a) {
-        this.automaton = a;
-        this.points = a.getStartPoints();
-        this.size = a.getNumStates();
-        this.accept = [];
-        this.transitions = [];
-        for (let n = 0; n < this.size; n++) {
-            this.accept[n] = a.isAccept(n);
-            for (let c = 0; c < this.points.length; c++) {
-                // assert dest == -1 || dest < size;
-                this.transitions[n * this.points.length + c] = a.step(n, this.points[c]);
-            }
-        }
-        this.classmap = new Array(256 /* alphaSize */);
-        for (let i = 0, j = 0; j < this.classmap.length; j++) {
-            if (i + 1 < this.points.length && j === this.points[i + 1]) {
-                i++;
-            }
-            this.classmap[j] = i;
-        }
-    }
-    getCharClass(c) {
-        // binary search
-        let a = 0;
-        let b = this.points.length;
-        while (b - a > 1) {
-            const d = (a + b) >>> 1;
-            if (this.points[d] > c) {
-                b = d;
-            }
-            else if (this.points[d] < c) {
-                a = d;
-            }
-            else {
-                return d;
-            }
-        }
-        return a;
-    }
-    step(state, c) {
-        if (c >= this.classmap.length) {
-            return this.transitions[state * this.points.length + this.getCharClass(c)];
-        }
-        else {
-            return this.transitions[state * this.points.length + this.classmap[c]];
-        }
-    }
-    isAccept(state) {
-        return this.accept[state];
-    }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = RunAutomaton;
-
-
-
-/***/ }),
-/* 10 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Automata__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Lev1TParametricDescription__ = __webpack_require__(12);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Lev2TParametricDescription__ = __webpack_require__(13);
-
-
-
-class LevenshteinAutomata {
-    constructor(input, editDistance) {
-        this.word = input;
-        this.editDistance = editDistance;
-        this.alphabet = Array.from(this.word).sort((a, b) => a - b);
-        this.numRanges = 0;
-        this.rangeLower = new Array(this.alphabet.length + 2);
-        this.rangeUpper = new Array(this.alphabet.length + 2);
-        // calculate the unicode range intervals that exclude the alphabet
-        // these are the ranges for all unicode characters not in the alphabet
-        let lower = 0;
-        for (let i = 0; i < this.alphabet.length; i++) {
-            const higher = this.alphabet[i];
-            if (higher > lower) {
-                this.rangeLower[this.numRanges] = lower;
-                this.rangeUpper[this.numRanges] = higher - 1;
-                this.numRanges++;
-            }
-            lower = higher + 1;
-        }
-        /* add the final endpoint */
-        if (lower <= __WEBPACK_IMPORTED_MODULE_0__Automata__["b" /* MAX_CODE_POINT */]) {
-            this.rangeLower[this.numRanges] = lower;
-            this.rangeUpper[this.numRanges] = __WEBPACK_IMPORTED_MODULE_0__Automata__["b" /* MAX_CODE_POINT */];
-            this.numRanges++;
-        }
-        if (editDistance == 1) {
-            this.description = new __WEBPACK_IMPORTED_MODULE_1__Lev1TParametricDescription__["a" /* Lev1TParametricDescription */](input.length);
-        }
-        else {
-            this.description = new __WEBPACK_IMPORTED_MODULE_2__Lev2TParametricDescription__["a" /* Lev2TParametricDescription */](input.length);
-        }
-    }
-    getVector(x, pos, end) {
-        let vector = 0;
-        for (let i = pos; i < end; i++) {
-            vector <<= 1;
-            if (this.word[i] === x) {
-                vector |= 1;
-            }
-        }
-        return vector;
-    }
-    /**
-     * @returns {Automaton}
-     */
-    toAutomaton() {
-        let automat = new __WEBPACK_IMPORTED_MODULE_0__Automata__["a" /* Automaton */]();
-        const range = 2 * this.editDistance + 1;
-        // the number of states is based on the length of the word and the edit distance
-        const numStates = this.description.size();
-        // Prefix is not needed to be handled by the automaton.
-        // stateOffset = 0;
-        automat.createState();
-        // create all states, and mark as accept states if appropriate
-        for (let i = 1; i < numStates; i++) {
-            let state = automat.createState();
-            automat.setAccept(state, this.description.isAccept(i));
-        }
-        for (let k = 0; k < numStates; k++) {
-            const xpos = this.description.getPosition(k);
-            if (xpos < 0) {
-                continue;
-            }
-            const end = xpos + Math.min(this.word.length - xpos, range);
-            for (let x = 0; x < this.alphabet.length; x++) {
-                const ch = this.alphabet[x];
-                const cvec = this.getVector(ch, xpos, end);
-                const dest = this.description.transition(k, xpos, cvec);
-                if (dest >= 0) {
-                    automat.addTransition(/*stateOffset +*/ k, /*stateOffset + */ dest, ch, ch);
-                }
-            }
-            const dest = this.description.transition(k, xpos, 0);
-            if (dest >= 0) {
-                for (let r = 0; r < this.numRanges; r++) {
-                    automat.addTransition(/*stateOffset + */ k, /*stateOffset + */ dest, this.rangeLower[r], this.rangeUpper[r]);
-                }
-            }
-        }
-        // assert automat.deterministic;
-        automat.finishState();
-        return automat;
-    }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = LevenshteinAutomata;
-
-
-
-/***/ }),
-/* 11 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-const MIN_CODE_POINT = 0;
-/* unused harmony export MIN_CODE_POINT */
-
-const MAX_CODE_POINT = 1114111;
-/* harmony export (immutable) */ __webpack_exports__["b"] = MAX_CODE_POINT;
-
-class Automaton {
-    constructor() {
-        this.transitions = [];
-        this.transitions = [];
-        this._isAccept = new Set();
-        this.nextState = 0;
-        this.currState = -1;
-        this.deterministic = true;
-        this.trans = {};
-    }
-    isAccept(n) {
-        return this._isAccept.has(n);
-    }
-    createState() {
-        return this.nextState++;
-    }
-    setAccept(state, accept) {
-        if (accept) {
-            this._isAccept.add(state);
-        }
-        else {
-            this._isAccept.delete(state);
-        }
-    }
-    finishState() {
-        if (this.currState !== -1) {
-            this.finishCurrentState();
-            this.currState = -1;
-        }
-    }
-    finishCurrentState() {
-        const destMinMax = (a, b) => {
-            if (a[0] < b[0]) {
-                return -1;
-            }
-            else if (a[0] > b[0]) {
-                return 1;
-            }
-            if (a[1] < b[1]) {
-                return -1;
-            }
-            else if (a[1] > b[1]) {
-                return 1;
-            }
-            if (a[2] < b[2]) {
-                return -1;
-            }
-            else if (a[2] > b[2]) {
-                return 1;
-            }
-            return 0;
-        };
-        const minMaxDest = (a, b) => {
-            if (a[1] < b[1]) {
-                return -1;
-            }
-            else if (a[1] > b[1]) {
-                return 1;
-            }
-            if (a[2] < b[2]) {
-                return -1;
-            }
-            else if (a[2] > b[2]) {
-                return 1;
-            }
-            if (a[0] < b[0]) {
-                return -1;
-            }
-            else if (a[0] > b[0]) {
-                return 1;
-            }
-            return 0;
-        };
-        // Sort all transitions
-        this.transitions.sort(destMinMax);
-        let offset = 0;
-        let upto = 0;
-        let p = [-1, -1, -1];
-        for (let i = 0, len = this.transitions.length; i < len; i++) {
-            // tDest = transitions[offset + 3 * i];
-            // tMin = transitions[offset + 3 * i + 1];
-            // tMax = transitions[offset + 3 * i + 2];
-            let t = this.transitions[i];
-            if (p[0] === t[0]) {
-                if (t[1] <= p[2] + 1) {
-                    if (t[2] > p[2]) {
-                        p[2] = t[2];
-                    }
-                }
-                else {
-                    if (p[0] !== -1) {
-                        this.transitions[offset + upto][0] = p[0];
-                        this.transitions[offset + upto][1] = p[1];
-                        this.transitions[offset + upto][2] = p[2];
-                        upto++;
-                    }
-                    p[1] = t[1];
-                    p[2] = t[2];
-                }
-            }
-            else {
-                if (p[0] !== -1) {
-                    this.transitions[offset + upto][0] = p[0];
-                    this.transitions[offset + upto][1] = p[1];
-                    this.transitions[offset + upto][2] = p[2];
-                    upto++;
-                }
-                p[0] = t[0];
-                p[1] = t[1];
-                p[2] = t[2];
-            }
-        }
-        if (p[0] !== -1) {
-            // Last transition
-            this.transitions[offset + upto][0] = p[0];
-            this.transitions[offset + upto][1] = p[1];
-            this.transitions[offset + upto][2] = p[2];
-            upto++;
-        }
-        this.transitions = this.transitions.slice(0, upto);
-        this.transitions.sort(minMaxDest);
-        // if (this.deterministic && upto > 1) {
-        //   let lastMax = this.transitions[0][2];
-        //   for (let i = 1; i < upto; i++) {
-        //     let min = this.transitions[i][1];
-        //     if (min <= lastMax) {
-        //       this.deterministic = false;
-        //       break;
-        //     }
-        //     lastMax = this.transitions[i][2];
-        //   }
-        // }
-        this.trans[this.currState] = this.transitions.slice();
-        this.transitions = [];
-    }
-    getStartPoints() {
-        let pointset = new Set();
-        pointset.add(MIN_CODE_POINT);
-        const states = Object.keys(this.trans);
-        for (let i = 0; i < states.length; i++) {
-            let trans = this.trans[states[i]];
-            for (let j = 0; j < trans.length; j++) {
-                let tran = trans[j];
-                pointset.add(tran[1]);
-                if (tran[2] < MAX_CODE_POINT) {
-                    pointset.add(tran[2] + 1);
-                }
-            }
-        }
-        return Array.from(pointset).sort((a, b) => a - b);
-    }
-    step(state, label) {
-        let trans = this.trans[state];
-        if (trans) {
-            for (let i = 0; i < trans.length; i++) {
-                let tran = trans[i];
-                if (tran[1] <= label && label <= tran[2]) {
-                    return tran[0];
-                }
-            }
-        }
-        return -1;
-    }
-    getNumStates() {
-        return this.nextState;
-    }
-    addTransition(source, dest, min, max) {
-        if (this.currState !== source) {
-            if (this.currState !== -1) {
-                this.finishCurrentState();
-            }
-            this.currState = source;
-        }
-        this.transitions.push([dest, min, max]);
-    }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = Automaton;
-
-
-
-/***/ }),
 /* 12 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Long__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ParametricDescription__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ParametricDescription__ = __webpack_require__(7);
 
 
 // 1 vectors; 2 states per vector; array length = 2
@@ -2590,6 +2620,10 @@ const offsetIncrs3 = [new __WEBPACK_IMPORTED_MODULE_0__Long__["a" /* Long */](0x
 //   3 -> [(0, 1), (2, 1)]
 //   4 -> [t(0, 1), (0, 1), (1, 1), (2, 1)]
 //   5 -> [(0, 1), (1, 1), (2, 1)]
+/**
+ * From org/apache/lucene/util/automaton/Lev1TParametricDescription.java
+ * @hidden
+ */
 class Lev1TParametricDescription extends __WEBPACK_IMPORTED_MODULE_1__ParametricDescription__["a" /* ParametricDescription */] {
     constructor(w) {
         super(w, 1, [0, 1, 0, -1, -1, -1]);
@@ -2649,7 +2683,7 @@ class Lev1TParametricDescription extends __WEBPACK_IMPORTED_MODULE_1__Parametric
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Long__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ParametricDescription__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ParametricDescription__ = __webpack_require__(7);
 
 
 // 1 vectors; 3 states per vector; array length = 3
@@ -2818,6 +2852,10 @@ const offsetIncrs5 = [
 //   42 -> [t(0, 2), (0, 2), (1, 2), (2, 2), t(2, 2), (3, 2), (4, 2)]
 //   43 -> [(0, 2), (2, 2), (4, 2)]
 //   44 -> [(0, 2), (1, 2), t(1, 2), (2, 2), (3, 2), (4, 2)]
+/**
+ * From org/apache/lucene/util/automaton/Lev2TParametricDescription.java
+ * @hidden
+ */
 class Lev2TParametricDescription extends __WEBPACK_IMPORTED_MODULE_1__ParametricDescription__["a" /* ParametricDescription */] {
     constructor(w) {
         super(w, 2, [0, 2, 1, 0, 1, 0, -1, 0, 0, -1, 0, -1, -1, -1, -1, -1, -2, -1, -1, -1, -2, -1, -1, -2, -1, -1, -2, -1, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2]);

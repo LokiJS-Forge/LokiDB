@@ -1,6 +1,9 @@
 import { InvertedIndex } from "./inverted_index";
 import { Dict } from "../../common/types";
 export declare type ANY = any;
+/**
+ * @hidden
+ */
 export declare class IndexSearcher {
     private _invIdxs;
     private _docs;

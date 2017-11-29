@@ -1,6 +1,6 @@
 /* global suite, benchmark */
 const FTS = require("./lokijs.full-text-search-old.min");
-const FTS2 = require("./../dist/packages/full-text-search/lokijs.full-text-search.min");
+const FTS2 = require("./../dist/packages/full-text-search/lokijs.full-text-search");
 const Benchmark = require("benchmark");
 
 // const RunAutomaton = FTS2.RunAutomaton;
@@ -36,7 +36,7 @@ for (let i = 0; i < 1e4; i++) {
 
 var doc = docs.sort(function (a, b) { return b.length - a.length; })[0];
 
-let query = new FTS.QueryBuilder().fuzzy("body", "aabbcc").prefixLength(1).fuzziness(1).build();
+let query = new FTS.QueryBuilder().fuzzy("body", doc).prefixLength(1).fuzziness(2).build();
 
 let r = fts.search(query);
 let f = fts2.search(query);

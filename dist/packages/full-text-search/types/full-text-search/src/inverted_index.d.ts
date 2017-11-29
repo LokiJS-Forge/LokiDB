@@ -4,12 +4,13 @@ export declare type ANY = any;
  * Converts a string into an array of code points.
  * @param str - the string
  * @returns {number[]} to code points
+ * @hidden
  */
 export declare function toCodePoints(str: string): number[];
+export declare type IndexTerm = [InvertedIndex.Index, number[]];
 /**
  * Inverted index class handles featured text search for specific document fields.
- * @constructor InvertedIndex
- * @param {boolean} [options.store=true] - inverted index will be stored at serialization rather than rebuilt on load.
+ * @hidden
  */
 export declare class InvertedIndex {
     private _store;
@@ -20,7 +21,7 @@ export declare class InvertedIndex {
     private _totalFieldLength;
     private _root;
     /**
-     * @param {boolean} store
+     * @param {boolean} [options.store=true] - inverted index will be stored at serialization rather than rebuilt on load.
      * @param {boolean} optimizeChanges
      * @param {Tokenizer} tokenizer
      */
@@ -28,7 +29,7 @@ export declare class InvertedIndex {
     store: boolean;
     readonly tokenizer: Tokenizer;
     readonly documentCount: number;
-    readonly documentStore: object;
+    readonly documentStore: Map<number, InvertedIndex.DocStore>;
     readonly totalFieldLength: number;
     readonly root: InvertedIndex.Index;
     /**
@@ -55,7 +56,7 @@ export declare class InvertedIndex {
      * @param {object} root - the term index to start from
      * @returns {Array} - Array with term indices and extension
      */
-    static extendTermIndex(root: InvertedIndex.Index): any[];
+    static extendTermIndex(root: InvertedIndex.Index): IndexTerm[];
     private static serializeIndex(index);
     private static deserializeIndex(ar);
     /**
@@ -67,7 +68,7 @@ export declare class InvertedIndex {
         _optimizeChanges: boolean;
         _tokenizer: Tokenizer;
         _docCount: number;
-        _docStore: object;
+        _docStore: [number, InvertedIndex.DocStore][];
         _totalFieldLength: number;
         _root: any[];
     } | {
@@ -90,16 +91,21 @@ export declare namespace InvertedIndex {
         tokenizer?: Tokenizer;
     }
     type Index = Map<number, any> & {
-        dc?: object;
+        dc?: Map<number, number>;
         df?: number;
+        pa?: Index;
     };
     interface Serialization {
         _store: boolean;
         _optimizeChanges: boolean;
         _tokenizer: Tokenizer.Serialization;
         _docCount?: number;
-        _docStore?: object;
+        _docStore?: Map<number, DocStore>;
         _totalFieldLength?: number;
         _root?: Index;
+    }
+    interface DocStore {
+        fieldLength?: number;
+        indexRef?: Index[];
     }
 }

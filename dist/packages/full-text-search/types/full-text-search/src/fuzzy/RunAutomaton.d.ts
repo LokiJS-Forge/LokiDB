@@ -1,4 +1,8 @@
-import { Automaton } from "./Automata";
+import { Automaton } from "./Automaton";
+/**
+ * From org/apache/lucene/util/automaton/RunAutomaton.java
+ * @hidden
+ */
 export declare class RunAutomaton {
     private automaton;
     private points;

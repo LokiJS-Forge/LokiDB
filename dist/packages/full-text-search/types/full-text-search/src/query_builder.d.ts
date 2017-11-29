@@ -127,7 +127,7 @@ export declare class WildcardQuery extends BaseQuery {
  * @example
  * new QueryBuilder()
  *   .fuzzy("surname", "einsten")
- *     .fuzziness(3)
+ *     .fuzziness(2)
  *     .prefixLength(3)
  * .build();
  * // The resulting documents:
@@ -144,7 +144,7 @@ export declare class FuzzyQuery extends BaseQuery {
     constructor(field: string, fuzzy: string, data?: ANY);
     /**
      * Sets the maximal allowed fuzziness.
-     * @param {number|string} fuzziness - the edit distance as number or AUTO
+     * @param {number|string} fuzziness - the edit distance 0, 1, 2 or AUTO
      *
      * AUTO generates an edit distance based on the length of the term:
      * * 0..2 -> must match exactly
@@ -275,7 +275,7 @@ export declare class MatchQuery extends BaseQuery {
     operator(op: string): this;
     /**
      * Sets the maximal allowed fuzziness.
-     * @param {number|string} fuzziness - the edit distance as number or AUTO
+     * @param {number|string} fuzziness - the edit distance 0, 1, 2 or AUTO
      *
      * AUTO generates an edit distance based on the length of the term:
      * * 0..2 -> must match exactly

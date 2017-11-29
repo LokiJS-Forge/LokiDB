@@ -1,4 +1,4 @@
-import {Automaton, MAX_CODE_POINT} from "./Automata";
+import {Automaton, MAX_CODE_POINT} from "./Automaton";
 import {Lev1TParametricDescription} from "./Lev1TParametricDescription";
 import {Lev2TParametricDescription} from "./Lev2TParametricDescription";
 
@@ -94,14 +94,14 @@ export class LevenshteinAutomata {
         const dest = this.description.transition(k, xpos, cvec);
 
         if (dest >= 0) {
-          automat.addTransition(/*stateOffset +*/ k, /*stateOffset + */dest, ch, ch);
+          automat.addTransition(k, dest, ch, ch);
         }
       }
 
       const dest = this.description.transition(k, xpos, 0);
       if (dest >= 0) {
         for (let r = 0; r < this.numRanges; r++) {
-          automat.addTransition(/*stateOffset + */k, /*stateOffset + */dest, this.rangeLower[r], this.rangeUpper[r]);
+          automat.addTransition(k, dest, this.rangeLower[r], this.rangeUpper[r]);
         }
       }
     }
