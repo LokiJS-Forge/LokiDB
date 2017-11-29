@@ -1,6 +1,7 @@
 /**
  * Class supports 64Bit integer operations.
  * A cut-down version of dcodeIO/long.js.
+ * @hidden
  */
 export declare class Long {
     private low;

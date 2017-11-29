@@ -1,4 +1,8 @@
-import { Automaton } from "./Automata";
+import { Automaton } from "./Automaton";
+/**
+ * From org/apache/lucene/util/automaton/LevenshteinAutomata.java
+ * @hidden
+ */
 export declare class LevenshteinAutomata {
     private word;
     private numRanges;

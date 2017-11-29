@@ -15,7 +15,7 @@ export const MIN_CODE_POINT = 0;
  */
 export const MAX_CODE_POINT = 1114111;
 
-function destMinMax(a: Transition, b: Transition) {
+function sortByDestMinMax(a: Transition, b: Transition) {
   if (a[0] < b[0]) {
     return -1;
   } else if (a[0] > b[0]) {
@@ -34,7 +34,7 @@ function destMinMax(a: Transition, b: Transition) {
   return 0;
 }
 
-function minMaxDest(a: Transition, b: Transition) {
+function sortByMinMaxDest(a: Transition, b: Transition) {
   if (a[1] < b[1]) {
     return -1;
   } else if (a[1] > b[1]) {
@@ -58,20 +58,20 @@ function minMaxDest(a: Transition, b: Transition) {
  * @hidden
  */
 export class Automaton {
-  protected transitions: Transition[] = [];
+  protected stateTransitions: Transition[] = [];
   protected _isAccept: Set<number>;
   protected nextState: number;
   protected currState: number;
-  public deterministic: boolean;
-  protected trans: object;
+  // public deterministic: boolean;
+  protected transitions: object;
 
   constructor() {
-    this.transitions = [];
+    this.stateTransitions = [];
     this._isAccept = new Set();
     this.nextState = 0;
     this.currState = -1;
-    this.deterministic = true;
-    this.trans = {};
+    // this.deterministic = true;
+    this.transitions = {};
   }
 
   isAccept(n: number): boolean {
@@ -99,14 +99,13 @@ export class Automaton {
 
   finishCurrentState() {
     // Sort all transitions.
-    this.transitions.sort(destMinMax);
+    this.stateTransitions.sort(sortByDestMinMax);
 
-    let offset = 0;
     let upto = 0;
     let p: Transition = [-1, -1, -1];
 
-    for (let i = 0, len = this.transitions.length; i < len; i++) {
-      let t = this.transitions[i];
+    for (let i = 0, len = this.stateTransitions.length; i < len; i++) {
+      let t = this.stateTransitions[i];
 
       if (p[0] === t[0]) {
         if (t[1] <= p[2] + 1) {
@@ -115,9 +114,9 @@ export class Automaton {
           }
         } else {
           if (p[0] !== -1) {
-            this.transitions[offset + upto][0] = p[0];
-            this.transitions[offset + upto][1] = p[1];
-            this.transitions[offset + upto][2] = p[2];
+            this.stateTransitions[upto][0] = p[0];
+            this.stateTransitions[upto][1] = p[1];
+            this.stateTransitions[upto][2] = p[2];
             upto++;
           }
           p[1] = t[1];
@@ -125,9 +124,9 @@ export class Automaton {
         }
       } else {
         if (p[0] !== -1) {
-          this.transitions[offset + upto][0] = p[0];
-          this.transitions[offset + upto][1] = p[1];
-          this.transitions[offset + upto][2] = p[2];
+          this.stateTransitions[upto][0] = p[0];
+          this.stateTransitions[upto][1] = p[1];
+          this.stateTransitions[upto][2] = p[2];
           upto++;
         }
         p[0] = t[0];
@@ -138,35 +137,36 @@ export class Automaton {
 
     if (p[0] !== -1) {
       // Last transition
-      this.transitions[offset + upto][0] = p[0];
-      this.transitions[offset + upto][1] = p[1];
-      this.transitions[offset + upto][2] = p[2];
+      this.stateTransitions[upto][0] = p[0];
+      this.stateTransitions[upto][1] = p[1];
+      this.stateTransitions[upto][2] = p[2];
       upto++;
     }
 
-    this.trans[this.currState] = this.transitions.slice(0, upto).sort(minMaxDest);
-    this.transitions = [];
+    this.transitions[this.currState] = this.stateTransitions.slice(0, upto).sort(sortByMinMaxDest);
 
     // if (this.deterministic && upto > 1) {
-    //   let lastMax = this.transitions[0][2];
+    //   let lastMax = this.stateTransitions[0][2];
     //   for (let i = 1; i < upto; i++) {
-    //     let min = this.transitions[i][1];
+    //     let min = this.stateTransitions[i][1];
     //     if (min <= lastMax) {
     //       this.deterministic = false;
     //       break;
     //     }
-    //     lastMax = this.transitions[i][2];
+    //     lastMax = this.stateTransitions[i][2];
     //   }
     // }
+
+    this.stateTransitions = [];
   }
 
   getStartPoints(): number[] {
-    let pointset = new Set();
+    const pointset = new Set();
     pointset.add(MIN_CODE_POINT);
 
-    const states = Object.keys(this.trans);
+    const states = Object.keys(this.transitions);
     for (let i = 0; i < states.length; i++) {
-      let trans = this.trans[states[i]];
+      let trans = this.transitions[states[i]];
       for (let j = 0; j < trans.length; j++) {
         let tran = trans[j];
         pointset.add(tran[1]);
@@ -179,7 +179,7 @@ export class Automaton {
   }
 
   step(state: number, label: number): number {
-    let trans = this.trans[state];
+    let trans = this.transitions[state];
     if (trans) {
       for (let i = 0; i < trans.length; i++) {
         let tran = trans[i];
@@ -202,6 +202,6 @@ export class Automaton {
       }
       this.currState = source;
     }
-    this.transitions.push([dest, min, max]);
+    this.stateTransitions.push([dest, min, max]);
   }
 }

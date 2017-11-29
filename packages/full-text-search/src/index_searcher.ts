@@ -86,8 +86,6 @@ export class IndexSearcher {
             }
           }
           // Remove all docs with fewer matches.
-          // let docs = Object.keys(shouldDocs);
-          // for (let i = 0, docId; i < docs.length, docId = docs[i]; i++) {
           for (const [docId, res] of shouldDocs) {
             if (res.length >= msm) {
               if (docResults.has(docId)) {
@@ -244,8 +242,6 @@ export class IndexSearcher {
     let docResults: Map<number, any[]> = new Map();
     for (let i = 0; i < values.length; i++) {
       let currDocs = this._recursive(values[i], doScoring);
-      // let docs = Object.keys(currDocs);
-      // for (let j = 0, docId; j < docs.length, docId = docs[j]; j++) {
       for (const docId of currDocs.keys()) {
         if (!docResults.has(docId)) {
           docResults.set(docId, currDocs.get(docId));
