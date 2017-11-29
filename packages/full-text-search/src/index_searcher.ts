@@ -254,8 +254,6 @@ export class IndexSearcher {
   }
 }
 
-let store = {};
-
 function fuzzySearch(query: any, root: InvertedIndex.Index) {
   let value = toCodePoints(query.value);
   let fuzziness = query.fuzziness !== undefined ? query.fuzziness : "AUTO";
@@ -309,12 +307,7 @@ function fuzzySearch(query: any, root: InvertedIndex.Index) {
   // The matching term.
   const term = [0];
   // Create an automaton from the fuzzy.
-  let automaton = store[query.value];
-  //if (!automaton) {
-  store[query.value] = new RunAutomaton(new LevenshteinAutomata(fuzzy, fuzziness).toAutomaton());
-  automaton = store[query.value];
-
-  // }
+  const automaton = new RunAutomaton(new LevenshteinAutomata(fuzzy, fuzziness).toAutomaton());
 
   function determineEditDistance(state: number, termLength: number, fuzzyLength: number) {
     // Check how many edits this fuzzy can still do.
