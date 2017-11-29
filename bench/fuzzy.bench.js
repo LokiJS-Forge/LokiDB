@@ -1,6 +1,6 @@
 /* global suite, benchmark */
 const FTS = require("./lokijs.full-text-search-old.min");
-const FTS2 = require("./../dist/packages/full-text-search/lokijs.full-text-search");
+const FTS2 = require("./../dist/packages/full-text-search/lokijs.full-text-search.min");
 const Benchmark = require("benchmark");
 
 // const RunAutomaton = FTS2.RunAutomaton;
@@ -34,9 +34,8 @@ for (let i = 0; i < 1e4; i++) {
   docs.push(doc);
 }
 
-var doc = docs.sort(function (a, b) { return b.length - a.length; })[0];
-
-let query = new FTS.QueryBuilder().fuzzy("body", doc).prefixLength(1).fuzziness(2).build();
+var doc = docs.sort(function (a, b) { return b.length - a.length; })[8e3];
+let query = new FTS.QueryBuilder().fuzzy("body", doc).prefixLength(1).fuzziness(2).extended(true).build();
 
 let r = fts.search(query);
 let f = fts2.search(query);
@@ -58,4 +57,33 @@ suite
     console.log('Fastest is ' + this.filter('fastest').map('name'));
   })
   .run();
-
+//
+// let arr = [];
+// for (let i = 0; i < 1e3; i++) {
+//   arr[i] = [new FTS.FullTextSearch(), new FTS2.FullTextSearch()];
+// }
+//
+// suite
+//   .add("a", () => {
+//     let j = 0;
+//     for (const child of arr) {
+//       j += child.length;
+//     }
+//   })
+//   .add("b", () => {
+//     let j = 0;
+//     for (let i = 0; i < arr.length; i++) {
+//       let f = arr[i];
+//       j += f.length;
+//     }
+//   })
+//   // add listeners
+//   .on('cycle', function (event) {
+//     console.log(String(event.target));
+//   })
+//   .on('complete', function () {
+//     console.log('Fastest is ' + this.filter('fastest').map('name'));
+//   })
+//   .run();
+//
+//

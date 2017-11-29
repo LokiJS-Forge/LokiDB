@@ -255,30 +255,7 @@ class InvertedIndex {
             }
         }
         else {
-            // Iterate over the whole inverted index and remove the document.
-            // Delete branch if not needed anymore.
-            const recursive = (root) => {
-                for (const child of root) {
-                    // Checkout branch.
-                    if (recursive(child[1])) {
-                        root.delete(child[0]);
-                    }
-                }
-                // Remove docId from docs and decrement document frequency.
-                if (root.df !== undefined) {
-                    if (root.dc.has(docId)) {
-                        root.df -= 1;
-                        root.dc.delete(docId);
-                        // Delete unused meta data of branch.
-                        if (root.df === 0) {
-                            delete root.df;
-                            delete root.dc;
-                        }
-                    }
-                }
-                return root.size === 0 && root.dc === undefined;
-            };
-            recursive(this._root);
+            this._remove(this._root, docId);
         }
     }
     /**
@@ -303,57 +280,22 @@ class InvertedIndex {
     }
     /**
      * Extends a term index to all available term leafs.
-     * @param {object} root - the term index to start from
+     * @param {object} idx - the term index to start from
+     * @param {number[]} [term=[]] - the current term
+     * @param {Array} termIndices - all extended indices with their term
      * @returns {Array} - Array with term indices and extension
      */
-    static extendTermIndex(root) {
-        const termIndices = [];
-        const recursive = (idx, r) => {
-            if (idx.df !== undefined) {
-                termIndices.push([idx, r.slice()]);
-            }
-            r.push(0);
-            for (const child of idx) {
-                r[r.length - 1] = child[0];
-                recursive(child[1], r);
-            }
-            r.pop();
-        };
-        recursive(root, []);
+    static extendTermIndex(idx, term = [], termIndices = []) {
+        if (idx.df !== undefined) {
+            termIndices.push([idx, term.slice()]);
+        }
+        term.push(0);
+        for (const child of idx) {
+            term[term.length - 1] = child[0];
+            InvertedIndex.extendTermIndex(child[1], term, termIndices);
+        }
+        term.pop();
         return termIndices;
-    }
-    static serializeIndex(index) {
-        const recursive = (idx) => {
-            let k = [];
-            let v = [];
-            let r = {};
-            if (idx.dc !== undefined) {
-                r = { df: idx.df, dc: [...idx.dc] };
-            }
-            if (idx.size === 0) {
-                return [k, v, r];
-            }
-            for (const child of idx) {
-                k.push(child[0]);
-                v.push(recursive(child[1]));
-            }
-            return [k, v, r];
-        };
-        return recursive(index);
-    }
-    static deserializeIndex(ar) {
-        const recursive = (arr) => {
-            let idx = new Map();
-            for (let i = 0; i < arr[0].length; i++) {
-                idx.set(arr[0][i], recursive(arr[1][i]));
-            }
-            if (arr[2].df !== undefined) {
-                idx.df = arr[2].df;
-                idx.dc = new Map(arr[2].dc);
-            }
-            return idx;
-        };
-        return recursive(ar);
     }
     /**
      * Serialize the inverted index.
@@ -395,36 +337,97 @@ class InvertedIndex {
             invIdx._totalFieldLength = serialized._totalFieldLength;
             invIdx._root = InvertedIndex.deserializeIndex(serialized._root);
         }
-        const regenerate = (index, parent) => {
-            // Set parent.
-            if (parent !== null) {
-                Object.defineProperties(index, {
-                    pa: { enumerable: false, configurable: true, writable: false, value: parent }
-                });
-            }
-            // Iterate over subtree.
-            for (const child of index.values()) {
-                regenerate(child, index);
-            }
-            if (index.dc !== undefined) {
-                // Get documents of term.
-                for (const docId of index.dc.keys()) {
-                    // Get document store at specific document/field.
-                    const ref = invIdx._docStore.get(docId);
-                    if (ref.indexRef === undefined) {
-                        Object.defineProperties(ref, {
-                            indexRef: { enumerable: false, configurable: true, writable: true, value: [] }
-                        });
-                    }
-                    // Set reference to term index.
-                    ref.indexRef.push(index);
-                }
-            }
-        };
         if (invIdx._optimizeChanges) {
-            regenerate(invIdx._root, null);
+            invIdx._regenerate(invIdx._root, null);
         }
         return invIdx;
+    }
+    static serializeIndex(idx) {
+        const k = [];
+        const v = [];
+        let r = {};
+        if (idx.dc !== undefined) {
+            r = { df: idx.df, dc: [...idx.dc] };
+        }
+        if (idx.size === 0) {
+            return [k, v, r];
+        }
+        for (const child of idx) {
+            k.push(child[0]);
+            v.push(InvertedIndex.serializeIndex(child[1]));
+        }
+        return [k, v, r];
+    }
+    static deserializeIndex(arr) {
+        const idx = new Map();
+        for (let i = 0; i < arr[0].length; i++) {
+            idx.set(arr[0][i], InvertedIndex.deserializeIndex(arr[1][i]));
+        }
+        if (arr[2].df !== undefined) {
+            idx.df = arr[2].df;
+            idx.dc = new Map(arr[2].dc);
+        }
+        return idx;
+    }
+    /**
+     * Set parent of to each index and regenerate the indexRef.
+     * @param {InvertedIndex.Index} index - the index
+     * @param {InvertedIndex.Index} parent - the parent
+     */
+    _regenerate(index, parent) {
+        // Set parent.
+        if (parent !== null) {
+            Object.defineProperties(index, {
+                pa: { enumerable: false, configurable: true, writable: false, value: parent }
+            });
+        }
+        // Iterate over subtree.
+        for (const child of index.values()) {
+            this._regenerate(child, index);
+        }
+        if (index.dc !== undefined) {
+            // Get documents of term.
+            for (const docId of index.dc.keys()) {
+                // Get document store at specific document/field.
+                const ref = this._docStore.get(docId);
+                if (ref.indexRef === undefined) {
+                    Object.defineProperties(ref, {
+                        indexRef: { enumerable: false, configurable: true, writable: true, value: [] }
+                    });
+                }
+                // Set reference to term index.
+                ref.indexRef.push(index);
+            }
+        }
+    }
+    /**
+     * Iterate over the whole inverted index and remove the document.
+     * Delete branch if not needed anymore.
+     * Function is needed if index is used without optimization.
+     * @param {InvertedIndex.Index} idx - the index
+     * @param {number} docId - the doc id
+     * @returns {boolean} true if index is empty
+     */
+    _remove(idx, docId) {
+        for (const child of idx) {
+            // Checkout branch.
+            if (this._remove(child[1], docId)) {
+                idx.delete(child[0]);
+            }
+        }
+        // Remove docId from docs and decrement document frequency.
+        if (idx.df !== undefined) {
+            if (idx.dc.has(docId)) {
+                idx.df -= 1;
+                idx.dc.delete(docId);
+                // Delete unused meta data of branch.
+                if (idx.df === 0) {
+                    delete idx.df;
+                    delete idx.dc;
+                }
+            }
+        }
+        return idx.size === 0 && idx.dc === undefined;
     }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = InvertedIndex;
@@ -1813,7 +1816,7 @@ class Automaton {
         this.stateTransitions = [];
     }
     getStartPoints() {
-        let pointset = new Set();
+        const pointset = new Set();
         pointset.add(MIN_CODE_POINT);
         const states = Object.keys(this.transitions);
         for (let i = 0; i < states.length; i++) {
@@ -2100,9 +2103,8 @@ class IndexSearcher {
     }
     _recursive(query, doScoring) {
         let docResults = new Map();
-        let boost = query.boost !== undefined ? query.boost : 1;
-        let fieldName = query.field !== undefined ? query.field : null;
-        let enableScoring = query.enable_scoring !== undefined ? query.enable_scoring : false;
+        const boost = query.boost !== undefined ? query.boost : 1;
+        const fieldName = query.field !== undefined ? query.field : null;
         let root = null;
         let tokenizer = null;
         if (this._invIdxs[fieldName] !== undefined) {
@@ -2141,8 +2143,6 @@ class IndexSearcher {
                         }
                     }
                     // Remove all docs with fewer matches.
-                    // let docs = Object.keys(shouldDocs);
-                    // for (let i = 0, docId; i < docs.length, docId = docs[i]; i++) {
                     for (const [docId, res] of shouldDocs) {
                         if (res.length >= msm) {
                             if (docResults.has(docId)) {
@@ -2183,14 +2183,15 @@ class IndexSearcher {
                 break;
             }
             case "fuzzy": {
-                let f = fuzzySearch(query, root);
+                const f = fuzzySearch(query, root);
                 for (let i = 0; i < f.length; i++) {
                     this._scorer.prepare(fieldName, boost * f[i].boost, f[i].index, doScoring, docResults, f[i].term);
                 }
                 break;
             }
             case "wildcard": {
-                let w = wildcardSearch(query, root);
+                const enableScoring = query.enable_scoring !== undefined ? query.enable_scoring : false;
+                const w = wildcardSearch(query, root);
                 for (let i = 0; i < w.length; i++) {
                     this._scorer.prepare(fieldName, boost, w[i].index, doScoring && enableScoring, docResults, w[i].term);
                 }
@@ -2211,8 +2212,9 @@ class IndexSearcher {
                 break;
             }
             case "prefix": {
+                const enableScoring = query.enable_scoring !== undefined ? query.enable_scoring : false;
                 const cps = Object(__WEBPACK_IMPORTED_MODULE_1__inverted_index__["b" /* toCodePoints */])(query.value);
-                let termIdx = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].getTermIndex(cps, root);
+                const termIdx = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].getTermIndex(cps, root);
                 if (termIdx !== null) {
                     const termIdxs = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].extendTermIndex(termIdx);
                     for (let i = 0; i < termIdxs.length; i++) {
@@ -2298,8 +2300,6 @@ class IndexSearcher {
         let docResults = new Map();
         for (let i = 0; i < values.length; i++) {
             let currDocs = this._recursive(values[i], doScoring);
-            // let docs = Object.keys(currDocs);
-            // for (let j = 0, docId; j < docs.length, docId = docs[j]; j++) {
             for (const docId of currDocs.keys()) {
                 if (!docResults.has(docId)) {
                     docResults.set(docId, currDocs.get(docId));
@@ -2314,7 +2314,6 @@ class IndexSearcher {
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = IndexSearcher;
 
-let store = {};
 function fuzzySearch(query, root) {
     let value = Object(__WEBPACK_IMPORTED_MODULE_1__inverted_index__["b" /* toCodePoints */])(query.value);
     let fuzziness = query.fuzziness !== undefined ? query.fuzziness : "AUTO";
@@ -2365,11 +2364,7 @@ function fuzzySearch(query, root) {
     // The matching term.
     const term = [0];
     // Create an automaton from the fuzzy.
-    let automaton = store[query.value];
-    //if (!automaton) {
-    store[query.value] = new __WEBPACK_IMPORTED_MODULE_3__fuzzy_RunAutomaton__["a" /* RunAutomaton */](new __WEBPACK_IMPORTED_MODULE_4__fuzzy_LevenshteinAutomata__["a" /* LevenshteinAutomata */](fuzzy, fuzziness).toAutomaton());
-    automaton = store[query.value];
-    // }
+    const automaton = new __WEBPACK_IMPORTED_MODULE_3__fuzzy_RunAutomaton__["a" /* RunAutomaton */](new __WEBPACK_IMPORTED_MODULE_4__fuzzy_LevenshteinAutomata__["a" /* LevenshteinAutomata */](fuzzy, fuzziness).toAutomaton());
     function determineEditDistance(state, termLength, fuzzyLength) {
         // Check how many edits this fuzzy can still do.
         let ed = 0;
@@ -2395,8 +2390,9 @@ function fuzzySearch(query, root) {
         if (automaton.isAccept(state)) {
             if (extended) {
                 // Add all terms down the index.
-                for (const child of __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].extendTermIndex(idx)) {
-                    result.push({ term: child[1], index: child[0], boost: 1 });
+                let all = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].extendTermIndex(idx);
+                for (let i = 0; i < all.length; i++) {
+                    result.push({ term: all[i][1], index: all[i][0], boost: 1 });
                 }
                 return;
             }
@@ -2457,12 +2453,12 @@ function wildcardSearch(query, root) {
             else {
                 // Iterate over the whole tree.
                 recursive(index, idx + 1, term, false);
-                const indices = [{ index: index, term: [] }];
+                const indices = [[index, []]];
                 do {
                     const index = indices.pop();
-                    for (const child of index.index) {
-                        recursive(child[1], idx + 1, [...term, ...index.term, child[0]]);
-                        indices.push({ index: child[1], term: [...index.term, child[0]] });
+                    for (const child of index[0]) {
+                        recursive(child[1], idx + 1, [...term, ...index[1], child[0]]);
+                        indices.push([child[1], [...index[1], child[0]]]);
                     }
                 } while (indices.length !== 0);
             }
