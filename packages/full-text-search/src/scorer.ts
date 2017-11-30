@@ -3,14 +3,15 @@ import {Dict} from "../../common/types";
 
 export type ANY = any;
 
-// export enum TYPE {
-//   BM25,
-//   CONSTANT
-// }
-//
-// export interface DocResult {
-//   type: name;
-// }
+export interface DocResult {
+  tf?: number; // Term frequency.
+  idf?: number; // Inverse document frequency
+  boost: number;
+  fieldName?: string;
+  term?: number[];
+}
+
+export type DocResults = Map<number, DocResult[]>;
 
 /**
  * @hidden
@@ -28,7 +29,7 @@ export class Scorer {
     this._cache = {};
   }
 
-  public prepare(fieldName: string, boost: number, termIdx: InvertedIndex.Index, doScoring: boolean, docResults: Map<number, any[]> = new Map(), term: number[] = null) {
+  public prepare(fieldName: string, boost: number, termIdx: InvertedIndex.Index, doScoring: boolean, docResults: DocResults = new Map(), term: number[] = null) {
     if (termIdx === null || termIdx.dc === undefined) {
       return null;
     }
@@ -44,14 +45,14 @@ export class Scorer {
         docResults.get(docId).push({tf, idf, boost, fieldName, term});
       } else {
         // Constant scoring.
-        docResults.set(docId, [{boost, fieldName}]);
+        docResults.set(docId, [{boost}]);
       }
     }
 
     return docResults;
   }
 
-  public scoreConstant(boost: number, docId: number, docResults: Map<number, any[]> = new Map()) {
+  public scoreConstant(boost: number, docId: number, docResults: DocResults = new Map()) {
     if (!docResults.has(docId)) {
       docResults.set(docId, []);
     }
@@ -59,7 +60,7 @@ export class Scorer {
     return docResults;
   }
 
-  public finalScore(query: ANY, docResults: Map<number, any[]> = new Map()) {
+  public finalScore(query: ANY, docResults: DocResults = new Map()) {
     const result = {};
     const k1 = query.scoring.k1;
     const b = query.scoring.b;
@@ -88,11 +89,10 @@ export class Scorer {
           // 	"\n\tfl : " + fieldLength);
         } else {
           // Constant scoring.
-          res = docResult.value * docResult.boost;
+          res = docResult.boost;
           // console.log(
           //  "Constant: " + res,
-          //  "\n\tboost: " + docResult.boost,
-          //  "\n\tvalue : " + docResult.value);
+          //  "\n\tboost: " + docResult.boost);
         }
         docScore += res;
       }
