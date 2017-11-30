@@ -1,6 +1,6 @@
 /* global describe, it, expect */
 import {FullTextSearch} from "../../../src/full_text_search";
-import {QueryBuilder as QB, FuzzyQuery} from "../../../src/query_builder";
+import {QueryBuilder as QB, FuzzyQueryBuilder} from "../../../src/query_builder";
 import {Tokenizer} from "../../../src/tokenizer";
 
 describe("fuzzy query", () => {
@@ -16,7 +16,7 @@ describe("fuzzy query", () => {
   };
 
   it("Fuzzy query: QB", () => {
-    let q = new FuzzyQuery("user", "albrt").boost(5.5).fuzziness(2).prefixLength(3).extended(true).build();
+    let q = new FuzzyQueryBuilder("user", "albrt").boost(5.5).fuzziness(2).prefixLength(3).extended(true).build();
     expect(q).toEqual({type: "fuzzy", field: "user", value: "albrt", boost: 5.5, fuzziness: 2, prefix_length: 3, extended: true});
 
     q = new QB().fuzzy("a", "abc");

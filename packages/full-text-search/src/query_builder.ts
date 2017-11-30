@@ -1,16 +1,21 @@
 export type ANY = any;
 
+export interface BaseQuery {
+  type: string;
+  boost: number;
+}
+
 /**
  * The base query class to enable boost to a query type.
  */
-export class BaseQuery {
+export class BaseQueryBuilder {
   protected _data: ANY;
 
   /**
    * @param {string} type - the type name of the query
    * @param data
    */
-  constructor(type: string, data = {}) {
+  constructor(type: string, data: BaseQuery) {
     this._data = data;
     this._data.type = type;
   }
@@ -22,7 +27,7 @@ export class BaseQuery {
    * and [Elasticsearch#boost]{@link https://www.elastic.co/guide/en/elasticsearch/reference/5.2/mapping-boost.html}.
    *
    * @param {number} value - the positive boost
-   * @return {BaseQuery} object itself for cascading
+   * @return {BaseQueryBuilder} object itself for cascading
    */
   boost(value: number) {
     if (value < 0) {
@@ -44,8 +49,8 @@ export class BaseQuery {
 /**
  * A query which finds documents where a document field contains a term.
  *
- * See also [Lucene#TermQuery]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/TermQuery.html}
- * and [Elasticsearch#TermQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-term-query.html}.
+ * See also [Lucene#TermQueryBuilder]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/TermQuery.html}
+ * and [Elasticsearch#TermQueryBuilder]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-term-query.html}.
  *
  * @example
  * new QueryBuilder()
@@ -54,9 +59,9 @@ export class BaseQuery {
  * // The resulting documents:
  * // contains the term infinity
  *
- * @extends BaseQuery
+ * @extends BaseQueryBuilder
  */
-export class TermQuery extends BaseQuery {
+export class TermQueryBuilder extends BaseQueryBuilder {
   /**
    * @param {string} field - the field name of the document
    * @param {string} term - the term
@@ -73,7 +78,7 @@ export class TermQuery extends BaseQuery {
  * A query which finds documents where a document field contains any of the terms.
  *
  * See also [Lucene#TermRangeQuery]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/TermRangeQuery.html}
- * and [Elasticsearch#TermsQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-terms-query.html}.
+ * and [Elasticsearch#TermsQueryBuilder]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-terms-query.html}.
  *
  * @example
  * new QueryBuilder()
@@ -82,9 +87,9 @@ export class TermQuery extends BaseQuery {
  * // The resulting documents:
  * // contains the terms infinity, atom or energy
  *
- * @extends BaseQuery
+ * @extends BaseQueryBuilder
  */
-export class TermsQuery extends BaseQuery {
+export class TermsQueryBuilder extends BaseQueryBuilder {
   /**
    * @param {string} field - the field name of the document
    * @param {string[]} terms - the terms
@@ -106,10 +111,10 @@ export class TermsQuery extends BaseQuery {
  *
  * To escape a wildcard character, use _\_ (backslash), e.g. \?.
  *
- * * To enable scoring for wildcard queries, use {@link WildcardQuery#enableScoring}.
+ * * To enable scoring for wildcard queries, use {@link WildcardQueryBuilder#enableScoring}.
  *
- * See also [Lucene#WildcardQuery]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/WildcardQuery.html}
- * and [Elasticsearch#WildcardQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-wildcard-query.html}.
+ * See also [Lucene#WildcardQueryBuilder]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/WildcardQuery.html}
+ * and [Elasticsearch#WildcardQueryBuilder]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-wildcard-query.html}.
  *
  * @example
  * new QueryBuilder()
@@ -118,9 +123,9 @@ export class TermsQuery extends BaseQuery {
  * // The resulting documents:
  * // contains the wildcard surname e?nst*n\? (like Einstein? or Eynsteyn? but not Einsteine or Ensten?)
  *
- * @extends BaseQuery
+ * @extends BaseQueryBuilder
  */
-export class WildcardQuery extends BaseQuery {
+export class WildcardQueryBuilder extends BaseQueryBuilder {
   /**
    * @param {string} field - the field name of the document
    * @param {string} wildcard - the wildcard term
@@ -133,9 +138,9 @@ export class WildcardQuery extends BaseQuery {
   }
 
   /**
-   * This flag enables scoring for wildcard results, similar to {@link TermQuery}.
+   * This flag enables scoring for wildcard results, similar to {@link TermQueryBuilder}.
    * @param {boolean} enable - flag to enable or disable scoring
-   * @return {WildcardQuery}
+   * @return {WildcardQueryBuilder}
    */
   enableScoring(enable: boolean) {
     this._data.enable_scoring = enable;
@@ -151,13 +156,13 @@ export class WildcardQuery extends BaseQuery {
  * The edit distance is the minimum number of an insertion, deletion or substitution of a single character
  * or a transposition of two adjacent characters.
  *
- * * To set the maximal allowed edit distance, use {@link FuzzyQuery#fuzziness} (default is AUTO).
- * * To set the initial word length, which should ignored for fuzziness, use {@link FuzzyQuery#prefixLength}.
+ * * To set the maximal allowed edit distance, use {@link FuzzyQueryBuilder#fuzziness} (default is AUTO).
+ * * To set the initial word length, which should ignored for fuzziness, use {@link FuzzyQueryBuilder#prefixLength}.
  * * To include longer document field terms than the fuzzy term and edit distance together, use
- *   {@link FuzzyQuery#extended}.
+ *   {@link FuzzyQueryBuilder#extended}.
  *
- * See also [Lucene#FuzzyQuery]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/FuzzyQuery.html}
- * and [Elasticsearch#FuzzyQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-fuzzy-query.html}.
+ * See also [Lucene#FuzzyQueryBuilder]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/FuzzyQuery.html}
+ * and [Elasticsearch#FuzzyQueryBuilder]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-fuzzy-query.html}.
  *
  * @example
  * new QueryBuilder()
@@ -168,9 +173,9 @@ export class WildcardQuery extends BaseQuery {
  * // The resulting documents:
  * // contains the fuzzy surname einstn (like Einstein or Einst but not Eisstein or Insten)
  *
- * @extends BaseQuery
+ * @extends BaseQueryBuilder
  */
-export class FuzzyQuery extends BaseQuery {
+export class FuzzyQueryBuilder extends BaseQueryBuilder {
   /**
    * @param {string} field - the field name of the document
    * @param {string} fuzzy - the fuzzy term
@@ -191,7 +196,7 @@ export class FuzzyQuery extends BaseQuery {
    * * 3..5 -> one edit allowed
    * * >5 two edits allowed
    *
-   * @return {FuzzyQuery} - object itself for cascading
+   * @return {FuzzyQueryBuilder} - object itself for cascading
    */
   fuzziness(fuzziness: number | string) {
     if (fuzziness !== "AUTO" && (fuzziness < 0 || fuzziness > 2)) {
@@ -204,7 +209,7 @@ export class FuzzyQuery extends BaseQuery {
   /**
    * Sets the initial word length.
    * @param {number} prefixLength - the positive prefix length
-   * @return {FuzzyQuery}  object itself for cascading
+   * @return {FuzzyQueryBuilder}  object itself for cascading
    */
   prefixLength(prefixLength: number) {
     if (prefixLength < 0) {
@@ -217,7 +222,7 @@ export class FuzzyQuery extends BaseQuery {
   /**
    * This flag allows longer document field terms than the actual fuzzy.
    * @param {boolean} extended - flag to enable or disable extended search
-   * @return {FuzzyQuery}
+   * @return {FuzzyQueryBuilder}
    */
   extended(extended: boolean) {
     this._data.extended = extended;
@@ -228,10 +233,10 @@ export class FuzzyQuery extends BaseQuery {
 /**
  * A query which matches documents containing the prefix of a term inside a field.
  *
- * * To enable scoring for wildcard queries, use {@link WildcardQuery#enableScoring}.
+ * * To enable scoring for wildcard queries, use {@link WildcardQueryBuilder#enableScoring}.
  *
- * See also [Lucene#PrefixQuery]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/PrefixQuery.html}
- * and [Elasticsearch#MatchQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-prefix-query.html}
+ * See also [Lucene#PrefixQueryBuilder]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/PrefixQuery.html}
+ * and [Elasticsearch#MatchQueryBuilder]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-prefix-query.html}
  *
  * @example
  * new QueryBuilder()
@@ -240,9 +245,9 @@ export class FuzzyQuery extends BaseQuery {
  * // The resulting documents:
  * // contains the term prefix alb as surname
  *
- * @extends BaseQuery
+ * @extends BaseQueryBuilder
  */
-export class PrefixQuery extends BaseQuery {
+export class PrefixQueryBuilder extends BaseQueryBuilder {
   /**
    * @param {string} field - the field name of the document
    * @param {string} prefix - the prefix of a term
@@ -255,9 +260,9 @@ export class PrefixQuery extends BaseQuery {
   }
 
   /**
-   * This flag enables scoring for prefix results, similar to {@link TermQuery}.
+   * This flag enables scoring for prefix results, similar to {@link TermQueryBuilder}.
    * @param {boolean} enable - flag to enable or disable scoring
-   * @return {PrefixQuery}
+   * @return {PrefixQueryBuilder}
    */
   enableScoring(enable: boolean) {
     this._data.enable_scoring = enable;
@@ -268,7 +273,7 @@ export class PrefixQuery extends BaseQuery {
 /**
  * A query which matches all documents with a given field.
  *
- * See also [Elasticsearch#ExistsQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-query.html}.
+ * See also [Elasticsearch#ExistsQueryBuilder]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-query.html}.
  *
  * @example
  * new QueryBuilder()
@@ -277,9 +282,9 @@ export class PrefixQuery extends BaseQuery {
  * // The resulting documents:
  * // has the field "name"
  *
- * @extends BaseQuery
+ * @extends BaseQueryBuilder
  */
-export class ExistsQuery extends BaseQuery {
+export class ExistsQueryBuilder extends BaseQueryBuilder {
   /**
    * @param {string} field - the field name of the document
    * @param data
@@ -296,14 +301,14 @@ export class ExistsQuery extends BaseQuery {
  *
  * Operator      | Description
  * ------------- | -------------
- * or (default) | Finds documents which matches some tokens. The minimum amount of matches can be controlled with [minimumShouldMatch]{@link MatchQuery#minimumShouldMatch} (default is 1).
+ * or (default) | Finds documents which matches some tokens. The minimum amount of matches can be controlled with [minimumShouldMatch]{@link MatchQueryBuilder#minimumShouldMatch} (default is 1).
  * and | Finds documents which matches all tokens.
  *
- * To enable a [fuzzy query]{@link FuzzyQuery} for the tokens, use {@link MatchQuery#fuzziness},
- * {@link MatchQuery#prefixLength} and {@link MatchQuery#extended}
+ * To enable a [fuzzy query]{@link FuzzyQueryBuilder} for the tokens, use {@link MatchQueryBuilder#fuzziness},
+ * {@link MatchQueryBuilder#prefixLength} and {@link MatchQueryBuilder#extended}
  *
  * See also [Lucene#?]{@link ?}
- * and [Elasticsearch#MatchQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html}.
+ * and [Elasticsearch#MatchQueryBuilder]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html}.
  *
  * @example
  * new QueryBuilder()
@@ -316,9 +321,9 @@ export class ExistsQuery extends BaseQuery {
  * // The resulting documents:
  * // contains the fuzzy name albrt einsten (like Albert Einstein) with a boost of 2.5
  *
- * @extends BaseQuery
+ * @extends BaseQueryBuilder
  */
-export class MatchQuery extends BaseQuery {
+export class MatchQueryBuilder extends BaseQueryBuilder {
   /**
    * @param {string} field - the field name of the document
    * @param {string} query - the query text
@@ -340,7 +345,7 @@ export class MatchQuery extends BaseQuery {
    *     the minimum.
    *   minShouldMatch < 1: Indicates that this percent of the total number of sub queries are necessary.
    *     The number computed from the percentage is rounded down and used as the minimum.
-   * @return {MatchQuery} object itself for cascading
+   * @return {MatchQueryBuilder} object itself for cascading
    */
   minimumShouldMatch(minShouldMatch: number) {
     if (this._data.operator !== undefined && this._data.operator === "and") {
@@ -353,7 +358,7 @@ export class MatchQuery extends BaseQuery {
   /**
    * Sets the boolean operator.
    * @param {string} op - the operator ("or" || "and")
-   * @return {MatchQuery} object itself for cascading
+   * @return {MatchQueryBuilder} object itself for cascading
    */
   operator(op: string) {
     if (op !== "and" && op !== "or") {
@@ -375,7 +380,7 @@ export class MatchQuery extends BaseQuery {
    * * 3..5 -> one edit allowed
    * * >5 two edits allowed
    *
-   * @return {MatchQuery} - object itself for cascading
+   * @return {MatchQueryBuilder} - object itself for cascading
    */
   fuzziness(fuzziness: number | string) {
     if (fuzziness !== "AUTO" && (fuzziness < 0 || fuzziness > 2)) {
@@ -388,7 +393,7 @@ export class MatchQuery extends BaseQuery {
   /**
    * Sets the starting word length which should not be considered for fuzziness.
    * @param {number} prefixLength - the positive prefix length
-   * @return {MatchQuery} - object itself for cascading
+   * @return {MatchQueryBuilder} - object itself for cascading
    */
   prefixLength(prefixLength: number) {
     if (prefixLength < 0) {
@@ -401,7 +406,7 @@ export class MatchQuery extends BaseQuery {
   /**
    * This flag allows longer document field terms than the actual fuzzy.
    * @param {boolean} extended - flag to enable or disable extended search
-   * @return {MatchQuery}
+   * @return {MatchQueryBuilder}
    */
   extended(extended: boolean) {
     this._data.extended = extended;
@@ -412,11 +417,11 @@ export class MatchQuery extends BaseQuery {
 /**
  * A query that matches all documents and giving them a constant score equal to the query boost.
  *
- * Typically used inside a must clause of a {@link BoolQuery} to subsequently reject non matching documents with the not
+ * Typically used inside a must clause of a {@link BoolQueryBuilder} to subsequently reject non matching documents with the not
  * clause.
  *
  * See also [Lucene#MatchAllDocsQuery]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/MatchAllDocsQuery.html}
- * and [Elasticsearch#MatchAllQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-all-query.html}.
+ * and [Elasticsearch#MatchAllQueryBuilder]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-all-query.html}.
  *
  * @example
  * new QueryBuilder()
@@ -426,10 +431,10 @@ export class MatchQuery extends BaseQuery {
  * // The resulting documents:
  * // all documents and giving a score of 2.5
  *
- * @extends BaseQuery
+ * @extends BaseQueryBuilder
  */
-export class MatchAllQuery extends BaseQuery {
-  constructor(data = {}) {
+export class MatchAllQueryBuilder extends BaseQueryBuilder {
+  constructor(data: ANY = {}) {
     super("match_all", data);
   }
 }
@@ -437,7 +442,7 @@ export class MatchAllQuery extends BaseQuery {
 /**
  * A query which holds all sub queries like an array.
  */
-export class ArrayQuery extends BaseQuery {
+export class ArrayQueryBuilder extends BaseQueryBuilder {
   private _callbackName: string;
   private _prepare: Function;
 
@@ -468,43 +473,43 @@ export class ArrayQuery extends BaseQuery {
   }
 
   bool() {
-    return this._prepare(BoolQuery);
+    return this._prepare(BoolQueryBuilder);
   }
 
   constantScore() {
-    return this._prepare(ConstantScoreQuery);
+    return this._prepare(ConstantScoreQueryBuilder);
   }
 
   term(field: string, term: string) {
-    return this._prepare(TermQuery, field, term);
+    return this._prepare(TermQueryBuilder, field, term);
   }
 
   terms(field: string, terms: Array<string>) {
-    return this._prepare(TermsQuery, field, terms);
+    return this._prepare(TermsQueryBuilder, field, terms);
   }
 
   wildcard(field: string, wildcard: string) {
-    return this._prepare(WildcardQuery, field, wildcard);
+    return this._prepare(WildcardQueryBuilder, field, wildcard);
   }
 
   fuzzy(field: string, fuzzy: string) {
-    return this._prepare(FuzzyQuery, field, fuzzy);
+    return this._prepare(FuzzyQueryBuilder, field, fuzzy);
   }
 
   match(field: string, query: string) {
-    return this._prepare(MatchQuery, field, query);
+    return this._prepare(MatchQueryBuilder, field, query);
   }
 
   matchAll() {
-    return this._prepare(MatchAllQuery);
+    return this._prepare(MatchAllQueryBuilder);
   }
 
   prefix(field: string, prefix: string) {
-    return this._prepare(PrefixQuery, field, prefix);
+    return this._prepare(PrefixQueryBuilder, field, prefix);
   }
 
   exists(field: string) {
-    return this._prepare(ExistsQuery, field);
+    return this._prepare(ExistsQueryBuilder, field);
   }
 }
 
@@ -512,7 +517,7 @@ export class ArrayQuery extends BaseQuery {
  * A query that wraps sub queries and returns a constant score equal to the query boost for every document in the filter.
  *
  * See also [Lucene#BooleanQuery]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/ConstantScoreQuery.html}
- * and [Elasticsearch#ConstantScoreQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-constant-score-query.html}.
+ * and [Elasticsearch#ConstantScoreQueryBuilder]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-constant-score-query.html}.
  *
  * @example
  * new QueryBuilder()
@@ -526,20 +531,20 @@ export class ArrayQuery extends BaseQuery {
  * // The resulting documents:
  * // * contains albert as first name, einstein as surname and the document score is 42.
  *
- * @extends BaseQuery
+ * @extends BaseQueryBuilder
  */
-export class ConstantScoreQuery extends BaseQuery {
+export class ConstantScoreQueryBuilder extends BaseQueryBuilder {
   constructor(data: ANY = {}) {
     super("constant_score", data);
   }
 
   /**
    * Starts an array of queries. Use endFilter() to finish the array.
-   * @return {ArrayQuery} array query for holding sub queries
+   * @return {ArrayQueryBuilder} array query for holding sub queries
    */
   beginFilter() {
     this._data.filter = {};
-    return new ArrayQuery("endFilter", () => {
+    return new ArrayQueryBuilder("endFilter", () => {
       return this;
     }, this._data.filter);
   }
@@ -554,13 +559,13 @@ export class ConstantScoreQuery extends BaseQuery {
  * ------------- | -------------
  * must  | Finds documents which matches all sub queries.
  * filter  | Finds documents which matches all sub queries but these documents do not contribute to the score.
- * should  | Finds documents which matches some sub queries. The minimum amount of matches can be controlled with [minimumShouldMatch]{@link BoolQuery#minimumShouldMatch} (default is 1).
+ * should  | Finds documents which matches some sub queries. The minimum amount of matches can be controlled with [minimumShouldMatch]{@link BoolQueryBuilder#minimumShouldMatch} (default is 1).
  * not  | Documents which match any sub query will be ignored.
  *
  * A sub query can be any other query type and also the bool query itself.
  *
  * See also [Lucene#BooleanQuery]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/BooleanQuery.html}
- * and [Elasticsearch#BoolQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html}.
+ * and [Elasticsearch#BoolQueryBuilder]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html}.
  *
  * @example
  * new QueryBuilder()
@@ -586,53 +591,53 @@ export class ConstantScoreQuery extends BaseQuery {
  * // contains a minimum of two matches from the fuzzy, wildcard and/or term query (should: contribute to the score)
  * // do not contains biology or geography as research field (not: not contribute to the score)
  *
- * @extends BaseQuery
+ * @extends BaseQueryBuilder
  */
-export class BoolQuery extends BaseQuery {
+export class BoolQueryBuilder extends BaseQueryBuilder {
   constructor(data: ANY = {}) {
     super("bool", data);
   }
 
   /**
    * Starts an array of queries for must clause. Use endMust() to finish the array.
-   * @return {ArrayQuery} array query for holding sub queries
+   * @return {ArrayQueryBuilder} array query for holding sub queries
    */
   beginMust() {
     this._data.must = {};
-    return new ArrayQuery("endMust", () => {
+    return new ArrayQueryBuilder("endMust", () => {
       return this;
     }, this._data.must);
   }
 
   /**
    * Starts an array of queries for filter clause. Use endFilter() to finish the array.
-   * @return {ArrayQuery} array query for holding sub queries
+   * @return {ArrayQueryBuilder} array query for holding sub queries
    */
   beginFilter() {
     this._data.filter = {};
-    return new ArrayQuery("endFilter", () => {
+    return new ArrayQueryBuilder("endFilter", () => {
       return this;
     }, this._data.filter);
   }
 
   /**
    * Starts an array of queries for should clause. Use endShould() to finish the array.
-   * @return {ArrayQuery} array query for holding sub queries
+   * @return {ArrayQueryBuilder} array query for holding sub queries
    */
   beginShould() {
     this._data.should = {};
-    return new ArrayQuery("endShould", () => {
+    return new ArrayQueryBuilder("endShould", () => {
       return this;
     }, this._data.should);
   }
 
   /**
    * Starts an array of queries for not clause. Use endNot() to finish the array.
-   * @return {ArrayQuery} array query for holding sub queries
+   * @return {ArrayQueryBuilder} array query for holding sub queries
    */
   beginNot() {
     this._data.not = {};
-    return new ArrayQuery("endNot", () => {
+    return new ArrayQueryBuilder("endNot", () => {
       return this;
     }, this._data.not);
   }
@@ -647,7 +652,7 @@ export class BoolQuery extends BaseQuery {
    *     the minimum.
    *   minShouldMatch < 1: Indicates that this percent of the total number of sub queries are necessary.
    *     The number computed from the percentage is rounded down and used as the minimum.
-   * @return {BoolQuery} object itself for cascading
+   * @return {BoolQueryBuilder} object itself for cascading
    */
   minimumShouldMatch(minShouldMatch: number) {
     this._data.minimum_should_match = minShouldMatch;
@@ -655,14 +660,22 @@ export class BoolQuery extends BaseQuery {
   }
 }
 
+interface Query {
+  query: ANY;
+  final_scoring?: boolean;
+  // scoring: {
+  //   k1:
+  // };
+}
+
 /**
  * This query builder is the root of each query search.
  * The query contains a sub query and parameters for setup scoring and search options.
  *
  * Possible sub query types are:
- * {@link TermQuery}, {@link TermsQuery}, {@link FuzzyQuery}, {@link WildcardQuery},
- * {@link MatchQuery}, {@link MatchAllQuery}, {@link PrefixQuery},  {@link BoolQuery},
- * {@link ConstantScoreQuery}, {@link ExistsQuery}
+ * {@link TermQueryBuilder}, {@link TermsQueryBuilder}, {@link FuzzyQueryBuilder}, {@link WildcardQueryBuilder},
+ * {@link MatchQueryBuilder}, {@link MatchAllQueryBuilder}, {@link PrefixQueryBuilder},  {@link BoolQueryBuilder},
+ * {@link ConstantScoreQueryBuilder}, {@link ExistsQueryBuilder}
  *
  * @example
  * new QueryBuilder()
@@ -680,11 +693,10 @@ export class QueryBuilder {
 
   constructor() {
     this._data = {query: {}};
-    this.useBM25();
   }
 
   /**
-   * The query performs a final scoring over all scored sub queries and rank documents by there relevant.
+   * The query performs a final scoring over all scored sub queries.
    * @param {boolean} enable - flag to enable or disable final scoring
    * @return {QueryBuilder}
    */
@@ -694,7 +706,7 @@ export class QueryBuilder {
   }
 
   /**
-   * Use [Okapi BM25]{@link https://en.wikipedia.org/wiki/Okapi_BM25} as scoring model (default).
+   * Configures the [Okapi BM25]{@link https://en.wikipedia.org/wiki/Okapi_BM25} as scoring model.
    *
    * See also [Lucene#MatchAllDocsQuery]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/similarities/BM25Similarity.html}
    * and [Elasticsearch#BM25]{@link https://www.elastic.co/guide/en/elasticsearch/guide/current/pluggable-similarites.html#bm25}.
@@ -705,7 +717,7 @@ export class QueryBuilder {
    *                            A value of 0.0 disables normalization completely, and a value of 1.0 normalizes fully.
    * @return {QueryBuilder}
    */
-  useBM25(k1: number = 1.2, b: number = 0.75) {
+  BM25Similarity(k1: number = 1.2, b: number = 0.75) {
     if (k1 < 0) {
       throw TypeError("BM25s k1 must be a positive number.");
     }
@@ -713,52 +725,51 @@ export class QueryBuilder {
       throw TypeError("BM25s b must be a number between 0 and 1 inclusive.");
     }
 
-    this._data.scoring = {
-      type: "BM25",
+    this._data.bm25 = {
       k1,
       b
     };
     return this;
   }
 
-  bool(): BoolQuery {
-    return this._prepare(BoolQuery);
+  bool(): BoolQueryBuilder {
+    return this._prepare(BoolQueryBuilder);
   }
 
-  constantScore(): ConstantScoreQuery {
-    return this._prepare(ConstantScoreQuery);
+  constantScore(): ConstantScoreQueryBuilder {
+    return this._prepare(ConstantScoreQueryBuilder);
   }
 
-  term(field: string, term: string): TermQuery {
-    return this._prepare(TermQuery, field, term);
+  term(field: string, term: string): TermQueryBuilder {
+    return this._prepare(TermQueryBuilder, field, term);
   }
 
-  terms(field: string, terms: Array<string>): TermsQuery {
-    return this._prepare(TermsQuery, field, terms);
+  terms(field: string, terms: Array<string>): TermsQueryBuilder {
+    return this._prepare(TermsQueryBuilder, field, terms);
   }
 
-  wildcard(field: string, wildcard: string): WildcardQuery {
-    return this._prepare(WildcardQuery, field, wildcard);
+  wildcard(field: string, wildcard: string): WildcardQueryBuilder {
+    return this._prepare(WildcardQueryBuilder, field, wildcard);
   }
 
-  fuzzy(field: string, fuzzy: string): FuzzyQuery {
-    return this._prepare(FuzzyQuery, field, fuzzy);
+  fuzzy(field: string, fuzzy: string): FuzzyQueryBuilder {
+    return this._prepare(FuzzyQueryBuilder, field, fuzzy);
   }
 
-  match(field: string, query: string): MatchQuery {
-    return this._prepare(MatchQuery, field, query);
+  match(field: string, query: string): MatchQueryBuilder {
+    return this._prepare(MatchQueryBuilder, field, query);
   }
 
-  matchAll(): MatchAllQuery {
-    return this._prepare(MatchAllQuery);
+  matchAll(): MatchAllQueryBuilder {
+    return this._prepare(MatchAllQueryBuilder);
   }
 
-  prefix(field: string, prefix: string): PrefixQuery {
-    return this._prepare(PrefixQuery, field, prefix);
+  prefix(field: string, prefix: string): PrefixQueryBuilder {
+    return this._prepare(PrefixQueryBuilder, field, prefix);
   }
 
-  exists(field: string): ExistsQuery {
-    return this._prepare(ExistsQuery, field);
+  exists(field: string): ExistsQueryBuilder {
+    return this._prepare(ExistsQueryBuilder, field);
   }
 
   private _prepare(queryType: ANY, ...args: ANY[]) {
