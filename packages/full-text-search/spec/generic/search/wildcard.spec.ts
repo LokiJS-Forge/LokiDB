@@ -1,6 +1,6 @@
 /* global describe, it, expect */
 import {FullTextSearch} from "../../../src/full_text_search";
-import {QueryBuilder as QB, WildcardQuery} from "../../../src/query_builder";
+import {QueryBuilder as QB, WildcardQueryBuilder} from "../../../src/query_builder";
 import {Tokenizer} from "../../../src/tokenizer";
 
 describe("wildcard query", () => {
@@ -16,7 +16,7 @@ describe("wildcard query", () => {
   };
 
   it("Wild card query: QB", () => {
-    let q = new WildcardQuery("user", "alb?rt").boost(4.5).build();
+    let q = new WildcardQueryBuilder("user", "alb?rt").boost(4.5).build();
     expect(q).toEqual({type: "wildcard", field: "user", value: "alb?rt", boost: 4.5});
   });
 

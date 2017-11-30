@@ -28,9 +28,8 @@ export class IndexSearcher {
   public search(query: ANY) {
     let docResults = this._recursive(query.query, true);
 
-    // Final scoring.
-    let finalScoring = query.final_scoring !== undefined ? query.final_scoring : true;
-    if (finalScoring) {
+    // Do final scoring.
+    if (query.final_scoring !== undefined ? query.final_scoring : true) {
       return this._scorer.finalScore(query, docResults);
     }
     return docResults;
@@ -111,21 +110,21 @@ export class IndexSearcher {
       case "term": {
         const cps = toCodePoints(query.value);
         let termIdx = InvertedIndex.getTermIndex(cps, root);
-        this._scorer.prepare(fieldName, boost, termIdx, doScoring, docResults, cps);
+        this._scorer.score(fieldName, boost, termIdx, doScoring, docResults, cps);
         break;
       }
       case "terms": {
         for (let i = 0; i < query.value.length; i++) {
           const cps = toCodePoints(query.value[i]);
           let termIdx = InvertedIndex.getTermIndex(cps, root);
-          this._scorer.prepare(fieldName, boost, termIdx, doScoring, docResults, cps);
+          this._scorer.score(fieldName, boost, termIdx, doScoring, docResults, cps);
         }
         break;
       }
       case "fuzzy": {
         const f = fuzzySearch(query, root);
         for (let i = 0; i < f.length; i++) {
-          this._scorer.prepare(fieldName, boost * f[i].boost, f[i].index, doScoring, docResults, f[i].term);
+          this._scorer.score(fieldName, boost * f[i].boost, f[i].index, doScoring, docResults, f[i].term);
         }
         break;
       }
@@ -133,7 +132,7 @@ export class IndexSearcher {
         const enableScoring = query.enable_scoring !== undefined ? query.enable_scoring : false;
         const w = wildcardSearch(query, root);
         for (let i = 0; i < w.length; i++) {
-          this._scorer.prepare(fieldName, boost, w[i].index, doScoring && enableScoring, docResults, w[i].term);
+          this._scorer.score(fieldName, boost, w[i].index, doScoring && enableScoring, docResults, w[i].term);
         }
         break;
       }
@@ -158,7 +157,7 @@ export class IndexSearcher {
         if (termIdx !== null) {
           const termIdxs = InvertedIndex.extendTermIndex(termIdx);
           for (let i = 0; i < termIdxs.length; i++) {
-            this._scorer.prepare(fieldName, boost, termIdxs[i][0], doScoring && enableScoring, docResults, [...cps, ...termIdxs[i][1]]);
+            this._scorer.score(fieldName, boost, termIdxs[i][0], doScoring && enableScoring, docResults, [...cps, ...termIdxs[i][1]]);
           }
         }
         break;

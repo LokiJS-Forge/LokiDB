@@ -29,7 +29,7 @@ export class Scorer {
     this._cache = {};
   }
 
-  public prepare(fieldName: string, boost: number, termIdx: InvertedIndex.Index, doScoring: boolean, docResults: DocResults = new Map(), term: number[] = null) {
+  public score(fieldName: string, boost: number, termIdx: InvertedIndex.Index, doScoring: boolean, docResults: DocResults = new Map(), term: number[] = null) {
     if (termIdx === null || termIdx.dc === undefined) {
       return null;
     }
@@ -62,8 +62,8 @@ export class Scorer {
 
   public finalScore(query: ANY, docResults: DocResults = new Map()) {
     const result = {};
-    const k1 = query.scoring.k1;
-    const b = query.scoring.b;
+    const k1 = query.bm25 !== undefined ? query.bm25.k1 : 1.2;
+    const b = query.bm25 !== undefined ? query.bm25.b : 0.75;
 
     for (const [docId, result1] of docResults) {
       let docScore = 0;
