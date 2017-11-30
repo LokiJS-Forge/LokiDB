@@ -129,6 +129,12 @@ describe("full text search", () => {
     expect(dv.applySortByScoring(true).data()).toEqual(sorted_asc);
   });
 
+  it("from/to json", () => {
+    const fts = coll["_fullTextSearch"];
+    const fts2 = FullTextSearch.fromJSONObject(JSON.parse(JSON.stringify(fts)));
+    expect(JSON.stringify(fts)).toEqual(JSON.stringify(fts2));
+  });
+
   it("save/load", (done) => {
     const adapter = {adapter: new LokiMemoryAdapter()};
     db.initializePersistence(adapter)

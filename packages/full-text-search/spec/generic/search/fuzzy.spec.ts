@@ -1,11 +1,11 @@
 /* global describe, it, expect */
 import {FullTextSearch} from "../../../src/full_text_search";
-import {QueryBuilder as QB, FuzzyQueryBuilder} from "../../../src/query_builder";
+import {QueryBuilder as QB, FuzzyQueryBuilder, Query} from "../../../src/query_builder";
 import {Tokenizer} from "../../../src/tokenizer";
 
 describe("fuzzy query", () => {
   // from lucene 6.4.0 core: TestFuzzyQuery
-  let assertMatches = (searcher: FullTextSearch, query: object, docIds: number[] = []) => {
+  let assertMatches = (searcher: FullTextSearch, query: Query, docIds: number[] = []) => {
     let res = searcher.search(query);
     expect(Object.keys(res).length).toEqual(docIds.length);
     for (let i = 0; i < docIds.length; i++) {
@@ -17,14 +17,22 @@ describe("fuzzy query", () => {
 
   it("Fuzzy query: QB", () => {
     let q = new FuzzyQueryBuilder("user", "albrt").boost(5.5).fuzziness(2).prefixLength(3).extended(true).build();
-    expect(q).toEqual({type: "fuzzy", field: "user", value: "albrt", boost: 5.5, fuzziness: 2, prefix_length: 3, extended: true});
+    expect(q).toEqual({
+      type: "fuzzy",
+      field: "user",
+      value: "albrt",
+      boost: 5.5,
+      fuzziness: 2,
+      prefix_length: 3,
+      extended: true
+    });
 
-    q = new QB().fuzzy("a", "abc");
-    expect(() => q.fuzziness("AUTO")).not.toThrowErrorOfType("TypeError");
-    expect(() => q.fuzziness(-3)).toThrowErrorOfType("TypeError");
-    expect(() => q.fuzziness("3")).toThrowErrorOfType("TypeError");
-    expect(() => q.prefixLength(-1)).toThrowErrorOfType("TypeError");
-    expect(() => q.prefixLength("1")).not.toThrowErrorOfType("TypeError");
+    let fb = new QB().fuzzy("a", "abc");
+    expect(() => fb.fuzziness("AUTO")).not.toThrowErrorOfType("TypeError");
+    expect(() => fb.fuzziness(-3)).toThrowErrorOfType("TypeError");
+    expect(() => fb.fuzziness("3" as any)).toThrowErrorOfType("TypeError");
+    expect(() => fb.prefixLength(-1)).toThrowErrorOfType("TypeError");
+    expect(() => fb.prefixLength("-1" as any)).toThrowErrorOfType("TypeError");
   });
 
   it("Fuzzy query (1).", () => {
@@ -181,8 +189,8 @@ describe("fuzzy query", () => {
     let query = new QB().fuzzy("body", "web").prefixLength(1).fuzziness(1).extended(true).build();
     assertMatches(fts, query, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
 
-    query = new QB().match("body", "web").prefixLength(1).fuzziness(1).extended(true).build();
-    assertMatches(fts, query, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+    let query2 = new QB().match("body", "web").prefixLength(1).fuzziness(1).extended(true).build();
+    assertMatches(fts, query2, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
   });
 
   it("Fuzzy query extended.", () => {
@@ -195,6 +203,9 @@ describe("fuzzy query", () => {
       });
     }
     let query = new QB().fuzzy("body", "abcd").prefixLength(1).fuzziness(0).extended(true).build();
+    assertMatches(fts, query, [1, 2]);
+
+    query = new QB().enableFinalScoring(false).fuzzy("body", "abcd").prefixLength(1).fuzziness(0).extended(true).build();
     assertMatches(fts, query, [1, 2]);
   });
 });

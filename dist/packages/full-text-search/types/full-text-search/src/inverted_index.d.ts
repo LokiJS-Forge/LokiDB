@@ -111,7 +111,10 @@ export declare namespace InvertedIndex {
         df?: number;
         pa?: Index;
     };
-    type IndexTerm = [InvertedIndex.Index, number[]];
+    type IndexTerm = {
+        index: InvertedIndex.Index;
+        term: number[];
+    };
     interface Serialization {
         _store: boolean;
         _optimizeChanges: boolean;

@@ -1,21 +1,14 @@
-export type ANY = any;
-
-export interface BaseQuery {
-  type: string;
-  boost: number;
-}
-
 /**
  * The base query class to enable boost to a query type.
  */
 export class BaseQueryBuilder {
-  protected _data: ANY;
+  protected _data: any;
 
   /**
    * @param {string} type - the type name of the query
    * @param data
    */
-  constructor(type: string, data: BaseQuery) {
+  constructor(type: string, data: any = {}) {
     this._data = data;
     this._data.type = type;
   }
@@ -41,9 +34,14 @@ export class BaseQueryBuilder {
    * Build the final query.
    * @return {Object} - the final query
    */
-  build() {
+  build(): any {
     return this._data;
   }
+}
+
+export interface BaseQuery {
+  type: string;
+  boost?: number;
 }
 
 /**
@@ -67,11 +65,16 @@ export class TermQueryBuilder extends BaseQueryBuilder {
    * @param {string} term - the term
    * @param data
    */
-  constructor(field: string, term: string, data: ANY = {}) {
+  constructor(field: string, term: string, data: any = {}) {
     super("term", data);
     this._data.field = field;
     this._data.value = term;
   }
+}
+
+export interface TermQuery extends BaseQuery {
+  field: string;
+  value: string;
 }
 
 /**
@@ -95,11 +98,16 @@ export class TermsQueryBuilder extends BaseQueryBuilder {
    * @param {string[]} terms - the terms
    * @param data
    */
-  constructor(field: string, terms: Array<string>, data: ANY = {}) {
+  constructor(field: string, terms: Array<string>, data: any = {}) {
     super("terms", data);
     this._data.field = field;
     this._data.value = terms;
   }
+}
+
+export interface TermsQuery extends BaseQuery {
+  field: string;
+  value: string[];
 }
 
 /**
@@ -131,7 +139,7 @@ export class WildcardQueryBuilder extends BaseQueryBuilder {
    * @param {string} wildcard - the wildcard term
    * @param data
    */
-  constructor(field: string, wildcard: string, data: ANY = {}) {
+  constructor(field: string, wildcard: string, data: any = {}) {
     super("wildcard", data);
     this._data.field = field;
     this._data.value = wildcard;
@@ -146,6 +154,12 @@ export class WildcardQueryBuilder extends BaseQueryBuilder {
     this._data.enable_scoring = enable;
     return this;
   }
+}
+
+export interface WildcardQuery extends BaseQuery {
+  field: string;
+  value: string;
+  enable_scoring?: boolean;
 }
 
 /**
@@ -181,7 +195,7 @@ export class FuzzyQueryBuilder extends BaseQueryBuilder {
    * @param {string} fuzzy - the fuzzy term
    * @param data
    */
-  constructor(field: string, fuzzy: string, data: ANY = {}) {
+  constructor(field: string, fuzzy: string, data: any = {}) {
     super("fuzzy", data);
     this._data.field = field;
     this._data.value = fuzzy;
@@ -198,7 +212,7 @@ export class FuzzyQueryBuilder extends BaseQueryBuilder {
    *
    * @return {FuzzyQueryBuilder} - object itself for cascading
    */
-  fuzziness(fuzziness: number | string) {
+  fuzziness(fuzziness: number | "AUTO") {
     if (fuzziness !== "AUTO" && (fuzziness < 0 || fuzziness > 2)) {
       throw TypeError("Fuzziness must be 0, 1, 2 or AUTO.");
     }
@@ -230,6 +244,14 @@ export class FuzzyQueryBuilder extends BaseQueryBuilder {
   }
 }
 
+export interface FuzzyQuery extends BaseQuery {
+  field: string;
+  value: string;
+  fuzziness?: number | "AUTO";
+  prefix_length?: number;
+  extended?: boolean;
+}
+
 /**
  * A query which matches documents containing the prefix of a term inside a field.
  *
@@ -253,7 +275,7 @@ export class PrefixQueryBuilder extends BaseQueryBuilder {
    * @param {string} prefix - the prefix of a term
    * @param data
    */
-  constructor(field: string, prefix: string, data: ANY = {}) {
+  constructor(field: string, prefix: string, data: any = {}) {
     super("prefix", data);
     this._data.field = field;
     this._data.value = prefix;
@@ -268,6 +290,12 @@ export class PrefixQueryBuilder extends BaseQueryBuilder {
     this._data.enable_scoring = enable;
     return this;
   }
+}
+
+export interface PrefixQuery extends BaseQuery {
+  field: string;
+  value: string;
+  enable_scoring?: boolean;
 }
 
 /**
@@ -289,11 +317,16 @@ export class ExistsQueryBuilder extends BaseQueryBuilder {
    * @param {string} field - the field name of the document
    * @param data
    */
-  constructor(field: string, data: ANY = {}) {
+  constructor(field: string, data: any = {}) {
     super("exists", data);
     this._data.field = field;
   }
 }
+
+export interface ExistsQuery extends BaseQuery {
+  field: string;
+}
+
 
 /**
  * A query which tokenizes the given query text, performs a query foreach token and combines the results using a boolean
@@ -329,7 +362,7 @@ export class MatchQueryBuilder extends BaseQueryBuilder {
    * @param {string} query - the query text
    * @param data
    */
-  constructor(field: string, query: string, data: ANY = {}) {
+  constructor(field: string, query: string, data: any = {}) {
     super("match", data);
     this._data.field = field;
     this._data.value = query;
@@ -382,7 +415,7 @@ export class MatchQueryBuilder extends BaseQueryBuilder {
    *
    * @return {MatchQueryBuilder} - object itself for cascading
    */
-  fuzziness(fuzziness: number | string) {
+  fuzziness(fuzziness: number | "AUTO") {
     if (fuzziness !== "AUTO" && (fuzziness < 0 || fuzziness > 2)) {
       throw TypeError("Fuzziness must be 0, 1, 2 or AUTO.");
     }
@@ -414,6 +447,16 @@ export class MatchQueryBuilder extends BaseQueryBuilder {
   }
 }
 
+export interface MatchQuery extends BaseQuery {
+  field: string;
+  value: string;
+  minimum_should_match?: number;
+  operator?: "and" | "or";
+  fuzziness?: number | "AUTO";
+  prefix_length?: number;
+  extended?: boolean;
+}
+
 /**
  * A query that matches all documents and giving them a constant score equal to the query boost.
  *
@@ -434,83 +477,12 @@ export class MatchQueryBuilder extends BaseQueryBuilder {
  * @extends BaseQueryBuilder
  */
 export class MatchAllQueryBuilder extends BaseQueryBuilder {
-  constructor(data: ANY = {}) {
+  constructor(data: any = {}) {
     super("match_all", data);
   }
 }
 
-/**
- * A query which holds all sub queries like an array.
- */
-export class ArrayQueryBuilder extends BaseQueryBuilder {
-  private _callbackName: string;
-  private _prepare: Function;
-
-  constructor(callbackName: string, callback: Function, data: ANY = {}) {
-    super("array", data);
-    this._data.values = [];
-    this._callbackName = callbackName;
-    this[callbackName] = callback;
-
-    this._prepare = (queryType: ANY, ...args: ANY[]) => {
-      const data = {};
-      const query = new queryType(...args, data);
-      this._data.values.push(data);
-      query.bool = this.bool;
-      query.constantScore = this.constantScore;
-      query.term = this.term;
-      query.terms = this.terms;
-      query.wildcard = this.wildcard;
-      query.fuzzy = this.fuzzy;
-      query.match = this.match;
-      query.matchAll = this.matchAll;
-      query.prefix = this.prefix;
-      query.exists = this.exists;
-      query._prepare = this._prepare;
-      query[this._callbackName] = this[this._callbackName];
-      return query;
-    };
-  }
-
-  bool() {
-    return this._prepare(BoolQueryBuilder);
-  }
-
-  constantScore() {
-    return this._prepare(ConstantScoreQueryBuilder);
-  }
-
-  term(field: string, term: string) {
-    return this._prepare(TermQueryBuilder, field, term);
-  }
-
-  terms(field: string, terms: Array<string>) {
-    return this._prepare(TermsQueryBuilder, field, terms);
-  }
-
-  wildcard(field: string, wildcard: string) {
-    return this._prepare(WildcardQueryBuilder, field, wildcard);
-  }
-
-  fuzzy(field: string, fuzzy: string) {
-    return this._prepare(FuzzyQueryBuilder, field, fuzzy);
-  }
-
-  match(field: string, query: string) {
-    return this._prepare(MatchQueryBuilder, field, query);
-  }
-
-  matchAll() {
-    return this._prepare(MatchAllQueryBuilder);
-  }
-
-  prefix(field: string, prefix: string) {
-    return this._prepare(PrefixQueryBuilder, field, prefix);
-  }
-
-  exists(field: string) {
-    return this._prepare(ExistsQueryBuilder, field);
-  }
+export interface MatchQueryAll extends BaseQuery {
 }
 
 /**
@@ -534,7 +506,7 @@ export class ArrayQueryBuilder extends BaseQueryBuilder {
  * @extends BaseQueryBuilder
  */
 export class ConstantScoreQueryBuilder extends BaseQueryBuilder {
-  constructor(data: ANY = {}) {
+  constructor(data: any = {}) {
     super("constant_score", data);
   }
 
@@ -548,6 +520,10 @@ export class ConstantScoreQueryBuilder extends BaseQueryBuilder {
       return this;
     }, this._data.filter);
   }
+}
+
+export interface ConstantScoreQuery extends BaseQuery {
+  filter: ArrayQuery;
 }
 
 /**
@@ -594,7 +570,7 @@ export class ConstantScoreQueryBuilder extends BaseQueryBuilder {
  * @extends BaseQueryBuilder
  */
 export class BoolQueryBuilder extends BaseQueryBuilder {
-  constructor(data: ANY = {}) {
+  constructor(data: any = {}) {
     super("bool", data);
   }
 
@@ -660,12 +636,91 @@ export class BoolQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-interface Query {
-  query: ANY;
-  final_scoring?: boolean;
-  // scoring: {
-  //   k1:
-  // };
+export interface BoolQuery extends BaseQuery {
+  must?: ArrayQuery;
+  filter?: ArrayQuery;
+  should?: ArrayQuery;
+  not?: ArrayQuery;
+  minimum_should_match?: number;
+}
+
+
+/**
+ * A query which holds all sub queries like an array.
+ */
+export class ArrayQueryBuilder extends BaseQueryBuilder {
+  private _callbackName: string;
+  private _prepare: Function;
+
+  constructor(callbackName: string, callback: Function, data: any = {}) {
+    super("array", data);
+    this._data.values = [];
+    this._callbackName = callbackName;
+    this[callbackName] = callback;
+
+    this._prepare = (queryType: any, ...args: any[]) => {
+      const data = {};
+      const query = new queryType(...args, data);
+      this._data.values.push(data);
+      query.bool = this.bool;
+      query.constantScore = this.constantScore;
+      query.term = this.term;
+      query.terms = this.terms;
+      query.wildcard = this.wildcard;
+      query.fuzzy = this.fuzzy;
+      query.match = this.match;
+      query.matchAll = this.matchAll;
+      query.prefix = this.prefix;
+      query.exists = this.exists;
+      query._prepare = this._prepare;
+      query[this._callbackName] = this[this._callbackName];
+      return query;
+    };
+  }
+
+  bool() {
+    return this._prepare(BoolQueryBuilder);
+  }
+
+  constantScore() {
+    return this._prepare(ConstantScoreQueryBuilder);
+  }
+
+  term(field: string, term: string) {
+    return this._prepare(TermQueryBuilder, field, term);
+  }
+
+  terms(field: string, terms: Array<string>) {
+    return this._prepare(TermsQueryBuilder, field, terms);
+  }
+
+  wildcard(field: string, wildcard: string) {
+    return this._prepare(WildcardQueryBuilder, field, wildcard);
+  }
+
+  fuzzy(field: string, fuzzy: string) {
+    return this._prepare(FuzzyQueryBuilder, field, fuzzy);
+  }
+
+  match(field: string, query: string) {
+    return this._prepare(MatchQueryBuilder, field, query);
+  }
+
+  matchAll() {
+    return this._prepare(MatchAllQueryBuilder);
+  }
+
+  prefix(field: string, prefix: string) {
+    return this._prepare(PrefixQueryBuilder, field, prefix);
+  }
+
+  exists(field: string) {
+    return this._prepare(ExistsQueryBuilder, field);
+  }
+}
+
+export interface ArrayQuery {
+  values: any[];
 }
 
 /**
@@ -688,8 +743,7 @@ interface Query {
  * // are scored and ranked using BM25 with k1=1.5 and b=0.5
  */
 export class QueryBuilder {
-  private _data: ANY;
-  private _child: ANY;
+  private _data: any;
 
   constructor() {
     this._data = {query: {}};
@@ -772,11 +826,20 @@ export class QueryBuilder {
     return this._prepare(ExistsQueryBuilder, field);
   }
 
-  private _prepare(queryType: ANY, ...args: ANY[]) {
-    this._child = new queryType(...args, this._data.query);
-    this._child.build = () => {
+  private _prepare<T extends BaseQueryBuilder>(queryType: { new(...args: any[]): T }, ...args: any[]): T {
+    const query = new queryType(...args, this._data.query);
+    query.build = () => {
       return this._data;
     };
-    return this._child;
+    return query;
   }
+}
+
+export interface Query {
+  query: any;
+  final_scoring?: boolean;
+  bm25?: {
+    k1: number;
+    b: number;
+  };
 }

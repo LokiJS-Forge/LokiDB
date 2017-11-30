@@ -49,6 +49,12 @@ suite
   .add("b", () => {
     fts2.search(query);
   })
+  .add("c", () => {
+    fts.search(query);
+  })
+  .add("d", () => {
+    fts2.search(query);
+  })
   // add listeners
   .on('cycle', function (event) {
     console.log(String(event.target));
