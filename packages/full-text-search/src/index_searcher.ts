@@ -1,4 +1,4 @@
-import {Scorer} from "./scorer";
+import {DocResults, Scorer} from "./scorer";
 import {InvertedIndex, toCodePoints} from "./inverted_index";
 import {QueryBuilder} from "./query_builder";
 import {Dict} from "../../common/types";
@@ -41,7 +41,7 @@ export class IndexSearcher {
   }
 
   private _recursive(query: ANY, doScoring: boolean) {
-    let docResults: Map<number, any[]> = new Map();
+    let docResults: DocResults = new Map();
     const boost = query.boost !== undefined ? query.boost : 1;
     const fieldName = query.field !== undefined ? query.field : null;
 
@@ -216,7 +216,7 @@ export class IndexSearcher {
     return docResults;
   }
 
-  private _getUnique(values: ANY[], doScoring: boolean, docResults: Map<number, any[]>) {
+  private _getUnique(values: ANY[], doScoring: boolean, docResults: DocResults) {
     if (values.length === 0) {
       return docResults;
     }
@@ -240,7 +240,7 @@ export class IndexSearcher {
   }
 
   private _getAll(values: ANY[], doScoring: boolean) {
-    let docResults: Map<number, any[]> = new Map();
+    let docResults: DocResults = new Map();
     for (let i = 0; i < values.length; i++) {
       let currDocs = this._recursive(values[i], doScoring);
       for (const docId of currDocs.keys()) {
