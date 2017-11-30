@@ -1,17 +1,8 @@
 import {InvertedIndex} from "./inverted_index";
 import {Dict} from "../../common/types";
+import {Query} from "./query_builder";
 
-export type ANY = any;
-
-export interface DocResult {
-  tf?: number; // Term frequency.
-  idf?: number; // Inverse document frequency
-  boost: number;
-  fieldName?: string;
-  term?: number[];
-}
-
-export type DocResults = Map<number, DocResult[]>;
+export type ScoreResult = Dict<number>;
 
 /**
  * @hidden
@@ -25,13 +16,13 @@ export class Scorer {
     this._cache = {};
   }
 
-  public setDirty() {
+  public setDirty(): void {
     this._cache = {};
   }
 
-  public score(fieldName: string, boost: number, termIdx: InvertedIndex.Index, doScoring: boolean, docResults: DocResults = new Map(), term: number[] = null) {
+  public score(fieldName: string, boost: number, termIdx: InvertedIndex.Index, doScoring: boolean, docResults: Scorer.DocResults, term: number[]): void {
     if (termIdx === null || termIdx.dc === undefined) {
-      return null;
+      return;
     }
 
     const idf = this._idf(fieldName, termIdx.df);
@@ -48,11 +39,9 @@ export class Scorer {
         docResults.set(docId, [{boost}]);
       }
     }
-
-    return docResults;
   }
 
-  public scoreConstant(boost: number, docId: number, docResults: DocResults = new Map()) {
+  public scoreConstant(boost: number, docId: number, docResults: Scorer.DocResults) {
     if (!docResults.has(docId)) {
       docResults.set(docId, []);
     }
@@ -60,8 +49,8 @@ export class Scorer {
     return docResults;
   }
 
-  public finalScore(query: ANY, docResults: DocResults = new Map()) {
-    const result = {};
+  public finalScore(query: Query, docResults: Scorer.DocResults): ScoreResult {
+    const result: ScoreResult = {};
     const k1 = query.bm25 !== undefined ? query.bm25.k1 : 1.2;
     const b = query.bm25 !== undefined ? query.bm25.b : 0.75;
 
@@ -140,4 +129,14 @@ export namespace Scorer {
     idfs: Dict<number>;
     avgFieldLength: number;
   }
+
+  export interface DocResult {
+    tf?: number; // Term frequency.
+    idf?: number; // Inverse document frequency
+    boost: number;
+    fieldName?: string;
+    term?: number[];
+  }
+
+  export type DocResults = Map<number, DocResult[]>;
 }

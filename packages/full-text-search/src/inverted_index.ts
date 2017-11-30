@@ -1,6 +1,5 @@
 import {Tokenizer} from "./tokenizer";
-
-export type ANY = any;
+import Index = InvertedIndex.Index;
 
 /**
  * Converts a string into an array of code points.
@@ -35,7 +34,7 @@ export class InvertedIndex {
   private _docCount: number = 0;
   private _docStore: Map<number, InvertedIndex.DocStore> = new Map();
   private _totalFieldLength: number = 0;
-  private _root: InvertedIndex.Index = new Map();
+  private _root: Index = new Map();
 
   /**
    * @param {boolean} [options.store=true] - inverted index will be stored at serialization rather than rebuilt on load.
@@ -97,7 +96,7 @@ export class InvertedIndex {
     this._docStore.set(docId, {fieldLength: fieldTokens.length});
 
     // Holds references to each index of a document.
-    const indexRef: InvertedIndex.Index[] = [];
+    const indexRef: Index[] = [];
     if (this._optimizeChanges) {
       Object.defineProperties(this._docStore.get(docId), {
         indexRef: {enumerable: false, configurable: true, writable: true, value: indexRef}
@@ -213,7 +212,7 @@ export class InvertedIndex {
    * @param {number} start - the position of the term string to start from
    * @return {object} - The term index or null if the term is not in the term tree.
    */
-  static getTermIndex(term: number[], root: InvertedIndex.Index, start: number = 0) {
+  static getTermIndex(term: number[], root: Index, start: number = 0) {
     if (start >= term.length) {
       return null;
     }
@@ -234,9 +233,9 @@ export class InvertedIndex {
    * @param {Array} termIndices - all extended indices with their term
    * @returns {Array} - Array with term indices and extension
    */
-  static extendTermIndex(idx: InvertedIndex.Index, term: number[] = [], termIndices: InvertedIndex.IndexTerm[] = []): InvertedIndex.IndexTerm[] {
+  static extendTermIndex(idx: Index, term: number[] = [], termIndices: InvertedIndex.IndexTerm[] = []): InvertedIndex.IndexTerm[] {
     if (idx.df !== undefined) {
-      termIndices.push([idx, term.slice()]);
+      termIndices.push({index: idx, term: term.slice()});
     }
 
     term.push(0);
@@ -277,7 +276,7 @@ export class InvertedIndex {
    * @param {Object.<string, function>|Tokenizer} funcTok[undefined] - the depending functions with labels
    *  or an equivalent tokenizer
    */
-  public static fromJSONObject(serialized: InvertedIndex.Serialization, funcTok: ANY = undefined) {
+  public static fromJSONObject(serialized: InvertedIndex.Serialization, funcTok?: Tokenizer.FunctionSerialization) {
     const invIdx = new InvertedIndex({
       store: serialized._store,
       optimizeChanges: serialized._optimizeChanges,
@@ -297,45 +296,49 @@ export class InvertedIndex {
     return invIdx;
   }
 
-  private static serializeIndex(idx: InvertedIndex.Index): any[] {
-    const k: ANY[] = [];
-    const v: ANY[] = [];
-
-    let r = {};
+  private static serializeIndex(idx: Index): InvertedIndex.SerializedIndex {
+    const serialized: InvertedIndex.SerializedIndex = {};
     if (idx.dc !== undefined) {
-      r = {df: idx.df, dc: [...idx.dc]};
+      serialized.d = {df: idx.df, dc: [...idx.dc]};
     }
 
     if (idx.size === 0) {
-      return [k, v, r];
+      return serialized;
     }
 
+    const keys = [];
+    const values = [];
     for (const child of idx) {
-      k.push(child[0]);
-      v.push(InvertedIndex.serializeIndex(child[1]));
+      keys.push(child[0]);
+      values.push(InvertedIndex.serializeIndex(child[1]));
     }
-    return [k, v, r];
+    serialized.k = keys;
+    serialized.v = values;
+
+    return serialized;
   }
 
-  private static deserializeIndex(arr: any): InvertedIndex.Index {
-    const idx: InvertedIndex.Index = new Map();
+  private static deserializeIndex(serialized: InvertedIndex.SerializedIndex): Index {
+    const idx: Index = new Map();
 
-    for (let i = 0; i < arr[0].length; i++) {
-      idx.set(arr[0][i], InvertedIndex.deserializeIndex(arr[1][i]));
+    if (serialized.k !== undefined) {
+      for (let i = 0; i < serialized.k.length; i++) {
+        idx.set(serialized.k[i], InvertedIndex.deserializeIndex(serialized.v[i]));
+      }
     }
-    if (arr[2].df !== undefined) {
-      idx.df = arr[2].df;
-      idx.dc = new Map(arr[2].dc);
+    if (serialized.d !== undefined) {
+      idx.df = serialized.d.df;
+      idx.dc = new Map(serialized.d.dc);
     }
     return idx;
   }
 
   /**
    * Set parent of to each index and regenerate the indexRef.
-   * @param {InvertedIndex.Index} index - the index
-   * @param {InvertedIndex.Index} parent - the parent
+   * @param {Index} index - the index
+   * @param {Index} parent - the parent
    */
-  private _regenerate(index: InvertedIndex.Index, parent: InvertedIndex.Index) {
+  private _regenerate(index: Index, parent: Index) {
     // Set parent.
     if (parent !== null) {
       Object.defineProperties(index, {
@@ -368,11 +371,11 @@ export class InvertedIndex {
    * Iterate over the whole inverted index and remove the document.
    * Delete branch if not needed anymore.
    * Function is needed if index is used without optimization.
-   * @param {InvertedIndex.Index} idx - the index
+   * @param {Index} idx - the index
    * @param {number} docId - the doc id
    * @returns {boolean} true if index is empty
    */
-  private _remove(idx: InvertedIndex.Index, docId: number) {
+  private _remove(idx: Index, docId: number) {
     for (const child of idx) {
       // Checkout branch.
       if (this._remove(child[1], docId)) {
@@ -405,7 +408,16 @@ export namespace InvertedIndex {
 
   export type Index = Map<number, any> & { dc?: Map<number, number>, df?: number, pa?: Index };
 
-  export type IndexTerm = [InvertedIndex.Index, number[]];
+  export type IndexTerm = { index: Index, term: number[] };
+
+  export interface SerializedIndex {
+    d?: {
+      df: number;
+      dc: [number, number][]
+    };
+    k?: number[];
+    v?: SerializedIndex[];
+  }
 
   export interface Serialization {
     _store: boolean;
@@ -414,7 +426,7 @@ export namespace InvertedIndex {
     _docCount?: number;
     _docStore?: Map<number, DocStore>;
     _totalFieldLength?: number;
-    _root?: Index;
+    _root?: SerializedIndex;
   }
 
   export interface DocStore {

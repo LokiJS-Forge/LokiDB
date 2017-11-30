@@ -287,7 +287,7 @@ class InvertedIndex {
      */
     static extendTermIndex(idx, term = [], termIndices = []) {
         if (idx.df !== undefined) {
-            termIndices.push([idx, term.slice()]);
+            termIndices.push({ index: idx, term: term.slice() });
         }
         term.push(0);
         for (const child of idx) {
@@ -500,12 +500,6 @@ class Long {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/**
- * Splits a string at non-alphanumeric characters into lower case tokens.
- * @param {string} str - the string
- * @returns {string[]} - the tokens
- * @private
- */
 function defaultSplitter(str) {
     let tokens = str.split(/[^\w]+/);
     for (let i = 0; i < tokens.length; i++) {
@@ -685,7 +679,7 @@ class Tokenizer {
      */
     static fromJSONObject(serialized, funcTok = undefined) {
         let tkz = new Tokenizer();
-        if (funcTok !== undefined && funcTok instanceof Tokenizer) {
+        if (funcTok instanceof Tokenizer) {
             if (serialized.splitter !== undefined) {
                 let splitter = funcTok.getSplitter();
                 if (serialized.splitter !== splitter[0]) {
@@ -763,7 +757,7 @@ class Tokenizer {
 /**
  * The base query class to enable boost to a query type.
  */
-class BaseQuery {
+class BaseQueryBuilder {
     /**
      * @param {string} type - the type name of the query
      * @param data
@@ -779,7 +773,7 @@ class BaseQuery {
      * and [Elasticsearch#boost]{@link https://www.elastic.co/guide/en/elasticsearch/reference/5.2/mapping-boost.html}.
      *
      * @param {number} value - the positive boost
-     * @return {BaseQuery} object itself for cascading
+     * @return {BaseQueryBuilder} object itself for cascading
      */
     boost(value) {
         if (value < 0) {
@@ -796,13 +790,13 @@ class BaseQuery {
         return this._data;
     }
 }
-/* unused harmony export BaseQuery */
+/* unused harmony export BaseQueryBuilder */
 
 /**
  * A query which finds documents where a document field contains a term.
  *
- * See also [Lucene#TermQuery]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/TermQuery.html}
- * and [Elasticsearch#TermQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-term-query.html}.
+ * See also [Lucene#TermQueryBuilder]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/TermQuery.html}
+ * and [Elasticsearch#TermQueryBuilder]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-term-query.html}.
  *
  * @example
  * new QueryBuilder()
@@ -811,9 +805,9 @@ class BaseQuery {
  * // The resulting documents:
  * // contains the term infinity
  *
- * @extends BaseQuery
+ * @extends BaseQueryBuilder
  */
-class TermQuery extends BaseQuery {
+class TermQueryBuilder extends BaseQueryBuilder {
     /**
      * @param {string} field - the field name of the document
      * @param {string} term - the term
@@ -825,13 +819,13 @@ class TermQuery extends BaseQuery {
         this._data.value = term;
     }
 }
-/* unused harmony export TermQuery */
+/* unused harmony export TermQueryBuilder */
 
 /**
  * A query which finds documents where a document field contains any of the terms.
  *
  * See also [Lucene#TermRangeQuery]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/TermRangeQuery.html}
- * and [Elasticsearch#TermsQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-terms-query.html}.
+ * and [Elasticsearch#TermsQueryBuilder]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-terms-query.html}.
  *
  * @example
  * new QueryBuilder()
@@ -840,9 +834,9 @@ class TermQuery extends BaseQuery {
  * // The resulting documents:
  * // contains the terms infinity, atom or energy
  *
- * @extends BaseQuery
+ * @extends BaseQueryBuilder
  */
-class TermsQuery extends BaseQuery {
+class TermsQueryBuilder extends BaseQueryBuilder {
     /**
      * @param {string} field - the field name of the document
      * @param {string[]} terms - the terms
@@ -854,7 +848,7 @@ class TermsQuery extends BaseQuery {
         this._data.value = terms;
     }
 }
-/* unused harmony export TermsQuery */
+/* unused harmony export TermsQueryBuilder */
 
 /**
  * A query which finds documents where the wildcard term can be applied at an existing document field term.
@@ -865,10 +859,10 @@ class TermsQuery extends BaseQuery {
  *
  * To escape a wildcard character, use _\_ (backslash), e.g. \?.
  *
- * * To enable scoring for wildcard queries, use {@link WildcardQuery#enableScoring}.
+ * * To enable scoring for wildcard queries, use {@link WildcardQueryBuilder#enableScoring}.
  *
- * See also [Lucene#WildcardQuery]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/WildcardQuery.html}
- * and [Elasticsearch#WildcardQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-wildcard-query.html}.
+ * See also [Lucene#WildcardQueryBuilder]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/WildcardQuery.html}
+ * and [Elasticsearch#WildcardQueryBuilder]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-wildcard-query.html}.
  *
  * @example
  * new QueryBuilder()
@@ -877,9 +871,9 @@ class TermsQuery extends BaseQuery {
  * // The resulting documents:
  * // contains the wildcard surname e?nst*n\? (like Einstein? or Eynsteyn? but not Einsteine or Ensten?)
  *
- * @extends BaseQuery
+ * @extends BaseQueryBuilder
  */
-class WildcardQuery extends BaseQuery {
+class WildcardQueryBuilder extends BaseQueryBuilder {
     /**
      * @param {string} field - the field name of the document
      * @param {string} wildcard - the wildcard term
@@ -891,16 +885,16 @@ class WildcardQuery extends BaseQuery {
         this._data.value = wildcard;
     }
     /**
-     * This flag enables scoring for wildcard results, similar to {@link TermQuery}.
+     * This flag enables scoring for wildcard results, similar to {@link TermQueryBuilder}.
      * @param {boolean} enable - flag to enable or disable scoring
-     * @return {WildcardQuery}
+     * @return {WildcardQueryBuilder}
      */
     enableScoring(enable) {
         this._data.enable_scoring = enable;
         return this;
     }
 }
-/* unused harmony export WildcardQuery */
+/* unused harmony export WildcardQueryBuilder */
 
 /**
  * A query which finds documents where the fuzzy term can be transformed into an existing document field term within a
@@ -910,13 +904,13 @@ class WildcardQuery extends BaseQuery {
  * The edit distance is the minimum number of an insertion, deletion or substitution of a single character
  * or a transposition of two adjacent characters.
  *
- * * To set the maximal allowed edit distance, use {@link FuzzyQuery#fuzziness} (default is AUTO).
- * * To set the initial word length, which should ignored for fuzziness, use {@link FuzzyQuery#prefixLength}.
+ * * To set the maximal allowed edit distance, use {@link FuzzyQueryBuilder#fuzziness} (default is AUTO).
+ * * To set the initial word length, which should ignored for fuzziness, use {@link FuzzyQueryBuilder#prefixLength}.
  * * To include longer document field terms than the fuzzy term and edit distance together, use
- *   {@link FuzzyQuery#extended}.
+ *   {@link FuzzyQueryBuilder#extended}.
  *
- * See also [Lucene#FuzzyQuery]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/FuzzyQuery.html}
- * and [Elasticsearch#FuzzyQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-fuzzy-query.html}.
+ * See also [Lucene#FuzzyQueryBuilder]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/FuzzyQuery.html}
+ * and [Elasticsearch#FuzzyQueryBuilder]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-fuzzy-query.html}.
  *
  * @example
  * new QueryBuilder()
@@ -927,9 +921,9 @@ class WildcardQuery extends BaseQuery {
  * // The resulting documents:
  * // contains the fuzzy surname einstn (like Einstein or Einst but not Eisstein or Insten)
  *
- * @extends BaseQuery
+ * @extends BaseQueryBuilder
  */
-class FuzzyQuery extends BaseQuery {
+class FuzzyQueryBuilder extends BaseQueryBuilder {
     /**
      * @param {string} field - the field name of the document
      * @param {string} fuzzy - the fuzzy term
@@ -949,7 +943,7 @@ class FuzzyQuery extends BaseQuery {
      * * 3..5 -> one edit allowed
      * * >5 two edits allowed
      *
-     * @return {FuzzyQuery} - object itself for cascading
+     * @return {FuzzyQueryBuilder} - object itself for cascading
      */
     fuzziness(fuzziness) {
         if (fuzziness !== "AUTO" && (fuzziness < 0 || fuzziness > 2)) {
@@ -961,7 +955,7 @@ class FuzzyQuery extends BaseQuery {
     /**
      * Sets the initial word length.
      * @param {number} prefixLength - the positive prefix length
-     * @return {FuzzyQuery}  object itself for cascading
+     * @return {FuzzyQueryBuilder}  object itself for cascading
      */
     prefixLength(prefixLength) {
         if (prefixLength < 0) {
@@ -973,22 +967,22 @@ class FuzzyQuery extends BaseQuery {
     /**
      * This flag allows longer document field terms than the actual fuzzy.
      * @param {boolean} extended - flag to enable or disable extended search
-     * @return {FuzzyQuery}
+     * @return {FuzzyQueryBuilder}
      */
     extended(extended) {
         this._data.extended = extended;
         return this;
     }
 }
-/* unused harmony export FuzzyQuery */
+/* unused harmony export FuzzyQueryBuilder */
 
 /**
  * A query which matches documents containing the prefix of a term inside a field.
  *
- * * To enable scoring for wildcard queries, use {@link WildcardQuery#enableScoring}.
+ * * To enable scoring for wildcard queries, use {@link WildcardQueryBuilder#enableScoring}.
  *
- * See also [Lucene#PrefixQuery]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/PrefixQuery.html}
- * and [Elasticsearch#MatchQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-prefix-query.html}
+ * See also [Lucene#PrefixQueryBuilder]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/PrefixQuery.html}
+ * and [Elasticsearch#MatchQueryBuilder]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-prefix-query.html}
  *
  * @example
  * new QueryBuilder()
@@ -997,9 +991,9 @@ class FuzzyQuery extends BaseQuery {
  * // The resulting documents:
  * // contains the term prefix alb as surname
  *
- * @extends BaseQuery
+ * @extends BaseQueryBuilder
  */
-class PrefixQuery extends BaseQuery {
+class PrefixQueryBuilder extends BaseQueryBuilder {
     /**
      * @param {string} field - the field name of the document
      * @param {string} prefix - the prefix of a term
@@ -1011,21 +1005,21 @@ class PrefixQuery extends BaseQuery {
         this._data.value = prefix;
     }
     /**
-     * This flag enables scoring for prefix results, similar to {@link TermQuery}.
+     * This flag enables scoring for prefix results, similar to {@link TermQueryBuilder}.
      * @param {boolean} enable - flag to enable or disable scoring
-     * @return {PrefixQuery}
+     * @return {PrefixQueryBuilder}
      */
     enableScoring(enable) {
         this._data.enable_scoring = enable;
         return this;
     }
 }
-/* unused harmony export PrefixQuery */
+/* unused harmony export PrefixQueryBuilder */
 
 /**
  * A query which matches all documents with a given field.
  *
- * See also [Elasticsearch#ExistsQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-query.html}.
+ * See also [Elasticsearch#ExistsQueryBuilder]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-query.html}.
  *
  * @example
  * new QueryBuilder()
@@ -1034,9 +1028,9 @@ class PrefixQuery extends BaseQuery {
  * // The resulting documents:
  * // has the field "name"
  *
- * @extends BaseQuery
+ * @extends BaseQueryBuilder
  */
-class ExistsQuery extends BaseQuery {
+class ExistsQueryBuilder extends BaseQueryBuilder {
     /**
      * @param {string} field - the field name of the document
      * @param data
@@ -1046,7 +1040,7 @@ class ExistsQuery extends BaseQuery {
         this._data.field = field;
     }
 }
-/* unused harmony export ExistsQuery */
+/* unused harmony export ExistsQueryBuilder */
 
 /**
  * A query which tokenizes the given query text, performs a query foreach token and combines the results using a boolean
@@ -1054,14 +1048,14 @@ class ExistsQuery extends BaseQuery {
  *
  * Operator      | Description
  * ------------- | -------------
- * or (default) | Finds documents which matches some tokens. The minimum amount of matches can be controlled with [minimumShouldMatch]{@link MatchQuery#minimumShouldMatch} (default is 1).
+ * or (default) | Finds documents which matches some tokens. The minimum amount of matches can be controlled with [minimumShouldMatch]{@link MatchQueryBuilder#minimumShouldMatch} (default is 1).
  * and | Finds documents which matches all tokens.
  *
- * To enable a [fuzzy query]{@link FuzzyQuery} for the tokens, use {@link MatchQuery#fuzziness},
- * {@link MatchQuery#prefixLength} and {@link MatchQuery#extended}
+ * To enable a [fuzzy query]{@link FuzzyQueryBuilder} for the tokens, use {@link MatchQueryBuilder#fuzziness},
+ * {@link MatchQueryBuilder#prefixLength} and {@link MatchQueryBuilder#extended}
  *
  * See also [Lucene#?]{@link ?}
- * and [Elasticsearch#MatchQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html}.
+ * and [Elasticsearch#MatchQueryBuilder]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html}.
  *
  * @example
  * new QueryBuilder()
@@ -1074,9 +1068,9 @@ class ExistsQuery extends BaseQuery {
  * // The resulting documents:
  * // contains the fuzzy name albrt einsten (like Albert Einstein) with a boost of 2.5
  *
- * @extends BaseQuery
+ * @extends BaseQueryBuilder
  */
-class MatchQuery extends BaseQuery {
+class MatchQueryBuilder extends BaseQueryBuilder {
     /**
      * @param {string} field - the field name of the document
      * @param {string} query - the query text
@@ -1097,7 +1091,7 @@ class MatchQuery extends BaseQuery {
      *     the minimum.
      *   minShouldMatch < 1: Indicates that this percent of the total number of sub queries are necessary.
      *     The number computed from the percentage is rounded down and used as the minimum.
-     * @return {MatchQuery} object itself for cascading
+     * @return {MatchQueryBuilder} object itself for cascading
      */
     minimumShouldMatch(minShouldMatch) {
         if (this._data.operator !== undefined && this._data.operator === "and") {
@@ -1109,7 +1103,7 @@ class MatchQuery extends BaseQuery {
     /**
      * Sets the boolean operator.
      * @param {string} op - the operator ("or" || "and")
-     * @return {MatchQuery} object itself for cascading
+     * @return {MatchQueryBuilder} object itself for cascading
      */
     operator(op) {
         if (op !== "and" && op !== "or") {
@@ -1130,7 +1124,7 @@ class MatchQuery extends BaseQuery {
      * * 3..5 -> one edit allowed
      * * >5 two edits allowed
      *
-     * @return {MatchQuery} - object itself for cascading
+     * @return {MatchQueryBuilder} - object itself for cascading
      */
     fuzziness(fuzziness) {
         if (fuzziness !== "AUTO" && (fuzziness < 0 || fuzziness > 2)) {
@@ -1142,7 +1136,7 @@ class MatchQuery extends BaseQuery {
     /**
      * Sets the starting word length which should not be considered for fuzziness.
      * @param {number} prefixLength - the positive prefix length
-     * @return {MatchQuery} - object itself for cascading
+     * @return {MatchQueryBuilder} - object itself for cascading
      */
     prefixLength(prefixLength) {
         if (prefixLength < 0) {
@@ -1154,23 +1148,23 @@ class MatchQuery extends BaseQuery {
     /**
      * This flag allows longer document field terms than the actual fuzzy.
      * @param {boolean} extended - flag to enable or disable extended search
-     * @return {MatchQuery}
+     * @return {MatchQueryBuilder}
      */
     extended(extended) {
         this._data.extended = extended;
         return this;
     }
 }
-/* unused harmony export MatchQuery */
+/* unused harmony export MatchQueryBuilder */
 
 /**
  * A query that matches all documents and giving them a constant score equal to the query boost.
  *
- * Typically used inside a must clause of a {@link BoolQuery} to subsequently reject non matching documents with the not
+ * Typically used inside a must clause of a {@link BoolQueryBuilder} to subsequently reject non matching documents with the not
  * clause.
  *
  * See also [Lucene#MatchAllDocsQuery]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/MatchAllDocsQuery.html}
- * and [Elasticsearch#MatchAllQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-all-query.html}.
+ * and [Elasticsearch#MatchAllQueryBuilder]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-all-query.html}.
  *
  * @example
  * new QueryBuilder()
@@ -1180,81 +1174,20 @@ class MatchQuery extends BaseQuery {
  * // The resulting documents:
  * // all documents and giving a score of 2.5
  *
- * @extends BaseQuery
+ * @extends BaseQueryBuilder
  */
-class MatchAllQuery extends BaseQuery {
+class MatchAllQueryBuilder extends BaseQueryBuilder {
     constructor(data = {}) {
         super("match_all", data);
     }
 }
-/* unused harmony export MatchAllQuery */
-
-/**
- * A query which holds all sub queries like an array.
- */
-class ArrayQuery extends BaseQuery {
-    constructor(callbackName, callback, data = {}) {
-        super("array", data);
-        this._data.values = [];
-        this._callbackName = callbackName;
-        this[callbackName] = callback;
-        this._prepare = (queryType, ...args) => {
-            const data = {};
-            const query = new queryType(...args, data);
-            this._data.values.push(data);
-            query.bool = this.bool;
-            query.constantScore = this.constantScore;
-            query.term = this.term;
-            query.terms = this.terms;
-            query.wildcard = this.wildcard;
-            query.fuzzy = this.fuzzy;
-            query.match = this.match;
-            query.matchAll = this.matchAll;
-            query.prefix = this.prefix;
-            query.exists = this.exists;
-            query._prepare = this._prepare;
-            query[this._callbackName] = this[this._callbackName];
-            return query;
-        };
-    }
-    bool() {
-        return this._prepare(BoolQuery);
-    }
-    constantScore() {
-        return this._prepare(ConstantScoreQuery);
-    }
-    term(field, term) {
-        return this._prepare(TermQuery, field, term);
-    }
-    terms(field, terms) {
-        return this._prepare(TermsQuery, field, terms);
-    }
-    wildcard(field, wildcard) {
-        return this._prepare(WildcardQuery, field, wildcard);
-    }
-    fuzzy(field, fuzzy) {
-        return this._prepare(FuzzyQuery, field, fuzzy);
-    }
-    match(field, query) {
-        return this._prepare(MatchQuery, field, query);
-    }
-    matchAll() {
-        return this._prepare(MatchAllQuery);
-    }
-    prefix(field, prefix) {
-        return this._prepare(PrefixQuery, field, prefix);
-    }
-    exists(field) {
-        return this._prepare(ExistsQuery, field);
-    }
-}
-/* unused harmony export ArrayQuery */
+/* unused harmony export MatchAllQueryBuilder */
 
 /**
  * A query that wraps sub queries and returns a constant score equal to the query boost for every document in the filter.
  *
  * See also [Lucene#BooleanQuery]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/ConstantScoreQuery.html}
- * and [Elasticsearch#ConstantScoreQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-constant-score-query.html}.
+ * and [Elasticsearch#ConstantScoreQueryBuilder]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-constant-score-query.html}.
  *
  * @example
  * new QueryBuilder()
@@ -1268,24 +1201,24 @@ class ArrayQuery extends BaseQuery {
  * // The resulting documents:
  * // * contains albert as first name, einstein as surname and the document score is 42.
  *
- * @extends BaseQuery
+ * @extends BaseQueryBuilder
  */
-class ConstantScoreQuery extends BaseQuery {
+class ConstantScoreQueryBuilder extends BaseQueryBuilder {
     constructor(data = {}) {
         super("constant_score", data);
     }
     /**
      * Starts an array of queries. Use endFilter() to finish the array.
-     * @return {ArrayQuery} array query for holding sub queries
+     * @return {ArrayQueryBuilder} array query for holding sub queries
      */
     beginFilter() {
         this._data.filter = {};
-        return new ArrayQuery("endFilter", () => {
+        return new ArrayQueryBuilder("endFilter", () => {
             return this;
         }, this._data.filter);
     }
 }
-/* unused harmony export ConstantScoreQuery */
+/* unused harmony export ConstantScoreQueryBuilder */
 
 /**
  * A query that matches documents matching boolean combinations of sub queries.
@@ -1296,13 +1229,13 @@ class ConstantScoreQuery extends BaseQuery {
  * ------------- | -------------
  * must  | Finds documents which matches all sub queries.
  * filter  | Finds documents which matches all sub queries but these documents do not contribute to the score.
- * should  | Finds documents which matches some sub queries. The minimum amount of matches can be controlled with [minimumShouldMatch]{@link BoolQuery#minimumShouldMatch} (default is 1).
+ * should  | Finds documents which matches some sub queries. The minimum amount of matches can be controlled with [minimumShouldMatch]{@link BoolQueryBuilder#minimumShouldMatch} (default is 1).
  * not  | Documents which match any sub query will be ignored.
  *
  * A sub query can be any other query type and also the bool query itself.
  *
  * See also [Lucene#BooleanQuery]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/BooleanQuery.html}
- * and [Elasticsearch#BoolQuery]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html}.
+ * and [Elasticsearch#BoolQueryBuilder]{@link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html}.
  *
  * @example
  * new QueryBuilder()
@@ -1328,49 +1261,49 @@ class ConstantScoreQuery extends BaseQuery {
  * // contains a minimum of two matches from the fuzzy, wildcard and/or term query (should: contribute to the score)
  * // do not contains biology or geography as research field (not: not contribute to the score)
  *
- * @extends BaseQuery
+ * @extends BaseQueryBuilder
  */
-class BoolQuery extends BaseQuery {
+class BoolQueryBuilder extends BaseQueryBuilder {
     constructor(data = {}) {
         super("bool", data);
     }
     /**
      * Starts an array of queries for must clause. Use endMust() to finish the array.
-     * @return {ArrayQuery} array query for holding sub queries
+     * @return {ArrayQueryBuilder} array query for holding sub queries
      */
     beginMust() {
         this._data.must = {};
-        return new ArrayQuery("endMust", () => {
+        return new ArrayQueryBuilder("endMust", () => {
             return this;
         }, this._data.must);
     }
     /**
      * Starts an array of queries for filter clause. Use endFilter() to finish the array.
-     * @return {ArrayQuery} array query for holding sub queries
+     * @return {ArrayQueryBuilder} array query for holding sub queries
      */
     beginFilter() {
         this._data.filter = {};
-        return new ArrayQuery("endFilter", () => {
+        return new ArrayQueryBuilder("endFilter", () => {
             return this;
         }, this._data.filter);
     }
     /**
      * Starts an array of queries for should clause. Use endShould() to finish the array.
-     * @return {ArrayQuery} array query for holding sub queries
+     * @return {ArrayQueryBuilder} array query for holding sub queries
      */
     beginShould() {
         this._data.should = {};
-        return new ArrayQuery("endShould", () => {
+        return new ArrayQueryBuilder("endShould", () => {
             return this;
         }, this._data.should);
     }
     /**
      * Starts an array of queries for not clause. Use endNot() to finish the array.
-     * @return {ArrayQuery} array query for holding sub queries
+     * @return {ArrayQueryBuilder} array query for holding sub queries
      */
     beginNot() {
         this._data.not = {};
-        return new ArrayQuery("endNot", () => {
+        return new ArrayQueryBuilder("endNot", () => {
             return this;
         }, this._data.not);
     }
@@ -1384,23 +1317,84 @@ class BoolQuery extends BaseQuery {
      *     the minimum.
      *   minShouldMatch < 1: Indicates that this percent of the total number of sub queries are necessary.
      *     The number computed from the percentage is rounded down and used as the minimum.
-     * @return {BoolQuery} object itself for cascading
+     * @return {BoolQueryBuilder} object itself for cascading
      */
     minimumShouldMatch(minShouldMatch) {
         this._data.minimum_should_match = minShouldMatch;
         return this;
     }
 }
-/* unused harmony export BoolQuery */
+/* unused harmony export BoolQueryBuilder */
+
+/**
+ * A query which holds all sub queries like an array.
+ */
+class ArrayQueryBuilder extends BaseQueryBuilder {
+    constructor(callbackName, callback, data = {}) {
+        super("array", data);
+        this._data.values = [];
+        this._callbackName = callbackName;
+        this[callbackName] = callback;
+        this._prepare = (queryType, ...args) => {
+            const data = {};
+            const query = new queryType(...args, data);
+            this._data.values.push(data);
+            query.bool = this.bool;
+            query.constantScore = this.constantScore;
+            query.term = this.term;
+            query.terms = this.terms;
+            query.wildcard = this.wildcard;
+            query.fuzzy = this.fuzzy;
+            query.match = this.match;
+            query.matchAll = this.matchAll;
+            query.prefix = this.prefix;
+            query.exists = this.exists;
+            query._prepare = this._prepare;
+            query[this._callbackName] = this[this._callbackName];
+            return query;
+        };
+    }
+    bool() {
+        return this._prepare(BoolQueryBuilder);
+    }
+    constantScore() {
+        return this._prepare(ConstantScoreQueryBuilder);
+    }
+    term(field, term) {
+        return this._prepare(TermQueryBuilder, field, term);
+    }
+    terms(field, terms) {
+        return this._prepare(TermsQueryBuilder, field, terms);
+    }
+    wildcard(field, wildcard) {
+        return this._prepare(WildcardQueryBuilder, field, wildcard);
+    }
+    fuzzy(field, fuzzy) {
+        return this._prepare(FuzzyQueryBuilder, field, fuzzy);
+    }
+    match(field, query) {
+        return this._prepare(MatchQueryBuilder, field, query);
+    }
+    matchAll() {
+        return this._prepare(MatchAllQueryBuilder);
+    }
+    prefix(field, prefix) {
+        return this._prepare(PrefixQueryBuilder, field, prefix);
+    }
+    exists(field) {
+        return this._prepare(ExistsQueryBuilder, field);
+    }
+}
+/* unused harmony export ArrayQueryBuilder */
 
 /**
  * This query builder is the root of each query search.
  * The query contains a sub query and parameters for setup scoring and search options.
  *
  * Possible sub query types are:
- * {@link TermQuery}, {@link TermsQuery}, {@link FuzzyQuery}, {@link WildcardQuery},
- * {@link MatchQuery}, {@link MatchAllQuery}, {@link PrefixQuery},  {@link BoolQuery},
- * {@link ConstantScoreQuery}, {@link ExistsQuery}
+ * {@link TermQueryBuilder}, {@link TermsQueryBuilder}, {@link FuzzyQueryBuilder}, {@link WildcardQueryBuilder},
+ * {@link MatchQueryBuilder}, {@link MatchAllQueryBuilder}, {@link PrefixQueryBuilder},  {@link BoolQueryBuilder},
+ * {@link ConstantScoreQueryBuilder}, {@link ExistsQueryBuilder}
  *
  * @example
  * new QueryBuilder()
@@ -1415,10 +1409,9 @@ class BoolQuery extends BaseQuery {
 class QueryBuilder {
     constructor() {
         this._data = { query: {} };
-        this.useBM25();
     }
     /**
-     * The query performs a final scoring over all scored sub queries and rank documents by there relevant.
+     * The query performs a final scoring over all scored sub queries.
      * @param {boolean} enable - flag to enable or disable final scoring
      * @return {QueryBuilder}
      */
@@ -1427,7 +1420,7 @@ class QueryBuilder {
         return this;
     }
     /**
-     * Use [Okapi BM25]{@link https://en.wikipedia.org/wiki/Okapi_BM25} as scoring model (default).
+     * Configures the [Okapi BM25]{@link https://en.wikipedia.org/wiki/Okapi_BM25} as scoring model.
      *
      * See also [Lucene#MatchAllDocsQuery]{@link https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/similarities/BM25Similarity.html}
      * and [Elasticsearch#BM25]{@link https://www.elastic.co/guide/en/elasticsearch/guide/current/pluggable-similarites.html#bm25}.
@@ -1438,56 +1431,55 @@ class QueryBuilder {
      *                            A value of 0.0 disables normalization completely, and a value of 1.0 normalizes fully.
      * @return {QueryBuilder}
      */
-    useBM25(k1 = 1.2, b = 0.75) {
+    BM25Similarity(k1 = 1.2, b = 0.75) {
         if (k1 < 0) {
             throw TypeError("BM25s k1 must be a positive number.");
         }
         if (b < 0 || b > 1) {
             throw TypeError("BM25s b must be a number between 0 and 1 inclusive.");
         }
-        this._data.scoring = {
-            type: "BM25",
+        this._data.bm25 = {
             k1,
             b
         };
         return this;
     }
     bool() {
-        return this._prepare(BoolQuery);
+        return this._prepare(BoolQueryBuilder);
     }
     constantScore() {
-        return this._prepare(ConstantScoreQuery);
+        return this._prepare(ConstantScoreQueryBuilder);
     }
     term(field, term) {
-        return this._prepare(TermQuery, field, term);
+        return this._prepare(TermQueryBuilder, field, term);
     }
     terms(field, terms) {
-        return this._prepare(TermsQuery, field, terms);
+        return this._prepare(TermsQueryBuilder, field, terms);
     }
     wildcard(field, wildcard) {
-        return this._prepare(WildcardQuery, field, wildcard);
+        return this._prepare(WildcardQueryBuilder, field, wildcard);
     }
     fuzzy(field, fuzzy) {
-        return this._prepare(FuzzyQuery, field, fuzzy);
+        return this._prepare(FuzzyQueryBuilder, field, fuzzy);
     }
     match(field, query) {
-        return this._prepare(MatchQuery, field, query);
+        return this._prepare(MatchQueryBuilder, field, query);
     }
     matchAll() {
-        return this._prepare(MatchAllQuery);
+        return this._prepare(MatchAllQueryBuilder);
     }
     prefix(field, prefix) {
-        return this._prepare(PrefixQuery, field, prefix);
+        return this._prepare(PrefixQueryBuilder, field, prefix);
     }
     exists(field) {
-        return this._prepare(ExistsQuery, field);
+        return this._prepare(ExistsQueryBuilder, field);
     }
     _prepare(queryType, ...args) {
-        this._child = new queryType(...args, this._data.query);
-        this._child.build = () => {
+        const query = new queryType(...args, this._data.query);
+        query.build = () => {
             return this._data;
         };
-        return this._child;
+        return query;
     }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = QueryBuilder;
@@ -2037,6 +2029,9 @@ class FullTextSearch {
     search(query) {
         return this._idxSearcher.search(query);
     }
+    setDirty() {
+        this._idxSearcher.setDirty();
+    }
     toJSON() {
         let serialized = {};
         let fieldNames = Object.keys(this._invIdxs);
@@ -2052,9 +2047,6 @@ class FullTextSearch {
             fts._invIdxs[fieldName] = __WEBPACK_IMPORTED_MODULE_0__inverted_index__["a" /* InvertedIndex */].fromJSONObject(serialized[fieldName], tokenizers[fieldName]);
         }
         return fts;
-    }
-    setDirty() {
-        this._idxSearcher.setDirty();
     }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = FullTextSearch;
@@ -2091,9 +2083,8 @@ class IndexSearcher {
     }
     search(query) {
         let docResults = this._recursive(query.query, true);
-        // Final scoring.
-        let finalScoring = query.final_scoring !== undefined ? query.final_scoring : true;
-        if (finalScoring) {
+        // Do final scoring.
+        if (query.final_scoring !== undefined ? query.final_scoring : true) {
             return this._scorer.finalScore(query, docResults);
         }
         return docResults;
@@ -2171,21 +2162,21 @@ class IndexSearcher {
             case "term": {
                 const cps = Object(__WEBPACK_IMPORTED_MODULE_1__inverted_index__["b" /* toCodePoints */])(query.value);
                 let termIdx = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].getTermIndex(cps, root);
-                this._scorer.prepare(fieldName, boost, termIdx, doScoring, docResults, cps);
+                this._scorer.score(fieldName, boost, termIdx, doScoring, docResults, cps);
                 break;
             }
             case "terms": {
                 for (let i = 0; i < query.value.length; i++) {
                     const cps = Object(__WEBPACK_IMPORTED_MODULE_1__inverted_index__["b" /* toCodePoints */])(query.value[i]);
                     let termIdx = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].getTermIndex(cps, root);
-                    this._scorer.prepare(fieldName, boost, termIdx, doScoring, docResults, cps);
+                    this._scorer.score(fieldName, boost, termIdx, doScoring, docResults, cps);
                 }
                 break;
             }
             case "fuzzy": {
                 const f = fuzzySearch(query, root);
                 for (let i = 0; i < f.length; i++) {
-                    this._scorer.prepare(fieldName, boost * f[i].boost, f[i].index, doScoring, docResults, f[i].term);
+                    this._scorer.score(fieldName, boost * f[i].boost, f[i].index, doScoring, docResults, f[i].term);
                 }
                 break;
             }
@@ -2193,7 +2184,7 @@ class IndexSearcher {
                 const enableScoring = query.enable_scoring !== undefined ? query.enable_scoring : false;
                 const w = wildcardSearch(query, root);
                 for (let i = 0; i < w.length; i++) {
-                    this._scorer.prepare(fieldName, boost, w[i].index, doScoring && enableScoring, docResults, w[i].term);
+                    this._scorer.score(fieldName, boost, w[i].index, doScoring && enableScoring, docResults, w[i].term);
                 }
                 break;
             }
@@ -2218,7 +2209,7 @@ class IndexSearcher {
                 if (termIdx !== null) {
                     const termIdxs = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].extendTermIndex(termIdx);
                     for (let i = 0; i < termIdxs.length; i++) {
-                        this._scorer.prepare(fieldName, boost, termIdxs[i][0], doScoring && enableScoring, docResults, [...cps, ...termIdxs[i][1]]);
+                        this._scorer.score(fieldName, boost, termIdxs[i].index, doScoring && enableScoring, docResults, [...cps, ...termIdxs[i].term]);
                     }
                 }
                 break;
@@ -2275,14 +2266,14 @@ class IndexSearcher {
         }
         return docResults;
     }
-    _getUnique(values, doScoring, docResults) {
-        if (values.length === 0) {
+    _getUnique(queries, doScoring, docResults) {
+        if (queries.length === 0) {
             return docResults;
         }
-        for (let i = 0; i < values.length; i++) {
-            let currDocs = this._recursive(values[i], doScoring);
+        for (let i = 0; i < queries.length; i++) {
+            let currDocs = this._recursive(queries[i], doScoring);
             if (docResults === null) {
-                docResults = this._recursive(values[0], doScoring);
+                docResults = this._recursive(queries[0], doScoring);
                 continue;
             }
             for (const docId of docResults.keys()) {
@@ -2296,10 +2287,10 @@ class IndexSearcher {
         }
         return docResults;
     }
-    _getAll(values, doScoring) {
+    _getAll(queries, doScoring) {
         let docResults = new Map();
-        for (let i = 0; i < values.length; i++) {
-            let currDocs = this._recursive(values[i], doScoring);
+        for (let i = 0; i < queries.length; i++) {
+            let currDocs = this._recursive(queries[i], doScoring);
             for (const docId of currDocs.keys()) {
                 if (!docResults.has(docId)) {
                     docResults.set(docId, currDocs.get(docId));
@@ -2314,6 +2305,12 @@ class IndexSearcher {
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = IndexSearcher;
 
+/**
+ * Performs a fuzzy search.
+ * @param {FuzzyQuery} query - the fuzzy query
+ * @param {Index} root - the root index
+ * @returns {FuzzyResult} - the results
+ */
 function fuzzySearch(query, root) {
     let value = Object(__WEBPACK_IMPORTED_MODULE_1__inverted_index__["b" /* toCodePoints */])(query.value);
     let fuzziness = query.fuzziness !== undefined ? query.fuzziness : "AUTO";
@@ -2351,13 +2348,14 @@ function fuzzySearch(query, root) {
     if (fuzzy.length === 0) {
         if (extended) {
             // Add all terms down the index.
-            for (const child of __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].extendTermIndex(startIdx)) {
-                result.push({ term: child[1], index: child[0], boost: 1 });
+            const all = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].extendTermIndex(startIdx);
+            for (let i = 0; i < all.length; i++) {
+                result.push({ index: all[i].index, term: all[i].term, boost: 1 });
             }
         }
         else if (startIdx.dc !== undefined) {
             // Add prefix search result.
-            result.push({ term: value, index: startIdx, boost: 1 });
+            result.push({ index: startIdx, term: value, boost: 1 });
         }
         return result;
     }
@@ -2392,7 +2390,7 @@ function fuzzySearch(query, root) {
                 // Add all terms down the index.
                 let all = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].extendTermIndex(idx);
                 for (let i = 0; i < all.length; i++) {
-                    result.push({ term: all[i][1], index: all[i][0], boost: 1 });
+                    result.push({ index: all[i].index, term: all[i].term, boost: 1 });
                 }
                 return;
             }
@@ -2416,9 +2414,9 @@ function fuzzySearch(query, root) {
 }
 /**
  * Performs a wildcard search.
- * @param {ANY} query - the wildcard query
- * @param {InvertedIndex.Index} root - the root index
- * @returns {Array}
+ * @param {WildcardQuery} query - the wildcard query
+ * @param {Index} root - the root index
+ * @returns {Array} - the results
  */
 function wildcardSearch(query, root) {
     let wildcard = Object(__WEBPACK_IMPORTED_MODULE_1__inverted_index__["b" /* toCodePoints */])(query.value);
@@ -2439,7 +2437,7 @@ function wildcardSearch(query, root) {
         }
         else if (!escaped && wildcard[idx] === 63 /* ? */) {
             for (const child of index) {
-                recursive(child[1], idx + 1, term + child[0]);
+                recursive(child[1], idx + 1, [...term, child[0]]);
             }
         }
         else if (!escaped && wildcard[idx] === 42 /* * */) {
@@ -2447,18 +2445,18 @@ function wildcardSearch(query, root) {
             if (idx + 1 === wildcard.length) {
                 const all = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].extendTermIndex(index);
                 for (let i = 0; i < all.length; i++) {
-                    recursive(all[i][0], idx + 1, [...term, ...all[i][1]]);
+                    recursive(all[i].index, idx + 1, [...term, ...all[i].term]);
                 }
             }
             else {
                 // Iterate over the whole tree.
                 recursive(index, idx + 1, term, false);
-                const indices = [[index, []]];
+                const indices = [{ index: index, term: [] }];
                 do {
                     const index = indices.pop();
-                    for (const child of index[0]) {
-                        recursive(child[1], idx + 1, [...term, ...index[1], child[0]]);
-                        indices.push([child[1], [...index[1], child[0]]]);
+                    for (const child of index.index) {
+                        recursive(child[1], idx + 1, [...term, ...index.term, child[0]]);
+                        indices.push({ index: child[1], term: [...index.term, child[0]] });
                     }
                 } while (indices.length !== 0);
             }
@@ -2482,15 +2480,15 @@ function wildcardSearch(query, root) {
  */
 class Scorer {
     constructor(invIdxs) {
-        this._cache = {};
         this._invIdxs = invIdxs;
+        this._cache = {};
     }
     setDirty() {
         this._cache = {};
     }
-    prepare(fieldName, boost, termIdx, doScoring, docResults = new Map(), term = null) {
+    score(fieldName, boost, termIdx, doScoring, docResults, term) {
         if (termIdx === null || termIdx.dc === undefined) {
-            return null;
+            return;
         }
         const idf = this._idf(fieldName, termIdx.df);
         for (const [docId, tf] of termIdx.dc) {
@@ -2498,56 +2496,55 @@ class Scorer {
                 docResults.set(docId, []);
             }
             if (doScoring) {
-                docResults.get(docId).push({ type: "BM25", tf, idf, boost, fieldName, term });
+                // BM25 scoring.
+                docResults.get(docId).push({ tf, idf, boost, fieldName, term });
             }
             else {
-                docResults.set(docId, [{ type: "constant", value: 1, boost, fieldName }]);
+                // Constant scoring.
+                docResults.set(docId, [{ boost }]);
             }
         }
-        return docResults;
     }
-    scoreConstant(boost, docId, docResults = new Map()) {
+    scoreConstant(boost, docId, docResults) {
         if (!docResults.has(docId)) {
             docResults.set(docId, []);
         }
-        docResults.get(docId).push({ type: "constant", value: 1, boost });
+        docResults.get(docId).push({ boost });
         return docResults;
     }
     finalScore(query, docResults = new Map()) {
         const result = {};
-        const k1 = query.scoring.k1;
-        const b = query.scoring.b;
+        const k1 = query.bm25 !== undefined ? query.bm25.k1 : 1.2;
+        const b = query.bm25 !== undefined ? query.bm25.b : 0.75;
         for (const [docId, result1] of docResults) {
             let docScore = 0;
             for (let j = 0; j < result1.length; j++) {
                 const docResult = result1[j];
                 let res = 0;
-                switch (docResult.type) {
-                    case "BM25": {
-                        const tf = docResult.tf;
-                        const fieldLength = Scorer._calculateFieldLength(this._invIdxs[docResult.fieldName].documentStore.get(+docId)
-                            .fieldLength);
-                        const avgFieldLength = this._avgFieldLength(docResult.fieldName);
-                        const tfNorm = (tf * (k1 + 1)) / (tf + k1 * (1 - b + b * (fieldLength / avgFieldLength)));
-                        res = docResult.idf * tfNorm * docResult.boost;
-                        // console.log(
-                        // 	docId + ":" + docResult.fieldName + ":" + String.fromCharCode(...docResult.term) + " = " + res,
-                        // 	"\n\ttype: BM25",
-                        // 	"\n\tboost: " + docResult.boost,
-                        // 	"\n\tidf : " + docResult.idf,
-                        // 	"\n\ttfNorm : " + tfNorm,
-                        // 	"\n\ttf : " + tf,
-                        // 	"\n\tavg : " + avgFieldLength,
-                        // 	"\n\tfl : " + fieldLength);
-                        break;
-                    }
-                    case "constant":
-                        res = docResult.value * docResult.boost;
-                        // console.log(
-                        //  "Constant: " + res,
-                        //  "\n\tboost: " + docResult.boost,
-                        //  "\n\tvalue : " + docResult.value);
-                        break;
+                if (docResult.tf !== undefined) {
+                    // BM25 scoring.
+                    const tf = docResult.tf;
+                    const fieldLength = Scorer._calculateFieldLength(this._invIdxs[docResult.fieldName].documentStore.get(+docId)
+                        .fieldLength);
+                    const avgFieldLength = this._avgFieldLength(docResult.fieldName);
+                    const tfNorm = (tf * (k1 + 1)) / (tf + k1 * (1 - b + b * (fieldLength / avgFieldLength)));
+                    res = docResult.idf * tfNorm * docResult.boost;
+                    // console.log(
+                    // 	docId + ":" + docResult.fieldName + ":" + String.fromCharCode(...docResult.term) + " = " + res,
+                    // 	"\n\ttype: BM25",
+                    // 	"\n\tboost: " + docResult.boost,
+                    // 	"\n\tidf : " + docResult.idf,
+                    // 	"\n\ttfNorm : " + tfNorm,
+                    // 	"\n\ttf : " + tf,
+                    // 	"\n\tavg : " + avgFieldLength,
+                    // 	"\n\tfl : " + fieldLength);
+                }
+                else {
+                    // Constant scoring.
+                    res = docResult.boost;
+                    // console.log(
+                    //  "Constant: " + res,
+                    //  "\n\tboost: " + docResult.boost);
                 }
                 docScore += res;
             }
@@ -2557,6 +2554,7 @@ class Scorer {
         return result;
     }
     static _calculateFieldLength(fieldLength) {
+        // Dummy function to be compatible to lucene in unit tests.
         return fieldLength;
     }
     _getCache(fieldName) {

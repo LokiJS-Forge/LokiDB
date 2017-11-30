@@ -1,19 +1,21 @@
 import {InvertedIndex} from "./inverted_index";
 import {IndexSearcher} from "./index_searcher";
 import {Tokenizer} from "./tokenizer";
-import {ANY, Dict} from "../../common/types";
+import {Dict} from "../../common/types";
 import {PLUGINS} from "../../common/plugin";
+import {Query} from "./query_builder";
+import {ScoreResult} from "./scorer";
 
 export class FullTextSearch {
   private _id: string;
-  private _docs: Set<any>;
+  private _docs: Set<number>;
   private _idxSearcher: IndexSearcher;
   private _invIdxs: Dict<InvertedIndex> = {};
 
   /**
    * Registers the full text search as plugin.
    */
-  static register(): void {
+  public static register(): void {
     PLUGINS["FullTextSearch"] = FullTextSearch;
   }
 
@@ -39,7 +41,7 @@ export class FullTextSearch {
     this._idxSearcher = new IndexSearcher(this._invIdxs, this._docs);
   }
 
-  addDocument(doc: ANY, id: number = doc[this._id]) {
+  public addDocument(doc: object, id: number = doc[this._id]): void {
     let fieldNames = Object.keys(doc);
     for (let i = 0, fieldName; i < fieldNames.length, fieldName = fieldNames[i]; i++) {
       if (this._invIdxs[fieldName] !== undefined) {
@@ -50,7 +52,7 @@ export class FullTextSearch {
     this.setDirty();
   }
 
-  removeDocument(doc: ANY, id: number = doc[this._id]) {
+  public removeDocument(doc: object, id: number = doc[this._id]): void {
     let fieldNames = Object.keys(this._invIdxs);
     for (let i = 0; i < fieldNames.length; i++) {
       this._invIdxs[fieldNames[i]].remove(id);
@@ -59,47 +61,54 @@ export class FullTextSearch {
     this.setDirty();
   }
 
-  updateDocument(doc: ANY, id: number = doc[this._id]) {
+  public updateDocument(doc: object, id: number = doc[this._id]): void {
     this.removeDocument(doc, id);
     this.addDocument(doc, id);
   }
 
-  clear() {
+  public clear(): void {
     for (let id of this._docs) {
       this.removeDocument(null, id);
     }
   }
 
-  search(query: ANY) {
+  public search(query: Query): ScoreResult {
     return this._idxSearcher.search(query);
   }
 
-  toJSON() {
-    let serialized = {};
+  public setDirty(): void {
+    this._idxSearcher.setDirty();
+  }
+
+  public toJSON(): FullTextSearch.Serialization {
+    let serialized = {id: this._id, ii: {}};
     let fieldNames = Object.keys(this._invIdxs);
-    for (let i = 0, fieldName; i < fieldNames.length, fieldName = fieldNames[i]; i++) {
-      serialized[fieldName] = this._invIdxs[fieldName].toJSON();
+    for (let i = 0; i < fieldNames.length; i++) {
+      const fieldName = fieldNames[i];
+      serialized.ii[fieldName] = this._invIdxs[fieldName].toJSON();
     }
     return serialized;
   }
 
-  static fromJSONObject(serialized: ANY, tokenizers: Tokenizer[] = []) {
-    let fts = new FullTextSearch();
-    let fieldNames = Object.keys(serialized);
-    for (let i = 0, fieldName; i < fieldNames.length, fieldName = fieldNames[i]; i++) {
-      fts._invIdxs[fieldName] = InvertedIndex.fromJSONObject(serialized[fieldName], tokenizers[fieldName]);
+  public static fromJSONObject(serialized: FullTextSearch.Serialization, tokenizers: Dict<Tokenizer.FunctionSerialization> = {}): FullTextSearch {
+    let fts = new FullTextSearch([], serialized.id);
+    let fieldNames = Object.keys(serialized.ii);
+    for (let i = 0; i < fieldNames.length; i++) {
+      const fieldName = fieldNames[i];
+      fts._invIdxs[fieldName] = InvertedIndex.fromJSONObject(serialized.ii[fieldName], tokenizers[fieldName]);
     }
     return fts;
-  }
-
-  setDirty() {
-    this._idxSearcher.setDirty();
   }
 }
 
 export namespace FullTextSearch {
   export interface FieldOptions extends InvertedIndex.FieldOptions {
     name: string;
+  }
+
+  export interface Serialization {
+    id: string;
+    ii: Dict<InvertedIndex.Serialization>;
   }
 }
 

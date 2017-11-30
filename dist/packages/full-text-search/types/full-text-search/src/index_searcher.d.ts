@@ -1,6 +1,6 @@
 import { InvertedIndex } from "./inverted_index";
+import { Query } from "./query_builder";
 import { Dict } from "../../common/types";
-export declare type ANY = any;
 /**
  * @hidden
  */
@@ -11,10 +11,10 @@ export declare class IndexSearcher {
     /**
      * @param {object} invIdxs
      */
-    constructor(invIdxs: Dict<InvertedIndex>, docs: ANY);
-    search(query: ANY): {};
+    constructor(invIdxs: Dict<InvertedIndex>, docs: Set<number>);
+    search(query: Query): {};
     setDirty(): void;
     private _recursive(query, doScoring);
-    private _getUnique(values, doScoring, docResults);
-    private _getAll(values, doScoring);
+    private _getUnique(queries, doScoring, docResults);
+    private _getAll(queries, doScoring);
 }
