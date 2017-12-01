@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>IndexSearcher | @lokijs/lokijs-src</title>
+	<title>FuzzyQuery | @lokijs/lokijs-src</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="indexsearcher.html">IndexSearcher</a>
+					<a href="fuzzyquery.html">FuzzyQuery</a>
 				</li>
 			</ul>
-			<h1>Class IndexSearcher</h1>
+			<h1>Interface FuzzyQuery</h1>
 		</div>
 	</div>
 </header>
@@ -68,7 +68,12 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">IndexSearcher</span>
+						<a href="basequery.html" class="tsd-signature-type">BaseQuery</a>
+						<ul class="tsd-hierarchy">
+							<li>
+								<span class="target">FuzzyQuery</span>
+							</li>
+						</ul>
 					</li>
 				</ul>
 			</section>
@@ -77,99 +82,93 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Constructors</h3>
+							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="indexsearcher.html#constructor" class="tsd-kind-icon">constructor</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section ">
-							<h3>Methods</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="indexsearcher.html#search" class="tsd-kind-icon">search</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="indexsearcher.html#setdirty" class="tsd-kind-icon">set<wbr>Dirty</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="fuzzyquery.html#boost" class="tsd-kind-icon">boost</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="fuzzyquery.html#extended" class="tsd-kind-icon">extended</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="fuzzyquery.html#field" class="tsd-kind-icon">field</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="fuzzyquery.html#fuzziness" class="tsd-kind-icon">fuzziness</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="fuzzyquery.html#prefix_length" class="tsd-kind-icon">prefix_<wbr>length</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="fuzzyquery.html#type" class="tsd-kind-icon">type</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="fuzzyquery.html#value" class="tsd-kind-icon">value</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Constructors</h2>
-				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class">
-					<a name="constructor" class="tsd-anchor"></a>
-					<h3>constructor</h3>
-					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Index<wbr>Searcher<span class="tsd-signature-symbol">(</span>invIdxs<span class="tsd-signature-symbol">: </span><a href="../interfaces/dict.html" class="tsd-signature-type">Dict</a><span class="tsd-signature-symbol">&lt;</span><a href="invertedindex.html" class="tsd-signature-type">InvertedIndex</a><span class="tsd-signature-symbol">&gt;</span>, docs<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ANY</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="indexsearcher.html" class="tsd-signature-type">IndexSearcher</a></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/index_searcher.ts#L12">full-text-search/src/index_searcher.ts:12</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>invIdxs: <a href="../interfaces/dict.html" class="tsd-signature-type">Dict</a><span class="tsd-signature-symbol">&lt;</span><a href="invertedindex.html" class="tsd-signature-type">InvertedIndex</a><span class="tsd-signature-symbol">&gt;</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<div class="lead">
-										</div>
-									</div>
-								</li>
-								<li>
-									<h5>docs: <span class="tsd-signature-type">ANY</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="indexsearcher.html" class="tsd-signature-type">IndexSearcher</a></h4>
-						</li>
-					</ul>
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+					<a name="boost" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> boost</h3>
+					<div class="tsd-signature tsd-kind-icon">boost<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from <a href="basequery.html">BaseQuery</a>.<a href="basequery.html#boost">boost</a></p>
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L44">full-text-search/src/query_builder.ts:44</a></li>
+						</ul>
+					</aside>
 				</section>
-			</section>
-			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="search" class="tsd-anchor"></a>
-					<h3>search</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">search<span class="tsd-signature-symbol">(</span>query<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ANY</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/index_searcher.ts#L23">full-text-search/src/index_searcher.ts:23</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>query: <span class="tsd-signature-type">ANY</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">object</span></h4>
-							<ul class="tsd-parameters">
-							</ul>
-						</li>
-					</ul>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="extended" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> extended</h3>
+					<div class="tsd-signature tsd-kind-icon">extended<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L252">full-text-search/src/query_builder.ts:252</a></li>
+						</ul>
+					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="setdirty" class="tsd-anchor"></a>
-					<h3>set<wbr>Dirty</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">set<wbr>Dirty<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/index_searcher.ts#L34">full-text-search/src/index_searcher.ts:34</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
-						</li>
-					</ul>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="field" class="tsd-anchor"></a>
+					<h3>field</h3>
+					<div class="tsd-signature tsd-kind-icon">field<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L248">full-text-search/src/query_builder.ts:248</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="fuzziness" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> fuzziness</h3>
+					<div class="tsd-signature tsd-kind-icon">fuzziness<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"AUTO"</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L250">full-text-search/src/query_builder.ts:250</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="prefix_length" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> prefix_<wbr>length</h3>
+					<div class="tsd-signature tsd-kind-icon">prefix_<wbr>length<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L251">full-text-search/src/query_builder.ts:251</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+					<a name="type" class="tsd-anchor"></a>
+					<h3>type</h3>
+					<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from <a href="basequery.html">BaseQuery</a>.<a href="basequery.html#type">type</a></p>
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L43">full-text-search/src/query_builder.ts:43</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="value" class="tsd-anchor"></a>
+					<h3>value</h3>
+					<div class="tsd-signature tsd-kind-icon">value<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L249">full-text-search/src/query_builder.ts:249</a></li>
+						</ul>
+					</aside>
 				</section>
 			</section>
 		</div>
@@ -185,17 +184,29 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-class">
-						<a href="indexsearcher.html" class="tsd-kind-icon">Index<wbr>Searcher</a>
+					<li class="current tsd-kind-interface">
+						<a href="fuzzyquery.html" class="tsd-kind-icon">Fuzzy<wbr>Query</a>
 						<ul>
-							<li class=" tsd-kind-constructor tsd-parent-kind-class">
-								<a href="indexsearcher.html#constructor" class="tsd-kind-icon">constructor</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+								<a href="fuzzyquery.html#boost" class="tsd-kind-icon">boost</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="indexsearcher.html#search" class="tsd-kind-icon">search</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="fuzzyquery.html#extended" class="tsd-kind-icon">extended</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="indexsearcher.html#setdirty" class="tsd-kind-icon">set<wbr>Dirty</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="fuzzyquery.html#field" class="tsd-kind-icon">field</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="fuzzyquery.html#fuzziness" class="tsd-kind-icon">fuzziness</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="fuzzyquery.html#prefix_length" class="tsd-kind-icon">prefix_<wbr>length</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+								<a href="fuzzyquery.html#type" class="tsd-kind-icon">type</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="fuzzyquery.html#value" class="tsd-kind-icon">value</a>
 							</li>
 						</ul>
 					</li>

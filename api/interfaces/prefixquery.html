@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>FieldOptions | @lokijs/lokijs-src</title>
+	<title>PrefixQuery | @lokijs/lokijs-src</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,13 +54,10 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../classes/invertedindex.html">InvertedIndex</a>
-				</li>
-				<li>
-					<a href="invertedindex.fieldoptions.html">FieldOptions</a>
+					<a href="prefixquery.html">PrefixQuery</a>
 				</li>
 			</ul>
-			<h1>Interface FieldOptions</h1>
+			<h1>Interface PrefixQuery</h1>
 		</div>
 	</div>
 </header>
@@ -71,10 +68,10 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">FieldOptions</span>
+						<a href="basequery.html" class="tsd-signature-type">BaseQuery</a>
 						<ul class="tsd-hierarchy">
 							<li>
-								<a href="fulltextsearch.fieldoptions.html" class="tsd-signature-type">FieldOptions</a>
+								<span class="target">PrefixQuery</span>
 							</li>
 						</ul>
 					</li>
@@ -87,9 +84,11 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="invertedindex.fieldoptions.html#optimizechanges" class="tsd-kind-icon">optimize<wbr>Changes</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="invertedindex.fieldoptions.html#store" class="tsd-kind-icon">store</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="invertedindex.fieldoptions.html#tokenizer" class="tsd-kind-icon">tokenizer</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="prefixquery.html#boost" class="tsd-kind-icon">boost</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="prefixquery.html#enable_scoring" class="tsd-kind-icon">enable_<wbr>scoring</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="prefixquery.html#field" class="tsd-kind-icon">field</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="prefixquery.html#type" class="tsd-kind-icon">type</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="prefixquery.html#value" class="tsd-kind-icon">value</a></li>
 							</ul>
 						</section>
 					</div>
@@ -97,33 +96,55 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="optimizechanges" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> optimize<wbr>Changes</h3>
-					<div class="tsd-signature tsd-kind-icon">optimize<wbr>Changes<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+					<a name="boost" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> boost</h3>
+					<div class="tsd-signature tsd-kind-icon">boost<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
+						<p>Inherited from <a href="basequery.html">BaseQuery</a>.<a href="basequery.html#boost">boost</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/inverted_index.ts#L361">full-text-search/src/inverted_index.ts:361</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L44">full-text-search/src/query_builder.ts:44</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="store" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> store</h3>
-					<div class="tsd-signature tsd-kind-icon">store<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<a name="enable_scoring" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> enable_<wbr>scoring</h3>
+					<div class="tsd-signature tsd-kind-icon">enable_<wbr>scoring<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/inverted_index.ts#L360">full-text-search/src/inverted_index.ts:360</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L298">full-text-search/src/query_builder.ts:298</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="tokenizer" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> tokenizer</h3>
-					<div class="tsd-signature tsd-kind-icon">tokenizer<span class="tsd-signature-symbol">:</span> <a href="../classes/tokenizer.html" class="tsd-signature-type">Tokenizer</a></div>
+					<a name="field" class="tsd-anchor"></a>
+					<h3>field</h3>
+					<div class="tsd-signature tsd-kind-icon">field<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/inverted_index.ts#L362">full-text-search/src/inverted_index.ts:362</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L296">full-text-search/src/query_builder.ts:296</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+					<a name="type" class="tsd-anchor"></a>
+					<h3>type</h3>
+					<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from <a href="basequery.html">BaseQuery</a>.<a href="basequery.html#type">type</a></p>
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L43">full-text-search/src/query_builder.ts:43</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="value" class="tsd-anchor"></a>
+					<h3>value</h3>
+					<div class="tsd-signature tsd-kind-icon">value<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L297">full-text-search/src/query_builder.ts:297</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -141,70 +162,23 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-class">
-						<a href="../classes/invertedindex.html" class="tsd-kind-icon">Inverted<wbr>Index</a>
+					<li class="current tsd-kind-interface">
+						<a href="prefixquery.html" class="tsd-kind-icon">Prefix<wbr>Query</a>
 						<ul>
-							<li class="current tsd-kind-interface tsd-parent-kind-class">
-								<a href="invertedindex.fieldoptions.html" class="tsd-kind-icon">Field<wbr>Options</a>
-								<ul>
-									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="invertedindex.fieldoptions.html#optimizechanges" class="tsd-kind-icon">optimize<wbr>Changes</a>
-									</li>
-									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="invertedindex.fieldoptions.html#store" class="tsd-kind-icon">store</a>
-									</li>
-									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="invertedindex.fieldoptions.html#tokenizer" class="tsd-kind-icon">tokenizer</a>
-									</li>
-								</ul>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+								<a href="prefixquery.html#boost" class="tsd-kind-icon">boost</a>
 							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-class">
-								<a href="invertedindex.index.html" class="tsd-kind-icon">Index</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="prefixquery.html#enable_scoring" class="tsd-kind-icon">enable_<wbr>scoring</a>
 							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-class">
-								<a href="invertedindex.serialization.html" class="tsd-kind-icon">Serialization</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="prefixquery.html#field" class="tsd-kind-icon">field</a>
 							</li>
-							<li class=" tsd-kind-constructor tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#constructor" class="tsd-kind-icon">constructor</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+								<a href="prefixquery.html#type" class="tsd-kind-icon">type</a>
 							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#documentcount" class="tsd-kind-icon">document<wbr>Count</a>
-							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#documentstore" class="tsd-kind-icon">document<wbr>Store</a>
-							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#root" class="tsd-kind-icon">root</a>
-							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#store" class="tsd-kind-icon">store</a>
-							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#tokenizer" class="tsd-kind-icon">tokenizer</a>
-							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#totalfieldlength" class="tsd-kind-icon">total<wbr>Field<wbr>Length</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#insert" class="tsd-kind-icon">insert</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#remove" class="tsd-kind-icon">remove</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#tojson" class="tsd-kind-icon">toJSON</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
-								<a href="../classes/invertedindex.html#extendtermindex" class="tsd-kind-icon">extend<wbr>Term<wbr>Index</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
-								<a href="../classes/invertedindex.html#fromjsonobject" class="tsd-kind-icon">fromJSONObject</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
-								<a href="../classes/invertedindex.html#getnexttermindex" class="tsd-kind-icon">get<wbr>Next<wbr>Term<wbr>Index</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
-								<a href="../classes/invertedindex.html#gettermindex" class="tsd-kind-icon">get<wbr>Term<wbr>Index</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="prefixquery.html#value" class="tsd-kind-icon">value</a>
 							</li>
 						</ul>
 					</li>

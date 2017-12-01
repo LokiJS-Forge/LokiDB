@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>CopyOptions | @lokijs/lokijs-src</title>
+	<title>BaseQuery | @lokijs/lokijs-src</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,13 +54,10 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../classes/loki.html">Loki</a>
-				</li>
-				<li>
-					<a href="loki.copyoptions.html">CopyOptions</a>
+					<a href="basequery.html">BaseQuery</a>
 				</li>
 			</ul>
-			<h1>Interface CopyOptions</h1>
+			<h1>Interface BaseQuery</h1>
 		</div>
 	</div>
 </header>
@@ -71,7 +68,39 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">CopyOptions</span>
+						<span class="target">BaseQuery</span>
+						<ul class="tsd-hierarchy">
+							<li>
+								<a href="termquery.html" class="tsd-signature-type">TermQuery</a>
+							</li>
+							<li>
+								<a href="termsquery.html" class="tsd-signature-type">TermsQuery</a>
+							</li>
+							<li>
+								<a href="wildcardquery.html" class="tsd-signature-type">WildcardQuery</a>
+							</li>
+							<li>
+								<a href="fuzzyquery.html" class="tsd-signature-type">FuzzyQuery</a>
+							</li>
+							<li>
+								<a href="prefixquery.html" class="tsd-signature-type">PrefixQuery</a>
+							</li>
+							<li>
+								<a href="existsquery.html" class="tsd-signature-type">ExistsQuery</a>
+							</li>
+							<li>
+								<a href="matchquery.html" class="tsd-signature-type">MatchQuery</a>
+							</li>
+							<li>
+								<a href="matchqueryall.html" class="tsd-signature-type">MatchQueryAll</a>
+							</li>
+							<li>
+								<a href="constantscorequery.html" class="tsd-signature-type">ConstantScoreQuery</a>
+							</li>
+							<li>
+								<a href="boolquery.html" class="tsd-signature-type">BoolQuery</a>
+							</li>
+						</ul>
 					</li>
 				</ul>
 			</section>
@@ -82,7 +111,8 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="loki.copyoptions.html#removenonserializable" class="tsd-kind-icon">remove<wbr>Non<wbr>Serializable</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="basequery.html#boost" class="tsd-kind-icon">boost</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="basequery.html#type" class="tsd-kind-icon">type</a></li>
 							</ul>
 						</section>
 					</div>
@@ -91,12 +121,22 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="removenonserializable" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> remove<wbr>Non<wbr>Serializable</h3>
-					<div class="tsd-signature tsd-kind-icon">remove<wbr>Non<wbr>Serializable<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<a name="boost" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> boost</h3>
+					<div class="tsd-signature tsd-kind-icon">boost<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L1067">loki/src/loki.ts:1067</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L44">full-text-search/src/query_builder.ts:44</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="type" class="tsd-anchor"></a>
+					<h3>type</h3>
+					<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L43">full-text-search/src/query_builder.ts:43</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -114,16 +154,14 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-class">
-						<a href="../classes/loki.html" class="tsd-kind-icon">Loki</a>
+					<li class="current tsd-kind-interface">
+						<a href="basequery.html" class="tsd-kind-icon">Base<wbr>Query</a>
 						<ul>
-							<li class="current tsd-kind-interface tsd-parent-kind-class">
-								<a href="loki.copyoptions.html" class="tsd-kind-icon">Copy<wbr>Options</a>
-								<ul>
-									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="loki.copyoptions.html#removenonserializable" class="tsd-kind-icon">remove<wbr>Non<wbr>Serializable</a>
-									</li>
-								</ul>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="basequery.html#boost" class="tsd-kind-icon">boost</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="basequery.html#type" class="tsd-kind-icon">type</a>
 							</li>
 						</ul>
 					</li>

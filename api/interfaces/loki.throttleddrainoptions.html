@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Index | @lokijs/lokijs-src</title>
+	<title>ThrottledDrainOptions | @lokijs/lokijs-src</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,13 +54,13 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../classes/invertedindex.html">InvertedIndex</a>
+					<a href="../classes/loki.html">Loki</a>
 				</li>
 				<li>
-					<a href="invertedindex.index.html">Index</a>
+					<a href="loki.throttleddrainoptions.html">ThrottledDrainOptions</a>
 				</li>
 			</ul>
-			<h1>Interface Index</h1>
+			<h1>Interface ThrottledDrainOptions</h1>
 		</div>
 	</div>
 </header>
@@ -71,7 +71,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">Index</span>
+						<span class="target">ThrottledDrainOptions</span>
 					</li>
 				</ul>
 			</section>
@@ -82,8 +82,10 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="invertedindex.index.html#dc" class="tsd-kind-icon">dc</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="invertedindex.index.html#df" class="tsd-kind-icon">df</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="loki.throttleddrainoptions.html#recursivewait" class="tsd-kind-icon">recursive<wbr>Wait</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="loki.throttleddrainoptions.html#recursivewaitlimit" class="tsd-kind-icon">recursive<wbr>Wait<wbr>Limit</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="loki.throttleddrainoptions.html#recursivewaitlimitduration" class="tsd-kind-icon">recursive<wbr>Wait<wbr>Limit<wbr>Duration</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="loki.throttleddrainoptions.html#started" class="tsd-kind-icon">started</a></li>
 							</ul>
 						</section>
 					</div>
@@ -92,22 +94,42 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="dc" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> dc</h3>
-					<div class="tsd-signature tsd-kind-icon">dc<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+					<a name="recursivewait" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> recursive<wbr>Wait</h3>
+					<div class="tsd-signature tsd-kind-icon">recursive<wbr>Wait<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/inverted_index.ts#L366">full-text-search/src/inverted_index.ts:366</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L1088">loki/src/loki.ts:1088</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="df" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> df</h3>
-					<div class="tsd-signature tsd-kind-icon">df<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<a name="recursivewaitlimit" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> recursive<wbr>Wait<wbr>Limit</h3>
+					<div class="tsd-signature tsd-kind-icon">recursive<wbr>Wait<wbr>Limit<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/inverted_index.ts#L367">full-text-search/src/inverted_index.ts:367</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L1089">loki/src/loki.ts:1089</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="recursivewaitlimitduration" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> recursive<wbr>Wait<wbr>Limit<wbr>Duration</h3>
+					<div class="tsd-signature tsd-kind-icon">recursive<wbr>Wait<wbr>Limit<wbr>Duration<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L1090">loki/src/loki.ts:1090</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="started" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> started</h3>
+					<div class="tsd-signature tsd-kind-icon">started<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Date</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L1091">loki/src/loki.ts:1091</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -126,66 +148,24 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class">
-						<a href="../classes/invertedindex.html" class="tsd-kind-icon">Inverted<wbr>Index</a>
+						<a href="../classes/loki.html" class="tsd-kind-icon">Loki</a>
 						<ul>
-							<li class=" tsd-kind-interface tsd-parent-kind-class">
-								<a href="invertedindex.fieldoptions.html" class="tsd-kind-icon">Field<wbr>Options</a>
-							</li>
 							<li class="current tsd-kind-interface tsd-parent-kind-class">
-								<a href="invertedindex.index.html" class="tsd-kind-icon">Index</a>
+								<a href="loki.throttleddrainoptions.html" class="tsd-kind-icon">Throttled<wbr>Drain<wbr>Options</a>
 								<ul>
 									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="invertedindex.index.html#dc" class="tsd-kind-icon">dc</a>
+										<a href="loki.throttleddrainoptions.html#recursivewait" class="tsd-kind-icon">recursive<wbr>Wait</a>
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="invertedindex.index.html#df" class="tsd-kind-icon">df</a>
+										<a href="loki.throttleddrainoptions.html#recursivewaitlimit" class="tsd-kind-icon">recursive<wbr>Wait<wbr>Limit</a>
+									</li>
+									<li class=" tsd-kind-property tsd-parent-kind-interface">
+										<a href="loki.throttleddrainoptions.html#recursivewaitlimitduration" class="tsd-kind-icon">recursive<wbr>Wait<wbr>Limit<wbr>Duration</a>
+									</li>
+									<li class=" tsd-kind-property tsd-parent-kind-interface">
+										<a href="loki.throttleddrainoptions.html#started" class="tsd-kind-icon">started</a>
 									</li>
 								</ul>
-							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-class">
-								<a href="invertedindex.serialization.html" class="tsd-kind-icon">Serialization</a>
-							</li>
-							<li class=" tsd-kind-constructor tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#constructor" class="tsd-kind-icon">constructor</a>
-							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#documentcount" class="tsd-kind-icon">document<wbr>Count</a>
-							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#documentstore" class="tsd-kind-icon">document<wbr>Store</a>
-							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#root" class="tsd-kind-icon">root</a>
-							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#store" class="tsd-kind-icon">store</a>
-							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#tokenizer" class="tsd-kind-icon">tokenizer</a>
-							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#totalfieldlength" class="tsd-kind-icon">total<wbr>Field<wbr>Length</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#insert" class="tsd-kind-icon">insert</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#remove" class="tsd-kind-icon">remove</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#tojson" class="tsd-kind-icon">toJSON</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
-								<a href="../classes/invertedindex.html#extendtermindex" class="tsd-kind-icon">extend<wbr>Term<wbr>Index</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
-								<a href="../classes/invertedindex.html#fromjsonobject" class="tsd-kind-icon">fromJSONObject</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
-								<a href="../classes/invertedindex.html#getnexttermindex" class="tsd-kind-icon">get<wbr>Next<wbr>Term<wbr>Index</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
-								<a href="../classes/invertedindex.html#gettermindex" class="tsd-kind-icon">get<wbr>Term<wbr>Index</a>
 							</li>
 						</ul>
 					</li>

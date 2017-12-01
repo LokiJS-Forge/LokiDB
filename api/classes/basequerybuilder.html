@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Scorer | @lokijs/lokijs-src</title>
+	<title>BaseQueryBuilder | @lokijs/lokijs-src</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,21 +54,63 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="scorer.html">Scorer</a>
+					<a href="basequerybuilder.html">BaseQueryBuilder</a>
 				</li>
 			</ul>
-			<h1>Class Scorer</h1>
+			<h1>Class BaseQueryBuilder</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>The base query class to enable boost to a query type.</p>
+					</div>
+				</div>
+			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">Scorer</span>
+						<span class="target">BaseQueryBuilder</span>
+						<ul class="tsd-hierarchy">
+							<li>
+								<a href="termquerybuilder.html" class="tsd-signature-type">TermQueryBuilder</a>
+							</li>
+							<li>
+								<a href="termsquerybuilder.html" class="tsd-signature-type">TermsQueryBuilder</a>
+							</li>
+							<li>
+								<a href="wildcardquerybuilder.html" class="tsd-signature-type">WildcardQueryBuilder</a>
+							</li>
+							<li>
+								<a href="fuzzyquerybuilder.html" class="tsd-signature-type">FuzzyQueryBuilder</a>
+							</li>
+							<li>
+								<a href="prefixquerybuilder.html" class="tsd-signature-type">PrefixQueryBuilder</a>
+							</li>
+							<li>
+								<a href="existsquerybuilder.html" class="tsd-signature-type">ExistsQueryBuilder</a>
+							</li>
+							<li>
+								<a href="matchquerybuilder.html" class="tsd-signature-type">MatchQueryBuilder</a>
+							</li>
+							<li>
+								<a href="matchallquerybuilder.html" class="tsd-signature-type">MatchAllQueryBuilder</a>
+							</li>
+							<li>
+								<a href="constantscorequerybuilder.html" class="tsd-signature-type">ConstantScoreQueryBuilder</a>
+							</li>
+							<li>
+								<a href="boolquerybuilder.html" class="tsd-signature-type">BoolQueryBuilder</a>
+							</li>
+							<li>
+								<a href="arrayquerybuilder.html" class="tsd-signature-type">ArrayQueryBuilder</a>
+							</li>
+						</ul>
 					</li>
 				</ul>
 			</section>
@@ -79,16 +121,20 @@
 						<section class="tsd-index-section ">
 							<h3>Constructors</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="scorer.html#constructor" class="tsd-kind-icon">constructor</a></li>
+								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="basequerybuilder.html#constructor" class="tsd-kind-icon">constructor</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section tsd-is-private-protected">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><a href="basequerybuilder.html#_data" class="tsd-kind-icon">_data</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="scorer.html#finalscore" class="tsd-kind-icon">final<wbr>Score</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="scorer.html#prepare" class="tsd-kind-icon">prepare</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="scorer.html#scoreconstant" class="tsd-kind-icon">score<wbr>Constant</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="scorer.html#setdirty" class="tsd-kind-icon">set<wbr>Dirty</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="basequerybuilder.html#boost" class="tsd-kind-icon">boost</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="basequerybuilder.html#build" class="tsd-kind-icon">build</a></li>
 							</ul>
 						</section>
 					</div>
@@ -100,137 +146,111 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Scorer<span class="tsd-signature-symbol">(</span>invIdxs<span class="tsd-signature-symbol">: </span><a href="../interfaces/dict.html" class="tsd-signature-type">Dict</a><span class="tsd-signature-symbol">&lt;</span><a href="invertedindex.html" class="tsd-signature-type">InvertedIndex</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="scorer.html" class="tsd-signature-type">Scorer</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Base<wbr>Query<wbr>Builder<span class="tsd-signature-symbol">(</span>type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, data<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="basequerybuilder.html" class="tsd-signature-type">BaseQueryBuilder</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/scorer.ts#L8">full-text-search/src/scorer.ts:8</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L5">full-text-search/src/query_builder.ts:5</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>invIdxs: <a href="../interfaces/dict.html" class="tsd-signature-type">Dict</a><span class="tsd-signature-symbol">&lt;</span><a href="invertedindex.html" class="tsd-signature-type">InvertedIndex</a><span class="tsd-signature-symbol">&gt;</span></h5>
+									<h5>type: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>the type name of the query</p>
+										</div>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> data: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+										</div>
+									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="scorer.html" class="tsd-signature-type">Scorer</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="basequerybuilder.html" class="tsd-signature-type">BaseQueryBuilder</a></h4>
 						</li>
 					</ul>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group tsd-is-private-protected">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-protected">
+					<a name="_data" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> _data</h3>
+					<div class="tsd-signature tsd-kind-icon">_data<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L5">full-text-search/src/query_builder.ts:5</a></li>
+						</ul>
+					</aside>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="finalscore" class="tsd-anchor"></a>
-					<h3>final<wbr>Score</h3>
+					<a name="boost" class="tsd-anchor"></a>
+					<h3>boost</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">final<wbr>Score<span class="tsd-signature-symbol">(</span>query<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ANY</span>, docResults<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span></li>
+						<li class="tsd-signature tsd-kind-icon">boost<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/scorer.ts#L50">full-text-search/src/scorer.ts:50</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L25">full-text-search/src/query_builder.ts:25</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Boosts the query result.</p>
+								</div>
+								<p>See also <a href="https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/BoostQuery.html" class="external">Lucene#BoostQuery</a>
+								and <a href="https://www.elastic.co/guide/en/elasticsearch/reference/5.2/mapping-boost.html" class="external">Elasticsearch#boost</a>.</p>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>query: <span class="tsd-signature-type">ANY</span></h5>
-								</li>
-								<li>
-									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> docResults: <span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
+									<h5>value: <span class="tsd-signature-type">number</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>the positive boost</p>
+									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">object</span></h4>
-							<ul class="tsd-parameters">
-							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">this</span></h4>
+							<p>object itself for cascading</p>
 						</li>
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="prepare" class="tsd-anchor"></a>
-					<h3>prepare</h3>
+					<a name="build" class="tsd-anchor"></a>
+					<h3>build</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">prepare<span class="tsd-signature-symbol">(</span>fieldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, boost<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, termIdx<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ANY</span>, doScoring<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span>, docResults<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">object</span>, term<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span></li>
+						<li class="tsd-signature tsd-kind-icon">build<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/scorer.ts#L18">full-text-search/src/scorer.ts:18</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L37">full-text-search/src/query_builder.ts:37</a></li>
 								</ul>
 							</aside>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>fieldName: <span class="tsd-signature-type">string</span></h5>
-								</li>
-								<li>
-									<h5>boost: <span class="tsd-signature-type">number</span></h5>
-								</li>
-								<li>
-									<h5>termIdx: <span class="tsd-signature-type">ANY</span></h5>
-								</li>
-								<li>
-									<h5>doScoring: <span class="tsd-signature-type">boolean</span></h5>
-								</li>
-								<li>
-									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> docResults: <span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
-								</li>
-								<li>
-									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> term: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;null</span></h5>
-								</li>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Build the final query.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+							<ul>
+								<li>the final query</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">object</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="scoreconstant" class="tsd-anchor"></a>
-					<h3>score<wbr>Constant</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">score<wbr>Constant<span class="tsd-signature-symbol">(</span>boost<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, docId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, docResults<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/scorer.ts#L42">full-text-search/src/scorer.ts:42</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>boost: <span class="tsd-signature-type">number</span></h5>
-								</li>
-								<li>
-									<h5>docId: <span class="tsd-signature-type">string</span></h5>
-								</li>
-								<li>
-									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> docResults: <span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">object</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="setdirty" class="tsd-anchor"></a>
-					<h3>set<wbr>Dirty</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">set<wbr>Dirty<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/scorer.ts#L14">full-text-search/src/scorer.ts:14</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -249,22 +269,19 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class">
-						<a href="scorer.html" class="tsd-kind-icon">Scorer</a>
+						<a href="basequerybuilder.html" class="tsd-kind-icon">Base<wbr>Query<wbr>Builder</a>
 						<ul>
 							<li class=" tsd-kind-constructor tsd-parent-kind-class">
-								<a href="scorer.html#constructor" class="tsd-kind-icon">constructor</a>
+								<a href="basequerybuilder.html#constructor" class="tsd-kind-icon">constructor</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-protected">
+								<a href="basequerybuilder.html#_data" class="tsd-kind-icon">_data</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="scorer.html#finalscore" class="tsd-kind-icon">final<wbr>Score</a>
+								<a href="basequerybuilder.html#boost" class="tsd-kind-icon">boost</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="scorer.html#prepare" class="tsd-kind-icon">prepare</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="scorer.html#scoreconstant" class="tsd-kind-icon">score<wbr>Constant</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="scorer.html#setdirty" class="tsd-kind-icon">set<wbr>Dirty</a>
+								<a href="basequerybuilder.html#build" class="tsd-kind-icon">build</a>
 							</li>
 						</ul>
 					</li>

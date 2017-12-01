@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>FuzzyQuery | @lokijs/lokijs-src</title>
+	<title>TermQueryBuilder | @lokijs/lokijs-src</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="fuzzyquery.html">FuzzyQuery</a>
+					<a href="termquerybuilder.html">TermQueryBuilder</a>
 				</li>
 			</ul>
-			<h1>Class FuzzyQuery</h1>
+			<h1>Class TermQueryBuilder</h1>
 		</div>
 	</div>
 </header>
@@ -67,32 +67,20 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>A query which finds documents where the fuzzy term can be transformed into an existing document field term within a
-							given edit distance.
-						(<a href="https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance" class="external">Damerau–Levenshtein distance</a>).</p>
+						<p>A query which finds documents where a document field contains a term.</p>
 					</div>
-					<p>The edit distance is the minimum number of an insertion, deletion or substitution of a single character
-					or a transposition of two adjacent characters.</p>
-					<ul>
-						<li>To set the maximal allowed edit distance, use {@link FuzzyQuery#fuzziness} (default is AUTO).</li>
-						<li>To set the initial word length, which should ignored for fuzziness, use {@link FuzzyQuery#prefixLength}.</li>
-						<li>To include longer document field terms than the fuzzy term and edit distance together, use
-						{@link FuzzyQuery#extended}.</li>
-					</ul>
-					<p>See also <a href="https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/FuzzyQuery.html" class="external">Lucene#FuzzyQuery</a>
-					and <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-fuzzy-query.html" class="external">Elasticsearch#FuzzyQuery</a>.</p>
+					<p>See also <a href="https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/TermQuery.html" class="external">Lucene#TermQueryBuilder</a>
+					and <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-term-query.html" class="external">Elasticsearch#TermQueryBuilder</a>.</p>
 					<dl class="tsd-comment-tags">
 						<dt>example</dt>
 						<dd><p>new QueryBuilder()
-								.fuzzy(&quot;surname&quot;, &quot;einsten&quot;)
-								.fuzziness(3)
-								.prefixLength(3)
+								.term(&quot;name&quot;, &quot;infinity&quot;])
 								.build();
 								// The resulting documents:
-							// contains the fuzzy surname einstn (like Einstein or Einst but not Eisstein or Insten)</p>
+							// contains the term infinity</p>
 						</dd>
 						<dt>extends</dt>
-						<dd><p>BaseQuery</p>
+						<dd><p>BaseQueryBuilder</p>
 						</dd>
 					</dl>
 				</div>
@@ -101,10 +89,10 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<a href="basequery.html" class="tsd-signature-type">BaseQuery</a>
+						<a href="basequerybuilder.html" class="tsd-signature-type">BaseQueryBuilder</a>
 						<ul class="tsd-hierarchy">
 							<li>
-								<span class="target">FuzzyQuery</span>
+								<span class="target">TermQueryBuilder</span>
 							</li>
 						</ul>
 					</li>
@@ -117,23 +105,20 @@
 						<section class="tsd-index-section ">
 							<h3>Constructors</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite"><a href="fuzzyquery.html#constructor" class="tsd-kind-icon">constructor</a></li>
+								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite"><a href="termquerybuilder.html#constructor" class="tsd-kind-icon">constructor</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section tsd-is-inherited tsd-is-private-protected">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="fuzzyquery.html#_data" class="tsd-kind-icon">_data</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="termquerybuilder.html#_data" class="tsd-kind-icon">_data</a></li>
 							</ul>
 						</section>
-						<section class="tsd-index-section ">
+						<section class="tsd-index-section tsd-is-inherited">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="fuzzyquery.html#boost" class="tsd-kind-icon">boost</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="fuzzyquery.html#build" class="tsd-kind-icon">build</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="fuzzyquery.html#extended" class="tsd-kind-icon">extended</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="fuzzyquery.html#fuzziness" class="tsd-kind-icon">fuzziness</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="fuzzyquery.html#prefixlength" class="tsd-kind-icon">prefix<wbr>Length</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="termquerybuilder.html#boost" class="tsd-kind-icon">boost</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="termquerybuilder.html#build" class="tsd-kind-icon">build</a></li>
 							</ul>
 						</section>
 					</div>
@@ -145,14 +130,14 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Fuzzy<wbr>Query<span class="tsd-signature-symbol">(</span>field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, fuzzy<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, data<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">ANY</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="fuzzyquery.html" class="tsd-signature-type">FuzzyQuery</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Term<wbr>Query<wbr>Builder<span class="tsd-signature-symbol">(</span>field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, term<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, data<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="termquerybuilder.html" class="tsd-signature-type">TermQueryBuilder</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Overrides <a href="basequery.html">BaseQuery</a>.<a href="basequery.html#constructor">constructor</a></p>
+								<p>Overrides <a href="basequerybuilder.html">BaseQueryBuilder</a>.<a href="basequerybuilder.html#constructor">constructor</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L173">full-text-search/src/query_builder.ts:173</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L62">full-text-search/src/query_builder.ts:62</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -168,22 +153,22 @@
 									</div>
 								</li>
 								<li>
-									<h5>fuzzy: <span class="tsd-signature-type">string</span></h5>
+									<h5>term: <span class="tsd-signature-type">string</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<div class="lead">
-											<p>the fuzzy term</p>
+											<p>the term</p>
 										</div>
 									</div>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> data: <span class="tsd-signature-type">ANY</span><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> data: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<div class="lead">
 										</div>
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="fuzzyquery.html" class="tsd-signature-type">FuzzyQuery</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="termquerybuilder.html" class="tsd-signature-type">TermQueryBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -193,16 +178,16 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
 					<a name="_data" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagProtected">Protected</span> _data</h3>
-					<div class="tsd-signature tsd-kind-icon">_data<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ANY</span></div>
+					<div class="tsd-signature tsd-kind-icon">_data<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="basequery.html">BaseQuery</a>.<a href="basequery.html#_data">_data</a></p>
+						<p>Inherited from <a href="basequerybuilder.html">BaseQueryBuilder</a>.<a href="basequerybuilder.html#_data">_data</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L7">full-text-search/src/query_builder.ts:7</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L5">full-text-search/src/query_builder.ts:5</a></li>
 						</ul>
 					</aside>
 				</section>
 			</section>
-			<section class="tsd-panel-group tsd-member-group ">
+			<section class="tsd-panel-group tsd-member-group tsd-is-inherited">
 				<h2>Methods</h2>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
 					<a name="boost" class="tsd-anchor"></a>
@@ -213,9 +198,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="basequery.html">BaseQuery</a>.<a href="basequery.html#boost">boost</a></p>
+								<p>Inherited from <a href="basequerybuilder.html">BaseQueryBuilder</a>.<a href="basequerybuilder.html#boost">boost</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L27">full-text-search/src/query_builder.ts:27</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L25">full-text-search/src/query_builder.ts:25</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -248,9 +233,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="basequery.html">BaseQuery</a>.<a href="basequery.html#build">build</a></p>
+								<p>Inherited from <a href="basequerybuilder.html">BaseQueryBuilder</a>.<a href="basequerybuilder.html#build">build</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L39">full-text-search/src/query_builder.ts:39</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L37">full-text-search/src/query_builder.ts:37</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -262,112 +247,6 @@
 							<ul>
 								<li>the final query</li>
 							</ul>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="extended" class="tsd-anchor"></a>
-					<h3>extended</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">extended<span class="tsd-signature-symbol">(</span>extended<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L222">full-text-search/src/query_builder.ts:222</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>This flag allows longer document field terms than the actual fuzzy.</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>extended: <span class="tsd-signature-type">boolean</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>flag to enable or disable extended search</p>
-									</div>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">this</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="fuzziness" class="tsd-anchor"></a>
-					<h3>fuzziness</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">fuzziness<span class="tsd-signature-symbol">(</span>fuzziness<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L196">full-text-search/src/query_builder.ts:196</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Sets the maximal allowed fuzziness.</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>fuzziness: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>the edit distance as number or AUTO</p>
-										<p>AUTO generates an edit distance based on the length of the term:</p>
-										<ul>
-											<li>0..2 -&gt; must match exactly</li>
-											<li>3..5 -&gt; one edit allowed</li>
-											<li><blockquote>
-													<p>5 two edits allowed</p>
-												</blockquote>
-											</li>
-										</ul>
-									</div>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">this</span></h4>
-							<ul>
-								<li>object itself for cascading</li>
-							</ul>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="prefixlength" class="tsd-anchor"></a>
-					<h3>prefix<wbr>Length</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">prefix<wbr>Length<span class="tsd-signature-symbol">(</span>prefixLength<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L209">full-text-search/src/query_builder.ts:209</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Sets the initial word length.</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>prefixLength: <span class="tsd-signature-type">number</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>the positive prefix length</p>
-									</div>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">this</span></h4>
-							<p>object itself for cascading</p>
 						</li>
 					</ul>
 				</section>
@@ -386,28 +265,19 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class">
-						<a href="fuzzyquery.html" class="tsd-kind-icon">Fuzzy<wbr>Query</a>
+						<a href="termquerybuilder.html" class="tsd-kind-icon">Term<wbr>Query<wbr>Builder</a>
 						<ul>
 							<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite">
-								<a href="fuzzyquery.html#constructor" class="tsd-kind-icon">constructor</a>
+								<a href="termquerybuilder.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
-								<a href="fuzzyquery.html#_data" class="tsd-kind-icon">_data</a>
+								<a href="termquerybuilder.html#_data" class="tsd-kind-icon">_data</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="fuzzyquery.html#boost" class="tsd-kind-icon">boost</a>
+								<a href="termquerybuilder.html#boost" class="tsd-kind-icon">boost</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="fuzzyquery.html#build" class="tsd-kind-icon">build</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="fuzzyquery.html#extended" class="tsd-kind-icon">extended</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="fuzzyquery.html#fuzziness" class="tsd-kind-icon">fuzziness</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="fuzzyquery.html#prefixlength" class="tsd-kind-icon">prefix<wbr>Length</a>
+								<a href="termquerybuilder.html#build" class="tsd-kind-icon">build</a>
 							</li>
 						</ul>
 					</li>

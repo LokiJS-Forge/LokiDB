@@ -71,9 +71,9 @@
 						The query contains a sub query and parameters for setup scoring and search options.</p>
 					</div>
 					<p>Possible sub query types are:
-						<a href="termquery.html">TermQuery</a>, <a href="termsquery.html">TermsQuery</a>, <a href="fuzzyquery.html">FuzzyQuery</a>, <a href="wildcardquery.html">WildcardQuery</a>,
-						<a href="matchquery.html">MatchQuery</a>, <a href="matchallquery.html">MatchAllQuery</a>, <a href="prefixquery.html">PrefixQuery</a>,  <a href="boolquery.html">BoolQuery</a>,
-					<a href="constantscorequery.html">ConstantScoreQuery</a>, <a href="existsquery.html">ExistsQuery</a></p>
+						<a href="termquerybuilder.html">TermQueryBuilder</a>, <a href="termsquerybuilder.html">TermsQueryBuilder</a>, <a href="fuzzyquerybuilder.html">FuzzyQueryBuilder</a>, <a href="wildcardquerybuilder.html">WildcardQueryBuilder</a>,
+						<a href="matchquerybuilder.html">MatchQueryBuilder</a>, <a href="matchallquerybuilder.html">MatchAllQueryBuilder</a>, <a href="prefixquerybuilder.html">PrefixQueryBuilder</a>,  <a href="boolquerybuilder.html">BoolQueryBuilder</a>,
+					<a href="constantscorequerybuilder.html">ConstantScoreQueryBuilder</a>, <a href="existsquerybuilder.html">ExistsQueryBuilder</a></p>
 					<dl class="tsd-comment-tags">
 						<dt>example</dt>
 						<dd><p>new QueryBuilder()
@@ -109,6 +109,7 @@
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#bm25similarity" class="tsd-kind-icon">BM25<wbr>Similarity</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#bool" class="tsd-kind-icon">bool</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#constantscore" class="tsd-kind-icon">constant<wbr>Score</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#enablefinalscoring" class="tsd-kind-icon">enable<wbr>Final<wbr>Scoring</a></li>
@@ -119,7 +120,6 @@
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#prefix" class="tsd-kind-icon">prefix</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#term" class="tsd-kind-icon">term</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#terms" class="tsd-kind-icon">terms</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#usebm25" class="tsd-kind-icon">useBM25</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#wildcard" class="tsd-kind-icon">wildcard</a></li>
 							</ul>
 						</section>
@@ -138,7 +138,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L679">full-text-search/src/query_builder.ts:679</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L746">full-text-search/src/query_builder.ts:746</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <a href="querybuilder.html" class="tsd-signature-type">QueryBuilder</a></h4>
@@ -149,19 +149,52 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="bool" class="tsd-anchor"></a>
-					<h3>bool</h3>
+					<a name="bm25similarity" class="tsd-anchor"></a>
+					<h3>BM25<wbr>Similarity</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">bool<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="boolquery.html" class="tsd-signature-type">BoolQuery</a></li>
+						<li class="tsd-signature tsd-kind-icon">BM25<wbr>Similarity<span class="tsd-signature-symbol">(</span>k1<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span>, b<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L724">full-text-search/src/query_builder.ts:724</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L774">full-text-search/src/query_builder.ts:774</a></li>
 								</ul>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <a href="boolquery.html" class="tsd-signature-type">BoolQuery</a></h4>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Configures the <a href="https://en.wikipedia.org/wiki/Okapi_BM25" class="external">Okapi BM25</a> as scoring model.</p>
+								</div>
+								<p>See also <a href="https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/similarities/BM25Similarity.html" class="external">Lucene#MatchAllDocsQuery</a>
+								and <a href="https://www.elastic.co/guide/en/elasticsearch/guide/current/pluggable-similarites.html#bm25" class="external">Elasticsearch#BM25</a>.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> k1: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;1.2</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> b: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;0.75</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">this</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="bool" class="tsd-anchor"></a>
+					<h3>bool</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">bool<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="boolquerybuilder.html" class="tsd-signature-type">BoolQueryBuilder</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L789">full-text-search/src/query_builder.ts:789</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="boolquerybuilder.html" class="tsd-signature-type">BoolQueryBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -169,16 +202,16 @@
 					<a name="constantscore" class="tsd-anchor"></a>
 					<h3>constant<wbr>Score</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">constant<wbr>Score<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="constantscorequery.html" class="tsd-signature-type">ConstantScoreQuery</a></li>
+						<li class="tsd-signature tsd-kind-icon">constant<wbr>Score<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="constantscorequerybuilder.html" class="tsd-signature-type">ConstantScoreQueryBuilder</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L728">full-text-search/src/query_builder.ts:728</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L793">full-text-search/src/query_builder.ts:793</a></li>
 								</ul>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <a href="constantscorequery.html" class="tsd-signature-type">ConstantScoreQuery</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="constantscorequerybuilder.html" class="tsd-signature-type">ConstantScoreQueryBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -192,12 +225,12 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L691">full-text-search/src/query_builder.ts:691</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L757">full-text-search/src/query_builder.ts:757</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>The query performs a final scoring over all scored sub queries and rank documents by there relevant.</p>
+									<p>The query performs a final scoring over all scored sub queries.</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -217,13 +250,13 @@
 					<a name="exists" class="tsd-anchor"></a>
 					<h3>exists</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">exists<span class="tsd-signature-symbol">(</span>field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="existsquery.html" class="tsd-signature-type">ExistsQuery</a></li>
+						<li class="tsd-signature tsd-kind-icon">exists<span class="tsd-signature-symbol">(</span>field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="existsquerybuilder.html" class="tsd-signature-type">ExistsQueryBuilder</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L760">full-text-search/src/query_builder.ts:760</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L825">full-text-search/src/query_builder.ts:825</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -232,7 +265,7 @@
 									<h5>field: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="existsquery.html" class="tsd-signature-type">ExistsQuery</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="existsquerybuilder.html" class="tsd-signature-type">ExistsQueryBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -240,13 +273,13 @@
 					<a name="fuzzy" class="tsd-anchor"></a>
 					<h3>fuzzy</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">fuzzy<span class="tsd-signature-symbol">(</span>field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, fuzzy<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="fuzzyquery.html" class="tsd-signature-type">FuzzyQuery</a></li>
+						<li class="tsd-signature tsd-kind-icon">fuzzy<span class="tsd-signature-symbol">(</span>field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, fuzzy<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="fuzzyquerybuilder.html" class="tsd-signature-type">FuzzyQueryBuilder</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L744">full-text-search/src/query_builder.ts:744</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L809">full-text-search/src/query_builder.ts:809</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -258,7 +291,7 @@
 									<h5>fuzzy: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="fuzzyquery.html" class="tsd-signature-type">FuzzyQuery</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="fuzzyquerybuilder.html" class="tsd-signature-type">FuzzyQueryBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -266,13 +299,13 @@
 					<a name="match" class="tsd-anchor"></a>
 					<h3>match</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">match<span class="tsd-signature-symbol">(</span>field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, query<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="matchquery.html" class="tsd-signature-type">MatchQuery</a></li>
+						<li class="tsd-signature tsd-kind-icon">match<span class="tsd-signature-symbol">(</span>field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, query<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="matchquerybuilder.html" class="tsd-signature-type">MatchQueryBuilder</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L748">full-text-search/src/query_builder.ts:748</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L813">full-text-search/src/query_builder.ts:813</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -284,7 +317,7 @@
 									<h5>query: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="matchquery.html" class="tsd-signature-type">MatchQuery</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="matchquerybuilder.html" class="tsd-signature-type">MatchQueryBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -292,16 +325,16 @@
 					<a name="matchall" class="tsd-anchor"></a>
 					<h3>match<wbr>All</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">match<wbr>All<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="matchallquery.html" class="tsd-signature-type">MatchAllQuery</a></li>
+						<li class="tsd-signature tsd-kind-icon">match<wbr>All<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="matchallquerybuilder.html" class="tsd-signature-type">MatchAllQueryBuilder</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L752">full-text-search/src/query_builder.ts:752</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L817">full-text-search/src/query_builder.ts:817</a></li>
 								</ul>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <a href="matchallquery.html" class="tsd-signature-type">MatchAllQuery</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="matchallquerybuilder.html" class="tsd-signature-type">MatchAllQueryBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -309,13 +342,13 @@
 					<a name="prefix" class="tsd-anchor"></a>
 					<h3>prefix</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">prefix<span class="tsd-signature-symbol">(</span>field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, prefix<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="prefixquery.html" class="tsd-signature-type">PrefixQuery</a></li>
+						<li class="tsd-signature tsd-kind-icon">prefix<span class="tsd-signature-symbol">(</span>field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, prefix<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="prefixquerybuilder.html" class="tsd-signature-type">PrefixQueryBuilder</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L756">full-text-search/src/query_builder.ts:756</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L821">full-text-search/src/query_builder.ts:821</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -327,7 +360,7 @@
 									<h5>prefix: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="prefixquery.html" class="tsd-signature-type">PrefixQuery</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="prefixquerybuilder.html" class="tsd-signature-type">PrefixQueryBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -335,13 +368,13 @@
 					<a name="term" class="tsd-anchor"></a>
 					<h3>term</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">term<span class="tsd-signature-symbol">(</span>field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, term<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="termquery.html" class="tsd-signature-type">TermQuery</a></li>
+						<li class="tsd-signature tsd-kind-icon">term<span class="tsd-signature-symbol">(</span>field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, term<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="termquerybuilder.html" class="tsd-signature-type">TermQueryBuilder</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L732">full-text-search/src/query_builder.ts:732</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L797">full-text-search/src/query_builder.ts:797</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -353,7 +386,7 @@
 									<h5>term: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="termquery.html" class="tsd-signature-type">TermQuery</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="termquerybuilder.html" class="tsd-signature-type">TermQueryBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -361,13 +394,13 @@
 					<a name="terms" class="tsd-anchor"></a>
 					<h3>terms</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">terms<span class="tsd-signature-symbol">(</span>field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, terms<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="termsquery.html" class="tsd-signature-type">TermsQuery</a></li>
+						<li class="tsd-signature tsd-kind-icon">terms<span class="tsd-signature-symbol">(</span>field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, terms<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="termsquerybuilder.html" class="tsd-signature-type">TermsQueryBuilder</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L736">full-text-search/src/query_builder.ts:736</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L801">full-text-search/src/query_builder.ts:801</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -379,40 +412,7 @@
 									<h5>terms: <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="termsquery.html" class="tsd-signature-type">TermsQuery</a></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="usebm25" class="tsd-anchor"></a>
-					<h3>useBM25</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">useBM25<span class="tsd-signature-symbol">(</span>k1<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span>, b<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L708">full-text-search/src/query_builder.ts:708</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Use <a href="https://en.wikipedia.org/wiki/Okapi_BM25" class="external">Okapi BM25</a> as scoring model (default).</p>
-								</div>
-								<p>See also <a href="https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/similarities/BM25Similarity.html" class="external">Lucene#MatchAllDocsQuery</a>
-								and <a href="https://www.elastic.co/guide/en/elasticsearch/guide/current/pluggable-similarites.html#bm25" class="external">Elasticsearch#BM25</a>.</p>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> k1: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;1.2</span></h5>
-								</li>
-								<li>
-									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> b: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;0.75</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">this</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="termsquerybuilder.html" class="tsd-signature-type">TermsQueryBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -420,13 +420,13 @@
 					<a name="wildcard" class="tsd-anchor"></a>
 					<h3>wildcard</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">wildcard<span class="tsd-signature-symbol">(</span>field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, wildcard<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="wildcardquery.html" class="tsd-signature-type">WildcardQuery</a></li>
+						<li class="tsd-signature tsd-kind-icon">wildcard<span class="tsd-signature-symbol">(</span>field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, wildcard<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="wildcardquerybuilder.html" class="tsd-signature-type">WildcardQueryBuilder</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L740">full-text-search/src/query_builder.ts:740</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L805">full-text-search/src/query_builder.ts:805</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -438,7 +438,7 @@
 									<h5>wildcard: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="wildcardquery.html" class="tsd-signature-type">WildcardQuery</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="wildcardquerybuilder.html" class="tsd-signature-type">WildcardQueryBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -461,6 +461,9 @@
 						<ul>
 							<li class=" tsd-kind-constructor tsd-parent-kind-class">
 								<a href="querybuilder.html#constructor" class="tsd-kind-icon">constructor</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="querybuilder.html#bm25similarity" class="tsd-kind-icon">BM25<wbr>Similarity</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="querybuilder.html#bool" class="tsd-kind-icon">bool</a>
@@ -491,9 +494,6 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="querybuilder.html#terms" class="tsd-kind-icon">terms</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="querybuilder.html#usebm25" class="tsd-kind-icon">useBM25</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="querybuilder.html#wildcard" class="tsd-kind-icon">wildcard</a>

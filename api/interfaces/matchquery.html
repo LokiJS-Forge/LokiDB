@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Serialization | @lokijs/lokijs-src</title>
+	<title>MatchQuery | @lokijs/lokijs-src</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,13 +54,10 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../classes/invertedindex.html">InvertedIndex</a>
-				</li>
-				<li>
-					<a href="invertedindex.serialization.html">Serialization</a>
+					<a href="matchquery.html">MatchQuery</a>
 				</li>
 			</ul>
-			<h1>Interface Serialization</h1>
+			<h1>Interface MatchQuery</h1>
 		</div>
 	</div>
 </header>
@@ -71,7 +68,12 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">Serialization</span>
+						<a href="basequery.html" class="tsd-signature-type">BaseQuery</a>
+						<ul class="tsd-hierarchy">
+							<li>
+								<span class="target">MatchQuery</span>
+							</li>
+						</ul>
 					</li>
 				</ul>
 			</section>
@@ -82,13 +84,15 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="invertedindex.serialization.html#_doccount" class="tsd-kind-icon">_doc<wbr>Count</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="invertedindex.serialization.html#_docstore" class="tsd-kind-icon">_doc<wbr>Store</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="invertedindex.serialization.html#_optimizechanges" class="tsd-kind-icon">_optimize<wbr>Changes</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="invertedindex.serialization.html#_root" class="tsd-kind-icon">_root</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="invertedindex.serialization.html#_store" class="tsd-kind-icon">_store</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="invertedindex.serialization.html#_tokenizer" class="tsd-kind-icon">_tokenizer</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="invertedindex.serialization.html#_totalfieldlength" class="tsd-kind-icon">_total<wbr>Field<wbr>Length</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="matchquery.html#boost" class="tsd-kind-icon">boost</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="matchquery.html#extended" class="tsd-kind-icon">extended</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="matchquery.html#field" class="tsd-kind-icon">field</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="matchquery.html#fuzziness" class="tsd-kind-icon">fuzziness</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="matchquery.html#minimum_should_match" class="tsd-kind-icon">minimum_<wbr>should_<wbr>match</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="matchquery.html#operator" class="tsd-kind-icon">operator</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="matchquery.html#prefix_length" class="tsd-kind-icon">prefix_<wbr>length</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="matchquery.html#type" class="tsd-kind-icon">type</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="matchquery.html#value" class="tsd-kind-icon">value</a></li>
 							</ul>
 						</section>
 					</div>
@@ -96,73 +100,95 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="_doccount" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> _doc<wbr>Count</h3>
-					<div class="tsd-signature tsd-kind-icon">_doc<wbr>Count<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+					<a name="boost" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> boost</h3>
+					<div class="tsd-signature tsd-kind-icon">boost<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
+						<p>Inherited from <a href="basequery.html">BaseQuery</a>.<a href="basequery.html#boost">boost</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/inverted_index.ts#L374">full-text-search/src/inverted_index.ts:374</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L44">full-text-search/src/query_builder.ts:44</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="_docstore" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> _doc<wbr>Store</h3>
-					<div class="tsd-signature tsd-kind-icon">_doc<wbr>Store<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+					<a name="extended" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> extended</h3>
+					<div class="tsd-signature tsd-kind-icon">extended<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/inverted_index.ts#L375">full-text-search/src/inverted_index.ts:375</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L457">full-text-search/src/query_builder.ts:457</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="_optimizechanges" class="tsd-anchor"></a>
-					<h3>_optimize<wbr>Changes</h3>
-					<div class="tsd-signature tsd-kind-icon">_optimize<wbr>Changes<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<a name="field" class="tsd-anchor"></a>
+					<h3>field</h3>
+					<div class="tsd-signature tsd-kind-icon">field<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/inverted_index.ts#L372">full-text-search/src/inverted_index.ts:372</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L451">full-text-search/src/query_builder.ts:451</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="_root" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> _root</h3>
-					<div class="tsd-signature tsd-kind-icon">_root<span class="tsd-signature-symbol">:</span> <a href="invertedindex.index.html" class="tsd-signature-type">Index</a></div>
+					<a name="fuzziness" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> fuzziness</h3>
+					<div class="tsd-signature tsd-kind-icon">fuzziness<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"AUTO"</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/inverted_index.ts#L377">full-text-search/src/inverted_index.ts:377</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L455">full-text-search/src/query_builder.ts:455</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="_store" class="tsd-anchor"></a>
-					<h3>_store</h3>
-					<div class="tsd-signature tsd-kind-icon">_store<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<a name="minimum_should_match" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> minimum_<wbr>should_<wbr>match</h3>
+					<div class="tsd-signature tsd-kind-icon">minimum_<wbr>should_<wbr>match<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/inverted_index.ts#L371">full-text-search/src/inverted_index.ts:371</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L453">full-text-search/src/query_builder.ts:453</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="_tokenizer" class="tsd-anchor"></a>
-					<h3>_tokenizer</h3>
-					<div class="tsd-signature tsd-kind-icon">_tokenizer<span class="tsd-signature-symbol">:</span> <a href="tokenizer.serialization.html" class="tsd-signature-type">Serialization</a></div>
+					<a name="operator" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> operator</h3>
+					<div class="tsd-signature tsd-kind-icon">operator<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"and"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"or"</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/inverted_index.ts#L373">full-text-search/src/inverted_index.ts:373</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L454">full-text-search/src/query_builder.ts:454</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="_totalfieldlength" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> _total<wbr>Field<wbr>Length</h3>
-					<div class="tsd-signature tsd-kind-icon">_total<wbr>Field<wbr>Length<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<a name="prefix_length" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> prefix_<wbr>length</h3>
+					<div class="tsd-signature tsd-kind-icon">prefix_<wbr>length<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/inverted_index.ts#L376">full-text-search/src/inverted_index.ts:376</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L456">full-text-search/src/query_builder.ts:456</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+					<a name="type" class="tsd-anchor"></a>
+					<h3>type</h3>
+					<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from <a href="basequery.html">BaseQuery</a>.<a href="basequery.html#type">type</a></p>
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L43">full-text-search/src/query_builder.ts:43</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="value" class="tsd-anchor"></a>
+					<h3>value</h3>
+					<div class="tsd-signature tsd-kind-icon">value<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L452">full-text-search/src/query_builder.ts:452</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -180,82 +206,35 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-class">
-						<a href="../classes/invertedindex.html" class="tsd-kind-icon">Inverted<wbr>Index</a>
+					<li class="current tsd-kind-interface">
+						<a href="matchquery.html" class="tsd-kind-icon">Match<wbr>Query</a>
 						<ul>
-							<li class=" tsd-kind-interface tsd-parent-kind-class">
-								<a href="invertedindex.fieldoptions.html" class="tsd-kind-icon">Field<wbr>Options</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+								<a href="matchquery.html#boost" class="tsd-kind-icon">boost</a>
 							</li>
-							<li class=" tsd-kind-interface tsd-parent-kind-class">
-								<a href="invertedindex.index.html" class="tsd-kind-icon">Index</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="matchquery.html#extended" class="tsd-kind-icon">extended</a>
 							</li>
-							<li class="current tsd-kind-interface tsd-parent-kind-class">
-								<a href="invertedindex.serialization.html" class="tsd-kind-icon">Serialization</a>
-								<ul>
-									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="invertedindex.serialization.html#_doccount" class="tsd-kind-icon">_doc<wbr>Count</a>
-									</li>
-									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="invertedindex.serialization.html#_docstore" class="tsd-kind-icon">_doc<wbr>Store</a>
-									</li>
-									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="invertedindex.serialization.html#_optimizechanges" class="tsd-kind-icon">_optimize<wbr>Changes</a>
-									</li>
-									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="invertedindex.serialization.html#_root" class="tsd-kind-icon">_root</a>
-									</li>
-									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="invertedindex.serialization.html#_store" class="tsd-kind-icon">_store</a>
-									</li>
-									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="invertedindex.serialization.html#_tokenizer" class="tsd-kind-icon">_tokenizer</a>
-									</li>
-									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="invertedindex.serialization.html#_totalfieldlength" class="tsd-kind-icon">_total<wbr>Field<wbr>Length</a>
-									</li>
-								</ul>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="matchquery.html#field" class="tsd-kind-icon">field</a>
 							</li>
-							<li class=" tsd-kind-constructor tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#constructor" class="tsd-kind-icon">constructor</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="matchquery.html#fuzziness" class="tsd-kind-icon">fuzziness</a>
 							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#documentcount" class="tsd-kind-icon">document<wbr>Count</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="matchquery.html#minimum_should_match" class="tsd-kind-icon">minimum_<wbr>should_<wbr>match</a>
 							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#documentstore" class="tsd-kind-icon">document<wbr>Store</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="matchquery.html#operator" class="tsd-kind-icon">operator</a>
 							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#root" class="tsd-kind-icon">root</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="matchquery.html#prefix_length" class="tsd-kind-icon">prefix_<wbr>length</a>
 							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#store" class="tsd-kind-icon">store</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+								<a href="matchquery.html#type" class="tsd-kind-icon">type</a>
 							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#tokenizer" class="tsd-kind-icon">tokenizer</a>
-							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#totalfieldlength" class="tsd-kind-icon">total<wbr>Field<wbr>Length</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#insert" class="tsd-kind-icon">insert</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#remove" class="tsd-kind-icon">remove</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="../classes/invertedindex.html#tojson" class="tsd-kind-icon">toJSON</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
-								<a href="../classes/invertedindex.html#extendtermindex" class="tsd-kind-icon">extend<wbr>Term<wbr>Index</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
-								<a href="../classes/invertedindex.html#fromjsonobject" class="tsd-kind-icon">fromJSONObject</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
-								<a href="../classes/invertedindex.html#getnexttermindex" class="tsd-kind-icon">get<wbr>Next<wbr>Term<wbr>Index</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
-								<a href="../classes/invertedindex.html#gettermindex" class="tsd-kind-icon">get<wbr>Term<wbr>Index</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="matchquery.html#value" class="tsd-kind-icon">value</a>
 							</li>
 						</ul>
 					</li>

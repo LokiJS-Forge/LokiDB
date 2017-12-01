@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>MatchQuery | @lokijs/lokijs-src</title>
+	<title>MatchQueryBuilder | @lokijs/lokijs-src</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="matchquery.html">MatchQuery</a>
+					<a href="matchquerybuilder.html">MatchQueryBuilder</a>
 				</li>
 			</ul>
-			<h1>Class MatchQuery</h1>
+			<h1>Class MatchQueryBuilder</h1>
 		</div>
 	</div>
 </header>
@@ -80,7 +80,7 @@
 						<tbody>
 							<tr>
 								<td>or (default)</td>
-								<td>Finds documents which matches some tokens. The minimum amount of matches can be controlled with [minimumShouldMatch]{@link MatchQuery#minimumShouldMatch} (default is 1).</td>
+								<td>Finds documents which matches some tokens. The minimum amount of matches can be controlled with [minimumShouldMatch]{@link MatchQueryBuilder#minimumShouldMatch} (default is 1).</td>
 							</tr>
 							<tr>
 								<td>and</td>
@@ -88,10 +88,10 @@
 							</tr>
 						</tbody>
 					</table>
-					<p>To enable a <a href="fuzzyquery.html">fuzzy query</a> for the tokens, use {@link MatchQuery#fuzziness},
-					{@link MatchQuery#prefixLength} and {@link MatchQuery#extended}</p>
+					<p>To enable a <a href="fuzzyquerybuilder.html">fuzzy query</a> for the tokens, use {@link MatchQueryBuilder#fuzziness},
+					{@link MatchQueryBuilder#prefixLength} and {@link MatchQueryBuilder#extended}</p>
 					<p>See also [Lucene#?]{@link ?}
-					and <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html" class="external">Elasticsearch#MatchQuery</a>.</p>
+					and <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html" class="external">Elasticsearch#MatchQueryBuilder</a>.</p>
 					<dl class="tsd-comment-tags">
 						<dt>example</dt>
 						<dd><p>new QueryBuilder()
@@ -105,7 +105,7 @@
 							// contains the fuzzy name albrt einsten (like Albert Einstein) with a boost of 2.5</p>
 						</dd>
 						<dt>extends</dt>
-						<dd><p>BaseQuery</p>
+						<dd><p>BaseQueryBuilder</p>
 						</dd>
 					</dl>
 				</div>
@@ -114,10 +114,10 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<a href="basequery.html" class="tsd-signature-type">BaseQuery</a>
+						<a href="basequerybuilder.html" class="tsd-signature-type">BaseQueryBuilder</a>
 						<ul class="tsd-hierarchy">
 							<li>
-								<span class="target">MatchQuery</span>
+								<span class="target">MatchQueryBuilder</span>
 							</li>
 						</ul>
 					</li>
@@ -130,25 +130,25 @@
 						<section class="tsd-index-section ">
 							<h3>Constructors</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite"><a href="matchquery.html#constructor" class="tsd-kind-icon">constructor</a></li>
+								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite"><a href="matchquerybuilder.html#constructor" class="tsd-kind-icon">constructor</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section tsd-is-inherited tsd-is-private-protected">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="matchquery.html#_data" class="tsd-kind-icon">_data</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="matchquerybuilder.html#_data" class="tsd-kind-icon">_data</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="matchquery.html#boost" class="tsd-kind-icon">boost</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="matchquery.html#build" class="tsd-kind-icon">build</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="matchquery.html#extended" class="tsd-kind-icon">extended</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="matchquery.html#fuzziness" class="tsd-kind-icon">fuzziness</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="matchquery.html#minimumshouldmatch" class="tsd-kind-icon">minimum<wbr>Should<wbr>Match</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="matchquery.html#operator" class="tsd-kind-icon">operator</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="matchquery.html#prefixlength" class="tsd-kind-icon">prefix<wbr>Length</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="matchquerybuilder.html#boost" class="tsd-kind-icon">boost</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="matchquerybuilder.html#build" class="tsd-kind-icon">build</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="matchquerybuilder.html#extended" class="tsd-kind-icon">extended</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="matchquerybuilder.html#fuzziness" class="tsd-kind-icon">fuzziness</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="matchquerybuilder.html#minimumshouldmatch" class="tsd-kind-icon">minimum<wbr>Should<wbr>Match</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="matchquerybuilder.html#operator" class="tsd-kind-icon">operator</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="matchquerybuilder.html#prefixlength" class="tsd-kind-icon">prefix<wbr>Length</a></li>
 							</ul>
 						</section>
 					</div>
@@ -160,14 +160,14 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Match<wbr>Query<span class="tsd-signature-symbol">(</span>field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, query<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, data<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">ANY</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="matchquery.html" class="tsd-signature-type">MatchQuery</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Match<wbr>Query<wbr>Builder<span class="tsd-signature-symbol">(</span>field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, query<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, data<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="matchquerybuilder.html" class="tsd-signature-type">MatchQueryBuilder</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Overrides <a href="basequery.html">BaseQuery</a>.<a href="basequery.html#constructor">constructor</a></p>
+								<p>Overrides <a href="basequerybuilder.html">BaseQueryBuilder</a>.<a href="basequerybuilder.html#constructor">constructor</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L321">full-text-search/src/query_builder.ts:321</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L359">full-text-search/src/query_builder.ts:359</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -191,14 +191,14 @@
 									</div>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> data: <span class="tsd-signature-type">ANY</span><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> data: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<div class="lead">
 										</div>
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="matchquery.html" class="tsd-signature-type">MatchQuery</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="matchquerybuilder.html" class="tsd-signature-type">MatchQueryBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -208,11 +208,11 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
 					<a name="_data" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagProtected">Protected</span> _data</h3>
-					<div class="tsd-signature tsd-kind-icon">_data<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ANY</span></div>
+					<div class="tsd-signature tsd-kind-icon">_data<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="basequery.html">BaseQuery</a>.<a href="basequery.html#_data">_data</a></p>
+						<p>Inherited from <a href="basequerybuilder.html">BaseQueryBuilder</a>.<a href="basequerybuilder.html#_data">_data</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L7">full-text-search/src/query_builder.ts:7</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L5">full-text-search/src/query_builder.ts:5</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -228,9 +228,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="basequery.html">BaseQuery</a>.<a href="basequery.html#boost">boost</a></p>
+								<p>Inherited from <a href="basequerybuilder.html">BaseQueryBuilder</a>.<a href="basequerybuilder.html#boost">boost</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L27">full-text-search/src/query_builder.ts:27</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L25">full-text-search/src/query_builder.ts:25</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -263,9 +263,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="basequery.html">BaseQuery</a>.<a href="basequery.html#build">build</a></p>
+								<p>Inherited from <a href="basequerybuilder.html">BaseQueryBuilder</a>.<a href="basequerybuilder.html#build">build</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L39">full-text-search/src/query_builder.ts:39</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L37">full-text-search/src/query_builder.ts:37</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -290,7 +290,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L406">full-text-search/src/query_builder.ts:406</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L444">full-text-search/src/query_builder.ts:444</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -315,13 +315,13 @@
 					<a name="fuzziness" class="tsd-anchor"></a>
 					<h3>fuzziness</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">fuzziness<span class="tsd-signature-symbol">(</span>fuzziness<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">fuzziness<span class="tsd-signature-symbol">(</span>fuzziness<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"AUTO"</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L380">full-text-search/src/query_builder.ts:380</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L418">full-text-search/src/query_builder.ts:418</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -332,9 +332,9 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>fuzziness: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+									<h5>fuzziness: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"AUTO"</span></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>the edit distance as number or AUTO</p>
+										<p>the edit distance 0, 1, 2 or AUTO</p>
 										<p>AUTO generates an edit distance based on the length of the term:</p>
 										<ul>
 											<li>0..2 -&gt; must match exactly</li>
@@ -364,7 +364,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L345">full-text-search/src/query_builder.ts:345</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L383">full-text-search/src/query_builder.ts:383</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -403,7 +403,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L358">full-text-search/src/query_builder.ts:358</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L396">full-text-search/src/query_builder.ts:396</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -435,7 +435,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L393">full-text-search/src/query_builder.ts:393</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L431">full-text-search/src/query_builder.ts:431</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -474,34 +474,34 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class">
-						<a href="matchquery.html" class="tsd-kind-icon">Match<wbr>Query</a>
+						<a href="matchquerybuilder.html" class="tsd-kind-icon">Match<wbr>Query<wbr>Builder</a>
 						<ul>
 							<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite">
-								<a href="matchquery.html#constructor" class="tsd-kind-icon">constructor</a>
+								<a href="matchquerybuilder.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
-								<a href="matchquery.html#_data" class="tsd-kind-icon">_data</a>
+								<a href="matchquerybuilder.html#_data" class="tsd-kind-icon">_data</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="matchquery.html#boost" class="tsd-kind-icon">boost</a>
+								<a href="matchquerybuilder.html#boost" class="tsd-kind-icon">boost</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="matchquery.html#build" class="tsd-kind-icon">build</a>
+								<a href="matchquerybuilder.html#build" class="tsd-kind-icon">build</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="matchquery.html#extended" class="tsd-kind-icon">extended</a>
+								<a href="matchquerybuilder.html#extended" class="tsd-kind-icon">extended</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="matchquery.html#fuzziness" class="tsd-kind-icon">fuzziness</a>
+								<a href="matchquerybuilder.html#fuzziness" class="tsd-kind-icon">fuzziness</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="matchquery.html#minimumshouldmatch" class="tsd-kind-icon">minimum<wbr>Should<wbr>Match</a>
+								<a href="matchquerybuilder.html#minimumshouldmatch" class="tsd-kind-icon">minimum<wbr>Should<wbr>Match</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="matchquery.html#operator" class="tsd-kind-icon">operator</a>
+								<a href="matchquerybuilder.html#operator" class="tsd-kind-icon">operator</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="matchquery.html#prefixlength" class="tsd-kind-icon">prefix<wbr>Length</a>
+								<a href="matchquerybuilder.html#prefixlength" class="tsd-kind-icon">prefix<wbr>Length</a>
 							</li>
 						</ul>
 					</li>

@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>ConstantScoreQuery | @lokijs/lokijs-src</title>
+	<title>ConstantScoreQueryBuilder | @lokijs/lokijs-src</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="constantscorequery.html">ConstantScoreQuery</a>
+					<a href="constantscorequerybuilder.html">ConstantScoreQueryBuilder</a>
 				</li>
 			</ul>
-			<h1>Class ConstantScoreQuery</h1>
+			<h1>Class ConstantScoreQueryBuilder</h1>
 		</div>
 	</div>
 </header>
@@ -70,7 +70,7 @@
 						<p>A query that wraps sub queries and returns a constant score equal to the query boost for every document in the filter.</p>
 					</div>
 					<p>See also <a href="https://lucene.apache.org/core/6_4_0/core/org/apache/lucene/search/ConstantScoreQuery.html" class="external">Lucene#BooleanQuery</a>
-					and <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-constant-score-query.html" class="external">Elasticsearch#ConstantScoreQuery</a>.</p>
+					and <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-constant-score-query.html" class="external">Elasticsearch#ConstantScoreQueryBuilder</a>.</p>
 					<dl class="tsd-comment-tags">
 						<dt>example</dt>
 						<dd><p>new QueryBuilder()
@@ -85,7 +85,7 @@
 							// * contains albert as first name, einstein as surname and the document score is 42.</p>
 						</dd>
 						<dt>extends</dt>
-						<dd><p>BaseQuery</p>
+						<dd><p>BaseQueryBuilder</p>
 						</dd>
 					</dl>
 				</div>
@@ -94,10 +94,10 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<a href="basequery.html" class="tsd-signature-type">BaseQuery</a>
+						<a href="basequerybuilder.html" class="tsd-signature-type">BaseQueryBuilder</a>
 						<ul class="tsd-hierarchy">
 							<li>
-								<span class="target">ConstantScoreQuery</span>
+								<span class="target">ConstantScoreQueryBuilder</span>
 							</li>
 						</ul>
 					</li>
@@ -110,21 +110,21 @@
 						<section class="tsd-index-section ">
 							<h3>Constructors</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite"><a href="constantscorequery.html#constructor" class="tsd-kind-icon">constructor</a></li>
+								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite"><a href="constantscorequerybuilder.html#constructor" class="tsd-kind-icon">constructor</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section tsd-is-inherited tsd-is-private-protected">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="constantscorequery.html#_data" class="tsd-kind-icon">_data</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="constantscorequerybuilder.html#_data" class="tsd-kind-icon">_data</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="constantscorequery.html#beginfilter" class="tsd-kind-icon">begin<wbr>Filter</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="constantscorequery.html#boost" class="tsd-kind-icon">boost</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="constantscorequery.html#build" class="tsd-kind-icon">build</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="constantscorequerybuilder.html#beginfilter" class="tsd-kind-icon">begin<wbr>Filter</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="constantscorequerybuilder.html#boost" class="tsd-kind-icon">boost</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="constantscorequerybuilder.html#build" class="tsd-kind-icon">build</a></li>
 							</ul>
 						</section>
 					</div>
@@ -136,23 +136,23 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Constant<wbr>Score<wbr>Query<span class="tsd-signature-symbol">(</span>data<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">ANY</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="constantscorequery.html" class="tsd-signature-type">ConstantScoreQuery</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Constant<wbr>Score<wbr>Query<wbr>Builder<span class="tsd-signature-symbol">(</span>data<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="constantscorequerybuilder.html" class="tsd-signature-type">ConstantScoreQueryBuilder</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Overrides <a href="basequery.html">BaseQuery</a>.<a href="basequery.html#constructor">constructor</a></p>
+								<p>Overrides <a href="basequerybuilder.html">BaseQueryBuilder</a>.<a href="basequerybuilder.html#constructor">constructor</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L531">full-text-search/src/query_builder.ts:531</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L508">full-text-search/src/query_builder.ts:508</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> data: <span class="tsd-signature-type">ANY</span><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> data: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="constantscorequery.html" class="tsd-signature-type">ConstantScoreQuery</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="constantscorequerybuilder.html" class="tsd-signature-type">ConstantScoreQueryBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -162,11 +162,11 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
 					<a name="_data" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagProtected">Protected</span> _data</h3>
-					<div class="tsd-signature tsd-kind-icon">_data<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ANY</span></div>
+					<div class="tsd-signature tsd-kind-icon">_data<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="basequery.html">BaseQuery</a>.<a href="basequery.html#_data">_data</a></p>
+						<p>Inherited from <a href="basequerybuilder.html">BaseQueryBuilder</a>.<a href="basequerybuilder.html#_data">_data</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L7">full-text-search/src/query_builder.ts:7</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L5">full-text-search/src/query_builder.ts:5</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -177,13 +177,13 @@
 					<a name="beginfilter" class="tsd-anchor"></a>
 					<h3>begin<wbr>Filter</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">begin<wbr>Filter<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="arrayquery.html" class="tsd-signature-type">ArrayQuery</a></li>
+						<li class="tsd-signature tsd-kind-icon">begin<wbr>Filter<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="arrayquerybuilder.html" class="tsd-signature-type">ArrayQueryBuilder</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L540">full-text-search/src/query_builder.ts:540</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L517">full-text-search/src/query_builder.ts:517</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -191,7 +191,7 @@
 									<p>Starts an array of queries. Use endFilter() to finish the array.</p>
 								</div>
 							</div>
-							<h4 class="tsd-returns-title">Returns <a href="arrayquery.html" class="tsd-signature-type">ArrayQuery</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="arrayquerybuilder.html" class="tsd-signature-type">ArrayQueryBuilder</a></h4>
 							<p>array query for holding sub queries</p>
 						</li>
 					</ul>
@@ -205,9 +205,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="basequery.html">BaseQuery</a>.<a href="basequery.html#boost">boost</a></p>
+								<p>Inherited from <a href="basequerybuilder.html">BaseQueryBuilder</a>.<a href="basequerybuilder.html#boost">boost</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L27">full-text-search/src/query_builder.ts:27</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L25">full-text-search/src/query_builder.ts:25</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -240,9 +240,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="basequery.html">BaseQuery</a>.<a href="basequery.html#build">build</a></p>
+								<p>Inherited from <a href="basequerybuilder.html">BaseQueryBuilder</a>.<a href="basequerybuilder.html#build">build</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/4d493ac/packages/full-text-search/src/query_builder.ts#L39">full-text-search/src/query_builder.ts:39</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/query_builder.ts#L37">full-text-search/src/query_builder.ts:37</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -272,22 +272,22 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class">
-						<a href="constantscorequery.html" class="tsd-kind-icon">Constant<wbr>Score<wbr>Query</a>
+						<a href="constantscorequerybuilder.html" class="tsd-kind-icon">Constant<wbr>Score<wbr>Query<wbr>Builder</a>
 						<ul>
 							<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite">
-								<a href="constantscorequery.html#constructor" class="tsd-kind-icon">constructor</a>
+								<a href="constantscorequerybuilder.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
-								<a href="constantscorequery.html#_data" class="tsd-kind-icon">_data</a>
+								<a href="constantscorequerybuilder.html#_data" class="tsd-kind-icon">_data</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="constantscorequery.html#beginfilter" class="tsd-kind-icon">begin<wbr>Filter</a>
+								<a href="constantscorequerybuilder.html#beginfilter" class="tsd-kind-icon">begin<wbr>Filter</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="constantscorequery.html#boost" class="tsd-kind-icon">boost</a>
+								<a href="constantscorequerybuilder.html#boost" class="tsd-kind-icon">boost</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="constantscorequery.html#build" class="tsd-kind-icon">build</a>
+								<a href="constantscorequerybuilder.html#build" class="tsd-kind-icon">build</a>
 							</li>
 						</ul>
 					</li>

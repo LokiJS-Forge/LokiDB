@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>CopyOptions | @lokijs/lokijs-src</title>
+	<title>Serialization | @lokijs/lokijs-src</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,13 +54,13 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../classes/loki.html">Loki</a>
+					<a href="../classes/fulltextsearch.html">FullTextSearch</a>
 				</li>
 				<li>
-					<a href="loki.copyoptions.html">CopyOptions</a>
+					<a href="fulltextsearch.serialization.html">Serialization</a>
 				</li>
 			</ul>
-			<h1>Interface CopyOptions</h1>
+			<h1>Interface Serialization</h1>
 		</div>
 	</div>
 </header>
@@ -71,7 +71,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">CopyOptions</span>
+						<span class="target">Serialization</span>
 					</li>
 				</ul>
 			</section>
@@ -82,7 +82,8 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="loki.copyoptions.html#removenonserializable" class="tsd-kind-icon">remove<wbr>Non<wbr>Serializable</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="fulltextsearch.serialization.html#id" class="tsd-kind-icon">id</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="fulltextsearch.serialization.html#ii" class="tsd-kind-icon">ii</a></li>
 							</ul>
 						</section>
 					</div>
@@ -91,12 +92,22 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="removenonserializable" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> remove<wbr>Non<wbr>Serializable</h3>
-					<div class="tsd-signature tsd-kind-icon">remove<wbr>Non<wbr>Serializable<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<a name="id" class="tsd-anchor"></a>
+					<h3>id</h3>
+					<div class="tsd-signature tsd-kind-icon">id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L1067">loki/src/loki.ts:1067</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/full_text_search.ts#L106">full-text-search/src/full_text_search.ts:106</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="ii" class="tsd-anchor"></a>
+					<h3>ii</h3>
+					<div class="tsd-signature tsd-kind-icon">ii<span class="tsd-signature-symbol">:</span> <a href="dict.html" class="tsd-signature-type">Dict</a><span class="tsd-signature-symbol">&lt;</span><a href="" class="tsd-signature-type">Serialization</a><span class="tsd-signature-symbol">&gt;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/full-text-search/src/full_text_search.ts#L107">full-text-search/src/full_text_search.ts:107</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -115,15 +126,48 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class">
-						<a href="../classes/loki.html" class="tsd-kind-icon">Loki</a>
+						<a href="../classes/fulltextsearch.html" class="tsd-kind-icon">Full<wbr>Text<wbr>Search</a>
 						<ul>
+							<li class=" tsd-kind-interface tsd-parent-kind-class">
+								<a href="fulltextsearch.fieldoptions.html" class="tsd-kind-icon">Field<wbr>Options</a>
+							</li>
 							<li class="current tsd-kind-interface tsd-parent-kind-class">
-								<a href="loki.copyoptions.html" class="tsd-kind-icon">Copy<wbr>Options</a>
+								<a href="fulltextsearch.serialization.html" class="tsd-kind-icon">Serialization</a>
 								<ul>
 									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="loki.copyoptions.html#removenonserializable" class="tsd-kind-icon">remove<wbr>Non<wbr>Serializable</a>
+										<a href="fulltextsearch.serialization.html#id" class="tsd-kind-icon">id</a>
+									</li>
+									<li class=" tsd-kind-property tsd-parent-kind-interface">
+										<a href="fulltextsearch.serialization.html#ii" class="tsd-kind-icon">ii</a>
 									</li>
 								</ul>
+							</li>
+							<li class=" tsd-kind-constructor tsd-parent-kind-class">
+								<a href="../classes/fulltextsearch.html#constructor" class="tsd-kind-icon">constructor</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="../classes/fulltextsearch.html#adddocument" class="tsd-kind-icon">add<wbr>Document</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="../classes/fulltextsearch.html#clear" class="tsd-kind-icon">clear</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="../classes/fulltextsearch.html#removedocument" class="tsd-kind-icon">remove<wbr>Document</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="../classes/fulltextsearch.html#search" class="tsd-kind-icon">search</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="../classes/fulltextsearch.html#tojson" class="tsd-kind-icon">toJSON</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="../classes/fulltextsearch.html#updatedocument" class="tsd-kind-icon">update<wbr>Document</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
+								<a href="../classes/fulltextsearch.html#fromjsonobject" class="tsd-kind-icon">fromJSONObject</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
+								<a href="../classes/fulltextsearch.html#register" class="tsd-kind-icon">register</a>
 							</li>
 						</ul>
 					</li>
