@@ -33,7 +33,6 @@
   },
   "homepage": "https://lokijs-forge.github.io/LokiJS2",
   "devDependencies": {
-    "@types/benchmark": "^1.0.31",
     "@types/elasticsearch": "^5.0.18",
     "@types/jasmine": "^2.8.2",
     "@types/jasmine-expect": "^3.6.1",

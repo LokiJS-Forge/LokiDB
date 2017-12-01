@@ -1,15 +1,9 @@
 import { Tokenizer } from "./tokenizer";
 export declare type ANY = any;
 /**
- * Converts a string into an array of code points.
- * @param str - the string
- * @returns {number[]} to code points
- * @hidden
- */
-export declare function toCodePoints(str: string): number[];
-/**
  * Inverted index class handles featured text search for specific document fields.
- * @hidden
+ * @constructor InvertedIndex
+ * @param {boolean} [options.store=true] - inverted index will be stored at serialization rather than rebuilt on load.
  */
 export declare class InvertedIndex {
     private _store;
@@ -20,15 +14,15 @@ export declare class InvertedIndex {
     private _totalFieldLength;
     private _root;
     /**
-     * @param {boolean} [options.store=true] - inverted index will be stored at serialization rather than rebuilt on load.
+     * @param {boolean} store
      * @param {boolean} optimizeChanges
      * @param {Tokenizer} tokenizer
      */
     constructor(options?: InvertedIndex.FieldOptions);
-    store: boolean;
+    readonly store: boolean;
     readonly tokenizer: Tokenizer;
     readonly documentCount: number;
-    readonly documentStore: Map<number, InvertedIndex.DocStore>;
+    readonly documentStore: object;
     readonly totalFieldLength: number;
     readonly root: InvertedIndex.Index;
     /**
@@ -44,33 +38,29 @@ export declare class InvertedIndex {
     remove(docId: number): void;
     /**
      * Gets the term index of a term.
-     * @param {string} term - the term
+     * @param {string} term - the term.
      * @param {object} root - the term index to start from
      * @param {number} start - the position of the term string to start from
      * @return {object} - The term index or null if the term is not in the term tree.
      */
-    static getTermIndex(term: number[], root: InvertedIndex.Index, start?: number): InvertedIndex.Index;
+    static getTermIndex(term: string, root: InvertedIndex.Index, start?: number): InvertedIndex.Index;
+    /**
+     * Extends a term index for the one branch.
+     * @param {object} root - the term index to start from
+     * @return {Array} - array with term indices and extension
+     */
+    static getNextTermIndex(root: InvertedIndex.Index): any[];
     /**
      * Extends a term index to all available term leafs.
-     * @param {object} idx - the term index to start from
-     * @param {number[]} [term=[]] - the current term
-     * @param {Array} termIndices - all extended indices with their term
+     * @param {object} root - the term index to start from
      * @returns {Array} - Array with term indices and extension
      */
-    static extendTermIndex(idx: InvertedIndex.Index, term?: number[], termIndices?: InvertedIndex.IndexTerm[]): InvertedIndex.IndexTerm[];
+    static extendTermIndex(root: InvertedIndex.Index): any[];
     /**
      * Serialize the inverted index.
      * @returns {{docStore: *, _fields: *, index: *}}
      */
-    toJSON(): {
-        _store: boolean;
-        _optimizeChanges: boolean;
-        _tokenizer: Tokenizer;
-        _docCount: number;
-        _docStore: [number, InvertedIndex.DocStore][];
-        _totalFieldLength: number;
-        _root: any[];
-    } | {
+    toJSON(): this | {
         _store: boolean;
         _optimizeChanges: boolean;
         _tokenizer: Tokenizer;
@@ -82,23 +72,6 @@ export declare class InvertedIndex {
      *  or an equivalent tokenizer
      */
     static fromJSONObject(serialized: InvertedIndex.Serialization, funcTok?: ANY): InvertedIndex;
-    private static serializeIndex(idx);
-    private static deserializeIndex(arr);
-    /**
-     * Set parent of to each index and regenerate the indexRef.
-     * @param {InvertedIndex.Index} index - the index
-     * @param {InvertedIndex.Index} parent - the parent
-     */
-    private _regenerate(index, parent);
-    /**
-     * Iterate over the whole inverted index and remove the document.
-     * Delete branch if not needed anymore.
-     * Function is needed if index is used without optimization.
-     * @param {InvertedIndex.Index} idx - the index
-     * @param {number} docId - the doc id
-     * @returns {boolean} true if index is empty
-     */
-    private _remove(idx, docId);
 }
 export declare namespace InvertedIndex {
     interface FieldOptions {
@@ -106,26 +79,17 @@ export declare namespace InvertedIndex {
         optimizeChanges?: boolean;
         tokenizer?: Tokenizer;
     }
-    type Index = Map<number, any> & {
-        dc?: Map<number, number>;
+    interface Index {
+        dc?: object;
         df?: number;
-        pa?: Index;
-    };
-    type IndexTerm = {
-        index: InvertedIndex.Index;
-        term: number[];
-    };
+    }
     interface Serialization {
         _store: boolean;
         _optimizeChanges: boolean;
         _tokenizer: Tokenizer.Serialization;
         _docCount?: number;
-        _docStore?: Map<number, DocStore>;
+        _docStore?: object;
         _totalFieldLength?: number;
         _root?: Index;
-    }
-    interface DocStore {
-        fieldLength?: number;
-        indexRef?: Index[];
     }
 }

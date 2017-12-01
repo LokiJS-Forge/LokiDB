@@ -1,7 +1,6 @@
 import { InvertedIndex } from "./inverted_index";
 import { Tokenizer } from "./tokenizer";
-import { Query } from "./query_builder";
-export declare type ANY = any;
+import { ANY } from "../../common/types";
 export declare class FullTextSearch {
     private _id;
     private _docs;
@@ -23,14 +22,14 @@ export declare class FullTextSearch {
      * @param {string=$loki} id - the property name of the document index
      */
     constructor(fields?: FullTextSearch.FieldOptions[], id?: string);
-    addDocument(doc: object, id?: number): void;
-    removeDocument(doc: object, id?: number): void;
-    updateDocument(doc: object, id?: number): void;
+    addDocument(doc: ANY, id?: number): void;
+    removeDocument(doc: ANY, id?: number): void;
+    updateDocument(doc: ANY, id?: number): void;
     clear(): void;
-    search(query: Query): ANY;
-    setDirty(): void;
-    toJSON(): ANY;
+    search(query: ANY): {};
+    toJSON(): {};
     static fromJSONObject(serialized: ANY, tokenizers?: Tokenizer[]): FullTextSearch;
+    setDirty(): void;
 }
 export declare namespace FullTextSearch {
     interface FieldOptions extends InvertedIndex.FieldOptions {

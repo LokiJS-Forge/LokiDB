@@ -1,17 +1,14 @@
 import { InvertedIndex } from "./inverted_index";
 import { Dict } from "../../common/types";
-import { Query } from "./query_builder";
-/**
- * @hidden
- */
+export declare type ANY = any;
 export declare class Scorer {
     private _invIdxs;
     private _cache;
     constructor(invIdxs: Dict<InvertedIndex>);
     setDirty(): void;
-    score(fieldName: string, boost: number, termIdx: InvertedIndex.Index, doScoring: boolean, docResults: Scorer.DocResults, term: number[]): void;
-    scoreConstant(boost: number, docId: number, docResults: Scorer.DocResults): Map<number, Scorer.DocResult[]>;
-    finalScore(query: Query, docResults?: Scorer.DocResults): {};
+    prepare(fieldName: string, boost: number, termIdx: ANY, doScoring: boolean, docResults?: object, term?: string): object;
+    scoreConstant(boost: number, docId: string, docResults?: object): object;
+    finalScore(query: ANY, docResults?: object): {};
     private static _calculateFieldLength(fieldLength);
     private _getCache(fieldName);
     /**
@@ -23,18 +20,4 @@ export declare class Scorer {
      */
     private _idf(fieldName, docFreq);
     private _avgFieldLength(fieldName);
-}
-export declare namespace Scorer {
-    interface IDFCache {
-        idfs: Dict<number>;
-        avgFieldLength: number;
-    }
-    interface DocResult {
-        tf?: number;
-        idf?: number;
-        boost: number;
-        fieldName?: string;
-        term?: number[];
-    }
-    type DocResults = Map<number, DocResult[]>;
 }
