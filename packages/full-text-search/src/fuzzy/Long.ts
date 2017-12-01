@@ -4,12 +4,12 @@
  * @hidden
  */
 export class Long {
-  private low: number;
-  private high: number;
+  private _low: number;
+  private _high: number;
 
   constructor(low: number = 0, high: number = 0) {
-    this.low = low;
-    this.high = high;
+    this._low = low;
+    this._high = high;
   }
 
   /**
@@ -21,9 +21,9 @@ export class Long {
     if ((numBits &= 63) === 0)
       return this;
     else if (numBits < 32)
-      return new Long((this.low >>> numBits) | (this.high << (32 - numBits)), this.high >> numBits);
+      return new Long((this._low >>> numBits) | (this._high << (32 - numBits)), this._high >> numBits);
     else
-      return new Long((this.high >> (numBits - 32)), this.high >= 0 ? 0 : -1);
+      return new Long((this._high >> (numBits - 32)), this._high >= 0 ? 0 : -1);
   }
 
   /**
@@ -35,9 +35,9 @@ export class Long {
     if ((numBits &= 63) === 0)
       return this;
     else if (numBits < 32)
-      return new Long(this.low << numBits, (this.high << numBits) | (this.low >>> (32 - numBits)));
+      return new Long(this._low << numBits, (this._high << numBits) | (this._low >>> (32 - numBits)));
     else
-      return new Long(0, this.low << (numBits - 32));
+      return new Long(0, this._low << (numBits - 32));
   }
 
   /**
@@ -46,7 +46,7 @@ export class Long {
    * @returns {Long} the long
    */
   and(other: Long): Long {
-    return new Long(this.low & other.low, this.high & other.high);
+    return new Long(this._low & other._low, this._high & other._high);
   }
 
   /**
@@ -54,6 +54,6 @@ export class Long {
    * @returns {number}
    */
   toInt(): number {
-    return this.low;
+    return this._low;
   }
 }
