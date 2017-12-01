@@ -6,7 +6,7 @@ import {Collection} from "../../../loki/src/collection";
 import {FullTextSearch} from "../../src/full_text_search";
 import {Tokenizer} from "../../src/tokenizer";
 
-describe("full text search", () => {
+describe("full-text search", () => {
   FullTextSearch.register();
 
   interface User {

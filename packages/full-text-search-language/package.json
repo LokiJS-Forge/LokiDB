@@ -1,6 +1,6 @@
 {
   "name": "@lokijs/full-text-search-language",
-  "description": "A full-text-search language support package.",
+  "description": "A language analyzer utility package.",
   "author": "Various authors",
   "license": "MIT",
   "repository": {

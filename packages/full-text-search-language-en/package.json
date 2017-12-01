@@ -1,6 +1,6 @@
 {
   "name": "@lokijs/full-text-search-language-en",
-  "description": "An English language analyzer for the full-text-search.",
+  "description": "An English language analyzer.",
   "author": "Various authors",
   "license": "MIT",
   "repository": {
