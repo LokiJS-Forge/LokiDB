@@ -2,6 +2,7 @@ import {LokiEventEmitter} from "./event_emitter";
 import {Resultset} from "./resultset";
 import {Collection} from "./collection";
 import {Doc, Filter} from "../../common/types";
+import {ScoreResult} from "../../full-text-search/src/scorer";
 
 export type ANY = any;
 
@@ -248,23 +249,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
     this._sortFunction = comparefun;
     this._sortCriteria = null;
     this._sortByScoring = null;
-
     this._queueSortPhase();
-
-    return this;
-  }
-
-  /**
-   * Used to apply a sort by the latest full-text-search scoring.
-   * @param {boolean} [ascending=false] - sort ascending
-   */
-  public applySortByScoring(ascending = false): DynamicView<E> {
-    this._sortFunction = null;
-    this._sortCriteria = null;
-    this._sortByScoring = ascending;
-
-    this._queueSortPhase();
-
     return this;
   }
 
@@ -283,9 +268,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
     ];
     this._sortFunction = null;
     this._sortByScoring = null;
-
     this._queueSortPhase();
-
     return this;
   }
 
@@ -308,6 +291,26 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
     this._sortByScoring = null;
     this._queueSortPhase();
     return this;
+  }
+
+  /**
+   * Used to apply a sort by the latest full-text-search scoring.
+   * @param {boolean} [ascending=false] - sort ascending
+   */
+  public applySortByScoring(ascending = false): DynamicView<E> {
+    this._sortFunction = null;
+    this._sortCriteria = null;
+    this._sortByScoring = ascending;
+    this._queueSortPhase();
+    return this;
+  }
+
+  /**
+   * Returns the scoring of the last full-text-search.
+   * @returns {ScoreResult}
+   */
+  public getScoring(): ScoreResult {
+    return this._resultset.getScoring();
   }
 
   /**

@@ -2,6 +2,7 @@ import {Collection} from "./collection";
 import {clone, CloneMethod} from "./clone";
 import {ltHelper, gtHelper, aeqHelper, sortHelper} from "./helper";
 import {Dict, Doc, Query} from "../../common/types";
+import {ScoreResult} from "../../full-text-search/src/scorer";
 
 export type ANY = any;
 
@@ -295,7 +296,7 @@ export class Resultset<E extends object = object> {
   public filteredrows: number[];
   public filterInitialized: boolean;
   // Holds the scoring result of the last full text search.
-  private _scoring: Dict<number>;
+  private _scoring: ScoreResult;
 
   /**
    * Constructor.
@@ -650,6 +651,18 @@ export class Resultset<E extends object = object> {
     }
 
     return this;
+  }
+
+  /**
+   * Returns the scoring of the last full-text-search.
+   * @returns {ScoreResult}
+   */
+  public getScoring(): ScoreResult {
+    if (this._scoring === null) {
+      throw new Error("No scoring available");
+    }
+
+    return this._scoring;
   }
 
   /**

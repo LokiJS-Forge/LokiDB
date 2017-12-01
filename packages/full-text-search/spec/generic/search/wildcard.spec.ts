@@ -1,11 +1,11 @@
 /* global describe, it, expect */
 import {FullTextSearch} from "../../../src/full_text_search";
-import {QueryBuilder as QB, WildcardQuery} from "../../../src/query_builder";
+import {Query, QueryBuilder as QB, WildcardQueryBuilder} from "../../../src/query_builder";
 import {Tokenizer} from "../../../src/tokenizer";
 
 describe("wildcard query", () => {
   // from lucene 6.4.0 core: TestWildCard
-  let assertMatches = (searcher: FullTextSearch, query: object, docIds: number[] = []) => {
+  let assertMatches = (searcher: FullTextSearch, query: Query, docIds: number[] = []) => {
     let res = searcher.search(query);
     expect(Object.keys(res).length).toEqual(docIds.length);
     for (let i = 0; i < docIds.length; i++) {
@@ -16,7 +16,7 @@ describe("wildcard query", () => {
   };
 
   it("Wild card query: QB", () => {
-    let q = new WildcardQuery("user", "alb?rt").boost(4.5).build();
+    let q = new WildcardQueryBuilder("user", "alb?rt").boost(4.5).build();
     expect(q).toEqual({type: "wildcard", field: "user", value: "alb?rt", boost: 4.5});
   });
 

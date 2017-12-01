@@ -1,45 +1,54 @@
-import {Scorer} from "./scorer";
-import {InvertedIndex} from "./inverted_index";
-import {QueryBuilder} from "./query_builder";
+import {Scorer, ScoreResult} from "./scorer";
+import {InvertedIndex, toCodePoints} from "./inverted_index";
+import {FuzzyQuery, Query, QueryBuilder, WildcardQuery} from "./query_builder";
 import {Dict} from "../../common/types";
+import {RunAutomaton} from "./fuzzy/run_automaton";
+import {LevenshteinAutomata} from "./fuzzy/levenshtein_automata";
+import DocResults = Scorer.DocResults;
+import Index = InvertedIndex.Index;
 
-type Tree = any;
-export type ANY = any;
 
+
+/**
+ * @hidden
+ */
 export class IndexSearcher {
   private _invIdxs: Dict<InvertedIndex>;
-  private _docs: ANY;
+  private _docs: Set<number>;
   private _scorer: Scorer;
 
   /**
    * @param {object} invIdxs
    */
-  constructor(invIdxs: Dict<InvertedIndex>, docs: ANY) {
+  constructor(invIdxs: Dict<InvertedIndex>, docs: Set<number>) {
     this._invIdxs = invIdxs;
     this._docs = docs;
     this._scorer = new Scorer(this._invIdxs);
   }
 
-  public search(query: ANY) {
+  public search(query: Query): ScoreResult {
     let docResults = this._recursive(query.query, true);
 
-    // Final scoring.
-    let finalScoring = query.final_scoring !== undefined ? query.final_scoring : true;
-    if (finalScoring) {
+    // Do final scoring.
+    if (query.final_scoring !== undefined ? query.final_scoring : true) {
       return this._scorer.finalScore(query, docResults);
     }
-    return docResults;
+
+    const result: ScoreResult = {};
+    for (const key of docResults.keys()) {
+      result[key] = 1;
+    }
+    return result;
   }
 
   public setDirty() {
     this._scorer.setDirty();
   }
 
-  private _recursive(query: ANY, doScoring: boolean) {
-    let docResults = {};
-    let boost = query.boost !== undefined ? query.boost : 1;
-    let fieldName = query.field !== undefined ? query.field : null;
-    let enableScoring = query.enable_scoring !== undefined ? query.enable_scoring : false;
+  private _recursive(query: any, doScoring: boolean) {
+    let docResults: DocResults = new Map();
+    const boost = query.boost !== undefined ? query.boost : 1;
+    const fieldName = query.field !== undefined ? query.field : null;
 
     let root = null;
     let tokenizer = null;
@@ -57,13 +66,12 @@ export class IndexSearcher {
         if (query.filter !== undefined) {
           docResults = this._getUnique(query.filter.values, false, docResults);
         }
-
         if (query.should !== undefined) {
           let shouldDocs = this._getAll(query.should.values, doScoring);
 
           let empty = false;
           if (docResults === null) {
-            docResults = {};
+            docResults = new Map();
             empty = true;
           }
 
@@ -81,15 +89,14 @@ export class IndexSearcher {
             }
           }
           // Remove all docs with fewer matches.
-          let docs = Object.keys(shouldDocs);
-          for (let i = 0, docId; i < docs.length, docId = docs[i]; i++) {
-            if (shouldDocs[docId].length >= msm) {
-              if (docResults[docId] !== undefined) {
-                docResults[docId].push(...shouldDocs[docId]);
+          for (const [docId, res] of shouldDocs) {
+            if (res.length >= msm) {
+              if (docResults.has(docId)) {
+                docResults.get(docId).push(...res);
               } else if (empty) {
-                docResults[docId] = shouldDocs[docId];
+                docResults.set(docId, res);
               } else {
-                delete docResults[docId];
+                docResults.delete(docId);
               }
             }
           }
@@ -97,38 +104,40 @@ export class IndexSearcher {
         if (query.not !== undefined) {
           let notDocs = this._getAll(query.not.values, false);
           // Remove all docs.
-          let docs = Object.keys(notDocs);
-          for (let i = 0, docId; i < docs.length, docId = docs[i]; i++) {
-            if (docResults[docId] !== undefined) {
-              delete docResults[docId];
+          for (const docId of notDocs.keys()) {
+            if (docResults.has(docId)) {
+              docResults.delete(docId);
             }
           }
         }
         break;
       }
       case "term": {
-        let termIdx = InvertedIndex.getTermIndex(query.value, root);
-        this._scorer.prepare(fieldName, boost, termIdx, doScoring, docResults, query.value);
+        const cps = toCodePoints(query.value);
+        let termIdx = InvertedIndex.getTermIndex(cps, root);
+        this._scorer.score(fieldName, boost, termIdx, doScoring, docResults, cps);
         break;
       }
       case "terms": {
         for (let i = 0; i < query.value.length; i++) {
-          let termIdx = InvertedIndex.getTermIndex(query.value[i], root);
-          this._scorer.prepare(fieldName, boost, termIdx, doScoring, docResults, query.value[i]);
+          const cps = toCodePoints(query.value[i]);
+          let termIdx = InvertedIndex.getTermIndex(cps, root);
+          this._scorer.score(fieldName, boost, termIdx, doScoring, docResults, cps);
         }
         break;
       }
       case "fuzzy": {
-        let f = fuzzySearch(query, root);
+        const f = fuzzySearch(query, root);
         for (let i = 0; i < f.length; i++) {
-          this._scorer.prepare(fieldName, boost * f[i].boost, f[i].index, doScoring, docResults, f[i].term);
+          this._scorer.score(fieldName, boost * f[i].boost, f[i].index, doScoring, docResults, f[i].term);
         }
         break;
       }
       case "wildcard": {
-        let w = wildcardSearch(query, root);
+        const enableScoring = query.enable_scoring !== undefined ? query.enable_scoring : false;
+        const w = wildcardSearch(query, root);
         for (let i = 0; i < w.length; i++) {
-          this._scorer.prepare(fieldName, boost, w[i].index, doScoring && enableScoring, docResults, w[i].term);
+          this._scorer.score(fieldName, boost, w[i].index, doScoring && enableScoring, docResults, w[i].term);
         }
         break;
       }
@@ -140,28 +149,28 @@ export class IndexSearcher {
       }
       case "constant_score": {
         let tmpDocResults = this._getAll(query.filter.values, false);
-        let docs = Object.keys(tmpDocResults);
         // Add to each document a constant score.
-        for (let i = 0; i < docs.length; i++) {
-          this._scorer.scoreConstant(boost, docs[i], docResults);
+        for (const docId of tmpDocResults.keys()) {
+          this._scorer.scoreConstant(boost, docId, docResults);
         }
         break;
       }
       case "prefix": {
-        let termIdx = InvertedIndex.getTermIndex(query.value, root);
+        const enableScoring = query.enable_scoring !== undefined ? query.enable_scoring : false;
+        const cps = toCodePoints(query.value);
+        const termIdx = InvertedIndex.getTermIndex(cps, root);
         if (termIdx !== null) {
           const termIdxs = InvertedIndex.extendTermIndex(termIdx);
           for (let i = 0; i < termIdxs.length; i++) {
-            this._scorer.prepare(fieldName, boost, termIdxs[i].index, doScoring && enableScoring, docResults, query.value + termIdxs[i].term);
+            this._scorer.score(fieldName, boost, termIdxs[i].index, doScoring && enableScoring, docResults, [...cps, ...termIdxs[i].term]);
           }
         }
         break;
       }
       case "exists": {
         if (root !== null) {
-          let docs = Object.keys(this._invIdxs[fieldName].documentStore);
-          for (let i = 0; i < docs.length; i++) {
-            this._scorer.scoreConstant(boost, docs[i], docResults);
+          for (const docId of this._invIdxs[fieldName].documentStore.keys()) {
+            this._scorer.scoreConstant(boost, docId, docResults);
           }
         }
         break;
@@ -211,40 +220,38 @@ export class IndexSearcher {
     return docResults;
   }
 
-  private _getUnique(values: ANY[], doScoring: boolean, docResults: ANY) {
-    if (values.length === 0) {
+  private _getUnique(queries: any[], doScoring: boolean, docResults: DocResults) {
+    if (queries.length === 0) {
       return docResults;
     }
 
-    for (let i = 0; i < values.length; i++) {
-      let currDocs = this._recursive(values[i], doScoring);
+    for (let i = 0; i < queries.length; i++) {
+      let currDocs = this._recursive(queries[i], doScoring);
       if (docResults === null) {
-        docResults = this._recursive(values[0], doScoring);
+        docResults = this._recursive(queries[0], doScoring);
         continue;
       }
 
-      let docs = Object.keys(docResults);
-      for (let j = 0, docId; j < docs.length, docId = docs[j]; j++) {
-        if (currDocs[docId] === undefined) {
-          delete docResults[docId];
+      for (const docId of docResults.keys()) {
+        if (!currDocs.has(docId)) {
+          docResults.delete(docId);
         } else {
-          docResults[docId].push(...currDocs[docId]);
+          docResults.get(docId).push(...currDocs.get(docId));
         }
       }
     }
     return docResults;
   }
 
-  private _getAll(values: ANY[], doScoring: boolean) {
-    let docResults = {};
-    for (let i = 0; i < values.length; i++) {
-      let currDocs = this._recursive(values[i], doScoring);
-      let docs = Object.keys(currDocs);
-      for (let j = 0, docId; j < docs.length, docId = docs[j]; j++) {
-        if (docResults[docId] === undefined) {
-          docResults[docId] = currDocs[docId];
+  private _getAll(queries: any[], doScoring: boolean) {
+    let docResults: DocResults = new Map();
+    for (let i = 0; i < queries.length; i++) {
+      let currDocs = this._recursive(queries[i], doScoring);
+      for (const docId of currDocs.keys()) {
+        if (!docResults.has(docId)) {
+          docResults.set(docId, currDocs.get(docId));
         } else {
-          docResults[docId].push(...currDocs[docId]);
+          docResults.get(docId).push(...currDocs.get(docId));
         }
       }
     }
@@ -252,67 +259,16 @@ export class IndexSearcher {
   }
 }
 
-/**
- * Calculates the levenshtein distance.
- * Copyright Kigiri: https://github.com/kigiri
- *           Milot Mirdita: https://github.com/milot-mirdita
- *           Toni Neubert:  https://github.com/Viatorus/
- * @param {string} a - a string
- * @param {string} b - a string
- */
-function levenshteinDistance(a: string, b: string) {
-  if (a.length === 0) return b.length;
-  if (b.length === 0) return a.length;
-  let tmp;
-  let i;
-  let j;
-  let prev;
-  let val;
-  // swap to save some memory O(min(a,b)) instead of O(a)
-  if (a.length > b.length) {
-    tmp = a;
-    a = b;
-    b = tmp;
-  }
-
-  const row = Array(a.length + 1);
-  // init the row
-  for (i = 0; i <= a.length; i++) {
-    row[i] = i;
-  }
-
-  // fill in the rest
-  for (i = 1; i <= b.length; i++) {
-    prev = i;
-    for (j = 1; j <= a.length; j++) {
-      if (b[i - 1] === a[j - 1]) {	// match
-        val = row[j - 1];
-      } else {
-        val = Math.min(row[j - 1] + 1, // substitution
-          Math.min(prev + 1,         // insertion
-            row[j] + 1));          // deletion
-
-        // transposition.
-        if (i > 1 && j > 1 && b[i - 2] === a[j - 1] && a[j - 2] === b[i - 1]) {
-          val = Math.min(val, row[j - 1] - (a[j - 1] === b[i - 1] ? 1 : 0));
-        }
-      }
-      row[j - 1] = prev;
-      prev = val;
-    }
-    row[a.length] = prev;
-  }
-  return row[a.length];
-}
+type FuzzyResult = {index: Index, term: number[], boost: number};
 
 /**
  * Performs a fuzzy search.
- * @param {ANY} query - the fuzzy query
- * @param {InvertedIndex.Index} root - the root index
- * @returns {Array}
+ * @param {FuzzyQuery} query - the fuzzy query
+ * @param {Index} root - the root index
+ * @returns {FuzzyResult} - the results
  */
-function fuzzySearch(query: ANY, root: InvertedIndex.Index) {
-  let value = query.value;
+function fuzzySearch(query: FuzzyQuery, root: Index): FuzzyResult[] {
+  let value = toCodePoints(query.value);
   let fuzziness = query.fuzziness !== undefined ? query.fuzziness : "AUTO";
   if (fuzziness === "AUTO") {
     if (value.length <= 2) {
@@ -326,139 +282,157 @@ function fuzzySearch(query: ANY, root: InvertedIndex.Index) {
   let prefixLength = query.prefix_length !== undefined ? query.prefix_length : 2;
   let extended = query.extended !== undefined ? query.extended : false;
 
-  // Todo: Include levenshtein to reduce similar iterations.
-  // Tree tokens at same depth share same row until depth (should works if recursive).
-  // Pregenerate tree token ?
-  // var treeToken = Array(token.length + maxDistance);
+  // Do just a prefix search if zero fuzziness.
+  if (fuzziness === 0) {
+    prefixLength = value.length;
+  }
 
-  let start = root;
-  let pre = value.slice(0, prefixLength);
+  let result: FuzzyResult[] = [];
+  let startIdx = root;
+  let prefix = value.slice(0, prefixLength);
   let fuzzy = value;
+
+  // Perform a prefix search.
   if (prefixLength !== 0) {
-    start = InvertedIndex.getTermIndex(pre, start);
+    startIdx = InvertedIndex.getTermIndex(prefix, startIdx);
     fuzzy = fuzzy.slice(prefixLength);
   }
-  if (start === null) {
-    return [];
+
+  // No startIdx found.
+  if (startIdx === null) {
+    return result;
   }
+
+  // Fuzzy is not necessary anymore, because prefix search includes the whole query value.
   if (fuzzy.length === 0) {
-    // Return if prefixLength == value length.
-    return [{term: "", index: start, boost: 1}];
+    if (extended) {
+      // Add all terms down the index.
+      const all = InvertedIndex.extendTermIndex(startIdx);
+      for (let i = 0; i < all.length; i++) {
+        result.push({index: all[i].index, term: all[i].term, boost: 1});
+      }
+    } else if (startIdx.dc !== undefined) {
+      // Add prefix search result.
+      result.push({index: startIdx, term: value, boost: 1});
+    }
+    return result;
   }
 
-  /// Fuzziness of the fuzzy without extension.
-  let extend_fuzzy = 1e10;
+  // The matching term.
+  const term = [0];
+  // Create an automaton from the fuzzy.
+  const automaton = new RunAutomaton(new LevenshteinAutomata(fuzzy, fuzziness).toAutomaton());
 
-  let similarTokens = [];
-  let stack = [start];
-  let treeStack = [""];
-  do {
-    let index = stack.pop();
-    let treeTerms = treeStack.pop();
-
-    // Check if fuzzy should be extended.
-    if (extended) {
-      if (treeTerms.length === fuzzy.length) {
-        extend_fuzzy = levenshteinDistance(fuzzy, treeTerms);
-      } else {
-        extend_fuzzy = extend_fuzzy <= fuzziness && treeTerms.length >= fuzzy.length
-          ? extend_fuzzy
-          : 1e10;
+  function determineEditDistance(state: number, termLength: number, fuzzyLength: number): number {
+    // Check how many edits this fuzzy can still do.
+    let ed = 0;
+    state = automaton.step(state, 0);
+    if (state !== -1 && automaton.isAccept(state)) {
+      ed++;
+      state = automaton.step(state, 0);
+      if (state !== -1 && automaton.isAccept(state)) {
+        ed++;
       }
     }
+    // Include the term and fuzzy length.
+    ed -= Math.abs(termLength - fuzzyLength);
+    return fuzziness as number - ed;
+  }
 
-    // Compare tokens if they are in near distance.
-    if (index.df !== undefined) {
-      let matched = false;
-      if (Math.abs(fuzzy.length - treeTerms.length) <= fuzziness) {
-        const distance = levenshteinDistance(fuzzy, treeTerms);
-        if (distance <= fuzziness) {
-          let term = pre + treeTerms;
-          // Calculate boost.
-          let boost = 1 - distance / Math.min(term.length, value.length);
-          similarTokens.push({term, index: index, boost});
-          matched = true;
+  function recursive(state: number, key: number, idx: Index) {
+    term[term.length - 1] = key;
+
+    // Check the current key of term with the automaton.
+    state = automaton.step(state, key);
+    if (state === -1) {
+      return;
+    }
+
+    if (automaton.isAccept(state)) {
+      if (extended) {
+        // Add all terms down the index.
+        let all = InvertedIndex.extendTermIndex(idx);
+        for (let i = 0; i < all.length; i++) {
+          result.push({index: all[i].index, term: all[i].term, boost: 1});
         }
-      }
-      // Only include extended terms that did not previously match.
-      if (extend_fuzzy <= fuzziness && !matched) {
-        let term = pre + treeTerms;
+        return;
+      } else if (idx.df !== undefined) {
         // Calculate boost.
-        let boost = 1 - (extend_fuzzy + treeTerms.length - fuzzy.length) / Math.min(term.length, value.length);
-        similarTokens.push({term: term, index: index, boost});
+        let distance = determineEditDistance(state, term.length, fuzzy.length);
+        let boost = 1 - distance / Math.min(prefix.length + term.length, value.length);
+        result.push({index: idx, term: [...prefix, ...term], boost});
       }
     }
 
-    // Iterate over all subtrees.
-    // If token from tree is not longer than maximal distance.
-    if ((treeTerms.length - fuzzy.length <= fuzziness) || extend_fuzzy <= fuzziness) {
-      // Iterate over all subtrees.
-      let keys = Object.keys(index);
-      for (let i = 0; i < keys.length; i++) {
-        if (keys[i].length === 1) {
-          stack.push(index[keys[i]]);
-          treeStack.push(treeTerms + keys[i]);
-        }
-      }
+    term.push(0);
+    for (const child of idx) {
+      recursive(state, child[0], child[1]);
     }
-  } while (stack.length !== 0);
+    term.pop();
+  }
 
-  return similarTokens;
+  for (const child of startIdx) {
+    recursive(0, child[0], child[1]);
+  }
+
+  return result;
 }
+
+type WildcardResult = {index: Index, term: number[]};
 
 /**
  * Performs a wildcard search.
- * @param {ANY} query - the wildcard query
- * @param {InvertedIndex.Index} root - the root index
- * @returns {Array}
+ * @param {WildcardQuery} query - the wildcard query
+ * @param {Index} root - the root index
+ * @returns {Array} - the results
  */
-function wildcardSearch(query: ANY, root: InvertedIndex.Index) {
-  let wildcard = query.value;
-  let result: ANY[] = [];
+function wildcardSearch(query: WildcardQuery, root: Index): WildcardResult[] {
+  let wildcard = toCodePoints(query.value);
+  let result: WildcardResult[] = [];
 
-  function recursive(index: Tree, idx: number = 0, term: string = "", escaped: boolean = false) {
+  function recursive(index: Index, idx: number = 0, term: number[] = [], escaped: boolean = false) {
     if (index === null) {
       return;
     }
 
     if (idx === wildcard.length) {
       if (index.df !== undefined) {
-        result.push({index: index, term});
+        result.push({index: index, term: term.slice()});
       }
       return;
     }
 
-    if (!escaped && wildcard[idx] === "\\") {
+    // Escaped character.
+    if (!escaped && wildcard[idx] === 92 /* \ */) {
       recursive(index, idx + 1, term, true);
-    } else if (!escaped && wildcard[idx] === "?") {
-      let others = InvertedIndex.getNextTermIndex(index);
-      for (let i = 0; i < others.length; i++) {
-        recursive(others[i].index, idx + 1, term + others[i].term);
+    } else if (!escaped && wildcard[idx] === 63 /* ? */) {
+      for (const child of index) {
+        recursive(child[1], idx + 1, [...term, child[0]]);
       }
-    } else if (!escaped && wildcard[idx] === "*") {
+    } else if (!escaped && wildcard[idx] === 42 /* * */) {
       // Check if asterisk is last wildcard character
       if (idx + 1 === wildcard.length) {
         const all = InvertedIndex.extendTermIndex(index);
         for (let i = 0; i < all.length; i++) {
-          recursive(all[i].index, idx + 1, term + all[i].term);
+          recursive(all[i].index, idx + 1, [...term, ...all[i].term]);
         }
-        return;
+      } else {
+        // Iterate over the whole tree.
+        recursive(index, idx + 1, term, false);
+        const indices: InvertedIndex.IndexTerm[] = [{index: index, term: []}];
+        do {
+          const index = indices.pop();
+          for (const child of index.index) {
+            recursive(child[1], idx + 1, [...term, ...index.term, child[0]]);
+            indices.push({index: child[1], term: [...index.term, child[0]]});
+          }
+        } while (indices.length !== 0);
       }
-      // Iterate over the whole tree.
-      recursive(index, idx + 1, term);
-      const indices = [{index: index, term: ""}];
-      do {
-        const index = indices.pop();
-        let others = InvertedIndex.getNextTermIndex(index.index);
-        for (let i = 0; i < others.length; i++) {
-          recursive(others[i].index, idx + 1, term + index.term + others[i].term);
-          indices.push({index: others[i].index, term: index.term + others[i].term});
-        }
-      } while (indices.length !== 0);
     } else {
-      recursive(InvertedIndex.getTermIndex(wildcard[idx], index), idx + 1, term + wildcard[idx]);
+      recursive(InvertedIndex.getTermIndex([wildcard[idx]], index), idx + 1, [...term, wildcard[idx]]);
     }
   }
+
   recursive(root);
 
   return result;

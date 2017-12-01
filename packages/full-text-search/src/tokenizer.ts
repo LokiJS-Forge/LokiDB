@@ -4,6 +4,8 @@
  * @returns {string[]} - the tokens
  * @private
  */
+import {Dict} from "../../common/types";
+
 function defaultSplitter(str: string) {
   let tokens = str.split(/[^\w]+/);
   for (let i = 0; i < tokens.length; i++) {
@@ -11,8 +13,6 @@ function defaultSplitter(str: string) {
   }
   return tokens;
 }
-
-export type ANY = any;
 
 /**
  * The tokenizer is used to prepare the string content of a document field for the inverted index.
@@ -28,7 +28,7 @@ export type ANY = any;
 export class Tokenizer {
   private _splitter: Tokenizer.SplitterFunction;
   private _queue: Tokenizer.TokinizeFunction[] = [];
-  private _symbol: ANY = Symbol("label");
+  private _symbol: any = Symbol("label");
 
   /**
    * Initializes the tokenizer with a splitter, which splits a string at non-alphanumeric characters.
@@ -199,9 +199,9 @@ export class Tokenizer {
    * @param {Object.<string, function>|Tokenizer} funcTok - the depending functions with labels
    *  or an equivalent tokenizer
    */
-  static fromJSONObject(serialized: Tokenizer.Serialization, funcTok: ANY = undefined) {
+  static fromJSONObject(serialized: Tokenizer.Serialization, funcTok?: Tokenizer.FunctionSerialization) {
     let tkz = new Tokenizer();
-    if (funcTok !== undefined && funcTok instanceof Tokenizer) {
+    if (funcTok instanceof Tokenizer) {
       if (serialized.splitter !== undefined) {
         let splitter = funcTok.getSplitter();
         if (serialized.splitter !== splitter[0]) {
@@ -270,12 +270,15 @@ export class Tokenizer {
 }
 
 export namespace Tokenizer {
+  export type SplitterFunction = (word: string) => string[];
+  export type TokinizeFunction = (word: string) => string;
+
   export interface Serialization {
     splitter?: string;
     tokenizers: string[];
   }
 
-  export type SplitterFunction = (word: string) => string[];
-
-  export type TokinizeFunction = (word: string) => string;
+  export type FunctionSerialization =
+    { splitters: Dict<SplitterFunction>, tokenizers: Dict<TokinizeFunction> }
+    | Tokenizer;
 }
