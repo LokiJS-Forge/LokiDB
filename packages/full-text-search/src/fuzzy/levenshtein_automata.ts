@@ -1,6 +1,6 @@
-import {Automaton, MAX_CODE_POINT} from "./Automaton";
-import {Lev1TParametricDescription} from "./Lev1TParametricDescription";
-import {Lev2TParametricDescription} from "./Lev2TParametricDescription";
+import {Automaton, MAX_CODE_POINT} from "./automaton";
+import {Lev1TParametricDescription} from "./lev1t_parametric_description";
+import {Lev2TParametricDescription} from "./lev2t_parametric_description";
 
 /**
  * From org/apache/lucene/util/automaton/LevenshteinAutomata.java

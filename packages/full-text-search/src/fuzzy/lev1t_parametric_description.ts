@@ -1,5 +1,5 @@
-import {Long} from "./Long";
-import {ParametricDescription} from "./ParametricDescription";
+import {Long} from "./long";
+import {ParametricDescription} from "./parametric_description";
 
 // 1 vectors; 2 states per vector; array length = 2
 const toStates0 = [new Long(0x2)];

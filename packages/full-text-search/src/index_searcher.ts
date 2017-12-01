@@ -2,8 +2,8 @@ import {Scorer, ScoreResult} from "./scorer";
 import {InvertedIndex, toCodePoints} from "./inverted_index";
 import {FuzzyQuery, Query, QueryBuilder, WildcardQuery} from "./query_builder";
 import {Dict} from "../../common/types";
-import {RunAutomaton} from "./fuzzy/RunAutomaton";
-import {LevenshteinAutomata} from "./fuzzy/LevenshteinAutomata";
+import {RunAutomaton} from "./fuzzy/run_automaton";
+import {LevenshteinAutomata} from "./fuzzy/levenshtein_automata";
 import DocResults = Scorer.DocResults;
 import Index = InvertedIndex.Index;
 

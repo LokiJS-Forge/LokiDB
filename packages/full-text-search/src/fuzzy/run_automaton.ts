@@ -1,4 +1,4 @@
-import {Automaton} from "./Automaton";
+import {Automaton} from "./automaton";
 
 /**
  * From org/apache/lucene/util/automaton/RunAutomaton.java
