@@ -386,7 +386,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       }
     }
 
-    coll.maxId = (typeof obj.maxId === "undefined") ? 0 : obj.maxId;
+    coll.maxId = (obj.maxId === undefined) ? 0 : obj.maxId;
     coll.idIndex = obj.idIndex;
     if (obj.binaryIndices !== undefined) {
       coll.binaryIndices = obj.binaryIndices;
@@ -1060,7 +1060,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       const position = arr[1];
 
       Object.keys(this.constraints.unique).forEach((key) => {
-        if (doc[key] !== null && typeof doc[key] !== "undefined") {
+        if (doc[key] !== null && doc[key] !== undefined) {
           this.constraints.unique[key].remove(doc[key]);
         }
       });

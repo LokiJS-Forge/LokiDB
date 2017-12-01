@@ -503,7 +503,7 @@ export class Resultset<E extends object = object> {
    * @returns {Resultset} Reference to this resultset, sorted, for future chain operations.
    */
   public simplesort(propname: string, isdesc?: boolean): Resultset<E> {
-    if (typeof (isdesc) === "undefined") {
+    if (isdesc === undefined) {
       isdesc = false;
     }
 

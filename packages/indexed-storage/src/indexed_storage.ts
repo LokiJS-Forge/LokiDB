@@ -374,7 +374,7 @@ class LokiCatalog {
     request.onsuccess = (((usercallback) => (e: ANY) => {
       let lres = e.target.result;
 
-      if (lres === null || typeof(lres) === "undefined") {
+      if (lres === null || lres === undefined) {
         lres = {
           id: 0,
           success: false
