@@ -49,7 +49,7 @@ export class FullTextSearch {
       }
     }
     this._docs.add(id);
-    this.setDirty();
+    this._idxSearcher.setDirty();
   }
 
   public removeDocument(doc: object, id: number = doc[this._id]): void {
@@ -58,7 +58,7 @@ export class FullTextSearch {
       this._invIdxs[fieldNames[i]].remove(id);
     }
     this._docs.delete(id);
-    this.setDirty();
+    this._idxSearcher.setDirty();
   }
 
   public updateDocument(doc: object, id: number = doc[this._id]): void {
@@ -74,10 +74,6 @@ export class FullTextSearch {
 
   public search(query: Query): ScoreResult {
     return this._idxSearcher.search(query);
-  }
-
-  public setDirty(): void {
-    this._idxSearcher.setDirty();
   }
 
   public toJSON(): FullTextSearch.Serialization {
