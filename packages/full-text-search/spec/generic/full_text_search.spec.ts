@@ -100,6 +100,7 @@ describe("full text search", () => {
     let query = new QueryBuilder().fuzzy("name", "quak").fuzziness(2).build();
 
     expect(coll.chain().sortByScoring).toThrowAnyError();
+    expect(coll.chain().getScoring).toThrowAnyError();
 
     let res = coll.chain().find({"$fts": query});
     expect(res.data().length).toBe(4);
@@ -107,6 +108,8 @@ describe("full text search", () => {
     const unsorted = res.data();
     const sorted_desc = res.sortByScoring().data();
     const sorted_asc = res.sortByScoring(true).data();
+
+    expect(Object.keys(res.getScoring())).toEqual(Object.keys(unsorted));
 
     expect(unsorted.length).toBe(sorted_desc.length);
     expect(sorted_desc.length).toBe(sorted_asc.length);
@@ -125,6 +128,8 @@ describe("full text search", () => {
 
     expect(dv.applySortByScoring).toThrowAnyError();
     dv.applyFind({"$fts": query});
+
+    expect(Object.keys(dv.getScoring())).toEqual(Object.keys(unsorted));
 
     expect(dv.applySortByScoring().data()).toEqual(sorted_desc);
     expect(dv.applySortByScoring(true).data()).toEqual(sorted_asc);
