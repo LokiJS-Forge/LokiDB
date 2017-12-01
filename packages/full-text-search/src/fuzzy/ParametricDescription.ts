@@ -22,43 +22,43 @@ const MASKS = [new Long(0x1), new Long(0x3), new Long(0x7), new Long(0xf),
  * @hidden
  */
 export class ParametricDescription {
-  protected w: number;
-  private n: number;
-  private minErrors: number[];
+  protected _w: number;
+  private _n: number;
+  private _minErrors: number[];
 
   constructor(w: number, n: number, minErrors: number[]) {
-    this.w = w;
-    this.n = n;
-    this.minErrors = minErrors;
+    this._w = w;
+    this._n = n;
+    this._minErrors = minErrors;
   }
 
   /**
    * Return the number of states needed to compute a Levenshtein DFA
    */
-  size(): number {
-    return this.minErrors.length * (this.w + 1);
+  public size(): number {
+    return this._minErrors.length * (this._w + 1);
   }
 
   /**
    * Returns true if the <code>state</code> in any Levenshtein DFA is an accept state (final state).
    */
-  isAccept(absState: number): boolean {
+  public isAccept(absState: number): boolean {
     // decode absState -> state, offset
-    let state = Math.floor(absState / (this.w + 1));
-    let offset = absState % (this.w + 1);
+    let state = Math.floor(absState / (this._w + 1));
+    let offset = absState % (this._w + 1);
     //assert offset >= 0;
-    return this.w - offset + this.minErrors[state] <= this.n;
+    return this._w - offset + this._minErrors[state] <= this._n;
   }
 
   /**
    * Returns the position in the input word for a given <code>state</code>.
    * This is the minimal boundary for the state.
    */
-  getPosition(absState: number): number {
-    return absState % (this.w + 1);
+  public getPosition(absState: number): number {
+    return absState % (this._w + 1);
   }
 
-  unpack(data: Long[], index: number, bitsPerValue: number): number {
+  public unpack(data: Long[], index: number, bitsPerValue: number): number {
     const bitLoc = bitsPerValue * index;
     const dataLoc = (bitLoc >> 6);
     const bitStart = (bitLoc & 63);

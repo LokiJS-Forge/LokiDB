@@ -5,46 +5,43 @@ import {Automaton} from "./Automaton";
  * @hidden
  */
 export class RunAutomaton {
-  private automaton: Automaton;
-  private points: number[];
-  private size: number;
-  private accept: boolean[];
-  private transitions: number[];
-  private classmap: number[];
+  private _points: number[];
+  private _accept: boolean[];
+  private _transitions: number[];
+  private _classmap: number[];
 
-  constructor(a: Automaton) {
-    this.automaton = a;
-    this.points = a.getStartPoints();
-    this.size = a.getNumStates();
-    this.accept = new Array(this.size);
-    this.transitions = new Array(this.size * this.points.length);
+  constructor(automaton: Automaton) {
+    const size = automaton.getNumStates();
+    this._points = automaton.getStartPoints();
+    this._accept = new Array(size);
+    this._transitions = new Array(size * this._points.length);
 
-    for (let n = 0; n < this.size; n++) {
-      this.accept[n] = a.isAccept(n);
-      for (let c = 0; c < this.points.length; c++) {
+    for (let n = 0; n < size; n++) {
+      this._accept[n] = automaton.isAccept(n);
+      for (let c = 0; c < this._points.length; c++) {
         // assert dest == -1 || dest < size;
-        this.transitions[n * this.points.length + c] = a.step(n, this.points[c]);
+        this._transitions[n * this._points.length + c] = automaton.step(n, this._points[c]);
       }
     }
 
-    this.classmap = new Array(256 /* alphaSize */);
-    for (let i = 0, j = 0; j < this.classmap.length; j++) {
-      if (i + 1 < this.points.length && j === this.points[i + 1]) {
+    this._classmap = new Array(256 /* alphaSize */);
+    for (let i = 0, j = 0; j < this._classmap.length; j++) {
+      if (i + 1 < this._points.length && j === this._points[i + 1]) {
         i++;
       }
-      this.classmap[j] = i;
+      this._classmap[j] = i;
     }
   }
 
   getCharClass(c: number): number {
     // binary search
     let a = 0;
-    let b = this.points.length;
+    let b = this._points.length;
     while (b - a > 1) {
       const d = (a + b) >>> 1;
-      if (this.points[d] > c) {
+      if (this._points[d] > c) {
         b = d;
-      } else if (this.points[d] < c) {
+      } else if (this._points[d] < c) {
         a = d;
       } else {
         return d;
@@ -54,14 +51,14 @@ export class RunAutomaton {
   }
 
   step(state: number, c: number): number {
-    if (c >= this.classmap.length) {
-      return this.transitions[state * this.points.length + this.getCharClass(c)];
+    if (c >= this._classmap.length) {
+      return this._transitions[state * this._points.length + this.getCharClass(c)];
     } else {
-      return this.transitions[state * this.points.length + this.classmap[c]];
+      return this._transitions[state * this._points.length + this._classmap[c]];
     }
   }
 
   isAccept(state: number): boolean {
-    return this.accept[state];
+    return this._accept[state];
   }
 }

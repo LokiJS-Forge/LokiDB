@@ -35,28 +35,28 @@ export class Lev1TParametricDescription extends ParametricDescription {
     super(w, 1, [0, 1, 0, -1, -1, -1]);
   }
 
-  transition(absState: number, position: number, vector: number) {
+  public transition(absState: number, position: number, vector: number): number {
     // null absState should never be passed in
     //assert absState != -1;
 
     // decode absState -> state, offset
-    let state = Math.floor(absState / (this.w + 1));
-    let offset = absState % (this.w + 1);
+    let state = Math.floor(absState / (this._w + 1));
+    let offset = absState % (this._w + 1);
     //assert offset >= 0;
 
-    if (position === this.w) {
+    if (position === this._w) {
       if (state < 2) {
         const loc = vector * 2 + state;
         offset += this.unpack(offsetIncrs0, loc, 1);
         state = this.unpack(toStates0, loc, 2) - 1;
       }
-    } else if (position === this.w - 1) {
+    } else if (position === this._w - 1) {
       if (state < 3) {
         const loc = vector * 3 + state;
         offset += this.unpack(offsetIncrs1, loc, 1);
         state = this.unpack(toStates1, loc, 2) - 1;
       }
-    } else if (position === this.w - 2) {
+    } else if (position === this._w - 2) {
       if (state < 6) {
         const loc = vector * 6 + state;
         offset += this.unpack(offsetIncrs2, loc, 2);
@@ -75,7 +75,7 @@ export class Lev1TParametricDescription extends ParametricDescription {
       return -1;
     } else {
       // translate back to abs
-      return state * (this.w + 1) + offset;
+      return state * (this._w + 1) + offset;
     }
   }
 }
