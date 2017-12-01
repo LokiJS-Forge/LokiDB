@@ -13,17 +13,17 @@ export class FullTextSearch {
   private _invIdxs: Dict<InvertedIndex> = {};
 
   /**
-   * Registers the full text search as plugin.
+   * Registers the full-text search as plugin.
    */
   public static register(): void {
     PLUGINS["FullTextSearch"] = FullTextSearch;
   }
 
   /**
-   * Initialize the full text search for the given fields.
+   * Initialize the full-text search for the given fields.
    * @param {object[]} fields - the field options
    * @param {string} fields.name - the name of the field
-   * @param {boolean=true} fields.store - flag to indicate if the full text search should be stored on serialization or
+   * @param {boolean=true} fields.store - flag to indicate if the full-text search should be stored on serialization or
    *  rebuild on deserialization
    * @param {boolean=true} fields.optimizeChanges - flag to indicate if deleting/updating a document should be optimized
    *  (requires more memory but performs better)

@@ -295,7 +295,7 @@ export class Resultset<E extends object = object> {
   public collection: Collection<E>;
   public filteredrows: number[];
   public filterInitialized: boolean;
-  // Holds the scoring result of the last full text search.
+  // Holds the scoring result of the last full-text search.
   private _scoring: ScoreResult;
 
   /**

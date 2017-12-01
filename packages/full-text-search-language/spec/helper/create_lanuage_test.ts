@@ -27,7 +27,7 @@ export function createLanguageTest(language: string, data: LanguageTestData) {
   };
 
   describe("language-" + language + ":", () => {
-    // Setup full text search.
+    // Setup full-text search.
     let fts = new FullTextSearch([{
       name: "body",
       tokenizer: data.tokenizer

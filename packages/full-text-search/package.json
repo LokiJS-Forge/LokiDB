@@ -1,6 +1,6 @@
 {
   "name": "@lokijs/full-text-search",
-  "description": "A full text search engine.",
+  "description": "A full-text search engine.",
   "author": "Various authors",
   "license": "MIT",
   "repository": {
