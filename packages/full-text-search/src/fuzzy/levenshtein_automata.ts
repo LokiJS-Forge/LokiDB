@@ -42,7 +42,7 @@ export class LevenshteinAutomata {
       this._numRanges++;
     }
 
-    if (editDistance == 1) {
+    if (editDistance === 1) {
       this._description = new Lev1TParametricDescription(input.length);
     } else {
       this._description = new Lev2TParametricDescription(input.length);

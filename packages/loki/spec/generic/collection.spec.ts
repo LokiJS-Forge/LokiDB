@@ -23,7 +23,7 @@ describe("collection", () => {
 
     const coll = new SubclassedCollection("users", {});
 
-    expect(coll != null).toBe(true);
+    expect(coll !== null).toBe(true);
     expect("users".toUpperCase()).toEqual(coll.extendedMethod());
     coll.insert({
       name: "joe"
