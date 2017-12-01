@@ -41,8 +41,8 @@ Check out our interactive [documentation](https://lokijs-forge.github.io/LokiJS2
 |:---|:----------|
 |[@loki/full-text-search][full-text-search]                         |  A full-text search engine. |
 |[@loki/full-text-search-language][full-text-search-language]       |  A language analyzer utility package. |
-|[@loki/full-text-search-language-de][full-text-search-language-de] |  A german language analyzer. ![flag][full-text-search-language-de-flag] |
-|[@loki/full-text-search-language-en][full-text-search-language-en] |  An english language analyzer. ![flag][full-text-search-language-en-flag] |
+|[@loki/full-text-search-language-de][full-text-search-language-de] |  ![flag][full-text-search-language-de-flag] A german language analyzer. |
+|[@loki/full-text-search-language-en][full-text-search-language-en] |  ![flag][full-text-search-language-en-flag] An english language analyzer. |
 
 [build]: https://travis-ci.org/LokiJS-Forge/LokiJS2.svg?branch=master
 [build-url]: https://travis-ci.org/LokiJS-Forge/LokiJS2
@@ -69,8 +69,8 @@ Check out our interactive [documentation](https://lokijs-forge.github.io/LokiJS2
 [full-text-search-language]: https://github.com/LokiJS-Forge/LokiJS2
 [full-text-search-language-npm-url]: https://www.npmjs.com/package/@lokijs/full-text-search-language
 [full-text-search-language-de]: https://github.com/LokiJS-Forge/LokiJS2
-[full-text-search-language-de-flag]: https://cdn.rawgit.com/gosquared/flags/1d382a9e/flags/flags/flat/48/Germany.png
+[full-text-search-language-de-flag]: https://raw.githubusercontent.com/stevenrskelton/flag-icon/master/png/16/country-4x3/de.png
 [full-text-search-language-de-npm-url]: https://www.npmjs.com/package/@lokijs/full-text-search-language-de
 [full-text-search-language-en]: https://github.com/LokiJS-Forge/LokiJS2
 [full-text-search-language-en-npm-url]: https://www.npmjs.com/package/@lokijs/full-text-search-language-en
-[full-text-search-language-en-flag]: https://cdn.rawgit.com/gosquared/flags/1d382a9e/flags/flags/flat/48/United-States.png
+[full-text-search-language-en-flag]: https://raw.githubusercontent.com/stevenrskelton/flag-icon/master/png/16/country-4x3/us.png
