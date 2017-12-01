@@ -4,6 +4,7 @@ import {QueryBuilder} from "../../src/query_builder";
 import {LokiMemoryAdapter} from "../../../loki/src/memory_adapter";
 import {Collection} from "../../../loki/src/collection";
 import {FullTextSearch} from "../../src/full_text_search";
+import {Tokenizer} from "../../src/tokenizer";
 
 describe("full text search", () => {
   FullTextSearch.register();
@@ -146,6 +147,42 @@ describe("full text search", () => {
         return db2.initializePersistence(adapter)
           .then(() => {
             return db2.loadDatabase();
+          }).then(() => {
+            const coll2 = db2.getCollection<User>("User");
+            let query = new QueryBuilder().fuzzy("name", "quak").fuzziness(1).build();
+            expect(coll2.find({"$fts": query}).length).toBe(3);
+            done();
+          });
+      })
+      .catch(() => {
+        expect(true).toBe(false);
+        done();
+      });
+  });
+
+  it("save/load with tokenizer", (done) => {
+    const adapter = {adapter: new LokiMemoryAdapter()};
+    db = new Loki("MyDB");
+    const tkz = new Tokenizer();
+    tkz.setSplitter("abc", (a: string) => a.split(" "));
+    tkz.add("def", (a: string) => a);
+    coll = db.addCollection<User>("User", {fullTextSearch: [{name: "name", tokenizer: tkz}]});
+    coll.insert([
+      {name: "quark", id: 1},
+      {name: "quarrk", id: 2},
+      {name: "quak", id: 3},
+      {name: "quask", id: 4}
+    ]);
+
+    db.initializePersistence(adapter)
+      .then(() => {
+        return db.saveDatabase();
+      })
+      .then(() => {
+        const db2 = new Loki("MyDB");
+        return db2.initializePersistence(adapter)
+          .then(() => {
+            return db2.loadDatabase({fullTextSearch: {name: tkz}});
           }).then(() => {
             const coll2 = db2.getCollection<User>("User");
             let query = new QueryBuilder().fuzzy("name", "quak").fuzziness(1).build();

@@ -8,6 +8,7 @@ import {clone, CloneMethod} from "./clone";
 import {Doc, Dict, Query} from "../../common/types";
 import {FullTextSearch} from "../../full-text-search/src/full_text_search";
 import {PLUGINS} from "../../common/plugin";
+import {Tokenizer} from "../../full-text-search/src/tokenizer";
 
 export type ANY = any;
 export {CloneMethod} from "./clone";
@@ -412,7 +413,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     }
 
     if (obj._fullTextSearch) {
-      coll._fullTextSearch = FullTextSearch.fromJSONObject(obj._fullTextSearch);
+      coll._fullTextSearch = FullTextSearch.fromJSONObject(obj._fullTextSearch, options.fullTextSearch);
     }
 
     return coll;
@@ -2101,6 +2102,7 @@ export namespace Collection {
 
   export interface DeserializeOptions {
     retainDirtyFlags?: boolean;
+    fullTextSearch?: Dict<Tokenizer.FunctionSerialization>;
   }
 
   export interface BinaryIndex {

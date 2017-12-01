@@ -199,7 +199,7 @@ export class Tokenizer {
    * @param {Object.<string, function>|Tokenizer} funcTok - the depending functions with labels
    *  or an equivalent tokenizer
    */
-  static fromJSONObject(serialized: Tokenizer.Serialization, funcTok: Tokenizer.FunctionSerialization = undefined) {
+  static fromJSONObject(serialized: Tokenizer.Serialization, funcTok?: Tokenizer.FunctionSerialization) {
     let tkz = new Tokenizer();
     if (funcTok instanceof Tokenizer) {
       if (serialized.splitter !== undefined) {
