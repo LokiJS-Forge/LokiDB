@@ -111,6 +111,3 @@ export namespace FullTextSearch {
     ii: Dict<InvertedIndex.Serialization>;
   }
 }
-
-
-export default FullTextSearch;
