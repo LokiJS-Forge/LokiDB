@@ -7,7 +7,7 @@
 		exports["@lokijs/indexed-storage"] = factory();
 	else
 {		root["@lokijs/indexed-storage"] = factory(); root["LokiIndexedStorage"] = root["@lokijs/indexed-storage"].default;}
-})(this, function() {
+})(typeof self !== 'undefined' ? self : this, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -388,7 +388,7 @@ class LokiCatalog {
         const request = index.get(appkey);
         request.onsuccess = (((usercallback) => (e) => {
             let lres = e.target.result;
-            if (lres === null || typeof (lres) === "undefined") {
+            if (lres === null || lres === undefined) {
                 lres = {
                     id: 0,
                     success: false

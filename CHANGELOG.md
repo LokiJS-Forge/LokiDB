@@ -1,3 +1,12 @@
+<a name="2.0.0-beta.4"></a>
+# [2.0.0-beta.4](https://github.com/LokiJS-Forge/LokiJS2/compare/2.0.0-beta.3...2.0.0-beta.4) (2017-12-01)
+
+
+### Features
+
+* **full-text-search:** make index Unicode safe and improve fuzzy performance ([#55](https://github.com/LokiJS-Forge/LokiJS2/issues/55)) ([f1dea05](https://github.com/LokiJS-Forge/LokiJS2/commit/f1dea05))
+
+
 <a name="2.0.0-beta.3"></a>
 # [2.0.0-beta.3](https://github.com/LokiJS-Forge/LokiJS2/compare/2.0.0-beta.2...2.0.0-beta.3) (2017-11-26)
 

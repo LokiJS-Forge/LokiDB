@@ -1,4 +1,10 @@
-export declare type ANY = any;
+/**
+ * Splits a string at non-alphanumeric characters into lower case tokens.
+ * @param {string} str - the string
+ * @returns {string[]} - the tokens
+ * @private
+ */
+import { Dict } from "../../common/types";
 /**
  * The tokenizer is used to prepare the string content of a document field for the inverted index.
  * Firstly the string gets split into tokens.
@@ -102,7 +108,7 @@ export declare class Tokenizer {
      * @param {Object.<string, function>|Tokenizer} funcTok - the depending functions with labels
      *  or an equivalent tokenizer
      */
-    static fromJSONObject(serialized: Tokenizer.Serialization, funcTok?: ANY): Tokenizer;
+    static fromJSONObject(serialized: Tokenizer.Serialization, funcTok?: Tokenizer.FunctionSerialization): Tokenizer;
     /**
      * Returns the position of a function inside the queue.
      * @param {string|function} labelFunc - an existing label or function
@@ -120,10 +126,14 @@ export declare class Tokenizer {
     private _addFunction(label, func, pos);
 }
 export declare namespace Tokenizer {
+    type SplitterFunction = (word: string) => string[];
+    type TokinizeFunction = (word: string) => string;
     interface Serialization {
         splitter?: string;
         tokenizers: string[];
     }
-    type SplitterFunction = (word: string) => string[];
-    type TokinizeFunction = (word: string) => string;
+    type FunctionSerialization = {
+        splitters: Dict<SplitterFunction>;
+        tokenizers: Dict<TokinizeFunction>;
+    } | Tokenizer;
 }

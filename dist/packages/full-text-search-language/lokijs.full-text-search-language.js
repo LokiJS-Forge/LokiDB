@@ -7,7 +7,7 @@
 		exports["@lokijs/full-text-search-language"] = factory();
 	else
 {		root["@lokijs/full-text-search-language"] = factory(); root["LokiFullTextSearchLanguage"] = root["@lokijs/full-text-search-language"].default;}
-})(this, function() {
+})(typeof self !== 'undefined' ? self : this, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};

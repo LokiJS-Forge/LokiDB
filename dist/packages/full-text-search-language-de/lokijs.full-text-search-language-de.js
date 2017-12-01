@@ -7,7 +7,7 @@
 		exports["@lokijs/full-text-search-language-de"] = factory(require("@lokijs/full-text-search"), require("@lokijs/full-text-search-language"));
 	else
 {		root["@lokijs/full-text-search-language-de"] = factory(root["@lokijs/full-text-search"], root["@lokijs/full-text-search-language"]); root["LokiFullTextSearchLanguageDe"] = root["@lokijs/full-text-search-language-de"].default;}
-})(this, function(__WEBPACK_EXTERNAL_MODULE_1__, __WEBPACK_EXTERNAL_MODULE_2__) {
+})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE_1__, __WEBPACK_EXTERNAL_MODULE_2__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};

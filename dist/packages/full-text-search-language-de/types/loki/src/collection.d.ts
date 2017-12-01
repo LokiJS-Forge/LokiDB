@@ -5,6 +5,7 @@ import { DynamicView } from "./dynamic_view";
 import { CloneMethod } from "./clone";
 import { Doc, Dict, Query } from "../../common/types";
 import { FullTextSearch } from "../../full-text-search/src/full_text_search";
+import { Tokenizer } from "../../full-text-search/src/tokenizer";
 export declare type ANY = any;
 export { CloneMethod } from "./clone";
 /**
@@ -516,6 +517,7 @@ export declare namespace Collection {
     }
     interface DeserializeOptions {
         retainDirtyFlags?: boolean;
+        fullTextSearch?: Dict<Tokenizer.FunctionSerialization>;
     }
     interface BinaryIndex {
         dirty: boolean;

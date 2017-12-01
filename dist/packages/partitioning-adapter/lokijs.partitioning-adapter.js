@@ -7,7 +7,7 @@
 		exports["@lokijs/partitioning-adapter"] = factory(require("@lokijs/loki"));
 	else
 {		root["@lokijs/partitioning-adapter"] = factory(root["@lokijs/loki"]); root["LokiPartitioningAdapter"] = root["@lokijs/partitioning-adapter"].default;}
-})(this, function(__WEBPACK_EXTERNAL_MODULE_1__) {
+})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE_1__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};

@@ -2,6 +2,7 @@ import { LokiEventEmitter } from "./event_emitter";
 import { Resultset } from "./resultset";
 import { Collection } from "./collection";
 import { Doc, Filter } from "../../common/types";
+import { ScoreResult } from "../../full-text-search/src/scorer";
 export declare type ANY = any;
 /**
  * DynamicView class is a versatile 'live' view class which can have filters and sorts applied.
@@ -106,11 +107,6 @@ export declare class DynamicView<E extends object = object> extends LokiEventEmi
      */
     applySort(comparefun: (lhs: E, rhs: E) => number): DynamicView<E>;
     /**
-     * Used to apply a sort by the latest full-text-search scoring.
-     * @param {boolean} [ascending=false] - sort ascending
-     */
-    applySortByScoring(ascending?: boolean): DynamicView<E>;
-    /**
      * Used to specify a property used for view translation.
      * @example
      * dv.applySimpleSort("name");
@@ -134,6 +130,16 @@ export declare class DynamicView<E extends object = object> extends LokiEventEmi
      * @returns {DynamicView} Reference to this DynamicView, sorted, for future chain operations.
      */
     applySortCriteria(criteria: (string | [string, boolean])[]): DynamicView<E>;
+    /**
+     * Used to apply a sort by the latest full-text-search scoring.
+     * @param {boolean} [ascending=false] - sort ascending
+     */
+    applySortByScoring(ascending?: boolean): DynamicView<E>;
+    /**
+     * Returns the scoring of the last full-text-search.
+     * @returns {ScoreResult}
+     */
+    getScoring(): ScoreResult;
     /**
      * Marks the beginning of a transaction.
      * @returns {DynamicView} this DynamicView object, for further chain ops.

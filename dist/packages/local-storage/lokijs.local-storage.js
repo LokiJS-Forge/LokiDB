@@ -7,7 +7,7 @@
 		exports["@lokijs/local-storage"] = factory();
 	else
 {		root["@lokijs/local-storage"] = factory(); root["LokiLocalStorage"] = root["@lokijs/local-storage"].default;}
-})(this, function() {
+})(typeof self !== 'undefined' ? self : this, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};

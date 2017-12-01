@@ -1,6 +1,7 @@
 import { Collection } from "./collection";
 import { CloneMethod } from "./clone";
 import { Doc, Query } from "../../common/types";
+import { ScoreResult } from "../../full-text-search/src/scorer";
 export declare type ANY = any;
 /**
  * @hidden
@@ -148,6 +149,11 @@ export declare class Resultset<E extends object = object> {
      * @returns {Resultset<E extends Object>}
      */
     sortByScoring(ascending?: boolean): Resultset<E>;
+    /**
+     * Returns the scoring of the last full-text-search.
+     * @returns {ScoreResult}
+     */
+    getScoring(): ScoreResult;
     /**
      * findOr() - oversee the operation of OR'ed query expressions.
      *    OR'ed expression evaluation runs each expression individually against the full collection,

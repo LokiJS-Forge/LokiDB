@@ -221,7 +221,7 @@ export declare class Loki extends LokiEventEmitter {
      * @param {Date} [options.started=now()] - the start time of the recursive wait duration
      * @returns {Promise} a Promise that resolves when save queue is drained, it is passed a sucess parameter value
      */
-    throttledSaveDrain(options?: Loki.ThrottledSaveDrainOptions): Promise<void>;
+    throttledSaveDrain(options?: Loki.ThrottledDrainOptions): Promise<void>;
     /**
      * Internal load logic, decoupled from throttling/contention logic
      *
@@ -244,7 +244,7 @@ export declare class Loki extends LokiEventEmitter {
      * @param {Date} [options.started=now()] - the start time of the recursive wait duration
      * @returns {Promise} a Promise that resolves after the database is loaded
      */
-    loadDatabase(options?: Loki.ThrottledSaveDrainOptions): Promise<void>;
+    loadDatabase(options?: Loki.LoadDatabaseOptions): Promise<void>;
     private _saveDatabase();
     /**
      * Handles manually saving to an adapter storage (such as fs-storage)
@@ -304,12 +304,13 @@ export declare namespace Loki {
         delimited?: boolean;
         delimiter?: string;
     }
-    interface ThrottledSaveDrainOptions {
+    interface ThrottledDrainOptions {
         recursiveWait?: boolean;
         recursiveWaitLimit?: boolean;
         recursiveWaitLimitDuration?: number;
         started?: Date;
     }
+    type LoadDatabaseOptions = Collection.DeserializeOptions & ThrottledDrainOptions;
     enum SerializationMethod {
         NORMAL = 0,
         PRETTY = 1,

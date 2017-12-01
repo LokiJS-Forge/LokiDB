@@ -7,7 +7,7 @@
 		exports["@lokijs/full-text-search-language-en"] = factory(require("@lokijs/full-text-search"), require("@lokijs/full-text-search-language"));
 	else
 {		root["@lokijs/full-text-search-language-en"] = factory(root["@lokijs/full-text-search"], root["@lokijs/full-text-search-language"]); root["LokiFullTextSearchLanguageEn"] = root["@lokijs/full-text-search-language-en"].default;}
-})(this, function(__WEBPACK_EXTERNAL_MODULE_1__, __WEBPACK_EXTERNAL_MODULE_2__) {
+})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE_1__, __WEBPACK_EXTERNAL_MODULE_2__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -165,7 +165,7 @@ class EnglishStemmer {
                 return w;
             }
             firstch = w.substr(0, 1);
-            if (firstch == "y") {
+            if (firstch === "y") {
                 w = firstch.toUpperCase() + w.substr(1);
             }
             // Step 1a
@@ -276,7 +276,7 @@ class EnglishStemmer {
                 w = w.replace(re, "");
             }
             // and turn initial Y back to y
-            if (firstch == "y") {
+            if (firstch === "y") {
                 w = firstch.toLowerCase() + w.substr(1);
             }
             return w;
