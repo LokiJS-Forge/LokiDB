@@ -413,7 +413,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     }
 
     if (obj._fullTextSearch) {
-      coll._fullTextSearch = FullTextSearch.fromJSONObject(obj._fullTextSearch, options.fullTextSearch);
+      coll._fullTextSearch = PLUGINS["FullTextSearch"].fromJSONObject(obj._fullTextSearch, options.fullTextSearch);
     }
 
     return coll;
@@ -1088,7 +1088,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       this.idIndex.splice(position, 1);
 
       // FullTextSearch.
-      if (this._fullTextSearch != null) {
+      if (this._fullTextSearch !== null) {
         this._fullTextSearch.removeDocument(doc, position);
       }
 

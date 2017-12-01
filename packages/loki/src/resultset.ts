@@ -877,7 +877,7 @@ export class Resultset<E extends object = object> {
             result.push(+keys[i]);
           }
         }
-      } else if (this.collection.constraints.unique[property] !== undefined && operator == "$eq") {
+      } else if (this.collection.constraints.unique[property] !== undefined && operator === "$eq") {
         // Use unique constraint for search.
         let row = this.collection.constraints.unique[property].get(value);
         if (filter.includes(row)) {
@@ -910,7 +910,7 @@ export class Resultset<E extends object = object> {
     }
 
     // Use unique constraint for search.
-    if (this.collection.constraints.unique[property] !== undefined && operator == "$eq") {
+    if (this.collection.constraints.unique[property] !== undefined && operator === "$eq") {
       result.push(this.collection.constraints.unique[property].get(value));
       return this;
     }

@@ -19,7 +19,7 @@ export class RunAutomaton {
     for (let n = 0; n < size; n++) {
       this._accept[n] = automaton.isAccept(n);
       for (let c = 0; c < this._points.length; c++) {
-        // assert dest == -1 || dest < size;
+        // assert dest === -1 || dest < size;
         this._transitions[n * this._points.length + c] = automaton.step(n, this._points[c]);
       }
     }

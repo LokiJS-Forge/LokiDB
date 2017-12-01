@@ -60,7 +60,7 @@ describe("full-text search", () => {
 
   it("update", () => {
     coll.updateWhere((user: User) => {
-      return user.name == "quak";
+      return user.name === "quak";
     }, (user: User) => {
       user.name = "quaaak";
       return user;
@@ -72,7 +72,7 @@ describe("full-text search", () => {
 
   it("remove", () => {
     coll.removeWhere((user: User) => {
-      return user.name == "quak";
+      return user.name === "quak";
     });
 
     let query = new QueryBuilder().fuzzy("name", "quak").fuzziness(1).build();

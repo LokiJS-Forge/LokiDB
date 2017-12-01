@@ -916,7 +916,7 @@ export class Loki extends LokiEventEmitter {
    * @param {Date} [options.started=now()] - the start time of the recursive wait duration
    * @returns {Promise} a Promise that resolves after the database is loaded
    */
-  public loadDatabase(options: Loki.LoadDataseOptions = {}): Promise<void> {
+  public loadDatabase(options: Loki.LoadDatabaseOptions = {}): Promise<void> {
     // if throttling disabled, just call internal
     if (!this._throttledSaves) {
       return this._loadDatabase(options);
@@ -1091,7 +1091,7 @@ export namespace Loki {
     started?: Date;
   }
 
-  export type LoadDataseOptions = Collection.DeserializeOptions & ThrottledDrainOptions;
+  export type LoadDatabaseOptions = Collection.DeserializeOptions & ThrottledDrainOptions;
 
   export enum SerializationMethod {
     NORMAL,

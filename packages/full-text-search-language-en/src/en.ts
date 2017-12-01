@@ -100,7 +100,7 @@ class EnglishStemmer {
       }
 
       firstch = w.substr(0, 1);
-      if (firstch == "y") {
+      if (firstch === "y") {
         w = firstch.toUpperCase() + w.substr(1);
       }
 
@@ -220,7 +220,7 @@ class EnglishStemmer {
 
       // and turn initial Y back to y
 
-      if (firstch == "y") {
+      if (firstch === "y") {
         w = firstch.toLowerCase() + w.substr(1);
       }
 
