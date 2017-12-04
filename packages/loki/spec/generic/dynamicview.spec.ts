@@ -205,11 +205,11 @@ describe("dynamicviews", () => {
       // the dynamic view depends on an internal resultset
       // the persistent dynamic view also depends on an internal resultdata data array
       // filteredrows should be applied immediately to resultset will be lazily built into resultdata later when data() is called
-      expect(pview["_resultset"].filteredrows.length).toEqual(3, "dynamic view initialization 1");
+      expect(pview["_resultset"]._filteredRows.length).toEqual(3, "dynamic view initialization 1");
       expect(pview["_resultdata"].length).toEqual(0, "dynamic view initialization 2");
 
       // compare how many documents are in results before adding new ones
-      const pviewResultsetLenBefore = pview["_resultset"].filteredrows.length;
+      const pviewResultsetLenBefore = pview["_resultset"]._filteredRows.length;
 
       users.insert({
         name: "abc",
@@ -224,7 +224,7 @@ describe("dynamicviews", () => {
       });
 
       // now see how many are in  (without rebuilding persistent view)
-      const pviewResultsetLenAfter = pview["_resultset"].filteredrows.length;
+      const pviewResultsetLenAfter = pview["_resultset"]._filteredRows.length;
 
       // only one document should have been added to resultset (1 was filtered out)
       expect(pviewResultsetLenBefore + 1).toEqual(pviewResultsetLenAfter, "dv resultset is valid");
@@ -232,10 +232,10 @@ describe("dynamicviews", () => {
       // Test sorting and lazy build of resultdata
 
       // retain copy of internal resultset's filteredrows before lazy sort
-      const frcopy = pview["_resultset"].filteredrows.slice();
+      const frcopy = pview["_resultset"]._filteredRows.slice();
       pview.data();
       // now make a copy of internal result's filteredrows after lazy sort
-      const frcopy2 = pview["_resultset"].filteredrows.slice();
+      const frcopy2 = pview["_resultset"]._filteredRows.slice();
 
       // verify filteredrows logically matches resultdata (irrelevant of sort)
       expect(frcopy2.length).not.toBe(0);

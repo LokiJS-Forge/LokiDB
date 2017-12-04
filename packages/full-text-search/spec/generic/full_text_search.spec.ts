@@ -5,6 +5,7 @@ import {LokiMemoryAdapter} from "../../../loki/src/memory_adapter";
 import {Collection} from "../../../loki/src/collection";
 import {FullTextSearch} from "../../src/full_text_search";
 import {Tokenizer} from "../../src/tokenizer";
+import {Doc} from "../../../common/types";
 
 describe("full-text search", () => {
   FullTextSearch.register();
@@ -61,7 +62,7 @@ describe("full-text search", () => {
   it("update", () => {
     coll.updateWhere((user: User) => {
       return user.name === "quak";
-    }, (user: User) => {
+    }, (user: Doc<User>) => {
       user.name = "quaaak";
       return user;
     });

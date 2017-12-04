@@ -1,21 +1,18 @@
 import {Collection} from "./collection";
 import {clone, CloneMethod} from "./clone";
 import {ltHelper, gtHelper, aeqHelper, sortHelper} from "./helper";
-import {Dict, Doc, Query} from "../../common/types";
+import {Doc, Query} from "../../common/types";
 import {ScoreResult} from "../../full-text-search/src/scorer";
 
-export type ANY = any;
-
 // used to recursively scan hierarchical transform step object for param substitution
-function resolveTransformObject(subObj: object, params: object, depth: number = 0) {
-  let prop;
-  let pname;
+function resolveTransformObject(subObj: Collection.Transform, params: object, depth: number = 0): Collection.Transform {
+  if (++depth >= 10) {
+    return subObj;
+  }
 
-  if (++depth >= 10) return subObj;
-
-  for (prop in subObj) {
+  for (const prop in subObj) {
     if (typeof subObj[prop] === "string" && subObj[prop].indexOf("[%lktxp]") === 0) {
-      pname = subObj[prop].substring(8);
+      const pname = subObj[prop].substring(8);
       if (params[pname] !== undefined) {
         subObj[prop] = params[pname];
       }
@@ -23,38 +20,36 @@ function resolveTransformObject(subObj: object, params: object, depth: number = 
       subObj[prop] = resolveTransformObject(subObj[prop], params, depth);
     }
   }
-
   return subObj;
 }
 
 // top level utility to resolve an entire (single) transform (array of steps) for parameter substitution
-function resolveTransformParams(transform: any, params: object) {
-  let idx;
-  let clonedStep;
-  const resolvedTransform = [];
-
-  if (params === undefined) return transform;
+function resolveTransformParams(transform: Collection.Transform[], params: object): Collection.Transform[] {
+  if (params === undefined) {
+    return transform;
+  }
 
   // iterate all steps in the transform array
-  for (idx = 0; idx < transform.length; idx++) {
+  const resolvedTransform: Collection.Transform[] = [];
+  for (let idx = 0; idx < transform.length; idx++) {
     // clone transform so our scan/replace can operate directly on cloned transform
-    clonedStep = clone(transform[idx], "shallow-recurse-objects");
+    const clonedStep = clone(transform[idx], "shallow-recurse-objects");
     resolvedTransform.push(resolveTransformObject(clonedStep, params));
   }
 
   return resolvedTransform;
 }
 
-function containsCheckFn(a: ANY) {
+function containsCheckFn(a: any) {
   if (typeof a === "string" || Array.isArray(a)) {
-    return (b: ANY) => (a as string).indexOf(b) !== -1;
+    return (b: any) => (a as any).indexOf(b) !== -1;
   } else if (typeof a === "object" && a !== null) {
-    return (b: ANY) => Object.hasOwnProperty.call(a, b);
+    return (b: string) => Object.hasOwnProperty.call(a, b);
   }
   return null;
 }
 
-function doQueryOp(val: ANY, op: ANY) {
+function doQueryOp(val: any, op: object) {
   for (let p in op) {
     if (Object.hasOwnProperty.call(op, p)) {
       return LokiOps[p](val, op[p]);
@@ -69,91 +64,89 @@ function doQueryOp(val: ANY, op: ANY) {
  */
 export const LokiOps = {
   // comparison operators
-  // a is the value in the collection
+  // a is the value in the _collection
   // b is the query value
-  $eq(a: ANY, b: ANY) {
+  $eq(a: any, b: any) {
     return a === b;
   },
 
   // abstract/loose equality
-  $aeq(a: ANY, b: ANY) {
+  $aeq(a: any, b: any) {
     return a == b;
   },
 
-  $ne(a: ANY, b: ANY) {
+  $ne(a: any, b: any) {
     // ecma 5 safe test for NaN
     if (b !== b) {
       // ecma 5 test value is not NaN
       return (a === a);
     }
-
     return a !== b;
   },
 
   // date equality / loki abstract equality test
-  $dteq(a: ANY, b: ANY) {
+  $dteq(a: any, b: any) {
     return aeqHelper(a, b);
   },
 
-  $gt(a: ANY, b: ANY) {
+  $gt(a: any, b: any) {
     return gtHelper(a, b, false);
   },
 
-  $gte(a: ANY, b: ANY) {
+  $gte(a: any, b: any) {
     return gtHelper(a, b, true);
   },
 
-  $lt(a: ANY, b: ANY) {
+  $lt(a: any, b: any) {
     return ltHelper(a, b, false);
   },
 
-  $lte(a: ANY, b: ANY) {
+  $lte(a: any, b: any) {
     return ltHelper(a, b, true);
   },
 
-  // ex : coll.find({'orderCount': {$between: [10, 50]}});
-  $between(a: ANY, vals: ANY) {
+  $between(a: any, range: [any, any]) {
     if (a === undefined || a === null) return false;
-    return (gtHelper(a, vals[0], true) && ltHelper(a, vals[1], true));
+    return (gtHelper(a, range[0], true) && ltHelper(a, range[1], true));
   },
 
-  $in(a: ANY, b: ANY) {
+  $in(a: any, b: any) {
     return b.indexOf(a) !== -1;
   },
 
-  $nin(a: ANY, b: ANY) {
+  $nin(a: any, b: any) {
     return b.indexOf(a) === -1;
   },
 
-  $keyin(a: ANY, b: ANY) {
+  $keyin(a: any, b: any) {
     return a in b;
   },
 
-  $nkeyin(a: ANY, b: ANY) {
+  $nkeyin(a: any, b: any) {
     return !(a in b);
   },
 
-  $definedin(a: ANY, b: ANY) {
+  $definedin(a: any, b: any) {
     return b[a] !== undefined;
   },
 
-  $undefinedin(a: ANY, b: ANY) {
+  $undefinedin(a: any, b: any) {
     return b[a] === undefined;
   },
 
-  $regex(a: ANY, b: ANY) {
+  $regex(a: any, b: any) {
     return b.test(a);
   },
 
-  $containsString(a: ANY, b: ANY) {
+  $containsString(a: any, b: any) {
     return (typeof a === "string") && (a.indexOf(b) !== -1);
   },
 
-  $containsNone(a: ANY, b: ANY) {
+  $containsNone(a: any, b: any) {
     return !LokiOps.$containsAny(a, b);
   },
 
-  $containsAny(a: ANY, b: ANY) {
+  $containsAny(a: any, b: any) {
     const checkFn = containsCheckFn(a);
     if (checkFn !== null) {
       return (Array.isArray(b)) ? (b.some(checkFn)) : (checkFn(b));
@@ -161,7 +154,7 @@ export const LokiOps = {
     return false;
   },
 
-  $contains(a: ANY, b: ANY) {
+  $contains(a: any, b: any) {
     const checkFn = containsCheckFn(a);
     if (checkFn !== null) {
       return (Array.isArray(b)) ? (b.every(checkFn)) : (checkFn(b));
@@ -169,7 +162,7 @@ export const LokiOps = {
     return false;
   },
 
-  $type(a: ANY, b: ANY) {
+  $type(a: any, b: any) {
     let type: string = typeof a;
     if (type === "object") {
       if (Array.isArray(a)) {
@@ -181,37 +174,37 @@ export const LokiOps = {
     return (typeof b !== "object") ? (type === b) : doQueryOp(type, b);
   },
 
-  $finite(a: ANY, b: ANY) {
+  $finite(a: any, b: any) {
     return (b === isFinite(a));
   },
 
-  $size(a: ANY, b: ANY) {
+  $size(a: any, b: any) {
     if (Array.isArray(a)) {
       return (typeof b !== "object") ? (a.length === b) : doQueryOp(a.length, b);
     }
     return false;
   },
 
-  $len(a: ANY, b: ANY) {
+  $len(a: any, b: any) {
     if (typeof a === "string") {
       return (typeof b !== "object") ? (a.length === b) : doQueryOp(a.length, b);
     }
     return false;
   },
 
-  $where(a: ANY, b: ANY) {
+  $where(a: any, b: any) {
     return b(a) === true;
   },
 
   // field-level logical operators
-  // a is the value in the collection
+  // a is the value in the _collection
   // b is the nested query operation (for '$not')
   //   or an array of nested query operations (for '$and' and '$or')
-  $not(a: ANY, b: ANY) {
+  $not(a: any, b: any) {
     return !doQueryOp(a, b);
   },
 
-  $and(a: ANY, b: ANY) {
+  $and(a: any, b: any) {
     for (let idx = 0, len = b.length; idx < len; idx += 1) {
       if (!doQueryOp(a, b[idx])) {
         return false;
@@ -220,7 +213,7 @@ export const LokiOps = {
     return true;
   },
 
-  $or(a: ANY, b: ANY) {
+  $or(a: any, b: any) {
     for (let idx = 0, len = b.length; idx < len; idx += 1) {
       if (doQueryOp(a, b[idx])) {
         return true;
@@ -254,7 +247,7 @@ const indexedOps = {
  * @param {any} value - comparative value to also pass to (compare) fun
  * @param {number} pathOffset - index of the item in 'paths' to start the sub-scan from
  */
-function dotSubScan(root: object, paths: string[], fun: Function, value: ANY, pathOffset = 0) {
+function dotSubScan(root: object, paths: string[], fun: (a: any, b: any) => boolean, value: any, pathOffset = 0) {
   const path = paths[pathOffset];
   if (root === undefined || root === null || root[path] === undefined) {
     return false;
@@ -292,9 +285,9 @@ function dotSubScan(root: object, paths: string[], fun: Function, value: ANY, pa
  */
 export class ResultSet<E extends object = object> {
 
-  public collection: Collection<E>;
-  public filteredrows: number[];
-  public filterInitialized: boolean;
+  public _collection: Collection<E>;
+  public _filteredRows: number[];
+  public _filterInitialized: boolean;
   // Holds the scoring result of the last full-text search.
   private _scoring: ScoreResult;
 
@@ -304,9 +297,9 @@ export class ResultSet<E extends object = object> {
    */
   constructor(collection: Collection<E>) {
     // retain reference to collection we are querying against
-    this.collection = collection;
-    this.filteredrows = [];
-    this.filterInitialized = false;
+    this._collection = collection;
+    this._filteredRows = [];
+    this._filterInitialized = false;
     this._scoring = null;
   }
 
@@ -316,20 +309,20 @@ export class ResultSet<E extends object = object> {
    * @returns {ResultSet} Reference to this resultset, for future chain operations.
    */
   reset(): ResultSet<E> {
-    if (this.filteredrows.length > 0) {
-      this.filteredrows = [];
+    if (this._filteredRows.length > 0) {
+      this._filteredRows = [];
     }
-    this.filterInitialized = false;
+    this._filterInitialized = false;
     return this;
   }
 
   /**
-   * toJSON() - Override of toJSON to avoid circular references
+   * Override of toJSON to avoid circular references
    *
    */
   public toJSON(): ResultSet<E> {
     const copy = this.copy();
-    copy.collection = <never>null;
+    copy._collection = <never>null;
     return copy;
   }
 
@@ -342,12 +335,12 @@ export class ResultSet<E extends object = object> {
    */
   public limit(qty: number): ResultSet<E> {
     // if this has no filters applied, we need to populate filteredrows first
-    if (!this.filterInitialized && this.filteredrows.length === 0) {
-      this.filteredrows = this.collection.prepareFullDocIndex();
+    if (!this._filterInitialized && this._filteredRows.length === 0) {
+      this._filteredRows = this._collection.prepareFullDocIndex();
     }
 
-    this.filteredrows = this.filteredrows.slice(0, qty);
-    this.filterInitialized = true;
+    this._filteredRows = this._filteredRows.slice(0, qty);
+    this._filterInitialized = true;
     return this;
   }
 
@@ -359,12 +352,12 @@ export class ResultSet<E extends object = object> {
    */
   public offset(pos: number): ResultSet<E> {
     // if this has no filters applied, we need to populate filteredrows first
-    if (!this.filterInitialized && this.filteredrows.length === 0) {
-      this.filteredrows = this.collection.prepareFullDocIndex();
+    if (!this._filterInitialized && this._filteredRows.length === 0) {
+      this._filteredRows = this._collection.prepareFullDocIndex();
     }
 
-    this.filteredrows = this.filteredrows.slice(pos);
-    this.filterInitialized = true;
+    this._filteredRows = this._filteredRows.slice(pos);
+    this._filterInitialized = true;
     return this;
   }
 
@@ -374,20 +367,16 @@ export class ResultSet<E extends object = object> {
    * @returns {ResultSet} Returns a copy of the resultset (set) but the underlying document references will be the same.
    */
   public copy(): ResultSet<E> {
-    const result = new ResultSet<E>(this.collection);
-
-    if (this.filteredrows.length > 0) {
-      result.filteredrows = this.filteredrows.slice();
-    }
-    result.filterInitialized = this.filterInitialized;
-
+    const result = new ResultSet<E>(this._collection);
+    result._filteredRows = this._filteredRows.slice();
+    result._filterInitialized = this._filterInitialized;
     return result;
   }
 
   /**
    * Alias of copy()
    */
-  branch() {
+  public branch() {
     return this.copy();
   }
 
@@ -398,16 +387,10 @@ export class ResultSet<E extends object = object> {
    * @param {object} [parameters=] - object property hash of parameters, if the transform requires them.
    * @returns {ResultSet} either (this) resultset or a clone of of this resultset (depending on steps)
    */
-  transform(transform: string | any[], parameters?: object): ResultSet<E> {
-    let idx;
-    let step;
-    let rs = this as ResultSet;
-
+  public transform(transform: string | Collection.Transform[], parameters?: object): ResultSet<E> {
     // if transform is name, then do lookup first
     if (typeof transform === "string") {
-      if (this.collection.transforms[transform] !== undefined) {
-        transform = this.collection.transforms[transform];
-      }
+      transform = this._collection.transforms[transform];
     }
 
     // either they passed in raw transform array or we looked it up, so process
@@ -419,8 +402,9 @@ export class ResultSet<E extends object = object> {
       transform = resolveTransformParams(transform, parameters);
     }
 
-    for (idx = 0; idx < transform.length; idx++) {
-      step = transform[idx];
+    let rs = this as ResultSet;
+    for (let idx = 0; idx < transform.length; idx++) {
+      const step = transform[idx] as Collection.Transform;
 
       switch (step.type) {
         case "find":
@@ -482,14 +466,14 @@ export class ResultSet<E extends object = object> {
    */
   public sort(comparefun: (a: E, b: E) => number): ResultSet<E> {
     // if this has no filters applied, just we need to populate filteredrows first
-    if (!this.filterInitialized && this.filteredrows.length === 0) {
-      this.filteredrows = this.collection.prepareFullDocIndex();
+    if (!this._filterInitialized && this._filteredRows.length === 0) {
+      this._filteredRows = this._collection.prepareFullDocIndex();
     }
 
     const wrappedComparer =
-      (((userComparer, data) => (a: number, b: number) => userComparer(data[a], data[b])))(comparefun, this.collection.data);
+      (((userComparer, data) => (a: number, b: number) => userComparer(data[a], data[b])))(comparefun, this._collection.data);
 
-    this.filteredrows.sort(wrappedComparer);
+    this._filteredRows.sort(wrappedComparer);
 
     return this;
   }
@@ -499,25 +483,21 @@ export class ResultSet<E extends object = object> {
    *    Sorting based on the same lt/gt helper functions used for binary indices.
    *
    * @param {string} propname - name of property to sort by.
-   * @param {boolean} isdesc - (Optional) If true, the property will be sorted in descending order
+   * @param {boolean} [descending=false] - if true, the property will be sorted in descending order
    * @returns {ResultSet} Reference to this resultset, sorted, for future chain operations.
    */
-  public simplesort(propname: string, isdesc?: boolean): ResultSet<E> {
-    if (isdesc === undefined) {
-      isdesc = false;
-    }
-
+  public simplesort(propname: string, descending: boolean = false): ResultSet<E> {
     // if this has no filters applied, just we need to populate filteredrows first
-    if (!this.filterInitialized && this.filteredrows.length === 0) {
+    if (!this._filterInitialized && this._filteredRows.length === 0) {
       // if we have a binary index and no other filters applied, we can use that instead of sorting (again)
-      if (this.collection.binaryIndices[propname] !== undefined) {
+      if (this._collection.binaryIndices[propname] !== undefined) {
         // make sure index is up-to-date
-        this.collection.ensureIndex(propname);
+        this._collection.ensureIndex(propname);
         // copy index values into filteredrows
-        this.filteredrows = this.collection.binaryIndices[propname].values.slice(0);
+        this._filteredRows = this._collection.binaryIndices[propname].values.slice(0);
 
-        if (isdesc) {
-          this.filteredrows.reverse();
+        if (descending) {
+          this._filteredRows.reverse();
         }
 
         // we are done, return this (resultset) for further chain ops
@@ -525,7 +505,7 @@ export class ResultSet<E extends object = object> {
       }
       // otherwise initialize array for sort below
       else {
-        this.filteredrows = this.collection.prepareFullDocIndex();
+        this._filteredRows = this._collection.prepareFullDocIndex();
       }
     }
 
@@ -544,9 +524,9 @@ export class ResultSet<E extends object = object> {
         val2 = data[b][prop];
       }
       return sortHelper(val1, val2, desc);
-    })(propname, isdesc, this.collection.data);
+    })(propname, descending, this._collection.data);
 
-    this.filteredrows.sort(wrappedComparer);
+    this._filteredRows.sort(wrappedComparer);
 
     return this;
   }
@@ -586,14 +566,14 @@ export class ResultSet<E extends object = object> {
     }
 
     // if this has no filters applied, just we need to populate filteredrows first
-    if (!this.filterInitialized && this.filteredrows.length === 0) {
-      this.filteredrows = this.collection.prepareFullDocIndex();
+    if (!this._filterInitialized && this._filteredRows.length === 0) {
+      this._filteredRows = this._collection.prepareFullDocIndex();
     }
 
     const wrappedComparer =
-      (((props, data) => (a: number, b: number) => this._compoundeval(props, data[a], data[b])))(properties as [string, boolean][], this.collection.data);
+      (((props, data) => (a: number, b: number) => this._compoundeval(props, data[a], data[b])))(properties as [string, boolean][], this._collection.data);
 
-    this.filteredrows.sort(wrappedComparer);
+    this._filteredRows.sort(wrappedComparer);
 
     return this;
   }
@@ -645,9 +625,9 @@ export class ResultSet<E extends object = object> {
     }
 
     if (ascending) {
-      this.filteredrows.sort((a: number, b: number) => this._scoring[a] - this._scoring[b]);
+      this._filteredRows.sort((a: number, b: number) => this._scoring[a] - this._scoring[b]);
     } else {
-      this.filteredrows.sort((a: number, b: number) => this._scoring[b] - this._scoring[a]);
+      this._filteredRows.sort((a: number, b: number) => this._scoring[b] - this._scoring[a]);
     }
 
     return this;
@@ -687,7 +667,7 @@ export class ResultSet<E extends object = object> {
     // This means no index utilization for fields, so hopefully its filtered to a smallish filteredrows.
     for (let ei = 0, elen = expressionArray.length; ei < elen; ei++) {
       // we need to branch existing query to run each filter separately and combine results
-      fr = this.branch().find(expressionArray[ei]).filteredrows;
+      fr = this.branch().find(expressionArray[ei])._filteredRows;
       frlen = fr.length;
       // if the find operation did not reduce the initial set, then the initial set is the actual result
       if (frlen === origCount) {
@@ -704,8 +684,8 @@ export class ResultSet<E extends object = object> {
       }
     }
 
-    this.filteredrows = docset;
-    this.filterInitialized = true;
+    this._filteredRows = docset;
+    this._filterInitialized = true;
 
     return this;
   }
@@ -747,9 +727,9 @@ export class ResultSet<E extends object = object> {
    * @returns {ResultSet} this resultset for further chain ops.
    */
   public find(query?: Query, firstOnly = false): ResultSet<E> {
-    if (this.collection.data.length === 0) {
-      this.filteredrows = [];
-      this.filterInitialized = true;
+    if (this._collection.data.length === 0) {
+      this._filteredRows = [];
+      this._filterInitialized = true;
       return this;
     }
 
@@ -780,8 +760,8 @@ export class ResultSet<E extends object = object> {
     // apply no filters if they want all
     if (!property || queryObject === "getAll") {
       if (firstOnly) {
-        this.filteredrows = (this.collection.data.length > 0) ? [0] : [];
-        this.filterInitialized = true;
+        this._filteredRows = (this._collection.data.length > 0) ? [0] : [];
+        this._filterInitialized = true;
       }
       return this;
     }
@@ -791,8 +771,8 @@ export class ResultSet<E extends object = object> {
       this[property](queryObjectOp);
 
       // for chained find with firstonly,
-      if (firstOnly && this.filteredrows.length > 1) {
-        this.filteredrows = this.filteredrows.slice(0, 1);
+      if (firstOnly && this._filteredRows.length > 1) {
+        this._filteredRows = this._filteredRows.slice(0, 1);
       }
 
       return this;
@@ -829,16 +809,16 @@ export class ResultSet<E extends object = object> {
 
     // if an index exists for the property being queried against, use it
     // for now only enabling where it is the first filter applied and prop is indexed
-    const doIndexCheck = !usingDotNotation && !this.filterInitialized;
+    const doIndexCheck = !usingDotNotation && !this._filterInitialized;
 
     let searchByIndex = false;
-    if (doIndexCheck && this.collection.binaryIndices[property] && indexedOps[operator]) {
+    if (doIndexCheck && this._collection.binaryIndices[property] && indexedOps[operator]) {
       // this is where our lazy index rebuilding will take place
       // basically we will leave all indexes dirty until we need them
       // so here we will rebuild only the index tied to this property
       // ensureIndex() will only rebuild if flagged as dirty since we are not passing force=true param
-      if (this.collection.adaptiveBinaryIndices !== true) {
-        this.collection.ensureIndex(property);
+      if (this._collection.adaptiveBinaryIndices !== true) {
+        this._collection.ensureIndex(property);
       }
       searchByIndex = true;
     }
@@ -847,7 +827,7 @@ export class ResultSet<E extends object = object> {
     const fun = LokiOps[operator];
 
     // "shortcut" for collection data
-    const data = this.collection.data;
+    const data = this._collection.data;
 
     // Query executed differently depending on :
     //    - whether the property being queried has an index defined
@@ -857,8 +837,8 @@ export class ResultSet<E extends object = object> {
 
     let result: number[] = [];
     // If the filteredrows[] is already initialized, use it
-    if (this.filterInitialized) {
-      let filter = this.filteredrows;
+    if (this._filterInitialized) {
+      let filter = this._filteredRows;
 
       // currently supporting dot notation for non-indexed conditions only
       if (usingDotNotation) {
@@ -870,17 +850,17 @@ export class ResultSet<E extends object = object> {
           }
         }
       } else if (property === "$fts") {
-        this._scoring = this.collection._fullTextSearch.search(query["$fts"]);
+        this._scoring = this._collection._fullTextSearch.search(query["$fts"]);
         let keys = Object.keys(this._scoring);
         for (let i = 0; i < keys.length; i++) {
-          if (filter.includes(+keys[i])) {
+          if (filter.indexOf(+keys[i]) !== -1) {
             result.push(+keys[i]);
           }
         }
-      } else if (this.collection.constraints.unique[property] !== undefined && operator === "$eq") {
+      } else if (this._collection.constraints.unique[property] !== undefined && operator === "$eq") {
         // Use unique constraint for search.
-        let row = this.collection.constraints.unique[property].get(value);
-        if (filter.includes(row)) {
+        let row = this._collection.constraints.unique[property].get(value);
+        if (filter.indexOf(row) !== -1) {
           result.push(row);
         }
       } else {
@@ -892,16 +872,16 @@ export class ResultSet<E extends object = object> {
         }
       }
 
-      this.filteredrows = result;
-      this.filterInitialized = true; // next time work against filteredrows[]
+      this._filteredRows = result;
+      this._filterInitialized = true; // next time work against filteredrows[]
       return this;
     }
 
-    this.filteredrows = result;
-    this.filterInitialized = true; // next time work against filteredrows[]
+    this._filteredRows = result;
+    this._filterInitialized = true; // next time work against filteredrows[]
 
     if (property === "$fts") {
-      this._scoring = this.collection._fullTextSearch.search(query["$fts"]);
+      this._scoring = this._collection._fullTextSearch.search(query["$fts"]);
       let keys = Object.keys(this._scoring);
       for (let i = 0; i < keys.length; i++) {
         result.push(+keys[i]);
@@ -910,8 +890,8 @@ export class ResultSet<E extends object = object> {
     }
 
     // Use unique constraint for search.
-    if (this.collection.constraints.unique[property] !== undefined && operator === "$eq") {
-      result.push(this.collection.constraints.unique[property].get(value));
+    if (this._collection.constraints.unique[property] !== undefined && operator === "$eq") {
+      result.push(this._collection.constraints.unique[property].get(value));
       return this;
     }
 
@@ -941,10 +921,10 @@ export class ResultSet<E extends object = object> {
       return this;
     }
 
-    let index = this.collection.binaryIndices[property];
+    let index = this._collection.binaryIndices[property];
     if (operator !== "$in") {
       // search by index
-      const segm = this.collection.calculateRange(operator, property, value);
+      const segm = this._collection.calculateRange(operator, property, value);
       for (let i = segm[0]; i <= segm[1]; i++) {
         if (indexedOps[operator] !== true) {
           // must be a function, implying 2nd phase filtering of results from calculateRange
@@ -965,7 +945,7 @@ export class ResultSet<E extends object = object> {
       const idxset = [];
       // query each value '$eq' operator and merge the segment results.
       for (let j = 0, len = value.length; j < len; j++) {
-        const segm = this.collection.calculateRange("$eq", property, value[j]);
+        const segm = this._collection.calculateRange("$eq", property, value[j]);
         for (let i = segm[0]; i <= segm[1]; i++) {
           if (idxset[i] === undefined) {
             idxset[i] = true;
@@ -998,31 +978,31 @@ export class ResultSet<E extends object = object> {
     }
     try {
       // If the filteredrows[] is already initialized, use it
-      if (this.filterInitialized) {
-        let j = this.filteredrows.length;
+      if (this._filterInitialized) {
+        let j = this._filteredRows.length;
 
         while (j--) {
-          if (viewFunction(this.collection.data[this.filteredrows[j]]) === true) {
-            result.push(this.filteredrows[j]);
+          if (viewFunction(this._collection.data[this._filteredRows[j]]) === true) {
+            result.push(this._filteredRows[j]);
           }
         }
 
-        this.filteredrows = result;
+        this._filteredRows = result;
 
         return this;
       }
       // otherwise this is initial chained op, work against data, push into filteredrows[]
       else {
-        let k = this.collection.data.length;
+        let k = this._collection.data.length;
 
         while (k--) {
-          if (viewFunction(this.collection.data[k]) === true) {
+          if (viewFunction(this._collection.data[k]) === true) {
             result.push(k);
           }
         }
 
-        this.filteredrows = result;
-        this.filterInitialized = true;
+        this._filteredRows = result;
+        this._filterInitialized = true;
 
         return this;
       }
@@ -1036,10 +1016,10 @@ export class ResultSet<E extends object = object> {
    * @returns {number} The number of documents in the resultset.
    */
   public count(): number {
-    if (this.filterInitialized) {
-      return this.filteredrows.length;
+    if (this._filterInitialized) {
+      return this._filteredRows.length;
     }
-    return this.collection.count();
+    return this._collection.count();
   }
 
   /**
@@ -1060,13 +1040,13 @@ export class ResultSet<E extends object = object> {
     (
       {
         forceClones,
-        forceCloneMethod = this.collection.cloneMethod,
+        forceCloneMethod = this._collection.cloneMethod,
         removeMeta = false
       } = options
     );
 
     let result = [];
-    let data = this.collection.data;
+    let data = this._collection.data;
     let obj;
     let len;
     let i;
@@ -1079,16 +1059,16 @@ export class ResultSet<E extends object = object> {
     }
 
     // if collection has delta changes active, then force clones and use CloneMethod.DEEP for effective change tracking of nested objects
-    if (!this.collection.disableDeltaChangesApi) {
+    if (!this._collection.disableDeltaChangesApi) {
       forceClones = true;
       forceCloneMethod = "deep";
     }
 
     // if this has no filters applied, just return collection.data
-    if (!this.filterInitialized) {
-      if (this.filteredrows.length === 0) {
+    if (!this._filterInitialized) {
+      if (this._filteredRows.length === 0) {
         // determine whether we need to clone objects or not
-        if (this.collection.cloneObjects || forceClones) {
+        if (this._collection.cloneObjects || forceClones) {
           len = data.length;
           method = forceCloneMethod;
 
@@ -1108,14 +1088,14 @@ export class ResultSet<E extends object = object> {
         }
       } else {
         // filteredrows must have been set manually, so use it
-        this.filterInitialized = true;
+        this._filterInitialized = true;
       }
     }
 
-    const fr = this.filteredrows;
+    const fr = this._filteredRows;
     len = fr.length;
 
-    if (this.collection.cloneObjects || forceClones) {
+    if (this._collection.cloneObjects || forceClones) {
       method = forceCloneMethod;
       for (i = 0; i < len; i++) {
         obj = clone(data[fr[i]], method);
@@ -1141,19 +1121,19 @@ export class ResultSet<E extends object = object> {
    */
   update(updateFunction: (obj: E) => E): ResultSet<E> {
     // if this has no filters applied, we need to populate filteredrows first
-    if (!this.filterInitialized && this.filteredrows.length === 0) {
-      this.filteredrows = this.collection.prepareFullDocIndex();
+    if (!this._filterInitialized && this._filteredRows.length === 0) {
+      this._filteredRows = this._collection.prepareFullDocIndex();
     }
 
-    const len = this.filteredrows.length;
-    const rcd = this.collection.data;
+    const len = this._filteredRows.length;
+    const rcd = this._collection.data;
 
     for (let idx = 0; idx < len; idx++) {
       // pass in each document object currently in resultset to user supplied updateFunction
-      updateFunction(rcd[this.filteredrows[idx]]);
+      updateFunction(rcd[this._filteredRows[idx]]);
 
       // notify collection we have changed this object so it can update meta and allow DynamicViews to re-evaluate
-      this.collection.update(rcd[this.filteredrows[idx]]);
+      this._collection.update(rcd[this._filteredRows[idx]]);
     }
 
     return this;
@@ -1166,11 +1146,11 @@ export class ResultSet<E extends object = object> {
    */
   public remove(): ResultSet<E> {
     // if this has no filters applied, we need to populate filteredrows first
-    if (!this.filterInitialized && this.filteredrows.length === 0) {
-      this.filteredrows = this.collection.prepareFullDocIndex();
+    if (!this._filterInitialized && this._filteredRows.length === 0) {
+      this._filteredRows = this._collection.prepareFullDocIndex();
     }
-    this.collection.remove(this.data());
-    this.filteredrows = [];
+    this._collection.remove(this.data());
+    this._filteredRows = [];
     return this;
   }
 
@@ -1236,7 +1216,7 @@ export class ResultSet<E extends object = object> {
     }
 
     if (!mapFun) {
-      mapFun = (left: ANY, right: ANY) => ({
+      mapFun = (left: any, right: any) => ({
         left,
         right
       });
@@ -1249,10 +1229,10 @@ export class ResultSet<E extends object = object> {
     }
 
     //return a new resultset with no filters
-    this.collection = new Collection("joinData");
-    this.collection.insert(result);
-    this.filteredrows = [];
-    this.filterInitialized = false;
+    this._collection = new Collection("joinData");
+    this._collection.insert(result);
+    this._filteredRows = [];
+    this._filterInitialized = false;
 
     return this;
   }
@@ -1268,11 +1248,10 @@ export class ResultSet<E extends object = object> {
   map<U extends object>(mapFun: (obj: E, index: number, array: E[]) => U, dataOptions?: ResultSet.DataOptions): ResultSet<U> {
     let data = this.data(dataOptions).map(mapFun);
     //return return a new resultset with no filters
-    this.collection = new Collection("mappedData");
-    this.collection.insert(data as any as E);
-    this.filteredrows = [];
-    this.filterInitialized = false;
-
+    this._collection = new Collection("mappedData");
+    this._collection.insert(data as any as E);
+    this._filteredRows = [];
+    this._filterInitialized = false;
     return this as any as ResultSet<U>;
   }
 }

@@ -90,7 +90,7 @@ export function aeqHelper(prop1: any, prop2: any): boolean {
  *     need this function (as well as gtHelper) to always ensure one value is LT, GT, or EQ to another.
  * @hidden
  */
-export function ltHelper(prop1: any, prop2: any, equal: boolean) {
+export function ltHelper(prop1: any, prop2: any, equal: boolean): boolean {
   // if one of the params is falsy or strictly true or not equal to itself
   // 0, 0.0, "", NaN, null, undefined, not defined, false, true
   if (!prop1 || !prop2 || prop1 === true || prop2 === true || prop1 !== prop1 || prop2 !== prop2) {
@@ -190,7 +190,7 @@ export function ltHelper(prop1: any, prop2: any, equal: boolean) {
  * @param {boolean} equal
  * @returns {boolean}
  */
-export function gtHelper(prop1: any, prop2: any, equal: boolean) {
+export function gtHelper(prop1: any, prop2: any, equal: boolean): boolean {
   // 'falsy' and Boolean handling
   if (!prop1 || !prop2 || prop1 === true || prop2 === true || prop1 !== prop1 || prop2 !== prop2) {
     let t1: number;
@@ -285,19 +285,21 @@ export function gtHelper(prop1: any, prop2: any, equal: boolean) {
 /**
  * @param {any} prop1
  * @param {any} prop2
- * @param {any} desc
+ * @param {boolean} descending
  * @returns {number}
  * @hidden
  */
-export function sortHelper(prop1: any, prop2: any, desc: any) {
-  if (aeqHelper(prop1, prop2)) return 0;
+export function sortHelper(prop1: any, prop2: any, descending: boolean): number {
+  if (aeqHelper(prop1, prop2)) {
+    return 0;
+  }
 
   if (ltHelper(prop1, prop2, false)) {
-    return (desc) ? (1) : (-1);
+    return descending ? 1 : -1;
   }
 
   if (gtHelper(prop1, prop2, false)) {
-    return (desc) ? (-1) : (1);
+    return descending ? -1 : 1;
   }
 
   // not lt, not gt so implied equality-- date compatible

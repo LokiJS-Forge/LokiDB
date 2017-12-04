@@ -117,11 +117,10 @@ export class LokiPartitioningAdapter implements StorageAdapter {
     }
 
     return this._adapter.loadDatabase(keyname).then((result: string) => {
-      const data = this._dbref.deserializeCollection(result, {
+      this._dbref._collections[partition].data = this._dbref.deserializeCollection(result, {
         delimited: true,
         collectionIndex: partition
       });
-      this._dbref._collections[partition].data = data;
 
       if (++partition < this._dbref._collections.length) {
         return this._loadNextPartition(partition);

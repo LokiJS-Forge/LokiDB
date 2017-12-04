@@ -152,7 +152,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * @param {object} parameters - optional parameters (if optional transform requires them)
    * @returns {ResultSet} A copy of the internal resultset for branched queries.
    */
-  public branchResultset(transform: string | any[], parameters?: object): ResultSet<E> {
+  public branchResultset(transform: string | Collection.Transform[], parameters?: object): ResultSet<E> {
     const rs = this._resultset.branch();
     if (transform === undefined) {
       return rs;
@@ -185,8 +185,8 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
     dv._sortCriteria = obj._sortCriteria;
     dv._sortByScoring = obj._sortByScoring;
     dv._sortDirty = obj._sortDirty;
-    dv._resultset.filteredrows = obj._resultset.filteredrows;
-    dv._resultset.filterInitialized = obj._resultset.filterInitialized;
+    dv._resultset._filteredRows = obj._resultset._filteredRows;
+    dv._resultset._filterInitialized = obj._resultset._filterInitialized;
     dv._rematerialize({
       removeWhereFilters: true
     });
@@ -592,7 +592,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    */
   _evaluateDocument(objIndex: number, isNew: boolean) {
     // if no filter applied yet, the result 'set' should remain 'everything'
-    if (!this._resultset.filterInitialized) {
+    if (!this._resultset._filterInitialized) {
       if (this._persistent) {
         this._resultdata = this._resultset.data();
       }
@@ -605,15 +605,15 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
       return;
     }
 
-    const ofr = this._resultset.filteredrows;
+    const ofr = this._resultset._filteredRows;
     const oldPos = (isNew) ? (-1) : (ofr.indexOf(+objIndex));
     const oldlen = ofr.length;
 
     // creating a 1-element resultset to run filter chain ops on to see if that doc passes filters;
     // mostly efficient algorithm, slight stack overhead price (this function is called on inserts and updates)
     const evalResultset = new ResultSet(this._collection);
-    evalResultset.filteredrows = [objIndex];
-    evalResultset.filterInitialized = true;
+    evalResultset._filteredRows = [objIndex];
+    evalResultset._filterInitialized = true;
     let filter;
     for (let idx = 0, len = this._filterPipeline.length; idx < len; idx++) {
       filter = this._filterPipeline[idx];
@@ -621,7 +621,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
     }
 
     // not a true position, but -1 if not pass our filter(s), 0 if passed filter(s)
-    const newPos = (evalResultset.filteredrows.length === 0) ? -1 : 0;
+    const newPos = (evalResultset._filteredRows.length === 0) ? -1 : 0;
 
     // wasn't in old, shouldn't be now... do nothing
     if (oldPos === -1 && newPos === -1) return;
@@ -690,7 +690,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    */
   _removeDocument(objIndex: number) {
     // if no filter applied yet, the result 'set' should remain 'everything'
-    if (!this._resultset.filterInitialized) {
+    if (!this._resultset._filterInitialized) {
       if (this._persistent) {
         this._resultdata = this._resultset.data();
       }
@@ -703,7 +703,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
       return;
     }
 
-    const ofr = this._resultset.filteredrows;
+    const ofr = this._resultset._filteredRows;
     const oldPos = ofr.indexOf(+objIndex);
     let oldlen = ofr.length;
     let idx;

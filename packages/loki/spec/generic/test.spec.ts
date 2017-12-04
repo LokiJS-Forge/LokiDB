@@ -168,7 +168,7 @@ describe("loki", () => {
 
       // remove object so later queries access valid properties on all objects
       if (wasAdded) {
-        users.remove(legacyObject); // the object itself should have been modified
+        users.remove(legacyObject as any); // the object itself should have been modified
       }
 
       // update()

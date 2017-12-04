@@ -1,12 +1,16 @@
 /* global describe, it, expect */
 import {Loki} from "../../src/loki";
+import {Doc} from "../../../common/types";
 
-export type ANY = any;
+interface User {
+  name: string;
+  age: number;
+}
 
 describe("remove", () => {
   it("removes", () => {
     const db = new Loki();
-    const users = db.addCollection("users");
+    const users = db.addCollection<User>("users");
 
     users.insert({
       name: "joe",
@@ -34,9 +38,9 @@ describe("remove", () => {
     });
 
     const dv = users.addDynamicView("testview");
-    dv.applyWhere((obj: ANY) => obj.name.length > 3);
+    dv.applyWhere((obj: User) => obj.name.length > 3);
 
-    users.removeWhere((obj: ANY) => obj.age > 35);
+    users.removeWhere((obj: User) => obj.age > 35);
     expect(users.data.length).toEqual(4);
     users.removeWhere({
       "age": {
@@ -57,12 +61,12 @@ describe("remove", () => {
     };
     users.insert(foo);
     expect(users.data.length).toEqual(1);
-    const bar = users.remove(foo);
+    users.remove(foo as Doc<User>);
     expect(users.data.length).toEqual(0);
     // test that $loki and meta properties have been removed correctly to allow object re-insertion
-    expect(!bar.$loki).toEqual(true);
-    expect(!bar.meta).toEqual(true);
-    users.insert(bar);
+    expect(foo["$loki"]).toEqual(undefined);
+    expect(foo["meta"]).toEqual(undefined);
+    users.insert(foo);
     expect(users.data.length).toEqual(1);
   });
 
