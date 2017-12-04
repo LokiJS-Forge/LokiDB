@@ -1,5 +1,5 @@
 /* global describe, beforeEach, it, expect */
-import {LokiOps} from "../../src/resultset";
+import {LokiOps} from "../../src/result_set";
 
 export type ANY = any;
 

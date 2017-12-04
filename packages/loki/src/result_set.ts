@@ -281,7 +281,7 @@ function dotSubScan(root: object, paths: string[], fun: Function, value: ANY, pa
 }
 
 /**
- * Resultset class allowing chainable queries.  Intended to be instanced internally.
+ * ResultSet class allowing chainable queries.  Intended to be instanced internally.
  *    Collection.find(), Collection.where(), and Collection.chain() instantiate this.
  *
  * @example
@@ -290,7 +290,7 @@ function dotSubScan(root: object, paths: string[], fun: Function, value: ANY, pa
  *      .where(function(obj) { return obj.name === 'Toyota' })
  *      .data();
  */
-export class Resultset<E extends object = object> {
+export class ResultSet<E extends object = object> {
 
   public collection: Collection<E>;
   public filteredrows: number[];
@@ -300,7 +300,7 @@ export class Resultset<E extends object = object> {
 
   /**
    * Constructor.
-   * @param {Collection} collection - the collection which this Resultset will query against
+   * @param {Collection} collection - the collection which this ResultSet will query against
    */
   constructor(collection: Collection<E>) {
     // retain reference to collection we are querying against
@@ -313,9 +313,9 @@ export class Resultset<E extends object = object> {
   /**
    * reset() - Reset the resultset to its initial state.
    *
-   * @returns {Resultset} Reference to this resultset, for future chain operations.
+   * @returns {ResultSet} Reference to this resultset, for future chain operations.
    */
-  reset(): Resultset<E> {
+  reset(): ResultSet<E> {
     if (this.filteredrows.length > 0) {
       this.filteredrows = [];
     }
@@ -327,7 +327,7 @@ export class Resultset<E extends object = object> {
    * toJSON() - Override of toJSON to avoid circular references
    *
    */
-  public toJSON(): Resultset<E> {
+  public toJSON(): ResultSet<E> {
     const copy = this.copy();
     copy.collection = <never>null;
     return copy;
@@ -338,9 +338,9 @@ export class Resultset<E extends object = object> {
    *    A resultset copy() is made to avoid altering original resultset.
    *
    * @param {int} qty - The number of documents to return.
-   * @returns {Resultset} Returns a copy of the resultset, limited by qty, for subsequent chain ops.
+   * @returns {ResultSet} Returns a copy of the resultset, limited by qty, for subsequent chain ops.
    */
-  public limit(qty: number): Resultset<E> {
+  public limit(qty: number): ResultSet<E> {
     // if this has no filters applied, we need to populate filteredrows first
     if (!this.filterInitialized && this.filteredrows.length === 0) {
       this.filteredrows = this.collection.prepareFullDocIndex();
@@ -355,9 +355,9 @@ export class Resultset<E extends object = object> {
    * Used for skipping 'pos' number of documents in the resultset.
    *
    * @param {int} pos - Number of documents to skip; all preceding documents are filtered out.
-   * @returns {Resultset} Returns a copy of the resultset, containing docs starting at 'pos' for subsequent chain ops.
+   * @returns {ResultSet} Returns a copy of the resultset, containing docs starting at 'pos' for subsequent chain ops.
    */
-  public offset(pos: number): Resultset<E> {
+  public offset(pos: number): ResultSet<E> {
     // if this has no filters applied, we need to populate filteredrows first
     if (!this.filterInitialized && this.filteredrows.length === 0) {
       this.filteredrows = this.collection.prepareFullDocIndex();
@@ -371,10 +371,10 @@ export class Resultset<E extends object = object> {
   /**
    * copy() - To support reuse of resultset in branched query situations.
    *
-   * @returns {Resultset} Returns a copy of the resultset (set) but the underlying document references will be the same.
+   * @returns {ResultSet} Returns a copy of the resultset (set) but the underlying document references will be the same.
    */
-  public copy(): Resultset<E> {
-    const result = new Resultset<E>(this.collection);
+  public copy(): ResultSet<E> {
+    const result = new ResultSet<E>(this.collection);
 
     if (this.filteredrows.length > 0) {
       result.filteredrows = this.filteredrows.slice();
@@ -396,12 +396,12 @@ export class Resultset<E extends object = object> {
    *
    * @param {(string|array)} transform - name of collection transform or raw transform array
    * @param {object} [parameters=] - object property hash of parameters, if the transform requires them.
-   * @returns {Resultset} either (this) resultset or a clone of of this resultset (depending on steps)
+   * @returns {ResultSet} either (this) resultset or a clone of of this resultset (depending on steps)
    */
-  transform(transform: string | any[], parameters?: object): Resultset<E> {
+  transform(transform: string | any[], parameters?: object): ResultSet<E> {
     let idx;
     let step;
-    let rs = this as Resultset;
+    let rs = this as ResultSet;
 
     // if transform is name, then do lookup first
     if (typeof transform === "string") {
@@ -465,7 +465,7 @@ export class Resultset<E extends object = object> {
           break;
       }
     }
-    return rs as Resultset<E>;
+    return rs as ResultSet<E>;
   }
 
   /**
@@ -478,9 +478,9 @@ export class Resultset<E extends object = object> {
 	 *    });
    *
    * @param {function} comparefun - A javascript compare function used for sorting.
-   * @returns {Resultset} Reference to this resultset, sorted, for future chain operations.
+   * @returns {ResultSet} Reference to this resultset, sorted, for future chain operations.
    */
-  public sort(comparefun: (a: E, b: E) => number): Resultset<E> {
+  public sort(comparefun: (a: E, b: E) => number): ResultSet<E> {
     // if this has no filters applied, just we need to populate filteredrows first
     if (!this.filterInitialized && this.filteredrows.length === 0) {
       this.filteredrows = this.collection.prepareFullDocIndex();
@@ -500,9 +500,9 @@ export class Resultset<E extends object = object> {
    *
    * @param {string} propname - name of property to sort by.
    * @param {boolean} isdesc - (Optional) If true, the property will be sorted in descending order
-   * @returns {Resultset} Reference to this resultset, sorted, for future chain operations.
+   * @returns {ResultSet} Reference to this resultset, sorted, for future chain operations.
    */
-  public simplesort(propname: string, isdesc?: boolean): Resultset<E> {
+  public simplesort(propname: string, isdesc?: boolean): ResultSet<E> {
     if (isdesc === undefined) {
       isdesc = false;
     }
@@ -560,9 +560,9 @@ export class Resultset<E extends object = object> {
    * rs.compoundsort(['age', ['name', true]);
    *
    * @param {array} properties - array of property names or subarray of [propertyname, isdesc] used evaluate sort order
-   * @returns {Resultset} Reference to this resultset, sorted, for future chain operations.
+   * @returns {ResultSet} Reference to this resultset, sorted, for future chain operations.
    */
-  public compoundsort(properties: (string | [string, boolean])[]): Resultset<E> {
+  public compoundsort(properties: (string | [string, boolean])[]): ResultSet<E> {
     if (properties.length === 0) {
       throw new Error("Invalid call to compoundsort, need at least one property");
     }
@@ -637,9 +637,9 @@ export class Resultset<E extends object = object> {
   /**
    * Sorts the resultset based on the last full-text-search scoring.
    * @param {boolean} [ascending=false] - sort ascending
-   * @returns {Resultset<E extends Object>}
+   * @returns {ResultSet<E extends Object>}
    */
-  public sortByScoring(ascending = false): Resultset<E> {
+  public sortByScoring(ascending = false): ResultSet<E> {
     if (this._scoring === null) {
       throw new Error("No scoring available");
     }
@@ -672,9 +672,9 @@ export class Resultset<E extends object = object> {
    *    Each evaluation can utilize a binary index to prevent multiple linear array scans.
    *
    * @param {array} expressionArray - array of expressions
-   * @returns {Resultset} this resultset for further chain ops.
+   * @returns {ResultSet} this resultset for further chain ops.
    */
-  public findOr(expressionArray: Query[]): Resultset<E> {
+  public findOr(expressionArray: Query[]): ResultSet<E> {
     let fr = null;
     let fri = 0;
     let frlen = 0;
@@ -710,7 +710,7 @@ export class Resultset<E extends object = object> {
     return this;
   }
 
-  public $or(expressionArray: Query[]): Resultset<E> {
+  public $or(expressionArray: Query[]): ResultSet<E> {
     return this.findOr(expressionArray);
   }
 
@@ -721,10 +721,10 @@ export class Resultset<E extends object = object> {
    *    Only the first filter can utilize a binary index.
    *
    * @param {array} expressionArray - array of expressions
-   * @returns {Resultset} this resultset for further chain ops.
+   * @returns {ResultSet} this resultset for further chain ops.
    */
-  public findAnd(expressionArray: Query[]): Resultset<E> {
-    // we have already implementing method chaining in this (our Resultset class)
+  public findAnd(expressionArray: Query[]): ResultSet<E> {
+    // we have already implementing method chaining in this (our ResultSet class)
     // so lets just progressively apply user supplied and filters
     for (let i = 0, len = expressionArray.length; i < len; i++) {
       if (this.count() === 0) {
@@ -735,7 +735,7 @@ export class Resultset<E extends object = object> {
     return this;
   }
 
-  public $and(expressionArray: Query[]): Resultset<E> {
+  public $and(expressionArray: Query[]): ResultSet<E> {
     return this.findAnd(expressionArray);
   }
 
@@ -744,9 +744,9 @@ export class Resultset<E extends object = object> {
    *
    * @param {object} query - A mongo-style query object used for filtering current results.
    * @param {boolean} firstOnly - (Optional) Used by collection.findOne() - flag if this was invoked via findOne()
-   * @returns {Resultset} this resultset for further chain ops.
+   * @returns {ResultSet} this resultset for further chain ops.
    */
-  public find(query?: Query, firstOnly = false): Resultset<E> {
+  public find(query?: Query, firstOnly = false): ResultSet<E> {
     if (this.collection.data.length === 0) {
       this.filteredrows = [];
       this.filterInitialized = true;
@@ -985,9 +985,9 @@ export class Resultset<E extends object = object> {
    * Used for filtering via a javascript filter function.
    *
    * @param {function} fun - A javascript function used for filtering current results by.
-   * @returns {Resultset} this resultset for further chain ops.
+   * @returns {ResultSet} this resultset for further chain ops.
    */
-  public where(fun: (obj: E) => boolean): Resultset<E> {
+  public where(fun: (obj: E) => boolean): ResultSet<E> {
     let viewFunction;
     let result = [];
 
@@ -1045,15 +1045,15 @@ export class Resultset<E extends object = object> {
   /**
    * Terminates the chain and returns array of filtered documents
    * @param {object} options
-   * @param {boolean} options.forceClones - Allows forcing the return of cloned objects even when
+   * @param {boolean} [options.forceClones] - Allows forcing the return of cloned objects even when
    *        the collection is not configured for clone object.
-   * @param {string} options.forceCloneMethod - Allows overriding the default or collection specified cloning method.
+   * @param {string} [options.forceCloneMethod] - Allows overriding the default or collection specified cloning method.
    *        Possible values 'parse-stringify', 'deep', and 'shallow' and
-   * @param {boolean} options.removeMeta - Will force clones and strip $loki and meta properties from documents
+   * @param {boolean} [options.removeMeta] - will force clones and strip $loki and meta properties from documents
    *
    * @returns {Array} Array of documents in the resultset
    */
-  public data(options: Resultset.DataOptions = {}): Doc<E>[] {
+  public data(options: ResultSet.DataOptions = {}): Doc<E>[] {
     let forceClones: boolean;
     let forceCloneMethod: CloneMethod;
     let removeMeta: boolean;
@@ -1137,9 +1137,9 @@ export class Resultset<E extends object = object> {
    * Used to run an update operation on all documents currently in the resultset.
    *
    * @param {function} updateFunction - User supplied updateFunction(obj) will be executed for each document object.
-   * @returns {Resultset} this resultset for further chain ops.
+   * @returns {ResultSet} this resultset for further chain ops.
    */
-  update(updateFunction: (obj: E) => E): Resultset<E> {
+  update(updateFunction: (obj: E) => E): ResultSet<E> {
     // if this has no filters applied, we need to populate filteredrows first
     if (!this.filterInitialized && this.filteredrows.length === 0) {
       this.filteredrows = this.collection.prepareFullDocIndex();
@@ -1162,9 +1162,9 @@ export class Resultset<E extends object = object> {
   /**
    * Removes all document objects which are currently in resultset from collection (as well as resultset)
    *
-   * @returns {Resultset} this (empty) resultset for further chain ops.
+   * @returns {ResultSet} this (empty) resultset for further chain ops.
    */
-  public remove(): Resultset<E> {
+  public remove(): ResultSet<E> {
     // if this has no filters applied, we need to populate filteredrows first
     if (!this.filterInitialized && this.filteredrows.length === 0) {
       this.filteredrows = this.collection.prepareFullDocIndex();
@@ -1192,22 +1192,19 @@ export class Resultset<E extends object = object> {
   /**
    * Left joining two sets of data. Join keys can be defined or calculated properties
    * eqJoin expects the right join key values to be unique.  Otherwise left data will be joined on the last joinData object with that key
-   * @param {Array|Resultset|Collection} joinData - Data array to join to.
+   * @param {Array|ResultSet|Collection} joinData - Data array to join to.
    * @param {(string|function)} leftJoinKey - Property name in this result set to join on or a function to produce a value to join on
    * @param {(string|function)} rightJoinKey - Property name in the joinData to join on or a function to produce a value to join on
    * @param {function} [mapFun=] - a function that receives each matching pair and maps them into output objects - function(left,right){return joinedObject}
    * @param {object} [dataOptions=] - optional options to apply to data() calls for left and right sides
    * @param {boolean} dataOptions.removeMeta - allows removing meta before calling mapFun
    * @param {boolean} dataOptions.forceClones - forcing the return of cloned objects to your map object
-   * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method.
-   * @returns {Resultset} A resultset with data in the format [{left: leftObj, right: rightObj}]
+   * @param {string} dataOptions.forceCloneMethod - allows overriding the default or collection specified cloning method
+   * @returns {ResultSet} A resultset with data in the format [{left: leftObj, right: rightObj}]
    */
-  //eqJoin<T extends object>(joinData: T[] | Resultset<T>, leftJoinKey: string | ((obj: E) => string), rightJoinKey: string | ((obj: T) => string)): Resultset<{ left: E; right: T; }>;
-  // eqJoin<T extends object, U extends object>(joinData: T[] | Resultset<T>, leftJoinKey: string | ((obj: E) => string), rightJoinKey: string | ((obj: T) => string), mapFun?: (a: E, b: T) => U, dataOptions?: Resultset.DataOptions): Resultset<U> {
-  eqJoin(joinData: ANY, leftJoinKey: string | Function, rightJoinKey: string | Function, mapFun?: Function, dataOptions?: ANY): ANY {
-// eqJoin<T extends object, U extends object>(joinData: T[] | Resultset<T>, leftJoinKey: string | ((obj: E) => string), rightJoinKey: string | ((obj: T) => string), mapFun?: (a: E, b: T) => U, dataOptions?: Resultset.DataOptions): Resultset<U> {
-    let leftData = [];
-    let leftDataLength;
+  public eqJoin(joinData: Collection<any> | ResultSet<any> | any[], leftJoinKey: string | ((obj: any) => string),
+                rightJoinKey: string | ((obj: any) => string), mapFun?: (left: any, right: any) => any,
+                dataOptions?: ResultSet.DataOptions): ResultSet<any> {
     let rightData = [];
     let rightDataLength;
     let key;
@@ -1217,13 +1214,13 @@ export class Resultset<E extends object = object> {
     let joinMap = {};
 
     //get the left data
-    leftData = this.data(dataOptions);
-    leftDataLength = leftData.length;
+    let leftData = this.data(dataOptions);
+    let leftDataLength = leftData.length;
 
     //get the right data
     if (joinData instanceof Collection) {
       rightData = joinData.chain().data(dataOptions);
-    } else if (joinData instanceof Resultset) {
+    } else if (joinData instanceof ResultSet) {
       rightData = joinData.data(dataOptions);
     } else if (Array.isArray(joinData)) {
       rightData = joinData;
@@ -1234,7 +1231,7 @@ export class Resultset<E extends object = object> {
 
     //construct a lookup table
     for (let i = 0; i < rightDataLength; i++) {
-      key = rightKeyisFunction ? (rightJoinKey as Function)(rightData[i]) : rightData[i][rightJoinKey as string];
+      key = rightKeyisFunction ? (rightJoinKey as (obj: any) => string)(rightData[i]) : rightData[i][rightJoinKey as string];
       joinMap[key] = rightData[i];
     }
 
@@ -1247,7 +1244,7 @@ export class Resultset<E extends object = object> {
 
     //Run map function over each object in the resultset
     for (let j = 0; j < leftDataLength; j++) {
-      key = leftKeyisFunction ? (leftJoinKey as Function)(leftData[j]) : leftData[j][leftJoinKey as string];
+      key = leftKeyisFunction ? (leftJoinKey as (obj: any) => string)(leftData[j]) : leftData[j][leftJoinKey as string];
       result.push(mapFun(leftData[j], joinMap[key] || {}));
     }
 
@@ -1268,7 +1265,7 @@ export class Resultset<E extends object = object> {
    * @param {boolean} dataOptions.forceClones - forcing the return of cloned objects to your map object
    * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method.
    */
-  map<U extends object>(mapFun: (obj: E, index: number, array: E[]) => U, dataOptions?: Resultset.DataOptions): Resultset<U> {
+  map<U extends object>(mapFun: (obj: E, index: number, array: E[]) => U, dataOptions?: ResultSet.DataOptions): ResultSet<U> {
     let data = this.data(dataOptions).map(mapFun);
     //return return a new resultset with no filters
     this.collection = new Collection("mappedData");
@@ -1276,11 +1273,11 @@ export class Resultset<E extends object = object> {
     this.filteredrows = [];
     this.filterInitialized = false;
 
-    return this as any as Resultset<U>;
+    return this as any as ResultSet<U>;
   }
 }
 
-export namespace Resultset {
+export namespace ResultSet {
   export interface DataOptions {
     forceClones?: boolean;
     forceCloneMethod?: CloneMethod;

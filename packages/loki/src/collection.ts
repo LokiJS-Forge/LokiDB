@@ -1,6 +1,6 @@
 import {LokiEventEmitter} from "./event_emitter";
 import {UniqueIndex} from "./unique_index";
-import {Resultset} from "./resultset";
+import {ResultSet} from "./result_set";
 import {DynamicView} from "./dynamic_view";
 import {ltHelper, gtHelper, aeqHelper} from "./helper";
 import {Loki} from "./loki";
@@ -1310,7 +1310,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
 
     // i think calculateRange can probably be moved to collection
     // as it doesn't seem to need resultset.  need to verify
-    //let rs = new Resultset(this, null, null);
+    //let rs = new ResultSet(this, null, null);
     const range = this.calculateRange("$eq", binaryIndexName, val);
 
     if (range[0] === 0 && range[1] === -1) {
@@ -1726,7 +1726,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   public findOne(query: object): Doc<E> {
     query = query || {};
 
-    // Instantiate Resultset and exec find op passing firstOnly = true param
+    // Instantiate ResultSet and exec find op passing firstOnly = true param
     const result = this.chain().find(query, true).data();
 
     if (Array.isArray(result) && result.length === 0) {
@@ -1746,15 +1746,15 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    *
    * @param {array} transform - Ordered array of transform step objects similar to chain
    * @param {object} parameters - Object containing properties representing parameters to substitute
-   * @returns {Resultset} (this) resultset, or data array if any map or join functions where called
+   * @returns {ResultSet} (this) resultset, or data array if any map or join functions where called
    */
-  public chain(transform?: string | ANY[], parameters?: ANY): Resultset<E> {
-    const rs = new Resultset<E>(this);
+  public chain(transform?: string | ANY[], parameters?: ANY): ResultSet<E> {
+    const rs = new ResultSet<E>(this);
 
     if (transform === undefined) {
       return rs;
     }
-    return rs.transform(transform, parameters) as Resultset<E>;
+    return rs.transform(transform, parameters) as ResultSet<E>;
   }
 
   /**
@@ -1867,14 +1867,16 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {string} leftJoinProp - property name in collection
    * @param {string} rightJoinProp - property name in joinData
    * @param {function} mapFun - (Optional) map function to use
-   * @returns {Resultset} Result of the mapping operation
+   * @param dataOptions - options to data() before input to your map function
+   * @param [dataOptions.removeMeta] - allows removing meta before calling mapFun
+   * @param [dataOptions.forceClones] - forcing the return of cloned objects to your map object
+   * @param [dataOptions.forceCloneMethod] - allows overriding the default or collection specified cloning method
+   * @returns {ResultSet} Result of the mapping operation
    */
-  //eqJoin<T extends object>(joinData: T[] | Resultset<T>, leftJoinProp: string | ((obj: E) => string), rightJoinProp: string | ((obj: T) => string)): Resultset<{ left: E; right: T; }>;
-  // eqJoin<T extends object, U extends object>(joinData: T[] | Resultset<T>, leftJoinProp: string | ((obj: E) => string), rightJoinProp: string | ((obj: T) => string), mapFun?: (a: E, b: T) => U): Resultset<U> {
-  //eqJoin<T extends object, U extends object>(joinData: T[] | Resultset<T>, leftJoinKey: string | ((obj: E) => string), rightJoinKey: string | ((obj: T) => string), mapFun?: (a: E, b: T) => U, dataOptions?: Resultset.DataOptions): Resultset<{ left: E; right: T; }> {
-  public eqJoin(joinData: ANY[], leftJoinProp: string, rightJoinProp: string, mapFun?: Function): Resultset {
-    // logic in Resultset class
-    return new Resultset(this).eqJoin(joinData, leftJoinProp, rightJoinProp, mapFun);
+  public eqJoin(joinData: Collection<any> | ResultSet<any> | any[], leftJoinProp: string | ((obj: any) => string),
+                rightJoinProp: string | ((obj: any) => string), mapFun?: (left: any, right: any) => any,
+                dataOptions?: ResultSet.DataOptions): ResultSet<any> {
+    return new ResultSet(this).eqJoin(joinData, leftJoinProp, rightJoinProp, mapFun, dataOptions);
   }
 
   /* ------ STAGING API -------- */

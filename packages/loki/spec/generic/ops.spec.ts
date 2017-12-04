@@ -1,6 +1,6 @@
 /* global describe, beforeEach, it, expect */
 import {Loki} from "../../src/loki";
-import {LokiOps} from "../../src/resultset";
+import {LokiOps} from "../../src/result_set";
 import {Collection} from "../../src/collection";
 
 export type ANY = any;

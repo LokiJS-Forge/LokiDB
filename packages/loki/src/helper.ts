@@ -1,8 +1,3 @@
-/**
- * @hidden
- */
-export type ANY = any;
-
 /** Helper function for determining 'loki' abstract equality which is a little more abstract than ==
  *     aeqHelper(5, '5') === true
  *     aeqHelper(5.0, '5') === true
@@ -11,24 +6,19 @@ export type ANY = any;
  *     aeqHelper([1, 2, 3], [1, 3]) === false
  *     aeqHelper([1, 2, 3], [1, 2, 3]) === true
  *     aeqHelper(undefined, null) === true
- */
-
-/**
- * @hidden
- * @param {ANY} prop1
- * @param {ANY} prop2
+ * @param {any} prop1
+ * @param {any} prop2
  * @returns {boolean}
+ * @hidden
  */
-export function aeqHelper(prop1: ANY, prop2: ANY) {
-  let cv1;
-  let cv2;
-  let t1;
-  let t2;
-
+export function aeqHelper(prop1: any, prop2: any): boolean {
   if (prop1 === prop2) return true;
 
   // 'falsy' and Boolean handling
   if (!prop1 || !prop2 || prop1 === true || prop2 === true || prop1 !== prop1 || prop2 !== prop2) {
+    let t1: number;
+    let t2: number;
+
     // dates and NaN conditions (typed dates before serialization)
     switch (prop1) {
       case undefined:
@@ -79,8 +69,8 @@ export function aeqHelper(prop1: ANY, prop2: ANY) {
   }
 
   // Handle 'Number-like' comparisons
-  cv1 = Number(prop1);
-  cv2 = Number(prop2);
+  let cv1 = Number(prop1);
+  let cv2 = Number(prop2);
 
   // if one or both are 'number-like'...
   if (cv1 === cv1 || cv2 === cv2) {
@@ -100,15 +90,13 @@ export function aeqHelper(prop1: ANY, prop2: ANY) {
  *     need this function (as well as gtHelper) to always ensure one value is LT, GT, or EQ to another.
  * @hidden
  */
-export function ltHelper(prop1: ANY, prop2: ANY, equal: boolean) {
-  let cv1;
-  let cv2;
-  let t1;
-  let t2;
-
+export function ltHelper(prop1: any, prop2: any, equal: boolean) {
   // if one of the params is falsy or strictly true or not equal to itself
   // 0, 0.0, "", NaN, null, undefined, not defined, false, true
   if (!prop1 || !prop2 || prop1 === true || prop2 === true || prop1 !== prop1 || prop2 !== prop2) {
+    let t1: number;
+    let t2: number;
+
     switch (prop1) {
       case undefined:
         t1 = 1;
@@ -159,8 +147,8 @@ export function ltHelper(prop1: ANY, prop2: ANY, equal: boolean) {
   }
 
   // if both are numbers (string encoded or not), compare as numbers
-  cv1 = Number(prop1);
-  cv2 = Number(prop2);
+  let cv1 = Number(prop1);
+  let cv2 = Number(prop2);
 
   if (cv1 === cv1 && cv2 === cv2) {
     if (cv1 < cv2) return true;
@@ -197,19 +185,17 @@ export function ltHelper(prop1: ANY, prop2: ANY, equal: boolean) {
 
 /**
  * @hidden
- * @param {ANY} prop1
- * @param {ANY} prop2
+ * @param {any} prop1
+ * @param {any} prop2
  * @param {boolean} equal
  * @returns {boolean}
  */
-export function gtHelper(prop1: ANY, prop2: ANY, equal: boolean) {
-  let cv1;
-  let cv2;
-  let t1;
-  let t2;
-
+export function gtHelper(prop1: any, prop2: any, equal: boolean) {
   // 'falsy' and Boolean handling
   if (!prop1 || !prop2 || prop1 === true || prop2 === true || prop1 !== prop1 || prop2 !== prop2) {
+    let t1: number;
+    let t2: number;
+
     switch (prop1) {
       case undefined:
         t1 = 1;
@@ -260,8 +246,8 @@ export function gtHelper(prop1: ANY, prop2: ANY, equal: boolean) {
   }
 
   // if both are numbers (string encoded or not), compare as numbers
-  cv1 = Number(prop1);
-  cv2 = Number(prop2);
+  let cv1 = Number(prop1);
+  let cv2 = Number(prop2);
   if (cv1 === cv1 && cv2 === cv2) {
     if (cv1 > cv2) return true;
     if (cv1 < cv2) return false;
@@ -297,13 +283,13 @@ export function gtHelper(prop1: ANY, prop2: ANY, equal: boolean) {
 }
 
 /**
- * @hidden
- * @param {ANY} prop1
- * @param {ANY} prop2
- * @param {ANY} desc
+ * @param {any} prop1
+ * @param {any} prop2
+ * @param {any} desc
  * @returns {number}
+ * @hidden
  */
-export function sortHelper(prop1: ANY, prop2: ANY, desc: ANY) {
+export function sortHelper(prop1: any, prop2: any, desc: any) {
   if (aeqHelper(prop1, prop2)) return 0;
 
   if (ltHelper(prop1, prop2, false)) {

@@ -733,17 +733,17 @@ describe("loki", () => {
 
   describe("resultSet", () => {
     it("works", () => {
-      // Resultset find
+      // ResultSet find
       expect(users.chain().find({
         "age": {
           "$gte": 30
         }
       }).where((obj: ANY) => obj.lang === "Swedish").data().length).toEqual(1);
 
-      // Resultset offset
+      // ResultSet offset
       expect(users.chain().offset(1).data().length).toEqual(users.data.length - 1);
 
-      // Resultset limit
+      // ResultSet limit
       expect(users.chain().limit(2).data().length).toEqual(2);
     });
   });

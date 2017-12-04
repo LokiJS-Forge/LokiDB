@@ -1,5 +1,6 @@
-import {Loki} from "../loki/src/loki";
-
+/**
+ * @hidden
+ */
 export type ANY = any;
 
 export interface StorageAdapter {

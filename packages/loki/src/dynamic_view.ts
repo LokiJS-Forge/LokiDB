@@ -1,10 +1,8 @@
 import {LokiEventEmitter} from "./event_emitter";
-import {Resultset} from "./resultset";
+import {ResultSet} from "./result_set";
 import {Collection} from "./collection";
 import {Doc, Filter} from "../../common/types";
 import {ScoreResult} from "../../full-text-search/src/scorer";
-
-export type ANY = any;
 
 /**
  * DynamicView class is a versatile 'live' view class which can have filters and sorts applied.
@@ -30,11 +28,11 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
   public name: string;
   private _rebuildPending: boolean;
 
-  private _resultset: Resultset<E>;
+  private _resultset: ResultSet<E>;
   private _resultdata: Doc<E>[];
   private _resultsdirty: boolean;
 
-  private _cachedresultset: Resultset<E>;
+  private _cachedresultset: ResultSet<E>;
 
   private _filterPipeline: Filter<E>[];
 
@@ -69,9 +67,8 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
 
     // 'passive' will defer the sort phase until they call data(). (most efficient overall)
     // 'active' will sort async whenever next idle. (prioritizes read speeds)
-    // sortPriority: this._sortPriority = DynamicView.SortPriority.PASSIVE,
 
-    this._resultset = new Resultset(collection);
+    this._resultset = new ResultSet(collection);
     this._resultdata = [];
     this._resultsdirty = false;
 
@@ -106,13 +103,9 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * @fires DynamicView.rebuild
    */
   _rematerialize({removeWhereFilters = false}): DynamicView<E> {
-    let fpl;
-    let fpi;
-    let idx;
-
     this._resultdata = [];
     this._resultsdirty = true;
-    this._resultset = new Resultset(this._collection);
+    this._resultset = new ResultSet(this._collection);
 
     if (this._sortFunction || this._sortCriteria || this._sortByScoring !== null) {
       this._sortDirty = true;
@@ -121,8 +114,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
     if (removeWhereFilters) {
       // for each view see if it had any where filters applied... since they don't
       // serialize those functions lets remove those invalid filters
-      fpl = this._filterPipeline.length;
-      fpi = fpl;
+      let fpi = this._filterPipeline.length;
       while (fpi--) {
         if (this._filterPipeline[fpi].type === "where") {
           if (fpi !== this._filterPipeline.length - 1) {
@@ -138,8 +130,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
     this._filterPipeline = [];
 
     // now re-apply 'find' filterPipeline ops
-    fpl = ofp.length;
-    for (idx = 0; idx < fpl; idx++) {
+    for (let idx = 0; idx < ofp.length; idx++) {
       this.applyFind(ofp[idx].val);
     }
 
@@ -159,9 +150,9 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    *
    * @param {(string|array=)} transform - Optional name of collection transform, or an array of transform steps
    * @param {object} parameters - optional parameters (if optional transform requires them)
-   * @returns {Resultset} A copy of the internal resultset for branched queries.
+   * @returns {ResultSet} A copy of the internal resultset for branched queries.
    */
-  branchResultset(transform: string | any[], parameters?: object): Resultset<E> {
+  public branchResultset(transform: string | any[], parameters?: object): ResultSet<E> {
     const rs = this._resultset.branch();
     if (transform === undefined) {
       return rs;
@@ -170,17 +161,15 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
   }
 
   /**
-   * toJSON() - Override of toJSON to avoid circular references
-   *
+   * Override of toJSON to avoid circular references.
    */
-  toJSON() {
+  public toJSON(): DynamicView.Serialized {
     return {
       name: this.name,
       _persistent: this._persistent,
       _sortPriority: this._sortPriority,
       _minRebuildInterval: this._minRebuildInterval,
       _resultset: this._resultset,
-      _resultsdirty: true,
       _filterPipeline: this._filterPipeline,
       _sortCriteria: this._sortCriteria,
       _sortByScoring: this._sortByScoring,
@@ -188,12 +177,11 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
     };
   }
 
-  static fromJSONObject(collection: ANY, obj: ANY): DynamicView {
-    let dv = new DynamicView(collection, obj.name, obj.options);
-    dv._resultsdirty = obj._resultsdirty;
+  public static fromJSONObject(collection: Collection, obj: DynamicView.Serialized): DynamicView {
+    let dv = new DynamicView(collection, obj.name);
+    dv._resultsdirty = true;
     dv._filterPipeline = obj._filterPipeline;
     dv._resultdata = [];
-
     dv._sortCriteria = obj._sortCriteria;
     dv._sortByScoring = obj._sortByScoring;
     dv._sortDirty = obj._sortDirty;
@@ -503,15 +491,15 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * Resolves and pending filtering and sorting, then returns document array as result.
    *
    * @param {object} options - optional parameters to pass to resultset.data() if non-persistent
-   * @param {boolean} options.forceClones - Allows forcing the return of cloned objects even when
+   * @param {boolean} [options.forceClones] - Allows forcing the return of cloned objects even when
    *        the collection is not configured for clone object.
-   * @param {string} options.forceCloneMethod - Allows overriding the default or collection specified cloning method.
+   * @param {string} [options.forceCloneMethod] - Allows overriding the default or collection specified cloning method.
    *        Possible values include 'parse-stringify', 'jquery-extend-deep', 'shallow', 'shallow-assign'
-   * @param {boolean} options.removeMeta - Will force clones and strip $loki and meta properties from documents
+   * @param {boolean} [options.removeMeta] - will force clones and strip $loki and meta properties from documents
    *
    * @returns {Array} An array of documents representing the current DynamicView contents.
    */
-  data(options: object = {}): Doc<E>[] {
+  public data(options: ResultSet.DataOptions = {}): Doc<E>[] {
     // using final sort phase as 'catch all' for a few use cases which require full rebuild
     if (this._sortDirty || this._resultsdirty) {
       this._performSortPhase({
@@ -623,7 +611,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
 
     // creating a 1-element resultset to run filter chain ops on to see if that doc passes filters;
     // mostly efficient algorithm, slight stack overhead price (this function is called on inserts and updates)
-    const evalResultset = new Resultset(this._collection);
+    const evalResultset = new ResultSet(this._collection);
     evalResultset.filteredrows = [objIndex];
     evalResultset.filterInitialized = true;
     let filter;
@@ -783,4 +771,16 @@ export namespace DynamicView {
   }
 
   export type SortPriority = "passive" | "active";
+
+  export interface Serialized {
+    name: string;
+    _persistent: boolean;
+    _sortPriority: SortPriority;
+    _minRebuildInterval: number;
+    _resultset: ResultSet;
+    _filterPipeline: Filter<any>[];
+    _sortCriteria: (string | [string, boolean])[];
+    _sortByScoring: boolean;
+    _sortDirty: boolean;
+  }
 }

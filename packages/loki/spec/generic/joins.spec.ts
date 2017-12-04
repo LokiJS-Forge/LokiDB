@@ -1,7 +1,7 @@
 /* global describe, beforeEach, it, expect */
 import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
-import {Resultset} from "../../src/resultset";
+import {ResultSet} from "../../src/result_set";
 import {Doc} from "../../../common/types";
 
 export type ANY = any;
@@ -109,7 +109,7 @@ describe("joins", () => {
       .eqJoin(directors.data, "directorId", "directorId", (left: ANY, right: ANY) => ({
         filmTitle: left.title,
         directorName: right.name
-      })) as any as Resultset<Join1>;
+      })) as any as ResultSet<Join1>;
     expect(joined.data().length).toEqual(3);
 
     //Test chaining after join
@@ -119,22 +119,16 @@ describe("joins", () => {
     expect(joined.data()[0].filmTitle).toEqual("Jaws");
 
     interface Join2 {
-      left: Doc<Director>;
-      right: Doc<Film>;
+      left: Doc<Film>;
+      right: Doc<Director>;
     }
 
     //Test calculated keys
     joined = films.chain().eqJoin(directors.data,
       (director: ANY) => director.directorId + 1,
-      (film: ANY) => film.directorId - 1)
-      .data() as any as Join2;
+      (film: ANY) => String(film.directorId - 1))
+      .data() as Join2[];
 
     expect(joined[0].right.name).toEqual("Steven Spielberg");
   });
 });
-// var Loki = require('../src/js'),
-//   gordian = require('gordian'),
-//   suite = new gordian('testJoins'),
-
-
-// suite.report();
