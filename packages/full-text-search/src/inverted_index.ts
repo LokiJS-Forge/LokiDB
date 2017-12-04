@@ -124,9 +124,7 @@ export class InvertedIndex {
         if (child === undefined) {
           child = new Map();
           if (this._optimizeChanges) {
-            Object.defineProperties(child, {
-              pa: {enumerable: false, configurable: true, writable: true, value: branch}
-            });
+            child.pa = branch;
           }
           branch.set(c, child);
         }
@@ -341,9 +339,7 @@ export class InvertedIndex {
   private _regenerate(index: Index, parent: Index) {
     // Set parent.
     if (parent !== null) {
-      Object.defineProperties(index, {
-        pa: {enumerable: false, configurable: true, writable: false, value: parent}
-      });
+      index.pa = parent;
     }
 
     // Iterate over subtree.
