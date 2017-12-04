@@ -269,7 +269,7 @@ describe("Compare scoring against elasticsearch", () => {
     let fts = new FullTextSearch([{
       name: FIELD_NAME_1,
       tokenizer: tkz
-    }]);
+    }], "$loki");
 
     // Add documents.
     for (let i = 0; i < DATA.length; i++) {
