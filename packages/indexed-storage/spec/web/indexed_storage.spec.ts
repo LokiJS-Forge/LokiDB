@@ -35,7 +35,7 @@ describe("testing indexed storage", function () {
       })
       .then(() => {
         const db2 = new Loki("myTestApp");
-        return db2.initializePersistence({persistenceMethod: Loki.PersistenceMethod.INDEXED_STORAGE})
+        return db2.initializePersistence({persistenceMethod: "indexed-storage"})
           .then(() => {
             return db2.loadDatabase();
           }).then(() => {

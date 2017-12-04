@@ -35,7 +35,7 @@ describe("testing fs storage", function () {
       })
       .then(() => {
         const db2 = new Loki("myTestApp");
-        return db2.initializePersistence({persistenceMethod: Loki.PersistenceMethod.FS_STORAGE})
+        return db2.initializePersistence({persistenceMethod: "fs-storage"})
           .then(() => {
             return db2.loadDatabase();
           }).then(() => {

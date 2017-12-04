@@ -5,26 +5,26 @@ import {PLUGINS} from "../../common/plugin";
 
 export type ANY = any;
 
-function getENV() {
+function getENV(): Loki.Environment {
   if (global !== undefined && (global["android"] || global["NSObject"])) {
-    return Loki.Environment.NATIVE_SCRIPT;
+    return "NATIVESCRIPT";
   }
 
   const isNode = global !== undefined && ({}).toString.call(global) === "[object global]";
   if (isNode) {
     if (global["window"]) {
-      return Loki.Environment.NODE_JS; //node-webkit
+      return "NODEJS"; //node-webkit
     } else {
-      return Loki.Environment.NODE_JS;
+      return "NODEJS";
     }
   }
 
   const isBrowser = window !== undefined && ({}).toString.call(window) === "[object Window]";
   if (document !== undefined) {
     if (document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) {
-      return Loki.Environment.CORDOVA;
+      return "CORDOVA";
     }
-    return Loki.Environment.BROWSER;
+    return "BROWSER";
   }
 
   if (!isBrowser) {
@@ -63,7 +63,7 @@ export class Loki extends LokiEventEmitter {
    * Constructs the main database class.
    * @param {string} filename - name of the file to be saved to
    * @param {object} [options={}] - options
-   * @param {Loki.Environment} [options.env=auto] - overrides environment detection
+   * @param {Loki.Environment} [options.env] - the javascript environment
    * @param {Loki.SerializationMethod} [options.serializationMethod=NORMAL] - the serialization method
    * @param {string} [options.destructureDelimiter="$<\n"] - string delimiter used for destructured serialization
    * @param {boolean} [options.verbose=false] - enable console output
@@ -76,7 +76,7 @@ export class Loki extends LokiEventEmitter {
 
     (
       {
-        serializationMethod: this._serializationMethod = Loki.SerializationMethod.NORMAL,
+        serializationMethod: this._serializationMethod = "normal",
         destructureDelimiter: this._destructureDelimiter = "$<\n",
         verbose: this._verbose = false,
         env: this._env = getENV()
@@ -149,17 +149,17 @@ export class Loki extends LokiEventEmitter {
     );
 
     const DEFAULT_PERSISTENCE = {
-      [Loki.Environment.NODE_JS]: [Loki.PersistenceMethod.FS_STORAGE],
-      [Loki.Environment.BROWSER]: [Loki.PersistenceMethod.LOCAL_STORAGE, Loki.PersistenceMethod.INDEXED_STORAGE],
-      [Loki.Environment.CORDOVA]: [Loki.PersistenceMethod.LOCAL_STORAGE, Loki.PersistenceMethod.INDEXED_STORAGE],
-      [Loki.Environment.MEMORY]: [Loki.PersistenceMethod.MEMORY_STORAGE]
+      "NODEJS": ["fs-storage"],
+      "BROWSER": ["local-storage", "indexed-storage"],
+      "CORDOVA": ["local-storage", "indexed-storage"],
+      "MEMORY": ["memory-storage"]
     };
 
     const PERSISTENCE_METHODS = {
-      [Loki.PersistenceMethod.FS_STORAGE]: PLUGINS["LokiFSStorage"],
-      [Loki.PersistenceMethod.LOCAL_STORAGE]: PLUGINS["LokiLocalStorage"],
-      [Loki.PersistenceMethod.INDEXED_STORAGE]: PLUGINS["LokiIndexedStorage"],
-      [Loki.PersistenceMethod.MEMORY_STORAGE]: PLUGINS["LokiMemoryStorage"]
+      "fs-storage": PLUGINS["LokiFSStorage"],
+      "local-storage": PLUGINS["LokiLocalStorage"],
+      "indexed-storage": PLUGINS["LokiIndexedStorage"],
+      "memory-storage": PLUGINS["LokiMemoryStorage"]
     };
 
     // process the options
@@ -174,7 +174,7 @@ export class Loki extends LokiEventEmitter {
 
     // if user passes adapter, set persistence mode to adapter and retain persistence adapter instance
     if (options.adapter !== undefined) {
-      this._persistenceMethod = Loki.PersistenceMethod.ADAPTER;
+      this._persistenceMethod = "adapter";
       this._persistenceAdapter = options.adapter;
     }
 
@@ -194,7 +194,8 @@ export class Loki extends LokiEventEmitter {
 
     this.autosaveDisable();
 
-    // if they want to load database on loki instantiation, now is a good time to load... after adapter set and before possible autosave initiation
+    // if they want to load database on loki instantiation, now is a good time to load... after adapter set and before
+    // possible autosave initiation
     let loaded;
     if (options.autoload) {
       loaded = this.loadDatabase(options.inflate);
@@ -250,7 +251,7 @@ export class Loki extends LokiEventEmitter {
    * @param {int} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
    * @returns {Collection} a reference to the collection which was just added
    */
-  addCollection<T extends object>(name: string, options: Collection.Options = {}) {
+  addCollection<T extends object = any>(name: string, options: Collection.Options = {}) {
     const collection = new Collection<T>(name, options);
     this._collections.push(collection);
 
@@ -272,7 +273,7 @@ export class Loki extends LokiEventEmitter {
    * @param {string} collectionName - name of collection to look up
    * @returns {Collection} Reference to collection in database by that name, or null if not found
    */
-  getCollection<T extends object>(collectionName: string) {
+  getCollection<T extends object = any>(collectionName: string) {
     let i;
     const len = this._collections.length;
 
@@ -348,11 +349,11 @@ export class Loki extends LokiEventEmitter {
     }
 
     switch (options.serializationMethod) {
-      case Loki.SerializationMethod.NORMAL:
+      case "normal":
         return JSON.stringify(this);
-      case Loki.SerializationMethod.PRETTY:
+      case "pretty":
         return JSON.stringify(this, null, 2);
-      case Loki.SerializationMethod.DESTRUCTURED:
+      case "destructured":
         return this.serializeDestructured(); // use default options
       default:
         return JSON.stringify(this);
@@ -425,7 +426,7 @@ export class Loki extends LokiEventEmitter {
     if (options.partitioned === true && options.partition === -1) {
       // since we are deconstructing, override serializationMethod to normal for here
       return dbcopy.serialize({
-        serializationMethod: Loki.SerializationMethod.NORMAL
+        serializationMethod: "normal"
       });
     }
 
@@ -433,7 +434,7 @@ export class Loki extends LokiEventEmitter {
     // start by pushing db serialization into first array element
     const reconstruct: string[] = [];
     reconstruct.push(dbcopy.serialize({
-      serializationMethod: Loki.SerializationMethod.NORMAL
+      serializationMethod: "normal"
     }) as string);
 
     dbcopy = null;
@@ -510,10 +511,6 @@ export class Loki extends LokiEventEmitter {
    * @returns {string|array} A custom, restructured aggregation of independent serializations for a single collection.
    */
   serializeCollection(options: ANY = {}) {
-    let doccount;
-    let docidx;
-    let resultlines = [];
-
     if (options.delimited === undefined) {
       options.delimited = true;
     }
@@ -521,12 +518,10 @@ export class Loki extends LokiEventEmitter {
     if (options.collectionIndex === undefined) {
       throw new Error("serializeCollection called without 'collectionIndex' option");
     }
+    let doccount = this._collections[options.collectionIndex].data.length;
 
-    doccount = this._collections[options.collectionIndex].data.length;
-
-    resultlines = [];
-
-    for (docidx = 0; docidx < doccount; docidx++) {
+    let resultlines = [];
+    for (let docidx = 0; docidx < doccount; docidx++) {
       resultlines.push(JSON.stringify(this._collections[options.collectionIndex].data[docidx]));
     }
 
@@ -702,11 +697,11 @@ export class Loki extends LokiEventEmitter {
     } else {
       // using option defined in instantiated db not what was in serialized db
       switch (this._serializationMethod) {
-        case Loki.SerializationMethod.NORMAL:
-        case Loki.SerializationMethod.PRETTY:
+        case "normal":
+        case "pretty":
           dbObject = JSON.parse(serializedDb as string);
           break;
-        case Loki.SerializationMethod.DESTRUCTURED:
+        case "destructured":
           dbObject = this.deserializeDestructured(serializedDb);
           break;
         default:
@@ -1093,25 +1088,9 @@ export namespace Loki {
 
   export type LoadDatabaseOptions = Collection.DeserializeOptions & ThrottledDrainOptions;
 
-  export enum SerializationMethod {
-    NORMAL,
-    PRETTY,
-    DESTRUCTURED,
-  }
+  export type SerializationMethod = "normal" | "pretty" | "destructured";
 
-  export enum PersistenceMethod {
-    FS_STORAGE,
-    LOCAL_STORAGE,
-    INDEXED_STORAGE,
-    MEMORY_STORAGE,
-    ADAPTER,
-  }
+  export type PersistenceMethod = "fs-storage" | "local-storage" | "indexed-storage" | "memory-storage" | "adapter";
 
-  export enum Environment {
-    NODE_JS,
-    NATIVE_SCRIPT,
-    BROWSER,
-    CORDOVA,
-    MEMORY,
-  }
+  export type Environment = "NATIVESCRIPT" | "NODEJS" | "CORDOVA" | "BROWSER" | "MEMORY";
 }

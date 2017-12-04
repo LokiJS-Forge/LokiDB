@@ -50,7 +50,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * @param {string} name - the name of this dynamic view
    * @param {object} options - the options
    * @param {boolean} [options.persistent=false] - indicates if view is to main internal results array in 'resultdata'
-   * @param {string} [options.sortPriority=SortPriority.PASSIVE] - the sort priority
+   * @param {string} [options.sortPriority="passive"] - the sort priority
    * @param {number} [options.minRebuildInterval=1] - minimum rebuild interval (need clarification to docs here)
    */
   constructor(collection: Collection<E>, name: string, options: DynamicView.Options = {}) {
@@ -58,7 +58,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
     (
       {
         persistent: this._persistent = false,
-        sortPriority: this._sortPriority = DynamicView.SortPriority.PASSIVE,
+        sortPriority: this._sortPriority = "passive",
         minRebuildInterval: this._minRebuildInterval = 1
       } = options
     );
@@ -551,7 +551,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
     }
     this._sortDirty = true;
 
-    if (this._sortPriority === DynamicView.SortPriority.ACTIVE) {
+    if (this._sortPriority === "active") {
       // active sorting... once they are done and yield js thread, run async performSortPhase()
       setTimeout(() => {
         this._performSortPhase();
@@ -782,8 +782,5 @@ export namespace DynamicView {
     minRebuildInterval?: number;
   }
 
-  export enum SortPriority {
-    PASSIVE, // sorts performed on call to data
-    ACTIVE,  // or right after updates
-  }
+  export type SortPriority = "passive" | "active";
 }

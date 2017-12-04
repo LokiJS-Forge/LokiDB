@@ -160,7 +160,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {boolean} [options.disableDeltaChangesApi=true] - set to false to enable Delta Changes API (requires Changes API, forces cloning)
    * @param {boolean} [options.clone=false] - specify whether inserts and queries clone to/from user
    * @param {boolean} [options.serializableIndices =true] - converts date values on binary indexed property values are serializable
-   * @param {string} [options.cloneMethod=CloneMethod.DEEP] - the clone method
+   * @param {string} [options.cloneMethod="deep"] - the clone method
    * @param {number} [options.transactional=false] - ?
    * @param {number} options.ttl - ?
    * @param {number} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
@@ -227,7 +227,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     this.disableDeltaChangesApi = options.disableDeltaChangesApi !== undefined ? options.disableDeltaChangesApi : true;
 
     // .
-    this.cloneMethod = options.cloneMethod !== undefined ? options.cloneMethod : CloneMethod.DEEP;
+    this.cloneMethod = options.cloneMethod !== undefined ? options.cloneMethod : "deep";
     if (this.disableChangesApi) {
       this.disableDeltaChangesApi = true;
     }
@@ -346,7 +346,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     coll.asyncListeners = obj.asyncListeners;
     coll.disableChangesApi = obj.disableChangesApi;
     coll.cloneObjects = obj.cloneObjects;
-    coll.cloneMethod = obj.cloneMethod || CloneMethod.DEEP;
+    coll.cloneMethod = obj.cloneMethod || "deep";
     coll.changes = obj.changes;
 
     coll.dirty = (options && options.retainDirtyFlags === true) ? obj.dirty : false;

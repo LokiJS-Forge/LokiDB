@@ -35,7 +35,7 @@ describe("testing local storage", function () {
       })
       .then(() => {
         const db2 = new Loki("myTestApp");
-        return db2.initializePersistence({persistenceMethod: Loki.PersistenceMethod.LOCAL_STORAGE})
+        return db2.initializePersistence({persistenceMethod: "local-storage"})
           .then(() => {
             return db2.loadDatabase();
           }).then(() => {

@@ -38,7 +38,7 @@ function resolveTransformParams(transform: any, params: object) {
   // iterate all steps in the transform array
   for (idx = 0; idx < transform.length; idx++) {
     // clone transform so our scan/replace can operate directly on cloned transform
-    clonedStep = clone(transform[idx], CloneMethod.SHALLOW_RECURSE_OBJECTS);
+    clonedStep = clone(transform[idx], "shallow-recurse-objects");
     resolvedTransform.push(resolveTransformObject(clonedStep, params));
   }
 
@@ -1048,7 +1048,7 @@ export class Resultset<E extends object = object> {
    * @param {boolean} options.forceClones - Allows forcing the return of cloned objects even when
    *        the collection is not configured for clone object.
    * @param {string} options.forceCloneMethod - Allows overriding the default or collection specified cloning method.
-   *        Possible values include 'parse-stringify', 'jquery-extend-deep', and 'shallow'
+   *        Possible values 'parse-stringify', 'deep', and 'shallow' and
    * @param {boolean} options.removeMeta - Will force clones and strip $loki and meta properties from documents
    *
    * @returns {Array} Array of documents in the resultset
@@ -1070,18 +1070,18 @@ export class Resultset<E extends object = object> {
     let obj;
     let len;
     let i;
-    let method;
+    let method: CloneMethod;
 
     // if user opts to strip meta, then force clones and use 'shallow' if 'force' options are not present
     if (removeMeta && !forceClones) {
       forceClones = true;
-      forceCloneMethod = CloneMethod.SHALLOW;
+      forceCloneMethod = "shallow";
     }
 
     // if collection has delta changes active, then force clones and use CloneMethod.DEEP for effective change tracking of nested objects
     if (!this.collection.disableDeltaChangesApi) {
       forceClones = true;
-      forceCloneMethod = CloneMethod.DEEP;
+      forceCloneMethod = "deep";
     }
 
     // if this has no filters applied, just return collection.data

@@ -56,14 +56,14 @@ describe("testing unique index serialization", () => {
     expect(joe).toBeDefined();
     expect(joe.username).toEqual("joe");
 
-    expect(reloaded["_serializationMethod"]).toBe(SerializationMethod.NORMAL);
+    expect(reloaded["_serializationMethod"]).toBe("normal");
     expect(reloaded["_destructureDelimiter"]).toBe("$<\n");
   });
 });
 
 describe("testing destructured serialization/deserialization", () => {
   it("verify default (D) destructuring works as expected", () => {
-    const ddb = new Loki("test.db", {serializationMethod: SerializationMethod.DESTRUCTURED});
+    const ddb = new Loki("test.db", {serializationMethod: "destructured"});
     const coll = ddb.addCollection<Test>("testcoll");
     coll.insert({
       name: "test1",
@@ -86,10 +86,10 @@ describe("testing destructured serialization/deserialization", () => {
 
     const destructuredJson = ddb.serialize();
 
-    const cddb = new Loki("test.db", {serializationMethod: SerializationMethod.DESTRUCTURED});
+    const cddb = new Loki("test.db", {serializationMethod: "destructured"});
     cddb.loadJSON(destructuredJson);
 
-    expect(cddb["_serializationMethod"]).toEqual(SerializationMethod.DESTRUCTURED);
+    expect(cddb["_serializationMethod"]).toEqual("destructured");
     expect(cddb["_collections"].length).toEqual(2);
     expect(cddb["_collections"][0].data.length).toEqual(3);
     expect(cddb["_collections"][0].data[0]["val"]).toEqual(ddb["_collections"][0].data[0]["val"]);

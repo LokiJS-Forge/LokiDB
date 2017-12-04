@@ -89,7 +89,7 @@ describe("cloning behavior", () => {
       }
 
       const cdb = new Loki("clonetest");
-      const citems = cdb.addCollection<User>("items", {clone: true, cloneMethod: CloneMethod.SHALLOW});
+      const citems = cdb.addCollection<User>("items", {clone: true, cloneMethod: "shallow"});
       const oldObject = new Item("mjolnir", "thor", "dwarves");
       const insObject = citems.insert(oldObject);
 
@@ -128,7 +128,7 @@ describe("cloning behavior", () => {
       const cdb = new Loki("cloningEnabled");
       const citems = cdb.addCollection<User>("items", {
         clone: true,
-        cloneMethod: CloneMethod.PARSE_STRINGIFY
+        cloneMethod: "parse-stringify"
       });
 
       citems.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
