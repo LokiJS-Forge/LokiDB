@@ -22,7 +22,7 @@ describe("wildcard query", () => {
 
   it("Tests Wildcard queries with an asterisk.", () => {
     let docs = ["metal", "metals", "mXtals", "mXtXls"];
-    let fts = new FullTextSearch([{name: "body"}]);
+    let fts = new FullTextSearch([{name: "body"}], "$loki");
     for (let i = 0; i < docs.length; i++) {
       fts.addDocument({
         $loki: i,
@@ -56,7 +56,7 @@ describe("wildcard query", () => {
 
   it("Tests Wildcard queries with a question mark.", () => {
     let docs = ["metal", "metals", "mXtals", "mXtXls"];
-    let fts = new FullTextSearch([{name: "body"}]);
+    let fts = new FullTextSearch([{name: "body"}], "$loki");
     for (let i = 0; i < docs.length; i++) {
       fts.addDocument({
         $loki: i,
@@ -85,7 +85,7 @@ describe("wildcard query", () => {
     // Don't split the text.
     tkz.setSplitter("nosplit", (text) => [text]);
 
-    let fts = new FullTextSearch([{name: "body", tokenizer: tkz}]);
+    let fts = new FullTextSearch([{name: "body", tokenizer: tkz}], "$loki");
     for (let i = 0; i < docs.length; i++) {
       fts.addDocument({
         $loki: i,

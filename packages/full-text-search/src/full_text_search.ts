@@ -28,9 +28,9 @@ export class FullTextSearch {
    * @param {boolean=true} fields.optimizeChanges - flag to indicate if deleting/updating a document should be optimized
    *  (requires more memory but performs better)
    * @param {Tokenizer=Tokenizer} fields.tokenizer - the tokenizer of the field
-   * @param {string=$loki} id - the property name of the document index
+   * @param {string} [id] - the property name of the document index
    */
-  constructor(fields: FullTextSearch.FieldOptions[] = [], id = "$loki") {
+  constructor(fields: FullTextSearch.FieldOptions[] = [], id?: string) {
     // Create inverted indices for each field.
     for (let i = 0; i < fields.length; i++) {
       let field = fields[i];

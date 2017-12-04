@@ -31,7 +31,7 @@ export function createLanguageTest(language: string, data: LanguageTestData) {
     let fts = new FullTextSearch([{
       name: "body",
       tokenizer: data.tokenizer
-    }]);
+    }], "$loki");
 
     // Add documents.
     for (let i = 0; i < data.docs.length; i++) {
