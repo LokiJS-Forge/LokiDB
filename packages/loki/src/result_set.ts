@@ -308,7 +308,7 @@ export class ResultSet<E extends object = object> {
    *
    * @returns {ResultSet} Reference to this resultset, for future chain operations.
    */
-  reset(): ResultSet<E> {
+  reset(): this {
     if (this._filteredRows.length > 0) {
       this._filteredRows = [];
     }
@@ -333,10 +333,10 @@ export class ResultSet<E extends object = object> {
    * @param {int} qty - The number of documents to return.
    * @returns {ResultSet} Returns a copy of the resultset, limited by qty, for subsequent chain ops.
    */
-  public limit(qty: number): ResultSet<E> {
+  public limit(qty: number): this {
     // if this has no filters applied, we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
-      this._filteredRows = this._collection.prepareFullDocIndex();
+      this._filteredRows = this._collection._prepareFullDocIndex();
     }
 
     this._filteredRows = this._filteredRows.slice(0, qty);
@@ -350,10 +350,10 @@ export class ResultSet<E extends object = object> {
    * @param {int} pos - Number of documents to skip; all preceding documents are filtered out.
    * @returns {ResultSet} Returns a copy of the resultset, containing docs starting at 'pos' for subsequent chain ops.
    */
-  public offset(pos: number): ResultSet<E> {
+  public offset(pos: number): this {
     // if this has no filters applied, we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
-      this._filteredRows = this._collection.prepareFullDocIndex();
+      this._filteredRows = this._collection._prepareFullDocIndex();
     }
 
     this._filteredRows = this._filteredRows.slice(pos);
@@ -376,7 +376,7 @@ export class ResultSet<E extends object = object> {
   /**
    * Alias of copy()
    */
-  public branch() {
+  public branch(): ResultSet<E> {
     return this.copy();
   }
 
@@ -387,7 +387,7 @@ export class ResultSet<E extends object = object> {
    * @param {object} [parameters=] - object property hash of parameters, if the transform requires them.
    * @returns {ResultSet} either (this) resultset or a clone of of this resultset (depending on steps)
    */
-  public transform(transform: string | Collection.Transform[], parameters?: object): ResultSet<E> {
+  public transform(transform: string | Collection.Transform[], parameters?: object): this {
     // if transform is name, then do lookup first
     if (typeof transform === "string") {
       transform = this._collection.transforms[transform];
@@ -402,7 +402,7 @@ export class ResultSet<E extends object = object> {
       transform = resolveTransformParams(transform, parameters);
     }
 
-    let rs = this as ResultSet;
+    let rs = this;
     for (let idx = 0; idx < transform.length; idx++) {
       const step = transform[idx] as Collection.Transform;
 
@@ -429,10 +429,10 @@ export class ResultSet<E extends object = object> {
           rs = rs.offset(step.value);
           break; // offset makes copy so update reference
         case "map":
-          rs = rs.map(step.value, step.dataOptions);
+          rs = rs.map(step.value, step.dataOptions) as this;
           break;
         case "eqJoin":
-          rs = rs.eqJoin(step.joinData, step.leftJoinKey, step.rightJoinKey, step.mapFun, step.dataOptions);
+          rs = rs.eqJoin(step.joinData, step.leftJoinKey, step.rightJoinKey, step.mapFun, step.dataOptions) as this;
           break;
         // following cases break chain by returning array data so make any of these last in transform steps
         case "mapReduce":
@@ -449,7 +449,7 @@ export class ResultSet<E extends object = object> {
           break;
       }
     }
-    return rs as ResultSet<E>;
+    return rs;
   }
 
   /**
@@ -464,14 +464,14 @@ export class ResultSet<E extends object = object> {
    * @param {function} comparefun - A javascript compare function used for sorting.
    * @returns {ResultSet} Reference to this resultset, sorted, for future chain operations.
    */
-  public sort(comparefun: (a: E, b: E) => number): ResultSet<E> {
+  public sort(comparefun: (a: E, b: E) => number): this {
     // if this has no filters applied, just we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
-      this._filteredRows = this._collection.prepareFullDocIndex();
+      this._filteredRows = this._collection._prepareFullDocIndex();
     }
 
-    const wrappedComparer =
-      (((userComparer, data) => (a: number, b: number) => userComparer(data[a], data[b])))(comparefun, this._collection.data);
+    const data = this._collection.data;
+    const wrappedComparer = (a: number, b: number) => comparefun(data[a], data[b]);
 
     this._filteredRows.sort(wrappedComparer);
 
@@ -486,7 +486,7 @@ export class ResultSet<E extends object = object> {
    * @param {boolean} [descending=false] - if true, the property will be sorted in descending order
    * @returns {ResultSet} Reference to this resultset, sorted, for future chain operations.
    */
-  public simplesort(propname: string, descending: boolean = false): ResultSet<E> {
+  public simplesort(propname: string, descending: boolean = false): this {
     // if this has no filters applied, just we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       // if we have a binary index and no other filters applied, we can use that instead of sorting (again)
@@ -505,14 +505,15 @@ export class ResultSet<E extends object = object> {
       }
       // otherwise initialize array for sort below
       else {
-        this._filteredRows = this._collection.prepareFullDocIndex();
+        this._filteredRows = this._collection._prepareFullDocIndex();
       }
     }
 
-    const wrappedComparer = ((prop, desc, data) => (a: number, b: number) => {
-      let val1, val2, arr;
-      if (~prop.indexOf(".")) {
-        arr = prop.split(".");
+    const data = this._collection.data;
+    const wrappedComparer = (a: number, b: number) => {
+      let val1, val2;
+      if (~propname.indexOf(".")) {
+        const arr = propname.split(".");
         val1 = arr.reduce(function (obj, i) {
           return obj && obj[i] || undefined;
         }, data[a]);
@@ -520,11 +521,11 @@ export class ResultSet<E extends object = object> {
           return obj && obj[i] || undefined;
         }, data[b]);
       } else {
-        val1 = data[a][prop];
-        val2 = data[b][prop];
+        val1 = data[a][propname];
+        val2 = data[b][propname];
       }
-      return sortHelper(val1, val2, desc);
-    })(propname, descending, this._collection.data);
+      return sortHelper(val1, val2, descending);
+    };
 
     this._filteredRows.sort(wrappedComparer);
 
@@ -542,14 +543,13 @@ export class ResultSet<E extends object = object> {
    * @param {array} properties - array of property names or subarray of [propertyname, isdesc] used evaluate sort order
    * @returns {ResultSet} Reference to this resultset, sorted, for future chain operations.
    */
-  public compoundsort(properties: (string | [string, boolean])[]): ResultSet<E> {
+  public compoundsort(properties: (string | [string, boolean])[]): this {
     if (properties.length === 0) {
       throw new Error("Invalid call to compoundsort, need at least one property");
     }
 
-    let prop;
     if (properties.length === 1) {
-      prop = properties[0];
+      const prop = properties[0];
       if (typeof prop === "string") {
         return this.simplesort(prop, false);
       } else {
@@ -559,7 +559,7 @@ export class ResultSet<E extends object = object> {
 
     // unify the structure of 'properties' to avoid checking it repeatedly while sorting
     for (let i = 0, len = properties.length; i < len; i += 1) {
-      prop = properties[i];
+      const prop = properties[i];
       if (typeof prop === "string") {
         properties[i] = [prop, false];
       }
@@ -567,11 +567,11 @@ export class ResultSet<E extends object = object> {
 
     // if this has no filters applied, just we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
-      this._filteredRows = this._collection.prepareFullDocIndex();
+      this._filteredRows = this._collection._prepareFullDocIndex();
     }
 
-    const wrappedComparer =
-      (((props, data) => (a: number, b: number) => this._compoundeval(props, data[a], data[b])))(properties as [string, boolean][], this._collection.data);
+    const data = this._collection.data;
+    const wrappedComparer = (a: number, b: number) => this._compoundeval(properties as [string, boolean][], data[a], data[b]);
 
     this._filteredRows.sort(wrappedComparer);
 
@@ -587,13 +587,10 @@ export class ResultSet<E extends object = object> {
    * @returns {number} 0, -1, or 1 to designate if identical (sortwise) or which should be first
    */
   private _compoundeval(properties: [string, boolean][], obj1: E, obj2: E): number {
-    let res = 0;
-    let prop;
-    let field;
-    let val1, val2, arr;
     for (let i = 0, len = properties.length; i < len; i++) {
-      prop = properties[i];
-      field = prop[0];
+      const prop = properties[i];
+      const field = prop[0];
+      let val1, val2, arr;
       if (~field.indexOf(".")) {
         arr = field.split(".");
         val1 = arr.reduce((obj: object, i: string) => {
@@ -606,7 +603,7 @@ export class ResultSet<E extends object = object> {
         val1 = obj1[field];
         val2 = obj2[field];
       }
-      res = sortHelper(val1, val2, prop[1]);
+      const res = sortHelper(val1, val2, prop[1]);
       if (res !== 0) {
         return res;
       }
@@ -619,7 +616,7 @@ export class ResultSet<E extends object = object> {
    * @param {boolean} [ascending=false] - sort ascending
    * @returns {ResultSet<E extends Object>}
    */
-  public sortByScoring(ascending = false): ResultSet<E> {
+  public sortByScoring(ascending = false): this {
     if (this._scoring === null) {
       throw new Error("No scoring available");
     }
@@ -654,7 +651,7 @@ export class ResultSet<E extends object = object> {
    * @param {array} expressionArray - array of expressions
    * @returns {ResultSet} this resultset for further chain ops.
    */
-  public findOr(expressionArray: Query[]): ResultSet<E> {
+  public findOr(expressionArray: Query[]): this {
     let fr = null;
     let fri = 0;
     let frlen = 0;
@@ -690,7 +687,7 @@ export class ResultSet<E extends object = object> {
     return this;
   }
 
-  public $or(expressionArray: Query[]): ResultSet<E> {
+  public $or(expressionArray: Query[]): this {
     return this.findOr(expressionArray);
   }
 
@@ -703,7 +700,7 @@ export class ResultSet<E extends object = object> {
    * @param {array} expressionArray - array of expressions
    * @returns {ResultSet} this resultset for further chain ops.
    */
-  public findAnd(expressionArray: Query[]): ResultSet<E> {
+  public findAnd(expressionArray: Query[]): this {
     // we have already implementing method chaining in this (our ResultSet class)
     // so lets just progressively apply user supplied and filters
     for (let i = 0, len = expressionArray.length; i < len; i++) {
@@ -715,7 +712,7 @@ export class ResultSet<E extends object = object> {
     return this;
   }
 
-  public $and(expressionArray: Query[]): ResultSet<E> {
+  public $and(expressionArray: Query[]): this {
     return this.findAnd(expressionArray);
   }
 
@@ -726,7 +723,7 @@ export class ResultSet<E extends object = object> {
    * @param {boolean} firstOnly - (Optional) Used by collection.findOne() - flag if this was invoked via findOne()
    * @returns {ResultSet} this resultset for further chain ops.
    */
-  public find(query?: Query, firstOnly = false): ResultSet<E> {
+  public find(query?: Query, firstOnly = false): this {
     if (this._collection.data.length === 0) {
       this._filteredRows = [];
       this._filterInitialized = true;
@@ -1119,10 +1116,10 @@ export class ResultSet<E extends object = object> {
    * @param {function} updateFunction - User supplied updateFunction(obj) will be executed for each document object.
    * @returns {ResultSet} this resultset for further chain ops.
    */
-  update(updateFunction: (obj: E) => E): ResultSet<E> {
+  update(updateFunction: (obj: E) => E): this {
     // if this has no filters applied, we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
-      this._filteredRows = this._collection.prepareFullDocIndex();
+      this._filteredRows = this._collection._prepareFullDocIndex();
     }
 
     const len = this._filteredRows.length;
@@ -1144,10 +1141,10 @@ export class ResultSet<E extends object = object> {
    *
    * @returns {ResultSet} this (empty) resultset for further chain ops.
    */
-  public remove(): ResultSet<E> {
+  public remove(): this {
     // if this has no filters applied, we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
-      this._filteredRows = this._collection.prepareFullDocIndex();
+      this._filteredRows = this._collection._prepareFullDocIndex();
     }
     this._collection.remove(this.data());
     this._filteredRows = [];

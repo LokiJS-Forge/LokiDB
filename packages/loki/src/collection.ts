@@ -270,7 +270,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     this.changes = [];
 
     // initialize the id index
-    this.ensureId();
+    this._ensureId();
     let indices = options.indices ? options.indices : [];
     for (let idx = 0; idx < indices.length; idx++) {
       this.ensureIndex(options.indices[idx]);
@@ -377,16 +377,14 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     }
 
     // load each element individually
-    let clen = obj.data.length;
-    let j = 0;
     if (options && options[obj.name] !== undefined) {
       let loader = makeLoader(obj);
 
-      for (j; j < clen; j++) {
+      for (let j = 0; j < obj.data.length; j++) {
         coll.data[j] = loader(obj.data[j]);
       }
     } else {
-      for (j; j < clen; j++) {
+      for (let j = 0; j < obj.data.length; j++) {
         coll.data[j] = obj.data[j];
       }
     }
@@ -400,11 +398,11 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       coll.transforms = obj.transforms;
     }
 
-    coll.ensureId();
+    coll._ensureId();
 
     // regenerate unique indexes
     if (obj.uniqueNames !== undefined) {
-      for (j = 0; j < obj.uniqueNames.length; j++) {
+      for (let j = 0; j < obj.uniqueNames.length; j++) {
         coll.ensureUniqueIndex(obj.uniqueNames[j]);
       }
     }
@@ -465,12 +463,12 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   /*----------------------------+
    | TTL daemon                  |
    +----------------------------*/
-  ttlDaemonFuncGen() {
+  private _ttlDaemonFuncGen(): () => void {
     const collection = this;
     const age = this.ttl.age;
     return function ttlDaemon() {
       const now = Date.now();
-      const toRemove = collection.chain().where((member: ANY) => {
+      const toRemove = collection.chain().where((member: Doc<E>) => {
         const timestamp = member.meta.updated || member.meta.created;
         const diff = now - timestamp;
         return age < diff;
@@ -479,13 +477,13 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     };
   }
 
-  private setTTL(age: number, interval: number) {
+  private setTTL(age: number, interval: number): void {
     if (age < 0) {
       clearInterval(this.ttl.daemon);
     } else {
       this.ttl.age = age;
       this.ttl.ttlInterval = interval;
-      this.ttl.daemon = setInterval(this.ttlDaemonFuncGen(), interval);
+      this.ttl.daemon = setInterval(this._ttlDaemonFuncGen(), interval);
     }
   }
 
@@ -496,10 +494,9 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   /**
    * create a row filter that covers all documents in the collection
    */
-  prepareFullDocIndex() {
-    const len = this.data.length;
-    const indexes = new Array(len);
-    for (let i = 0; i < len; i += 1) {
+  _prepareFullDocIndex(): number[] {
+    const indexes = new Array(this.data.length);
+    for (let i = 0; i < indexes.length; i++) {
       indexes[i] = i;
     }
     return indexes;
@@ -528,15 +525,15 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     const index = {
       "name": property,
       "dirty": true,
-      "values": this.prepareFullDocIndex()
+      "values": this._prepareFullDocIndex()
     };
     this.binaryIndices[property] = index;
 
-    const wrappedComparer =
-      (((prop, data) => (a: string, b: string) => {
-        let val1, val2, arr;
-        if (~prop.indexOf(".")) {
-          arr = prop.split(".");
+    const data = this.data;
+    const wrappedComparer = (a: number, b: number) => {
+        let val1, val2;
+        if (~property.indexOf(".")) {
+          const arr = property.split(".");
           val1 = arr.reduce(function (obj, i) {
             return obj && obj[i] || undefined;
           }, data[a]);
@@ -544,8 +541,8 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
             return obj && obj[i] || undefined;
           }, data[b]);
         } else {
-          val1 = data[a][prop];
-          val2 = data[b][prop];
+          val1 = data[a][property];
+          val2 = data[b][property];
         }
 
         if (val1 !== val2) {
@@ -553,7 +550,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
           if (gtHelper(val1, val2, false)) return 1;
         }
         return 0;
-      }))(property, this.data);
+    };
 
     index.values.sort(wrappedComparer);
     index.dirty = false;
@@ -617,23 +614,19 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {object} query - (optional) query object to count results of
    * @returns {number} number of documents in the collection
    */
-  count(query?: object): number {
+  public count(query?: object): number {
     if (!query) {
       return this.data.length;
     }
-
     return this.chain().find(query)._filteredRows.length;
   }
 
   /**
    * Rebuild idIndex
    */
-  ensureId() {
-    const len = this.data.length;
-    let i = 0;
-
+  private _ensureId(): void {
     this.idIndex = [];
-    for (i; i < len; i += 1) {
+    for (let i = 0; i < this.data.length; i++) {
       this.idIndex.push(this.data[i].$loki);
     }
   }
@@ -1868,7 +1861,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   /**
    * (Staging API) create a copy of an object and insert it into a stage
    */
-  public stage(stageName: string, obj: ANY) {
+  public stage<F extends E>(stageName: string, obj: Doc<F>): F {
     const copy = JSON.parse(JSON.stringify(obj));
     this.getStage(stageName)[obj.$loki] = copy;
     return copy;

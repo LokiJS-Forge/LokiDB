@@ -102,7 +102,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * @returns {DynamicView} This dynamic view for further chained ops.
    * @fires DynamicView.rebuild
    */
-  _rematerialize({removeWhereFilters = false}): DynamicView<E> {
+  _rematerialize({removeWhereFilters = false}): this {
     this._resultdata = [];
     this._resultsdirty = true;
     this._resultset = new ResultSet(this._collection);
@@ -233,7 +233,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * @param {function} comparefun - a javascript compare function used for sorting
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public applySort(comparefun: (lhs: E, rhs: E) => number): DynamicView<E> {
+  public applySort(comparefun: (lhs: E, rhs: E) => number): this {
     this._sortFunction = comparefun;
     this._sortCriteria = null;
     this._sortByScoring = null;
@@ -250,7 +250,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * @param {boolean} isdesc - (Optional) If true, the sort will be in descending order.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public applySimpleSort(propname: string, isdesc?: boolean): DynamicView<E> {
+  public applySimpleSort(propname: string, isdesc?: boolean): this {
     this._sortCriteria = [
       [propname, isdesc || false]
     ];
@@ -273,7 +273,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * @param {Array} criteria - array of property names or subarray of [propertyname, isdesc] used evaluate sort order
    * @returns {DynamicView} Reference to this DynamicView, sorted, for future chain operations.
    */
-  public applySortCriteria(criteria: (string | [string, boolean])[]): DynamicView<E> {
+  public applySortCriteria(criteria: (string | [string, boolean])[]): this {
     this._sortCriteria = criteria;
     this._sortFunction = null;
     this._sortByScoring = null;
@@ -285,7 +285,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * Used to apply a sort by the latest full-text-search scoring.
    * @param {boolean} [ascending=false] - sort ascending
    */
-  public applySortByScoring(ascending = false): DynamicView<E> {
+  public applySortByScoring(ascending = false): this {
     this._sortFunction = null;
     this._sortCriteria = null;
     this._sortByScoring = ascending;
@@ -305,7 +305,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * Marks the beginning of a transaction.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public startTransaction(): DynamicView<E> {
+  public startTransaction(): this {
     this._cachedresultset = this._resultset.copy();
     return this;
   }
@@ -314,7 +314,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * Commits a transaction.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public commit(): DynamicView<E> {
+  public commit(): this {
     this._cachedresultset = null;
     return this;
   }
@@ -323,7 +323,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * Rolls back a transaction.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public rollback(): DynamicView<E> {
+  public rollback(): this {
     this._resultset = this._cachedresultset;
 
     if (this._persistent) {
@@ -368,7 +368,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    *
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public reapplyFilters(): DynamicView<E> {
+  public reapplyFilters(): this {
     this._resultset.reset();
 
     this._cachedresultset = null;
@@ -400,7 +400,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    *    The object is in the format { 'type': filter_type, 'val', filter_param, 'uid', optional_filter_id }
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public applyFilter(filter: Filter<E>): DynamicView<E> {
+  public applyFilter(filter: Filter<E>): this {
     const idx = this._indexOfFilterWithId(filter.uid);
     if (idx >= 0) {
       this._filterPipeline[idx] = filter;
@@ -430,7 +430,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * @param {(string|number)} uid - Optional: The unique ID of this filter, to reference it in the future.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public applyFind(query: object, uid: string | number = ""): DynamicView<E> {
+  public applyFind(query: object, uid: string | number = ""): this {
     this.applyFilter({
       type: "find",
       val: query,
@@ -446,7 +446,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * @param {(string|number)} uid - Optional: The unique ID of this filter, to reference it in the future.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public applyWhere(fun: (obj: E) => boolean, uid?: string | number): DynamicView<E> {
+  public applyWhere(fun: (obj: E) => boolean, uid?: string | number): this {
     this.applyFilter({
       type: "where",
       val: fun,
@@ -461,7 +461,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * @param {(string|number)} uid - The unique ID of the filter to be removed.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public removeFilter(uid: string | number): DynamicView<E> {
+  public removeFilter(uid: string | number): this {
     const idx = this._indexOfFilterWithId(uid);
     if (idx < 0) {
       throw new Error("Dynamic view does not contain a filter with ID: " + uid);
@@ -590,7 +590,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * @param {int} objIndex - index of document to (re)run through filter pipeline.
    * @param {boolean} isNew - true if the document was just added to the collection.
    */
-  _evaluateDocument(objIndex: number, isNew: boolean) {
+  _evaluateDocument(objIndex: number, isNew: boolean): void {
     // if no filter applied yet, the result 'set' should remain 'everything'
     if (!this._resultset._filterInitialized) {
       if (this._persistent) {
@@ -688,7 +688,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
   /**
    * internal function called on collection.delete()
    */
-  _removeDocument(objIndex: number) {
+  _removeDocument(objIndex: number): void {
     // if no filter applied yet, the result 'set' should remain 'everything'
     if (!this._resultset._filterInitialized) {
       if (this._persistent) {
@@ -706,8 +706,6 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
     const ofr = this._resultset._filteredRows;
     const oldPos = ofr.indexOf(+objIndex);
     let oldlen = ofr.length;
-    let idx;
-
     if (oldPos !== -1) {
       // if not last row in resultdata, swap last to hole and truncate last row
       if (oldPos < oldlen - 1) {
@@ -740,7 +738,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
     // if they remove a document (whether in our view or not),
     // we need to adjust array positions -1 for all document array references after that position
     oldlen = ofr.length;
-    for (idx = 0; idx < oldlen; idx++) {
+    for (let idx = 0; idx < oldlen; idx++) {
       if (ofr[idx] > objIndex) {
         ofr[idx]--;
       }
