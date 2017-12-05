@@ -1,5 +1,5 @@
 import {LokiEventEmitter} from "./event_emitter";
-import {ResultSet, Filter} from "./result_set";
+import {ResultSet} from "./result_set";
 import {Collection} from "./collection";
 import {Doc} from "../../common/types";
 import {ScoreResult} from "../../full-text-search/src/scorer";
@@ -34,7 +34,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
 
   private _cachedresultset: ResultSet<E, D>;
 
-  private _filterPipeline: Filter<E>[];
+  private _filterPipeline: DynamicView.Filter<E, D>[];
 
 
   private _sortFunction: (lhs: E, rhs: E) => number;
@@ -358,9 +358,9 @@ export class DynamicView<E extends object = object, D extends object = object> e
    *
    * @param {object} filter - The filter object. Refer to applyFilter() for extra details.
    */
-  private _addFilter(filter: Filter<E>): void {
+  private _addFilter(filter: DynamicView.Filter<E, D>): void {
     this._filterPipeline.push(filter);
-    this._resultset[filter.type](filter.val);
+    this._resultset[filter.type as string](filter.val);
   }
 
   /**
@@ -400,7 +400,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    *    The object is in the format { 'type': filter_type, 'val', filter_param, 'uid', optional_filter_id }
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public applyFilter(filter: Filter<E>): this {
+  public applyFilter(filter: DynamicView.Filter<E, D>): this {
     const idx = this._indexOfFilterWithId(filter.uid);
     if (idx >= 0) {
       this._filterPipeline[idx] = filter;
@@ -611,17 +611,17 @@ export class DynamicView<E extends object = object, D extends object = object> e
 
     // creating a 1-element resultset to run filter chain ops on to see if that doc passes filters;
     // mostly efficient algorithm, slight stack overhead price (this function is called on inserts and updates)
-    const evalResultset = new ResultSet(this._collection);
-    evalResultset._filteredRows = [objIndex];
-    evalResultset._filterInitialized = true;
+    const evalResultSet = new ResultSet(this._collection);
+    evalResultSet._filteredRows = [objIndex];
+    evalResultSet._filterInitialized = true;
     let filter;
     for (let idx = 0, len = this._filterPipeline.length; idx < len; idx++) {
       filter = this._filterPipeline[idx];
-      evalResultset[filter.type](filter.val);
+      evalResultSet[filter.type as string](filter.val);
     }
 
     // not a true position, but -1 if not pass our filter(s), 0 if passed filter(s)
-    const newPos = (evalResultset._filteredRows.length === 0) ? -1 : 0;
+    const newPos = (evalResultSet._filteredRows.length === 0) ? -1 : 0;
 
     // wasn't in old, shouldn't be now... do nothing
     if (oldPos === -1 && newPos === -1) return;
@@ -776,9 +776,23 @@ export namespace DynamicView {
     _sortPriority: SortPriority;
     _minRebuildInterval: number;
     _resultset: ResultSet<E, D>;
-    _filterPipeline: Filter<any>[];
+    _filterPipeline: Filter<E, D>[];
     _sortCriteria: (keyof (E & D) | [keyof (E & D), boolean])[];
     _sortByScoring: boolean;
     _sortDirty: boolean;
   }
+
+  export interface FindFilter<E extends object, D extends object = object> {
+    type: "find";
+    val: ResultSet.Query<E>;
+    uid: number | string;
+  }
+
+  export interface WhereFilter<E extends object = object> {
+    type: "where";
+    val: (obj: E, index: number, array: E[]) => boolean;
+    uid: number | string;
+  }
+
+  export type Filter<E extends object = object, D extends object = object> = FindFilter<E, D> | WhereFilter<E>;
 }

@@ -1,6 +1,6 @@
 import {LokiEventEmitter} from "./event_emitter";
 import {UniqueIndex} from "./unique_index";
-import {Query, ResultSet} from "./result_set";
+import {ResultSet} from "./result_set";
 import {DynamicView} from "./dynamic_view";
 import {ltHelper, gtHelper, aeqHelper} from "./helper";
 import {Loki} from "./loki";
@@ -615,7 +615,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {object} query - (optional) query object to count results of
    * @returns {number} number of documents in the collection
    */
-  public count(query?: Query<Doc<E> & D>): number {
+  public count(query?: ResultSet.Query<Doc<E> & D>): number {
     if (!query) {
       return this.data.length;
     }
@@ -683,7 +683,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {object|function} filterObject - 'mongo-like' query object (or deprecated filterFunction mode)
    * @param {function} updateFunction - update function to run against filtered documents
    */
-  findAndUpdate(filterObject: Query<Doc<E>> | ((obj: E) => boolean), updateFunction: (obj: Doc<E>) => any) {
+  findAndUpdate(filterObject: ResultSet.Query<Doc<E>> | ((obj: E) => boolean), updateFunction: (obj: Doc<E>) => any) {
     if (typeof(filterObject) === "function") {
       this.updateWhere(filterObject, updateFunction);
     } else {
@@ -696,7 +696,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    *
    * @param {object} filterObject - 'mongo-like' query object
    */
-  findAndRemove(filterObject: Query<Doc<E>>) {
+  findAndRemove(filterObject: ResultSet.Query<Doc<E>>) {
     this.chain().find(filterObject).remove();
   }
 
@@ -1004,7 +1004,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * For 'mongo-like' querying you should migrate to [findAndRemove()]{@link Collection#findAndRemove}.
    * @param {function|object} query - query object to filter on
    */
-  removeWhere(query: Query<Doc<E>> | ((obj: Doc<E>) => boolean)) {
+  removeWhere(query: ResultSet.Query<Doc<E>> | ((obj: Doc<E>) => boolean)) {
     if (typeof query === "function") {
       this.remove(this.data.filter(query));
     } else {
@@ -1686,7 +1686,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {object} query - query object used to perform search with
    * @returns {(object|null)} First matching document, or null if none
    */
-  public findOne(query: Query<Doc<E> & D>): Doc<E> {
+  public findOne(query: ResultSet.Query<Doc<E> & D>): Doc<E> {
     query = query || {};
 
     // Instantiate ResultSet and exec find op passing firstOnly = true param
@@ -1726,7 +1726,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {object} query - 'mongo-like' query object
    * @returns {array} Array of matching documents
    */
-  public find(query?: Query<Doc<E> & D>): Doc<E>[] {
+  public find(query?: ResultSet.Query<Doc<E> & D>): Doc<E>[] {
     return this.chain().find(query).data();
   }
 

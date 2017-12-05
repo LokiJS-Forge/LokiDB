@@ -223,20 +223,6 @@ export const LokiOps = {
   }
 };
 
-export type LokiOps = typeof LokiOps;
-
-export type PartialModel<E, T> = { [P in keyof E]?: T | E[P] };
-
-export type Query<E> = PartialModel<E & { $and: any; $or: any, $fts: any }, { [Y in keyof LokiOps]?: any }>;
-
-export interface Filter<E> {
-  type: string;
-  /*'find', 'where'*/
-  val: Query<E> | ((obj: E, index: number, array: E[]) => boolean);
-  uid: number | string;
-}
-
-
 // if an op is registered in this object, our 'calculateRange' can use it with our binary indices.
 // if the op is registered to a function, we will run that function/op as a 2nd pass filter on results.
 // those 2nd pass filter functions should be similar to LokiOps functions, accepting 2 vals to compare.
@@ -665,7 +651,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {array} expressionArray - array of expressions
    * @returns {ResultSet} this resultset for further chain ops.
    */
-  public findOr(expressionArray: Query<Doc<E>>[]): this {
+  public findOr(expressionArray: ResultSet.Query<Doc<E>>[]): this {
     const docset = [];
     const idxset = [];
     const origCount = this.count();
@@ -697,7 +683,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
     return this;
   }
 
-  public $or(expressionArray: Query<Doc<E>>[]): this {
+  public $or(expressionArray: ResultSet.Query<Doc<E>>[]): this {
     return this.findOr(expressionArray);
   }
 
@@ -710,7 +696,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {array} expressionArray - array of expressions
    * @returns {ResultSet} this resultset for further chain ops.
    */
-  public findAnd(expressionArray: Query<Doc<E>>[]): this {
+  public findAnd(expressionArray: ResultSet.Query<Doc<E>>[]): this {
     // we have already implementing method chaining in this (our ResultSet class)
     // so lets just progressively apply user supplied and filters
     for (let i = 0, len = expressionArray.length; i < len; i++) {
@@ -722,7 +708,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
     return this;
   }
 
-  public $and(expressionArray: Query<Doc<E>>[]): this {
+  public $and(expressionArray: ResultSet.Query<Doc<E>>[]): this {
     return this.findAnd(expressionArray);
   }
 
@@ -733,7 +719,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {boolean} firstOnly - (Optional) Used by collection.findOne() - flag if this was invoked via findOne()
    * @returns {ResultSet} this resultset for further chain ops.
    */
-  public find(query?: Query<Doc<E>>, firstOnly = false): this {
+  public find(query?: ResultSet.Query<Doc<E>>, firstOnly = false): this {
     if (this._collection.data.length === 0) {
       this._filteredRows = [];
       this._filterInitialized = true;
@@ -1274,4 +1260,10 @@ export namespace ResultSet {
     forceCloneMethod?: CloneMethod;
     removeMeta?: boolean;
   }
+
+  export type LokiOps = typeof LokiOps;
+
+  export type PartialModel<E, T> = { [P in keyof E]?: T | E[P] };
+
+  export type Query<E> = PartialModel<E & { $and: any; $or: any, $fts: any }, { [Y in keyof LokiOps]?: any }>;
 }
