@@ -300,7 +300,7 @@ export class Loki extends LokiEventEmitter {
     return c;
   }
 
-  public listCollections(): {name: string, count: number}[] {
+  public listCollections(): { name: string, count: number }[] {
     const colls = [];
     for (let i = 0; i < this._collections.length; i++) {
       colls.push({
@@ -358,7 +358,7 @@ export class Loki extends LokiEventEmitter {
   }
 
   // alias of serialize
-  public toJSON() {
+  public toJSON(): Loki.Serialized {
     return {
       _env: this._env,
       _serializationMethod: this._serializationMethod,
@@ -507,7 +507,7 @@ export class Loki extends LokiEventEmitter {
    *
    * @returns {string|array} A custom, restructured aggregation of independent serializations for a single collection.
    */
-  public serializeCollection(options: ANY = {}): string | string[] {
+  public serializeCollection(options: { delimited?: boolean; collectionIndex?: number; delimiter?: string } = {}): string | string[] {
     if (options.delimited === undefined) {
       options.delimited = true;
     }
@@ -515,7 +515,7 @@ export class Loki extends LokiEventEmitter {
     if (options.collectionIndex === undefined) {
       throw new Error("serializeCollection called without 'collectionIndex' option");
     }
-    let doccount = this._collections[options.collectionIndex].data.length;
+    const doccount = this._collections[options.collectionIndex].data.length;
 
     let resultlines = [];
     for (let docidx = 0; docidx < doccount; docidx++) {
@@ -549,16 +549,7 @@ export class Loki extends LokiEventEmitter {
    *
    * @returns {object|array} An object representation of the deserialized database, not yet applied to 'this' db or document array
    */
-  public deserializeDestructured(destructuredSource: ANY, options: Loki.SerializeDestructuredOptions = {}) {
-    let workarray = [];
-    let len;
-    let cdb;
-    let collIndex = 0;
-    let collCount;
-    let lineIndex = 1;
-    let done = false;
-    let currObject;
-
+  public deserializeDestructured(destructuredSource: string | string[], options: Loki.SerializeDestructuredOptions = {}) {
     if (options.partitioned === undefined) {
       options.partitioned = false;
     }
@@ -580,9 +571,7 @@ export class Loki extends LokiEventEmitter {
       if (options.partition !== undefined) {
         // db only
         if (options.partition === -1) {
-          cdb = JSON.parse(destructuredSource[0]);
-
-          return cdb;
+          return JSON.parse(destructuredSource[0]);
         }
 
         // single collection, return doc array
@@ -590,9 +579,9 @@ export class Loki extends LokiEventEmitter {
       }
 
       // Otherwise we are restoring an entire partitioned db
-      cdb = JSON.parse(destructuredSource[0]);
-      collCount = cdb._collections.length;
-      for (collIndex = 0; collIndex < collCount; collIndex++) {
+      const cdb = JSON.parse(destructuredSource[0]);
+      const collCount = cdb._collections.length;
+      for (let collIndex = 0; collIndex < collCount; collIndex++) {
         // attach each collection docarray to container collection data, add 1 to collection array index since db is at 0
         cdb._collections[collIndex].data = this.deserializeCollection(destructuredSource[collIndex + 1], options);
       }
@@ -604,26 +593,29 @@ export class Loki extends LokiEventEmitter {
     // D : one big Delimited string { partitioned: false, delimited : true }
     // NDA : Non-Delimited Array : one iterable array with empty string collection partitions { partitioned: false, delimited: false }
 
+    let workarray = [];
+
     // D
     if (options.delimited) {
-      workarray = destructuredSource.split(options.delimiter);
+      workarray = (destructuredSource as string).split(options.delimiter);
       destructuredSource = null; // lower memory pressure
-      len = workarray.length;
-
-      if (len === 0) {
+      if (workarray.length === 0) {
         return null;
       }
     }
     // NDA
     else {
-      workarray = destructuredSource;
+      workarray = destructuredSource as string[];
     }
 
     // first line is database and collection shells
-    cdb = JSON.parse(workarray[0]);
-    collCount = cdb._collections.length;
+    const cdb = JSON.parse(workarray[0]);
+    const collCount = cdb._collections.length;
     workarray[0] = null;
 
+    let collIndex = 0;
+    let lineIndex = 1;
+    let done = false;
     while (!done) {
       // empty string indicates either end of collection or end of file
       if (workarray[lineIndex] === "") {
@@ -632,8 +624,7 @@ export class Loki extends LokiEventEmitter {
           done = true;
         }
       } else {
-        currObject = JSON.parse(workarray[lineIndex]);
-        cdb._collections[collIndex].data.push(currObject);
+        cdb._collections[collIndex].data.push(JSON.parse(workarray[lineIndex]));
       }
 
       // lower memory pressure and advance iterator
@@ -687,7 +678,7 @@ export class Loki extends LokiEventEmitter {
    * @param {object} options - apply or override collection level settings
    * @param {boolean} options.retainDirtyFlags - whether collection dirty flags will be preserved
    */
-  loadJSON(serializedDb: string | string[], options?: ANY) {
+  public loadJSON(serializedDb: string | string[], options?: Collection.DeserializeOptions & {[collName: string]: any | { proto?: any; inflate?: (src: object, dest?: object) => void }}): void {
     let dbObject;
     if (serializedDb.length === 0) {
       dbObject = {};
@@ -716,7 +707,7 @@ export class Loki extends LokiEventEmitter {
    * @param {object} options - apply or override collection level settings
    * @param {boolean} options.retainDirtyFlags - whether collection dirty flags will be preserved
    */
-  loadJSONObject(dbObject: ANY, options: Collection.DeserializeOptions = {}) {
+  public loadJSONObject(dbObject: ANY, options: Collection.DeserializeOptions = {}): void {
     const len = dbObject._collections ? dbObject._collections.length : 0;
 
     this.filename = dbObject.filename;
@@ -733,7 +724,7 @@ export class Loki extends LokiEventEmitter {
    *
    * @returns {Promise} a Promise that resolves after closing the database succeeded
    */
-  close() {
+  public close(): Promise<void> {
     let saved;
     // for autosave scenarios, we will let close perform final save (if dirty)
     // For web use, you might call from window.onbeforeunload to shutdown database, saving pending changes
@@ -771,8 +762,8 @@ export class Loki extends LokiEventEmitter {
    * @returns {Array} array of changes
    * @see private method _createChange() in Collection
    */
-  generateChangesNotification(arrayOfCollectionNames?: string[]) {
-    let changes: ANY[] = [];
+  public generateChangesNotification(arrayOfCollectionNames?: string[]): Collection.Change[] {
+    let changes: Collection.Change[] = [];
     const selectedCollections = arrayOfCollectionNames
       || this._collections.map((coll: Collection) => coll.name);
 
@@ -788,14 +779,14 @@ export class Loki extends LokiEventEmitter {
    * (Changes API) - stringify changes for network transmission
    * @returns {string} string representation of the changes
    */
-  serializeChanges(collectionNamesArray?: string[]) {
+  public serializeChanges(collectionNamesArray?: string[]) {
     return JSON.stringify(this.generateChangesNotification(collectionNamesArray));
   }
 
   /**
    * (Changes API) : clears all the changes in all collections.
    */
-  clearChanges() {
+  public clearChanges() {
     this._collections.forEach((coll) => {
       if (coll.flushChanges) {
         coll.flushChanges();
@@ -1083,6 +1074,21 @@ export namespace Loki {
     started?: Date;
   }
 
+  export interface Serialized {
+    _env: Environment;
+    _serializationMethod: SerializationMethod;
+    _autosave: boolean;
+    _autosaveInterval: number;
+    _collections: Collection[];
+    databaseVersion: number;
+    engineVersion: number;
+    filename: string;
+    _persistenceAdapter: StorageAdapter;
+    _persistenceMethod: PersistenceMethod;
+    _throttledSaves: boolean;
+    _verbose: boolean;
+  }
+
   export type LoadDatabaseOptions = Collection.DeserializeOptions & ThrottledDrainOptions;
 
   export type SerializationMethod = "normal" | "pretty" | "destructured";
@@ -1090,4 +1096,6 @@ export namespace Loki {
   export type PersistenceMethod = "fs-storage" | "local-storage" | "indexed-storage" | "memory-storage" | "adapter";
 
   export type Environment = "NATIVESCRIPT" | "NODEJS" | "CORDOVA" | "BROWSER" | "MEMORY";
+
+
 }

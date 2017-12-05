@@ -2060,7 +2060,11 @@ export namespace Collection {
     values: any;
   }
 
-  export type Change = any;
+  export interface Change {
+    name: string;
+    operation: string;
+    obj: any;
+  }
 
   export type TransformTypes = "find" | "where" | "simplesort" | "compoundsort" | "sort" | "limit" | "offset" | "map" | "eqJoin" | "mapReduce" | "update" | "remove";
 
