@@ -514,11 +514,11 @@ export class ConstantScoreQueryBuilder extends BaseQueryBuilder {
    * Starts an array of queries. Use endFilter() to finish the array.
    * @return {ArrayQueryBuilder} array query for holding sub queries
    */
-  beginFilter() {
+  beginFilter(): ArrayQueryBuilder & { endFilter(): ConstantScoreQueryBuilder } {
     this._data.filter = {};
     return new ArrayQueryBuilder("endFilter", () => {
       return this;
-    }, this._data.filter);
+    }, this._data.filter) as any;
   }
 }
 
@@ -578,44 +578,44 @@ export class BoolQueryBuilder extends BaseQueryBuilder {
    * Starts an array of queries for must clause. Use endMust() to finish the array.
    * @return {ArrayQueryBuilder} array query for holding sub queries
    */
-  beginMust() {
+  beginMust(): ArrayQueryBuilder & { endMust(): BoolQueryBuilder } {
     this._data.must = {};
     return new ArrayQueryBuilder("endMust", () => {
       return this;
-    }, this._data.must);
+    }, this._data.must) as any;
   }
 
   /**
    * Starts an array of queries for filter clause. Use endFilter() to finish the array.
    * @return {ArrayQueryBuilder} array query for holding sub queries
    */
-  beginFilter() {
+  beginFilter(): ArrayQueryBuilder & { endFilter(): BoolQueryBuilder } {
     this._data.filter = {};
     return new ArrayQueryBuilder("endFilter", () => {
       return this;
-    }, this._data.filter);
+    }, this._data.filter) as any;
   }
 
   /**
    * Starts an array of queries for should clause. Use endShould() to finish the array.
    * @return {ArrayQueryBuilder} array query for holding sub queries
    */
-  beginShould() {
+  beginShould(): ArrayQueryBuilder & { endShould(): BoolQueryBuilder } {
     this._data.should = {};
     return new ArrayQueryBuilder("endShould", () => {
       return this;
-    }, this._data.should);
+    }, this._data.should) as any;
   }
 
   /**
    * Starts an array of queries for not clause. Use endNot() to finish the array.
    * @return {ArrayQueryBuilder} array query for holding sub queries
    */
-  beginNot() {
+  beginNot(): ArrayQueryBuilder & { endNot(): BoolQueryBuilder } {
     this._data.not = {};
     return new ArrayQueryBuilder("endNot", () => {
       return this;
-    }, this._data.not);
+    }, this._data.not) as any;
   }
 
   /**
@@ -650,7 +650,7 @@ export interface BoolQuery extends BaseQuery {
  */
 export class ArrayQueryBuilder extends BaseQueryBuilder {
   private _callbackName: string;
-  private _prepare: Function;
+  private _prepare: (queryType: { new(...args: any[]): any }, ...args: any[]) => any;
 
   constructor(callbackName: string, callback: Function, data: any = {}) {
     super("array", data);
