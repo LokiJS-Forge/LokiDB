@@ -1,7 +1,7 @@
 import {LokiEventEmitter} from "./event_emitter";
-import {ResultSet} from "./result_set";
+import {ResultSet, Filter} from "./result_set";
 import {Collection} from "./collection";
-import {Doc, Filter} from "../../common/types";
+import {Doc} from "../../common/types";
 import {ScoreResult} from "../../full-text-search/src/scorer";
 
 /**
@@ -19,26 +19,26 @@ import {ScoreResult} from "../../full-text-search/src/scorer";
 
  * @see {@link Collection#addDynamicView} to construct instances of DynamicView
  */
-export class DynamicView<E extends object = object> extends LokiEventEmitter {
+export class DynamicView<E extends object = object, D extends object = object> extends LokiEventEmitter {
 
-  private _collection: Collection<E>;
+  private _collection: Collection<E, D>;
   private _persistent: boolean;
   private _sortPriority: DynamicView.SortPriority;
   private _minRebuildInterval: number;
   public name: string;
   private _rebuildPending: boolean;
 
-  private _resultset: ResultSet<E>;
+  private _resultset: ResultSet<E, D>;
   private _resultdata: Doc<E>[];
   private _resultsdirty: boolean;
 
-  private _cachedresultset: ResultSet<E>;
+  private _cachedresultset: ResultSet<E, D>;
 
   private _filterPipeline: Filter<E>[];
 
 
   private _sortFunction: (lhs: E, rhs: E) => number;
-  private _sortCriteria: (string | [string, boolean])[];
+  private _sortCriteria: (keyof (E & D) | [keyof (E & D), boolean])[];
   private _sortByScoring: boolean;
   private _sortDirty: boolean;
 
@@ -152,7 +152,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * @param {object} parameters - optional parameters (if optional transform requires them)
    * @returns {ResultSet} A copy of the internal resultset for branched queries.
    */
-  public branchResultset(transform: string | Collection.Transform[], parameters?: object): ResultSet<E> {
+  public branchResultSet(transform?: string | Collection.Transform[], parameters?: object): ResultSet<E, D> {
     const rs = this._resultset.branch();
     if (transform === undefined) {
       return rs;
@@ -163,7 +163,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
   /**
    * Override of toJSON to avoid circular references.
    */
-  public toJSON(): DynamicView.Serialized {
+  public toJSON(): DynamicView.Serialized<E, D> {
     return {
       name: this.name,
       _persistent: this._persistent,
@@ -250,7 +250,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * @param {boolean} isdesc - (Optional) If true, the sort will be in descending order.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public applySimpleSort(propname: string, isdesc?: boolean): this {
+  public applySimpleSort(propname: keyof (E & D), isdesc?: boolean): this {
     this._sortCriteria = [
       [propname, isdesc || false]
     ];
@@ -273,7 +273,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
    * @param {Array} criteria - array of property names or subarray of [propertyname, isdesc] used evaluate sort order
    * @returns {DynamicView} Reference to this DynamicView, sorted, for future chain operations.
    */
-  public applySortCriteria(criteria: (string | [string, boolean])[]): this {
+  public applySortCriteria(criteria: (keyof (E & D) | [keyof (E & D), boolean])[]): this {
     this._sortCriteria = criteria;
     this._sortFunction = null;
     this._sortByScoring = null;
@@ -770,14 +770,14 @@ export namespace DynamicView {
 
   export type SortPriority = "passive" | "active";
 
-  export interface Serialized {
+  export interface Serialized<E extends object = object, D extends object = object> {
     name: string;
     _persistent: boolean;
     _sortPriority: SortPriority;
     _minRebuildInterval: number;
-    _resultset: ResultSet;
+    _resultset: ResultSet<E, D>;
     _filterPipeline: Filter<any>[];
-    _sortCriteria: (string | [string, boolean])[];
+    _sortCriteria: (keyof (E & D) | [keyof (E & D), boolean])[];
     _sortByScoring: boolean;
     _sortDirty: boolean;
   }

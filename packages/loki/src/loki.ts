@@ -249,14 +249,14 @@ export class Loki extends LokiEventEmitter {
    * @param {int} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
    * @returns {Collection} a reference to the collection which was just added
    */
-  public addCollection<T extends object = any>(name: string, options: Collection.Options = {}): Collection<T> {
-    const collection = new Collection<T>(name, options);
+  public addCollection<T extends object = any, U extends object = object>(name: string, options: Collection.Options<T> = {}): Collection<T, U> {
+    const collection = new Collection<T, U>(name, options);
     this._collections.push(collection);
 
     if (this._verbose) {
       collection.console = console;
     }
-    return collection as Collection<T>;
+    return collection;
   }
 
   public loadCollection(collection: Collection): void {
@@ -678,7 +678,7 @@ export class Loki extends LokiEventEmitter {
    * @param {object} options - apply or override collection level settings
    * @param {boolean} options.retainDirtyFlags - whether collection dirty flags will be preserved
    */
-  public loadJSON(serializedDb: string | string[], options?: Collection.DeserializeOptions & {[collName: string]: any | { proto?: any; inflate?: (src: object, dest?: object) => void }}): void {
+  public loadJSON(serializedDb: string | string[], options?: Collection.DeserializeOptions & { [collName: string]: any | { proto?: any; inflate?: (src: object, dest?: object) => void } }): void {
     let dbObject;
     if (serializedDb.length === 0) {
       dbObject = {};

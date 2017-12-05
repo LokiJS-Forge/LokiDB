@@ -10,11 +10,13 @@ describe("dynamicviews", () => {
     name: string;
     owner?: string;
     maker?: string;
+    age?: number;
+    lang: string;
   }
 
   let testRecords: ANY;
   let db: Loki;
-  let users: Collection;
+  let users: Collection<User>;
   let jonas: ANY;
 
   beforeEach(() => {
@@ -256,7 +258,7 @@ describe("dynamicviews", () => {
         a: number;
       }
 
-      const test = db.addCollection<CR>("nodupes", {indices: ["testindex"]});
+      const test = db.addCollection<CR>("nodupes", {indices: ["index"]});
 
       const item = test.insert({
         index: "key",

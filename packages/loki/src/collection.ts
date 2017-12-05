@@ -1,11 +1,11 @@
 import {LokiEventEmitter} from "./event_emitter";
 import {UniqueIndex} from "./unique_index";
-import {ResultSet} from "./result_set";
+import {Query, ResultSet} from "./result_set";
 import {DynamicView} from "./dynamic_view";
 import {ltHelper, gtHelper, aeqHelper} from "./helper";
 import {Loki} from "./loki";
 import {clone, CloneMethod} from "./clone";
-import {Doc, Dict, Query} from "../../common/types";
+import {Doc, Dict} from "../../common/types";
 import {FullTextSearch} from "../../full-text-search/src/full_text_search";
 import {PLUGINS} from "../../common/plugin";
 import {Tokenizer} from "../../full-text-search/src/tokenizer";
@@ -52,20 +52,22 @@ function deepProperty(obj: object, property: string, isDeep: boolean): any {
  * Collection class that handles documents of same type
  * @extends LokiEventEmitter
  */
-export class Collection<E extends object = object> extends LokiEventEmitter {
+export class Collection<E extends object = object, D extends object = object> extends LokiEventEmitter {
 
   public name: string;
   // the data held by the collection
   public data: Doc<E>[];
   private idIndex: number[]; // index of id
-  public binaryIndices: Dict<Collection.BinaryIndex>; // user defined indexes
+  public binaryIndices: { [P in keyof E]?: Collection.BinaryIndex }; // user defined indexes
 
   /**
    * Unique contraints contain duplicate object references, so they are not persisted.
    * We will keep track of properties which have unique contraint applied here, and regenerate on load.
    */
-  public constraints = {
-    unique: {}
+  public constraints: {
+    unique: {
+      [P in keyof E]?: UniqueIndex<E>;
+    }
   };
 
   /**
@@ -82,7 +84,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   public dirty: boolean;
 
   private cachedIndex: number[];
-  private cachedBinaryIndex: Dict<Collection.BinaryIndex>;
+  private cachedBinaryIndex: { [P in keyof E]?: Collection.BinaryIndex };
   private cachedData: Doc<E>[];
 
   /**
@@ -131,7 +133,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   public ttl: ANY;
 
   private maxId: number;
-  private _dynamicViews: DynamicView<E>[];
+  private _dynamicViews: DynamicView<E, D>[];
 
   /**
    * Changes are tracked by collection and aggregated by the db.
@@ -171,7 +173,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {number} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
    * @see {@link Loki#addCollection} for normal creation of collections
    */
-  constructor(name: string, options: Collection.Options = {}) {
+  constructor(name: string, options: Collection.Options<E> = {}) {
     super();
     // the name of the collection
     this.name = name;
@@ -200,8 +202,8 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       if (!Array.isArray(options.unique)) {
         options.unique = [options.unique];
       }
-      options.unique.forEach((prop: string) => {
-        this.constraints.unique[prop] = new UniqueIndex(prop);
+      options.unique.forEach((prop: keyof E) => {
+        this.constraints.unique[prop] = new UniqueIndex<E>(prop);
       });
     }
 
@@ -341,7 +343,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   }
 
   static fromJSONObject(obj: ANY, options?: Collection.DeserializeOptions) {
-    let coll = new Collection(obj.name, {
+    let coll = new Collection<any>(obj.name, {
       disableChangesApi: obj.disableChangesApi,
       disableDeltaChangesApi: obj.disableDeltaChangesApi
     });
@@ -505,9 +507,9 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
   /**
    * Ensure binary index on a certain field
    * @param {string} property - name of property to create binary index on
-   * @param {boolean} force - (Optional) flag indicating whether to construct index immediately
+   * @param {boolean} [force=false] - flag indicating whether to construct index immediately
    */
-  ensureIndex(property: string, force = false) {
+  ensureIndex(property: keyof E, force = false) {
     // optional parameter to force rebuild whether flagged as dirty or not
     if (property === null || property === undefined) {
       throw new Error("Attempting to set index without an associated property");
@@ -531,25 +533,25 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
 
     const data = this.data;
     const wrappedComparer = (a: number, b: number) => {
-        let val1, val2;
-        if (~property.indexOf(".")) {
-          const arr = property.split(".");
-          val1 = arr.reduce(function (obj, i) {
-            return obj && obj[i] || undefined;
-          }, data[a]);
-          val2 = arr.reduce(function (obj, i) {
-            return obj && obj[i] || undefined;
-          }, data[b]);
-        } else {
-          val1 = data[a][property];
-          val2 = data[b][property];
-        }
+      let val1, val2;
+      if (~property.indexOf(".")) {
+        const arr = property.split(".");
+        val1 = arr.reduce(function (obj, i) {
+          return obj && obj[i] || undefined;
+        }, data[a]);
+        val2 = arr.reduce(function (obj, i) {
+          return obj && obj[i] || undefined;
+        }, data[b]);
+      } else {
+        val1 = data[a][property];
+        val2 = data[b][property];
+      }
 
-        if (val1 !== val2) {
-          if (ltHelper(val1, val2, false)) return -1;
-          if (gtHelper(val1, val2, false)) return 1;
-        }
-        return 0;
+      if (val1 !== val2) {
+        if (ltHelper(val1, val2, false)) return -1;
+        if (gtHelper(val1, val2, false)) return 1;
+      }
+      return 0;
     };
 
     index.values.sort(wrappedComparer);
@@ -558,7 +560,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     this.dirty = true; // for autosave scenarios
   }
 
-  getSequencedIndexValues(property: string) {
+  getSequencedIndexValues(property: keyof E) {
     let idx;
     const idxvals = this.binaryIndices[property].values;
     let result = "";
@@ -570,8 +572,8 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
     return result;
   }
 
-  ensureUniqueIndex(field: string) {
-    let index = new UniqueIndex(field);
+  ensureUniqueIndex(field: keyof E) {
+    let index = new UniqueIndex<E>(field);
 
     // if index already existed, (re)loading it will likely cause collisions, rebuild always
     this.constraints.unique[field] = index;
@@ -585,9 +587,8 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * Ensure all binary indices
    */
   ensureAllIndexes(force = false) {
-    let key;
     const bIndices = this.binaryIndices;
-    for (key in bIndices) {
+    for (const key in bIndices) {
       if (bIndices[key] !== undefined) {
         this.ensureIndex(key, force);
       }
@@ -614,7 +615,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {object} query - (optional) query object to count results of
    * @returns {number} number of documents in the collection
    */
-  public count(query?: object): number {
+  public count(query?: Query<Doc<E> & D>): number {
     if (!query) {
       return this.data.length;
     }
@@ -640,8 +641,8 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {number} options.minRebuildInterval - minimum rebuild interval (need clarification to docs here)
    * @returns {DynamicView} reference to the dynamic view added
    **/
-  addDynamicView(name: string, options?: DynamicView.Options): DynamicView<E> {
-    const dv = new DynamicView<E>(this, name, options);
+  public addDynamicView(name: string, options?: DynamicView.Options): DynamicView<E, D> {
+    const dv = new DynamicView<E, D>(this, name, options);
     this._dynamicViews.push(dv);
 
     return dv;
@@ -651,7 +652,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * Remove a dynamic view from the collection
    * @param {string} name - name of dynamic view to remove
    **/
-  removeDynamicView(name: string) {
+  public removeDynamicView(name: string): void {
     for (let idx = 0; idx < this._dynamicViews.length; idx++) {
       if (this._dynamicViews[idx].name === name) {
         this._dynamicViews.splice(idx, 1);
@@ -664,7 +665,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {string} name - name of dynamic view to retrieve reference of
    * @returns {DynamicView} A reference to the dynamic view with that name
    **/
-  getDynamicView(name: string) {
+  public getDynamicView(name: string): DynamicView<E, D> {
     for (let idx = 0; idx < this._dynamicViews.length; idx++) {
       if (this._dynamicViews[idx].name === name) {
         return this._dynamicViews[idx];
@@ -682,7 +683,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {object|function} filterObject - 'mongo-like' query object (or deprecated filterFunction mode)
    * @param {function} updateFunction - update function to run against filtered documents
    */
-  findAndUpdate(filterObject: Query | ((obj: E) => boolean), updateFunction: (obj: Doc<E>) => any) {
+  findAndUpdate(filterObject: Query<Doc<E>> | ((obj: E) => boolean), updateFunction: (obj: Doc<E>) => any) {
     if (typeof(filterObject) === "function") {
       this.updateWhere(filterObject, updateFunction);
     } else {
@@ -695,7 +696,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    *
    * @param {object} filterObject - 'mongo-like' query object
    */
-  findAndRemove(filterObject: object) {
+  findAndRemove(filterObject: Query<Doc<E>>) {
     this.chain().find(filterObject).remove();
   }
 
@@ -704,9 +705,9 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {(object|array)} doc - the document (or array of documents) to be inserted
    * @returns {(object|array)} document or documents inserted
    */
-  insert(doc: E | E[]): Doc<E>;
+  insert(doc: E): Doc<E>;
   insert(doc: E[]): Doc<E>[];
-  insert(doc: E | E[]) {
+  insert(doc: E | E[]): Doc<E> | Doc<E>[] {
     if (!Array.isArray(doc)) {
       return this.insertOne(doc);
     }
@@ -873,11 +874,10 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
         this._dynamicViews[idx]._evaluateDocument(position, false);
       }
 
-      let key;
       if (this.adaptiveBinaryIndices) {
         // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
         const bIndices = this.binaryIndices;
-        for (key in bIndices) {
+        for (const key in bIndices) {
           this.adaptiveBinaryIndexUpdate(position, key);
         }
       } else {
@@ -933,9 +933,8 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
       newDoc.$loki = this.maxId;
       newDoc.meta.version = 0;
 
-      let key;
       const constrUnique = this.constraints.unique;
-      for (key in constrUnique) {
+      for (const key in constrUnique) {
         if (constrUnique[key] !== undefined) {
           constrUnique[key].set(newDoc, this.data.length);
         }
@@ -958,8 +957,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
 
       if (this.adaptiveBinaryIndices) {
         // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
-        const bIndices = this.binaryIndices;
-        for (key in bIndices) {
+        for (const key in this.binaryIndices) {
           this.adaptiveBinaryIndexInsert(addedPos, key);
         }
       } else {
@@ -1006,7 +1004,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * For 'mongo-like' querying you should migrate to [findAndRemove()]{@link Collection#findAndRemove}.
    * @param {function|object} query - query object to filter on
    */
-  removeWhere(query: Query | ((obj: Doc<E>) => boolean)) {
+  removeWhere(query: Query<Doc<E>> | ((obj: Doc<E>) => boolean)) {
     if (typeof query === "function") {
       this.remove(this.data.filter(query));
     } else {
@@ -1058,10 +1056,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
 
       if (this.adaptiveBinaryIndices) {
         // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
-        let key;
-
-        const bIndices = this.binaryIndices;
-        for (key in bIndices) {
+        for (const key in this.binaryIndices) {
           this.adaptiveBinaryIndexRemove(position, key);
         }
       } else {
@@ -1289,7 +1284,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {int} dataPosition : coll.data array index/position
    * @param {string} binaryIndexName : index to search for dataPosition in
    */
-  public getBinaryIndexPosition(dataPosition: number, binaryIndexName: string) {
+  public getBinaryIndexPosition(dataPosition: number, binaryIndexName: keyof E) {
     const val = this.data[dataPosition][binaryIndexName];
     const index = this.binaryIndices[binaryIndexName].values;
 
@@ -1322,9 +1317,9 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {int} dataPosition : coll.data array index/position
    * @param {string} binaryIndexName : index to search for dataPosition in
    */
-  public adaptiveBinaryIndexInsert(dataPosition: number, binaryIndexName: string) {
+  public adaptiveBinaryIndexInsert(dataPosition: number, binaryIndexName: keyof E) {
     const index = this.binaryIndices[binaryIndexName].values;
-    let val = this.data[dataPosition][binaryIndexName];
+    let val: any = this.data[dataPosition][binaryIndexName];
 
     // If you are inserting a javascript Date value into a binary index, convert to epoch time
     if (this.serializableIndices === true && val instanceof Date) {
@@ -1344,7 +1339,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {int} dataPosition : coll.data array index/position
    * @param {string} binaryIndexName : index to search for dataPosition in
    */
-  public adaptiveBinaryIndexUpdate(dataPosition: number, binaryIndexName: string) {
+  public adaptiveBinaryIndexUpdate(dataPosition: number, binaryIndexName: keyof E) {
     // linear scan needed to find old position within index unless we optimize for clone scenarios later
     // within (my) node 5.6.0, the following for() loop with strict compare is -much- faster than indexOf()
     let idxPos;
@@ -1369,7 +1364,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {string} binaryIndexName : index to search for dataPosition in
    * @param {boolean} removedFromIndexOnly - remove from index only
    */
-  public adaptiveBinaryIndexRemove(dataPosition: number, binaryIndexName: string, removedFromIndexOnly = false): void {
+  public adaptiveBinaryIndexRemove(dataPosition: number, binaryIndexName: keyof E, removedFromIndexOnly = false): void {
     const idxPos = this.getBinaryIndexPosition(dataPosition, binaryIndexName);
     if (idxPos === null) {
       return;
@@ -1408,7 +1403,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {any} val - value to find within index
    * @param {bool?} adaptive - if true, we will return insert position
    */
-  private _calculateRangeStart(prop: string, val: any, adaptive = false): number {
+  private _calculateRangeStart(prop: keyof E, val: any, adaptive = false): number {
     const rcd = this.data;
     const index = this.binaryIndices[prop].values;
     let min = 0;
@@ -1450,7 +1445,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * Internal method used for indexed $between.  Given a prop (index name), and a value
    * (which may or may not yet exist) this will find the final position of that upper range value.
    */
-  private _calculateRangeEnd(prop: string, val: any) {
+  private _calculateRangeEnd(prop: keyof E, val: any) {
     const rcd = this.data;
     const index = this.binaryIndices[prop].values;
     let min = 0;
@@ -1503,7 +1498,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {object} val - value to use for range calculation.
    * @returns {array} [start, end] index array positions
    */
-  public calculateRange(op: string, prop: string, val: any): [number, number] {
+  public calculateRange(op: string, prop: keyof E, val: any): [number, number] {
     const rcd = this.data;
     const index = this.binaryIndices[prop].values;
     const min = 0;
@@ -1683,7 +1678,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @returns {object} document matching the value passed
    */
   public by(field: string, value: any): Doc<E> {
-    return this.findOne({[field]: value});
+    return this.findOne({[field]: value} as any);
   }
 
   /**
@@ -1691,7 +1686,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {object} query - query object used to perform search with
    * @returns {(object|null)} First matching document, or null if none
    */
-  public findOne(query: object): Doc<E> {
+  public findOne(query: Query<Doc<E> & D>): Doc<E> {
     query = query || {};
 
     // Instantiate ResultSet and exec find op passing firstOnly = true param
@@ -1716,8 +1711,8 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {object} parameters - Object containing properties representing parameters to substitute
    * @returns {ResultSet} (this) resultset, or data array if any map or join functions where called
    */
-  public chain(transform?: string | Collection.Transform[], parameters?: object): ResultSet<E> {
-    const rs = new ResultSet<E>(this);
+  public chain(transform?: string | Collection.Transform[], parameters?: object): ResultSet<E, D> {
+    const rs = new ResultSet<E, D>(this);
     if (transform === undefined) {
       return rs;
     }
@@ -1731,7 +1726,7 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
    * @param {object} query - 'mongo-like' query object
    * @returns {array} Array of matching documents
    */
-  public find(query?: Query): Doc<E>[] {
+  public find(query?: Query<Doc<E> & D>): Doc<E>[] {
     return this.chain().find(query).data();
   }
 
@@ -2034,9 +2029,9 @@ export class Collection<E extends object = object> extends LokiEventEmitter {
 }
 
 export namespace Collection {
-  export interface Options {
-    unique?: string[];
-    indices?: string[];
+  export interface Options<E> {
+    unique?: (keyof E)[];
+    indices?: (keyof E)[];
     adaptiveBinaryIndices?: boolean;
     asyncListeners?: boolean;
     disableChangesApi?: boolean;
@@ -2066,7 +2061,19 @@ export namespace Collection {
     obj: any;
   }
 
-  export type TransformTypes = "find" | "where" | "simplesort" | "compoundsort" | "sort" | "limit" | "offset" | "map" | "eqJoin" | "mapReduce" | "update" | "remove";
+  export type TransformTypes =
+    "find"
+    | "where"
+    | "simplesort"
+    | "compoundsort"
+    | "sort"
+    | "limit"
+    | "offset"
+    | "map"
+    | "eqJoin"
+    | "mapReduce"
+    | "update"
+    | "remove";
 
   export interface Transform {
     type: TransformTypes;

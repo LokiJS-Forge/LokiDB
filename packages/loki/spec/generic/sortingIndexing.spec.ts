@@ -77,7 +77,7 @@ describe("sorting and indexing", () => {
         };
       }
 
-      const rss = db.addCollection<Sortable>("rssort");
+      const rss = db.addCollection<Sortable, {"foo.a": number}>("rssort");
 
       rss.insert({foo: {a: 4, b: 2}});
       rss.insert({foo: {a: 7, b: 1}});
@@ -200,7 +200,7 @@ describe("sorting and indexing", () => {
         };
       }
 
-      const coll = db.addCollection<AZYBC>("coll");
+      const coll = db.addCollection<AZYBC, {"z.y.b": number, "z.y.c": number}>("coll");
 
       coll.insert([
         {a: 1, z: {y: {b: 9, c: "first"}}},

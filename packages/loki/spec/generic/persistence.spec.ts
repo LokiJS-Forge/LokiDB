@@ -30,7 +30,7 @@ describe("testing unique index serialization", () => {
     username: string;
   }
 
-  let users: Collection;
+  let users: Collection<AUser>;
   beforeEach(() => {
     db = new Loki();
     users = db.addCollection<AUser>("users");

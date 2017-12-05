@@ -183,7 +183,7 @@ describe("Individual operator tests", () => {
       count: number;
     }
 
-    let coll = db.addCollection<User>("coll");
+    let coll: Collection<User> = db.addCollection<User>("coll");
     coll.insert({name: "mjolnir", count: 73});
     coll.insert({name: "gungnir", count: 5});
     coll.insert({name: "tyrfing", count: 15});

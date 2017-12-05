@@ -6,6 +6,7 @@ export type ANY = any;
 
 describe("loki", () => {
   let db: Loki;
+
   interface User {
     name: string;
     age: number;
@@ -42,7 +43,7 @@ describe("loki", () => {
   describe("core methods", () => {
     it("works", () => {
       const tdb = new Loki("regextests");
-      const tcu = tdb.addCollection("user");
+      const tcu = tdb.addCollection<User>("user");
       tcu.insert({
         name: "abcd",
         age: 25,
@@ -219,7 +220,7 @@ describe("loki", () => {
         };
       }
 
-      const dnc = db.addCollection<DNC>("dncoll");
+      const dnc = db.addCollection<DNC, { "addr.state": string, "addr.zip": number }>("dncoll");
 
       dnc.insert({
         first: "aaa",
@@ -290,7 +291,15 @@ describe("loki", () => {
   // the leaf property is the array.  This verifies that functionality
   describe("dot notation across leaf object array", () => {
     it("works", () => {
-      const dna = db.addCollection("dnacoll");
+
+      interface ABC {
+        id: number;
+        children: {
+          someProperty?: number
+        }[];
+      }
+
+      const dna = db.addCollection<ABC, { "children.someProperty": number }>("dnacoll");
 
       dna.insert({
         id: 1,
@@ -325,7 +334,7 @@ describe("loki", () => {
       dna.insert({
         id: 5,
         children: [{
-          missing: null
+          // Missing
         }]
       });
 
@@ -350,7 +359,14 @@ describe("loki", () => {
 
   describe("dot notation terminating at leaf array", () => {
     it("works", () => {
-      const dna = db.addCollection("dnacoll");
+
+      interface ABC {
+        relations: {
+          ids: number[];
+        };
+      }
+
+      const dna = db.addCollection<ABC, { "relations.ids": number[] }>("dnacoll");
 
       dna.insert({
         "relations": {
@@ -380,7 +396,18 @@ describe("loki", () => {
 
   describe("dot notation across child array", () => {
     it("works", () => {
-      const dna = db.addCollection("dnacoll");
+
+      interface ABC {
+        id: number;
+        children: {
+          id: number;
+          someArray: {
+            someProperty?: number
+          }[]
+        }[];
+      }
+
+      const dna = db.addCollection<ABC, { "children.someArray.someProperty": number }>("dnacoll");
 
       dna.insert({
         id: 1,
@@ -429,7 +456,7 @@ describe("loki", () => {
         children: [{
           id: 55,
           someArray: [{
-            missing: null
+            // Missing
           }]
         }]
       });

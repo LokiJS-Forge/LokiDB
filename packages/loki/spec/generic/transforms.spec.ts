@@ -279,12 +279,12 @@ describe("transforms", () => {
         }
       ];
 
-      expect(dv.branchResultset(tx).data().length).toBe(2);
+      expect(dv.branchResultSet(tx).data().length).toBe(2);
 
       // now store as named (collection) transform and run off dynamic view
       testColl.addTransform("desc4limit2", tx);
 
-      const results = dv.branchResultset("desc4limit2").data();
+      const results = dv.branchResultSet("desc4limit2").data();
       expect(results.length).toBe(2);
       expect(results[0].a).toBe("third");
       expect(results[1].a).toBe("second");

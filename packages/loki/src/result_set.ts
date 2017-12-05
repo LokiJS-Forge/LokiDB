@@ -1,7 +1,7 @@
 import {Collection} from "./collection";
 import {clone, CloneMethod} from "./clone";
 import {ltHelper, gtHelper, aeqHelper, sortHelper} from "./helper";
-import {Doc, Query} from "../../common/types";
+import {Doc} from "../../common/types";
 import {ScoreResult} from "../../full-text-search/src/scorer";
 
 // used to recursively scan hierarchical transform step object for param substitution
@@ -223,6 +223,20 @@ export const LokiOps = {
   }
 };
 
+export type LokiOps = typeof LokiOps;
+
+export type PartialModel<E, T> = { [P in keyof E]?: T | E[P] };
+
+export type Query<E> = PartialModel<E & { $and: any; $or: any, $fts: any }, { [Y in keyof LokiOps]?: any }>;
+
+export interface Filter<E> {
+  type: string;
+  /*'find', 'where'*/
+  val: Query<E> | ((obj: E, index: number, array: E[]) => boolean);
+  uid: number | string;
+}
+
+
 // if an op is registered in this object, our 'calculateRange' can use it with our binary indices.
 // if the op is registered to a function, we will run that function/op as a 2nd pass filter on results.
 // those 2nd pass filter functions should be similar to LokiOps functions, accepting 2 vals to compare.
@@ -283,9 +297,9 @@ function dotSubScan(root: object, paths: string[], fun: (a: any, b: any) => bool
  *      .where(function(obj) { return obj.name === 'Toyota' })
  *      .data();
  */
-export class ResultSet<E extends object = object> {
+export class ResultSet<E extends object = object, D extends object = object> {
 
-  public _collection: Collection<E>;
+  public _collection: Collection<E, D>;
   public _filteredRows: number[];
   public _filterInitialized: boolean;
   // Holds the scoring result of the last full-text search.
@@ -295,7 +309,7 @@ export class ResultSet<E extends object = object> {
    * Constructor.
    * @param {Collection} collection - the collection which this ResultSet will query against
    */
-  constructor(collection: Collection<E>) {
+  constructor(collection: Collection<E, D>) {
     // retain reference to collection we are querying against
     this._collection = collection;
     this._filteredRows = [];
@@ -320,7 +334,7 @@ export class ResultSet<E extends object = object> {
    * Override of toJSON to avoid circular references
    *
    */
-  public toJSON(): ResultSet<E> {
+  public toJSON(): ResultSet<E, D> {
     const copy = this.copy();
     copy._collection = <never>null;
     return copy;
@@ -366,8 +380,8 @@ export class ResultSet<E extends object = object> {
    *
    * @returns {ResultSet} Returns a copy of the resultset (set) but the underlying document references will be the same.
    */
-  public copy(): ResultSet<E> {
-    const result = new ResultSet<E>(this._collection);
+  public copy(): ResultSet<E, D> {
+    const result = new ResultSet<E, D>(this._collection);
     result._filteredRows = this._filteredRows.slice();
     result._filterInitialized = this._filterInitialized;
     return result;
@@ -376,7 +390,7 @@ export class ResultSet<E extends object = object> {
   /**
    * Alias of copy()
    */
-  public branch(): ResultSet<E> {
+  public branch(): ResultSet<E, D> {
     return this.copy();
   }
 
@@ -414,7 +428,7 @@ export class ResultSet<E extends object = object> {
           rs.where(step.value);
           break;
         case "simplesort":
-          rs.simplesort(step.property, step.desc);
+          rs.simplesort(step.property as keyof (E & D), step.desc);
           break;
         case "compoundsort":
           rs.compoundsort(step.value);
@@ -429,7 +443,7 @@ export class ResultSet<E extends object = object> {
           rs = rs.offset(step.value);
           break; // offset makes copy so update reference
         case "map":
-          rs = rs.map(step.value, step.dataOptions) as this;
+          rs = rs.map(step.value, step.dataOptions) as any as this;
           break;
         case "eqJoin":
           rs = rs.eqJoin(step.joinData, step.leftJoinKey, step.rightJoinKey, step.mapFun, step.dataOptions) as this;
@@ -486,15 +500,16 @@ export class ResultSet<E extends object = object> {
    * @param {boolean} [descending=false] - if true, the property will be sorted in descending order
    * @returns {ResultSet} Reference to this resultset, sorted, for future chain operations.
    */
-  public simplesort(propname: string, descending: boolean = false): this {
+  public simplesort(propname: keyof (E & D), descending: boolean = false): this {
     // if this has no filters applied, just we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
+      //TODO:
       // if we have a binary index and no other filters applied, we can use that instead of sorting (again)
-      if (this._collection.binaryIndices[propname] !== undefined) {
+      if (this._collection.binaryIndices[propname as keyof E] !== undefined) {
         // make sure index is up-to-date
-        this._collection.ensureIndex(propname);
+        this._collection.ensureIndex(propname as keyof E);
         // copy index values into filteredRows
-        this._filteredRows = this._collection.binaryIndices[propname].values.slice(0);
+        this._filteredRows = this._collection.binaryIndices[propname as keyof E].values.slice(0);
 
         if (descending) {
           this._filteredRows.reverse();
@@ -521,8 +536,8 @@ export class ResultSet<E extends object = object> {
           return obj && obj[i] || undefined;
         }, data[b]);
       } else {
-        val1 = data[a][propname];
-        val2 = data[b][propname];
+        val1 = data[a][propname as keyof E];
+        val2 = data[b][propname as keyof E];
       }
       return sortHelper(val1, val2, descending);
     };
@@ -543,7 +558,7 @@ export class ResultSet<E extends object = object> {
    * @param {array} properties - array of property names or subarray of [propertyname, isdesc] used evaluate sort order
    * @returns {ResultSet} Reference to this resultset, sorted, for future chain operations.
    */
-  public compoundsort(properties: (string | [string, boolean])[]): this {
+  public compoundsort(properties: (keyof (E & D) | [keyof (E & D), boolean])[]): this {
     if (properties.length === 0) {
       throw new Error("Invalid call to compoundsort, need at least one property");
     }
@@ -553,7 +568,7 @@ export class ResultSet<E extends object = object> {
       if (typeof prop === "string") {
         return this.simplesort(prop, false);
       } else {
-        return this.simplesort(prop[0], prop[1]);
+        return this.simplesort(prop[0] as keyof (E & D), prop[1] as boolean);
       }
     }
 
@@ -638,7 +653,6 @@ export class ResultSet<E extends object = object> {
     if (this._scoring === null) {
       throw new Error("No scoring available");
     }
-
     return this._scoring;
   }
 
@@ -651,29 +665,25 @@ export class ResultSet<E extends object = object> {
    * @param {array} expressionArray - array of expressions
    * @returns {ResultSet} this resultset for further chain ops.
    */
-  public findOr(expressionArray: Query[]): this {
-    let fr = null;
-    let fri = 0;
-    let frlen = 0;
+  public findOr(expressionArray: Query<Doc<E>>[]): this {
     const docset = [];
     const idxset = [];
-    let idx = 0;
     const origCount = this.count();
 
     // If filter is already initialized, then we query against only those items already in filter.
     // This means no index utilization for fields, so hopefully its filtered to a smallish filteredRows.
     for (let ei = 0, elen = expressionArray.length; ei < elen; ei++) {
       // we need to branch existing query to run each filter separately and combine results
-      fr = this.branch().find(expressionArray[ei])._filteredRows;
-      frlen = fr.length;
+      const fr = this.branch().find(expressionArray[ei])._filteredRows;
+      const frlen = fr.length;
       // if the find operation did not reduce the initial set, then the initial set is the actual result
       if (frlen === origCount) {
         return this;
       }
 
       // add any document 'hits'
-      for (fri = 0; fri < frlen; fri++) {
-        idx = fr[fri];
+      for (let fri = 0; fri < frlen; fri++) {
+        const idx = fr[fri];
         if (idxset[idx] === undefined) {
           idxset[idx] = true;
           docset.push(idx);
@@ -687,7 +697,7 @@ export class ResultSet<E extends object = object> {
     return this;
   }
 
-  public $or(expressionArray: Query[]): this {
+  public $or(expressionArray: Query<Doc<E>>[]): this {
     return this.findOr(expressionArray);
   }
 
@@ -700,7 +710,7 @@ export class ResultSet<E extends object = object> {
    * @param {array} expressionArray - array of expressions
    * @returns {ResultSet} this resultset for further chain ops.
    */
-  public findAnd(expressionArray: Query[]): this {
+  public findAnd(expressionArray: Query<Doc<E>>[]): this {
     // we have already implementing method chaining in this (our ResultSet class)
     // so lets just progressively apply user supplied and filters
     for (let i = 0, len = expressionArray.length; i < len; i++) {
@@ -712,7 +722,7 @@ export class ResultSet<E extends object = object> {
     return this;
   }
 
-  public $and(expressionArray: Query[]): this {
+  public $and(expressionArray: Query<Doc<E>>[]): this {
     return this.findAnd(expressionArray);
   }
 
@@ -723,7 +733,7 @@ export class ResultSet<E extends object = object> {
    * @param {boolean} firstOnly - (Optional) Used by collection.findOne() - flag if this was invoked via findOne()
    * @returns {ResultSet} this resultset for further chain ops.
    */
-  public find(query?: Query, firstOnly = false): this {
+  public find(query?: Query<Doc<E>>, firstOnly = false): this {
     if (this._collection.data.length === 0) {
       this._filteredRows = [];
       this._filterInitialized = true;
@@ -731,15 +741,15 @@ export class ResultSet<E extends object = object> {
     }
 
     const queryObject = query || "getAll";
-    let property;
-    let queryObjectOp;
-    let value;
+    let property: any;
+    let queryObjectOp: any;
+    let value: any;
 
     if (typeof queryObject === "object") {
       let filters = [];
       for (let p in queryObject) {
         let obj = {};
-        obj[p] = queryObject[p];
+        obj[p as any] = queryObject[p];
         filters.push(obj);
 
         if (queryObject[p] !== undefined) {
@@ -750,7 +760,7 @@ export class ResultSet<E extends object = object> {
       // if more than one expression in single query object,
       // convert implicit $and to explicit $and
       if (filters.length > 1) {
-        return this.find({"$and": filters}, firstOnly);
+        return this.find({"$and": filters} as any, firstOnly);
       }
     }
 
@@ -767,7 +777,7 @@ export class ResultSet<E extends object = object> {
     if (property === "$and" || property === "$or") {
       this[property](queryObjectOp);
 
-      // for chained find with firstonly,
+      // for chained find with firstOnly,
       if (firstOnly && this._filteredRows.length > 1) {
         this._filteredRows = this._filteredRows.slice(0, 1);
       }
@@ -797,7 +807,7 @@ export class ResultSet<E extends object = object> {
       if (Array.isArray(value)) {
         value = new RegExp(value[0], value[1]);
       } else if (!(value instanceof RegExp)) {
-        value = new RegExp(value);
+        value = new RegExp(value as any);
       }
     }
 
@@ -847,7 +857,7 @@ export class ResultSet<E extends object = object> {
           }
         }
       } else if (property === "$fts") {
-        this._scoring = this._collection._fullTextSearch.search(query["$fts"]);
+        this._scoring = this._collection._fullTextSearch.search(query.$fts as any);
         let keys = Object.keys(this._scoring);
         for (let i = 0; i < keys.length; i++) {
           if (filter.indexOf(+keys[i]) !== -1) {
@@ -878,7 +888,7 @@ export class ResultSet<E extends object = object> {
     this._filterInitialized = true; // next time work against filteredRows[]
 
     if (property === "$fts") {
-      this._scoring = this._collection._fullTextSearch.search(query["$fts"]);
+      this._scoring = this._collection._fullTextSearch.search(query.$fts as any);
       let keys = Object.keys(this._scoring);
       for (let i = 0; i < keys.length; i++) {
         result.push(+keys[i]);
