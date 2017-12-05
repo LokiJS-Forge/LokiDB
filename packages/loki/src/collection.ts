@@ -2069,8 +2069,10 @@ export namespace Collection {
 
   export type Change = any;
 
+  export type TransformTypes = "find" | "where" | "simplesort" | "compoundsort" | "sort" | "limit" | "offset" | "map" | "eqJoin" | "mapReduce" | "update" | "remove";
+
   export interface Transform {
-    type: string;
+    type: TransformTypes;
     value?: any;
     property?: string;
     desc?: boolean;

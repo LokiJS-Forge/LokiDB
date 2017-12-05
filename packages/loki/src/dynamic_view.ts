@@ -736,7 +736,7 @@ export class DynamicView<E extends object = object> extends LokiEventEmitter {
       }
     }
 
-    // since we are using filteredrows to store data array positions
+    // since we are using filteredRows to store data array positions
     // if they remove a document (whether in our view or not),
     // we need to adjust array positions -1 for all document array references after that position
     oldlen = ofr.length;

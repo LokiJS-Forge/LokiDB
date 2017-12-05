@@ -1,6 +1,7 @@
 /* global describe, beforeEach, it, expect */
 import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
+import Transform = Collection.Transform;
 
 export type ANY = any;
 
@@ -27,7 +28,7 @@ describe("transforms", () => {
   describe("basic find transform", () => {
     it("works", () => {
 
-      const tx = [
+      const tx: Transform[] = [
         {
           type: "find",
           value: {
@@ -45,7 +46,7 @@ describe("transforms", () => {
   describe("basic multi-step transform", () => {
     it("works", () => {
 
-      const tx = [
+      const tx: Transform[] = [
         {
           type: "find",
           value: {
@@ -69,7 +70,7 @@ describe("transforms", () => {
   describe("parameterized find", () => {
     it("works", () => {
 
-      const tx = [
+      const tx: Transform[] = [
         {
           type: "find",
           value: {
@@ -126,7 +127,7 @@ describe("transforms", () => {
       // that our parameter substitution method does not have problem with
       // non-serializable transforms.
 
-      let tx1 = [
+      let tx1: Transform[] = [
         {
           type: "mapReduce",
           mapFunction: mapper,
@@ -134,7 +135,7 @@ describe("transforms", () => {
         }
       ];
 
-      let tx2 = [
+      let tx2: Transform[] = [
         {
           type: "find",
           value: {
@@ -168,7 +169,7 @@ describe("transforms", () => {
   describe("parameterized where", () => {
     it("works", () => {
 
-      const tx = [
+      const tx: Transform[] = [
         {
           type: "where",
           value: "[%lktxp]NameFilter"
@@ -190,7 +191,7 @@ describe("transforms", () => {
   describe("named find transform", () => {
     it("works", () => {
 
-      const tx = [
+      const tx: Transform[] = [
         {
           type: "find",
           value: {
@@ -266,7 +267,7 @@ describe("transforms", () => {
 
       // our transform will desc sort string column as 'third', 'second', 'fourth', 'first',
       // and then limit to first two
-      const tx = [
+      const tx: Transform[] = [
         {
           type: "simplesort",
           property: "a",
@@ -391,7 +392,7 @@ describe("transforms", () => {
         return obj;
       }
 
-      const tx = [{
+      const tx: Transform[] = [{
         type: "map",
         value: graftMap,
         dataOptions: {removeMeta: true}

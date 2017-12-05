@@ -334,7 +334,7 @@ export class ResultSet<E extends object = object> {
    * @returns {ResultSet} Returns a copy of the resultset, limited by qty, for subsequent chain ops.
    */
   public limit(qty: number): ResultSet<E> {
-    // if this has no filters applied, we need to populate filteredrows first
+    // if this has no filters applied, we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       this._filteredRows = this._collection.prepareFullDocIndex();
     }
@@ -351,7 +351,7 @@ export class ResultSet<E extends object = object> {
    * @returns {ResultSet} Returns a copy of the resultset, containing docs starting at 'pos' for subsequent chain ops.
    */
   public offset(pos: number): ResultSet<E> {
-    // if this has no filters applied, we need to populate filteredrows first
+    // if this has no filters applied, we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       this._filteredRows = this._collection.prepareFullDocIndex();
     }
@@ -465,7 +465,7 @@ export class ResultSet<E extends object = object> {
    * @returns {ResultSet} Reference to this resultset, sorted, for future chain operations.
    */
   public sort(comparefun: (a: E, b: E) => number): ResultSet<E> {
-    // if this has no filters applied, just we need to populate filteredrows first
+    // if this has no filters applied, just we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       this._filteredRows = this._collection.prepareFullDocIndex();
     }
@@ -487,13 +487,13 @@ export class ResultSet<E extends object = object> {
    * @returns {ResultSet} Reference to this resultset, sorted, for future chain operations.
    */
   public simplesort(propname: string, descending: boolean = false): ResultSet<E> {
-    // if this has no filters applied, just we need to populate filteredrows first
+    // if this has no filters applied, just we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       // if we have a binary index and no other filters applied, we can use that instead of sorting (again)
       if (this._collection.binaryIndices[propname] !== undefined) {
         // make sure index is up-to-date
         this._collection.ensureIndex(propname);
-        // copy index values into filteredrows
+        // copy index values into filteredRows
         this._filteredRows = this._collection.binaryIndices[propname].values.slice(0);
 
         if (descending) {
@@ -565,7 +565,7 @@ export class ResultSet<E extends object = object> {
       }
     }
 
-    // if this has no filters applied, just we need to populate filteredrows first
+    // if this has no filters applied, just we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       this._filteredRows = this._collection.prepareFullDocIndex();
     }
@@ -646,7 +646,7 @@ export class ResultSet<E extends object = object> {
   }
 
   /**
-   * findOr() - oversee the operation of OR'ed query expressions.
+   * Oversee the operation of OR'ed query expressions.
    *    OR'ed expression evaluation runs each expression individually against the full collection,
    *    and finally does a set OR on each expression's results.
    *    Each evaluation can utilize a binary index to prevent multiple linear array scans.
@@ -664,7 +664,7 @@ export class ResultSet<E extends object = object> {
     const origCount = this.count();
 
     // If filter is already initialized, then we query against only those items already in filter.
-    // This means no index utilization for fields, so hopefully its filtered to a smallish filteredrows.
+    // This means no index utilization for fields, so hopefully its filtered to a smallish filteredRows.
     for (let ei = 0, elen = expressionArray.length; ei < elen; ei++) {
       // we need to branch existing query to run each filter separately and combine results
       fr = this.branch().find(expressionArray[ei])._filteredRows;
@@ -695,7 +695,7 @@ export class ResultSet<E extends object = object> {
   }
 
   /**
-   * findAnd() - oversee the operation of AND'ed query expressions.
+   * Oversee the operation of AND'ed query expressions.
    *    AND'ed expression evaluation runs each expression progressively against the full collection,
    *    internally utilizing existing chained resultset functionality.
    *    Only the first filter can utilize a binary index.
@@ -831,12 +831,12 @@ export class ResultSet<E extends object = object> {
 
     // Query executed differently depending on :
     //    - whether the property being queried has an index defined
-    //    - if chained, we handle first pass differently for initial filteredrows[] population
+    //    - if chained, we handle first pass differently for initial filteredRows[] population
     //
     // For performance reasons, each case has its own if block to minimize in-loop calculations
 
     let result: number[] = [];
-    // If the filteredrows[] is already initialized, use it
+    // If the filteredRows[] is already initialized, use it
     if (this._filterInitialized) {
       let filter = this._filteredRows;
 
@@ -873,12 +873,12 @@ export class ResultSet<E extends object = object> {
       }
 
       this._filteredRows = result;
-      this._filterInitialized = true; // next time work against filteredrows[]
+      this._filterInitialized = true; // next time work against filteredRows[]
       return this;
     }
 
     this._filteredRows = result;
-    this._filterInitialized = true; // next time work against filteredrows[]
+    this._filterInitialized = true; // next time work against filteredRows[]
 
     if (property === "$fts") {
       this._scoring = this._collection._fullTextSearch.search(query["$fts"]);
@@ -895,7 +895,7 @@ export class ResultSet<E extends object = object> {
       return this;
     }
 
-    // first chained query so work against data[] but put results in filteredrows
+    // first chained query so work against data[] but put results in filteredRows
     // if not searching by index
     if (!searchByIndex) {
       if (usingDotNotation) {
@@ -967,7 +967,7 @@ export class ResultSet<E extends object = object> {
    * @param {function} fun - A javascript function used for filtering current results by.
    * @returns {ResultSet} this resultset for further chain ops.
    */
-  public where(fun: (obj: E) => boolean): ResultSet<E> {
+  public where(fun: (obj: E) => boolean): this {
     let viewFunction;
     let result = [];
 
@@ -977,7 +977,7 @@ export class ResultSet<E extends object = object> {
       throw new TypeError("Argument is not a stored view or a function");
     }
     try {
-      // If the filteredrows[] is already initialized, use it
+      // If the filteredRows[] is already initialized, use it
       if (this._filterInitialized) {
         let j = this._filteredRows.length;
 
@@ -991,7 +991,7 @@ export class ResultSet<E extends object = object> {
 
         return this;
       }
-      // otherwise this is initial chained op, work against data, push into filteredrows[]
+      // otherwise this is initial chained op, work against data, push into filteredRows[]
       else {
         let k = this._collection.data.length;
 
@@ -1087,7 +1087,7 @@ export class ResultSet<E extends object = object> {
           return data.slice();
         }
       } else {
-        // filteredrows must have been set manually, so use it
+        // filteredRows must have been set manually, so use it
         this._filterInitialized = true;
       }
     }
@@ -1120,7 +1120,7 @@ export class ResultSet<E extends object = object> {
    * @returns {ResultSet} this resultset for further chain ops.
    */
   update(updateFunction: (obj: E) => E): ResultSet<E> {
-    // if this has no filters applied, we need to populate filteredrows first
+    // if this has no filters applied, we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       this._filteredRows = this._collection.prepareFullDocIndex();
     }
@@ -1145,7 +1145,7 @@ export class ResultSet<E extends object = object> {
    * @returns {ResultSet} this (empty) resultset for further chain ops.
    */
   public remove(): ResultSet<E> {
-    // if this has no filters applied, we need to populate filteredrows first
+    // if this has no filters applied, we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       this._filteredRows = this._collection.prepareFullDocIndex();
     }
@@ -1211,7 +1211,9 @@ export class ResultSet<E extends object = object> {
 
     //construct a lookup table
     for (let i = 0; i < rightDataLength; i++) {
-      key = rightKeyisFunction ? (rightJoinKey as (obj: any) => string)(rightData[i]) : rightData[i][rightJoinKey as string];
+      key = rightKeyisFunction
+        ? (rightJoinKey as (obj: any) => string)(rightData[i])
+        : rightData[i][rightJoinKey as string];
       joinMap[key] = rightData[i];
     }
 
@@ -1224,7 +1226,9 @@ export class ResultSet<E extends object = object> {
 
     //Run map function over each object in the resultset
     for (let j = 0; j < leftDataLength; j++) {
-      key = leftKeyisFunction ? (leftJoinKey as (obj: any) => string)(leftData[j]) : leftData[j][leftJoinKey as string];
+      key = leftKeyisFunction
+        ? (leftJoinKey as (obj: any) => string)(leftData[j])
+        : leftData[j][leftJoinKey as string];
       result.push(mapFun(leftData[j], joinMap[key] || {}));
     }
 
@@ -1243,10 +1247,11 @@ export class ResultSet<E extends object = object> {
    * @param {object} [dataOptions=] - options to data() before input to your map function
    * @param {boolean} dataOptions.removeMeta - allows removing meta before calling mapFun
    * @param {boolean} dataOptions.forceClones - forcing the return of cloned objects to your map object
-   * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method.
+   * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method
+   * @return {ResultSet}
    */
   map<U extends object>(mapFun: (obj: E, index: number, array: E[]) => U, dataOptions?: ResultSet.DataOptions): ResultSet<U> {
-    let data = this.data(dataOptions).map(mapFun);
+    const data = this.data(dataOptions).map(mapFun);
     //return return a new resultset with no filters
     this._collection = new Collection("mappedData");
     this._collection.insert(data as any as E);
