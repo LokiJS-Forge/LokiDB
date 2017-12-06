@@ -39,8 +39,8 @@ export class BaseQueryBuilder {
   }
 }
 
-export interface BaseQuery {
-  type: string;
+export interface BaseQuery<Type> {
+  type: Type;
   boost?: number;
 }
 
@@ -72,7 +72,7 @@ export class TermQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-export interface TermQuery extends BaseQuery {
+export interface TermQuery extends BaseQuery<"term"> {
   field: string;
   value: string;
 }
@@ -105,7 +105,7 @@ export class TermsQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-export interface TermsQuery extends BaseQuery {
+export interface TermsQuery extends BaseQuery<"terms"> {
   field: string;
   value: string[];
 }
@@ -156,7 +156,7 @@ export class WildcardQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-export interface WildcardQuery extends BaseQuery {
+export interface WildcardQuery extends BaseQuery<"wildcard"> {
   field: string;
   value: string;
   enable_scoring?: boolean;
@@ -244,7 +244,7 @@ export class FuzzyQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-export interface FuzzyQuery extends BaseQuery {
+export interface FuzzyQuery extends BaseQuery<"fuzzy"> {
   field: string;
   value: string;
   fuzziness?: number | "AUTO";
@@ -292,7 +292,7 @@ export class PrefixQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-export interface PrefixQuery extends BaseQuery {
+export interface PrefixQuery extends BaseQuery<"prefix"> {
   field: string;
   value: string;
   enable_scoring?: boolean;
@@ -323,7 +323,7 @@ export class ExistsQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-export interface ExistsQuery extends BaseQuery {
+export interface ExistsQuery extends BaseQuery<"exists"> {
   field: string;
 }
 
@@ -447,7 +447,7 @@ export class MatchQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-export interface MatchQuery extends BaseQuery {
+export interface MatchQuery extends BaseQuery<"match"> {
   field: string;
   value: string;
   minimum_should_match?: number;
@@ -482,7 +482,7 @@ export class MatchAllQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-export interface MatchQueryAll extends BaseQuery {
+export interface MatchQueryAll extends BaseQuery<"match_all"> {
 }
 
 /**
@@ -522,7 +522,7 @@ export class ConstantScoreQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-export interface ConstantScoreQuery extends BaseQuery {
+export interface ConstantScoreQuery extends BaseQuery<"constant_score"> {
   filter: ArrayQuery;
 }
 
@@ -636,7 +636,7 @@ export class BoolQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-export interface BoolQuery extends BaseQuery {
+export interface BoolQuery extends BaseQuery<"bool"> {
   must?: ArrayQuery;
   filter?: ArrayQuery;
   should?: ArrayQuery;
@@ -719,8 +719,8 @@ export class ArrayQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-export interface ArrayQuery {
-  values: any[];
+export interface ArrayQuery extends BaseQuery<"array"> {
+  values: QueryTypes[];
 }
 
 /**
@@ -835,8 +835,11 @@ export class QueryBuilder {
   }
 }
 
+export type QueryTypes = BoolQuery | ConstantScoreQuery | TermQuery | TermsQuery | WildcardQuery | FuzzyQuery
+  | MatchQuery | MatchQueryAll | PrefixQuery | ExistsQuery;
+
 export interface Query {
-  query: any;
+  query: QueryTypes;
   final_scoring?: boolean;
   bm25?: {
     k1: number;
