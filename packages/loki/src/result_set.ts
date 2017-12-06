@@ -3,6 +3,7 @@ import {clone, CloneMethod} from "./clone";
 import {ltHelper, gtHelper, aeqHelper, sortHelper} from "./helper";
 import {Doc} from "../../common/types";
 import {ScoreResult} from "../../full-text-search/src/scorer";
+import {Query as FullTextSearchQuery} from "../../full-text-search/src/query_builder";
 
 // used to recursively scan hierarchical transform step object for param substitution
 function resolveTransformObject(subObj: Collection.Transform, params: object, depth: number = 0): Collection.Transform {
@@ -464,7 +465,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {function} comparefun - A javascript compare function used for sorting.
    * @returns {ResultSet} Reference to this resultset, sorted, for future chain operations.
    */
-  public sort(comparefun: (a: E, b: E) => number): this {
+  public sort(comparefun: (a: Doc<E>, b: Doc<E>) => number): this {
     // if this has no filters applied, just we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       this._filteredRows = this._collection._prepareFullDocIndex();
@@ -651,7 +652,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {array} expressionArray - array of expressions
    * @returns {ResultSet} this resultset for further chain ops.
    */
-  public findOr(expressionArray: ResultSet.Query<Doc<E>>[]): this {
+  public findOr(expressionArray: ResultSet.Query<Doc<E> & D>[]): this {
     const docset = [];
     const idxset = [];
     const origCount = this.count();
@@ -683,7 +684,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
     return this;
   }
 
-  public $or(expressionArray: ResultSet.Query<Doc<E>>[]): this {
+  public $or(expressionArray: ResultSet.Query<Doc<E> & D>[]): this {
     return this.findOr(expressionArray);
   }
 
@@ -696,7 +697,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {array} expressionArray - array of expressions
    * @returns {ResultSet} this resultset for further chain ops.
    */
-  public findAnd(expressionArray: ResultSet.Query<Doc<E>>[]): this {
+  public findAnd(expressionArray: ResultSet.Query<Doc<E> & D>[]): this {
     // we have already implementing method chaining in this (our ResultSet class)
     // so lets just progressively apply user supplied and filters
     for (let i = 0, len = expressionArray.length; i < len; i++) {
@@ -708,7 +709,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
     return this;
   }
 
-  public $and(expressionArray: ResultSet.Query<Doc<E>>[]): this {
+  public $and(expressionArray: ResultSet.Query<Doc<E> & D>[]): this {
     return this.findAnd(expressionArray);
   }
 
@@ -719,7 +720,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {boolean} firstOnly - (Optional) Used by collection.findOne() - flag if this was invoked via findOne()
    * @returns {ResultSet} this resultset for further chain ops.
    */
-  public find(query?: ResultSet.Query<Doc<E>>, firstOnly = false): this {
+  public find(query?: ResultSet.Query<Doc<E> & D>, firstOnly = false): this {
     if (this._collection.data.length === 0) {
       this._filteredRows = [];
       this._filterInitialized = true;
@@ -843,7 +844,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
           }
         }
       } else if (property === "$fts") {
-        this._scoring = this._collection._fullTextSearch.search(query.$fts as any);
+        this._scoring = this._collection._fullTextSearch.search(query.$fts as FullTextSearchQuery);
         let keys = Object.keys(this._scoring);
         for (let i = 0; i < keys.length; i++) {
           if (filter.indexOf(+keys[i]) !== -1) {
@@ -874,7 +875,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
     this._filterInitialized = true; // next time work against filteredRows[]
 
     if (property === "$fts") {
-      this._scoring = this._collection._fullTextSearch.search(query.$fts as any);
+      this._scoring = this._collection._fullTextSearch.search(query.$fts as FullTextSearchQuery);
       let keys = Object.keys(this._scoring);
       for (let i = 0; i < keys.length; i++) {
         result.push(+keys[i]);
@@ -960,7 +961,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {function} fun - A javascript function used for filtering current results by.
    * @returns {ResultSet} this resultset for further chain ops.
    */
-  public where(fun: (obj: E) => boolean): this {
+  public where(fun: (obj: Doc<E>) => boolean): this {
     let viewFunction;
     let result = [];
 
@@ -1112,7 +1113,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {function} updateFunction - User supplied updateFunction(obj) will be executed for each document object.
    * @returns {ResultSet} this resultset for further chain ops.
    */
-  update(updateFunction: (obj: E) => E): this {
+  update(updateFunction: (obj: Doc<E>) => E): this {
     // if this has no filters applied, we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       this._filteredRows = this._collection._prepareFullDocIndex();
@@ -1261,9 +1262,25 @@ export namespace ResultSet {
     removeMeta?: boolean;
   }
 
-  export type LokiOps = typeof LokiOps;
-
   export type PartialModel<E, T> = { [P in keyof E]?: T | E[P] };
 
-  export type Query<E> = PartialModel<E & { $and: any; $or: any, $fts: any }, { [Y in keyof LokiOps]?: any }>;
+  export type Query<E> = PartialModel<E & { $and: Query<E>[]; $or: Query<E>[], $fts: FullTextSearchQuery },
+    { [Y in keyof typeof LokiOps]?: any }>;
+
+  interface AB {
+    name: string;
+  }
+
+  let rqwe: Query<AB> = {
+    $fts: {
+      query: {
+        type: "term",
+        value: "c",
+        field: "r"
+      }
+    },
+    $and: [{
+      name: "abc"
+    }]
+  };
 }

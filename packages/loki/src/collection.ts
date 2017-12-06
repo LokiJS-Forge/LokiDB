@@ -683,7 +683,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {object|function} filterObject - 'mongo-like' query object (or deprecated filterFunction mode)
    * @param {function} updateFunction - update function to run against filtered documents
    */
-  findAndUpdate(filterObject: ResultSet.Query<Doc<E>> | ((obj: E) => boolean), updateFunction: (obj: Doc<E>) => any) {
+  findAndUpdate(filterObject: ResultSet.Query<Doc<E> & D> | ((obj: E) => boolean), updateFunction: (obj: Doc<E>) => any) {
     if (typeof(filterObject) === "function") {
       this.updateWhere(filterObject, updateFunction);
     } else {
@@ -696,7 +696,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    *
    * @param {object} filterObject - 'mongo-like' query object
    */
-  findAndRemove(filterObject: ResultSet.Query<Doc<E>>) {
+  findAndRemove(filterObject: ResultSet.Query<Doc<E> & D>) {
     this.chain().find(filterObject).remove();
   }
 
@@ -987,7 +987,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {function} filterFunction - filter function whose results will execute update
    * @param {function} updateFunction - update function to run against filtered documents
    */
-  updateWhere(filterFunction: (obj: E) => boolean, updateFunction: (obj: Doc<E>) => any) {
+  updateWhere(filterFunction: (obj: Doc<E>) => boolean, updateFunction: (obj: Doc<E>) => any) {
     const results = this.where(filterFunction);
     try {
       for (let i = 0; i < results.length; i++) {
@@ -1004,7 +1004,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * For 'mongo-like' querying you should migrate to [findAndRemove()]{@link Collection#findAndRemove}.
    * @param {function|object} query - query object to filter on
    */
-  removeWhere(query: ResultSet.Query<Doc<E>> | ((obj: Doc<E>) => boolean)) {
+  removeWhere(query: ResultSet.Query<Doc<E> & D> | ((obj: Doc<E>) => boolean)) {
     if (typeof query === "function") {
       this.remove(this.data.filter(query));
     } else {
