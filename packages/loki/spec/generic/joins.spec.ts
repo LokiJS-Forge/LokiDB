@@ -104,7 +104,7 @@ describe("joins", () => {
         directorId: 3
       })
       .simplesort("title")
-      .eqJoin(directors.data, "directorId", "directorId", (left: Film, right: Director) => ({
+      .eqJoin(directors, "directorId", "directorId", (left: Film, right: Director) => ({
         filmTitle: left.title,
         directorName: right.name
       })) as any as ResultSet<Join1>;
@@ -122,9 +122,9 @@ describe("joins", () => {
     }
 
     //Test calculated keys
-    joined = films.chain().eqJoin(directors.data,
-      (director: any) => director.directorId + 1,
-      (film: any) => String(film.directorId - 1))
+    joined = films.chain().eqJoin(directors,
+      (film: Film) => String(film.directorId + 1),
+      (director: Director) => String(director.directorId - 1))
       .data() as Join2[];
 
     expect(joined[0].right.name).toEqual("Steven Spielberg");

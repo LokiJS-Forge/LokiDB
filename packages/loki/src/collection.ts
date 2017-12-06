@@ -10,7 +10,6 @@ import {FullTextSearch} from "../../full-text-search/src/full_text_search";
 import {PLUGINS} from "../../common/plugin";
 import {Tokenizer} from "../../full-text-search/src/tokenizer";
 
-export type ANY = any;
 export {CloneMethod} from "./clone";
 
 /**
@@ -67,14 +66,14 @@ export class Collection<E extends object = object, D extends object = object> ex
   public constraints: {
     unique: {
       [P in keyof E]?: UniqueIndex<E>;
-    }
+      }
   };
 
   /**
    * Transforms will be used to store frequently used query chains as a series of steps which itself can be stored along
    * with the database.
    */
-  public transforms: Dict<Collection.Transform[]>;
+  public transforms: Dict<Collection.Transform<E, D>[]>;
 
   /**
    * In autosave scenarios we will use collection level dirty flags to determine whether save is needed.
@@ -130,7 +129,7 @@ export class Collection<E extends object = object, D extends object = object> ex
   /**
    * Option to activate a cleaner daemon - clears "aged" documents at set intervals.
    */
-  public ttl: ANY;
+  public ttl: Collection.TTL;
 
   private maxId: number;
   private _dynamicViews: DynamicView<E, D>[];
@@ -144,14 +143,18 @@ export class Collection<E extends object = object, D extends object = object> ex
   private insertHandler: (obj: Doc<E>) => void;
   private updateHandler: (obj: Doc<E>, old: Doc<E>) => void;
 
-  public console: ANY;
+  public console: {
+    log(...args: any[]): void;
+    warn(...args: any[]): void;
+    error(...args: any[]): void;
+  };
 
   /**
    * stages: a map of uniquely identified 'stages', which hold copies of objects to be
    * manipulated without affecting the data in the original collection
    */
   private stages: object;
-  private commitLog: ANY[];
+  private commitLog: { timestamp: number; message: string; data: any }[];
 
   public _fullTextSearch: FullTextSearch;
 
@@ -182,7 +185,7 @@ export class Collection<E extends object = object, D extends object = object> ex
     this.idIndex = []; // index of id
     this.binaryIndices = {}; // user defined indexes
     this.constraints = {
-      unique: {},
+      unique: {}
     };
 
     // .
@@ -295,7 +298,7 @@ export class Collection<E extends object = object, D extends object = object> ex
       }
     });
 
-    this.on("warning", (warning: ANY) => {
+    this.on("warning", (warning: string) => {
       this.console.warn(warning);
     });
 
@@ -308,7 +311,7 @@ export class Collection<E extends object = object, D extends object = object> ex
       warn() {
       },
       error() {
-      },
+      }
     };
 
     /* ------ STAGING API -------- */
@@ -320,13 +323,13 @@ export class Collection<E extends object = object, D extends object = object> ex
     this.commitLog = [];
   }
 
-  toJSON() {
+  toJSON(): Collection.Serialized {
     return {
       name: this.name,
       _dynamicViews: this._dynamicViews,
       uniqueNames: Object.keys(this.constraints.unique),
-      transforms: this.transforms,
-      binaryIndices: this.binaryIndices,
+      transforms: this.transforms as any,
+      binaryIndices: this.binaryIndices  as any,
       data: this.data,
       idIndex: this.idIndex,
       maxId: this.maxId,
@@ -335,6 +338,7 @@ export class Collection<E extends object = object, D extends object = object> ex
       transactional: this.transactional,
       asyncListeners: this.asyncListeners,
       disableChangesApi: this.disableChangesApi,
+      disableDeltaChangesApi: this.disableDeltaChangesApi,
       cloneObjects: this.cloneObjects,
       cloneMethod: this.cloneMethod,
       changes: this.changes,
@@ -342,7 +346,7 @@ export class Collection<E extends object = object, D extends object = object> ex
     };
   }
 
-  static fromJSONObject(obj: ANY, options?: Collection.DeserializeOptions) {
+  static fromJSONObject(obj: Collection.Serialized, options?: Collection.DeserializeOptions) {
     let coll = new Collection<any>(obj.name, {
       disableChangesApi: obj.disableChangesApi,
       disableDeltaChangesApi: obj.disableDeltaChangesApi
@@ -358,17 +362,17 @@ export class Collection<E extends object = object, D extends object = object> ex
 
     coll.dirty = (options && options.retainDirtyFlags === true) ? obj.dirty : false;
 
-    function makeLoader(coll: ANY) {
+    function makeLoader(coll: Collection.Serialized) {
       const collOptions = options[coll.name];
 
       if (collOptions.proto) {
-        let inflater = collOptions.inflate || ((src: object, dest: object) => {
+        const inflater = collOptions.inflate || ((src: Doc<any>, dest: Doc<any>) => {
           for (let prop in src) {
             dest[prop] = src[prop];
           }
         });
 
-        return (data: ANY) => {
+        return (data: Doc<any>) => {
           const collObj = new (collOptions.proto)();
           inflater(data, collObj);
           return collObj;
@@ -413,7 +417,7 @@ export class Collection<E extends object = object, D extends object = object> ex
     if (obj._dynamicViews !== undefined) {
       // reinflate DynamicViews and attached ResultSets
       for (let idx = 0; idx < obj._dynamicViews.length; idx++) {
-        coll._dynamicViews.push(DynamicView.fromJSONObject(coll, obj._dynamicViews[idx]));
+        coll._dynamicViews.push(DynamicView.fromJSONObject(coll, obj._dynamicViews[idx] as any));
       }
     }
 
@@ -429,11 +433,10 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {string} name - name to associate with transform
    * @param {array} transform - an array of transformation 'step' objects to save into the collection
    */
-  public addTransform(name: string, transform: Collection.Transform[]): void {
+  public addTransform(name: string, transform: Collection.Transform<E, D>[]): void {
     if (this.transforms[name] !== undefined) {
       throw new Error("a transform by that name already exists");
     }
-
     this.transforms[name] = transform;
   }
 
@@ -441,7 +444,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * Retrieves a named transform from the collection.
    * @param {string} name - name of the transform to lookup.
    */
-  public getTransform(name: string): Collection.Transform[] {
+  public getTransform(name: string): Collection.Transform<E, D>[] {
     return this.transforms[name];
   }
 
@@ -450,7 +453,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {string} name - name to associate with transform
    * @param {object} transform - a transformation object to save into collection
    */
-  public setTransform(name: string, transform: Collection.Transform[]): void {
+  public setTransform(name: string, transform: Collection.Transform<E, D>[]): void {
     this.transforms[name] = transform;
   }
 
@@ -463,34 +466,28 @@ export class Collection<E extends object = object, D extends object = object> ex
   }
 
   /*----------------------------+
-   | TTL daemon                  |
+   | TTL                        |
    +----------------------------*/
-  private _ttlDaemonFuncGen(): () => void {
-    const collection = this;
-    const age = this.ttl.age;
-    return function ttlDaemon() {
-      const now = Date.now();
-      const toRemove = collection.chain().where((member: Doc<E>) => {
-        const timestamp = member.meta.updated || member.meta.created;
-        const diff = now - timestamp;
-        return age < diff;
-      });
-      toRemove.remove();
-    };
-  }
-
   private setTTL(age: number, interval: number): void {
     if (age < 0) {
       clearInterval(this.ttl.daemon);
     } else {
       this.ttl.age = age;
       this.ttl.ttlInterval = interval;
-      this.ttl.daemon = setInterval(this._ttlDaemonFuncGen(), interval);
+      this.ttl.daemon = setInterval(() => {
+        const now = Date.now();
+        const toRemove = this.chain().where((member: Doc<E>) => {
+          const timestamp = member.meta.updated || member.meta.created;
+          const diff = now - timestamp;
+          return this.ttl.age < diff;
+        });
+        toRemove.remove();
+      }, interval);
     }
   }
 
   /*----------------------------+
-   | INDEXING                    |
+   | INDEXING                   |
    +----------------------------*/
 
   /**
@@ -801,7 +798,7 @@ export class Collection<E extends object = object, D extends object = object> ex
       this.binaryIndices = {};
 
       this.constraints = {
-        unique: {},
+        unique: {}
       };
     }
     // clear indices but leave definitions in place
@@ -1711,7 +1708,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {object} parameters - Object containing properties representing parameters to substitute
    * @returns {ResultSet} (this) ResultSet, or data array if any map or join functions where called
    */
-  public chain(transform?: string | Collection.Transform[], parameters?: object): ResultSet<E, D> {
+  public chain(transform?: string | Collection.Transform<E, D>[], parameters?: object): ResultSet<E, D> {
     const rs = new ResultSet<E, D>(this);
     if (transform === undefined) {
       return rs;
@@ -2054,6 +2051,8 @@ export namespace Collection {
   export interface DeserializeOptions {
     retainDirtyFlags?: boolean;
     fullTextSearch?: Dict<Tokenizer.FunctionSerialization>;
+
+    [collName: string]: any | { proto?: any; inflate?: (src: object, dest?: object) => void };
   }
 
   export interface BinaryIndex {
@@ -2067,31 +2066,77 @@ export namespace Collection {
     obj: any;
   }
 
-  export type TransformTypes =
-    "find"
-    | "where"
-    | "simplesort"
-    | "compoundsort"
-    | "sort"
-    | "limit"
-    | "offset"
-    | "map"
-    | "eqJoin"
-    | "mapReduce"
-    | "update"
-    | "remove";
+  export interface Serialized {
+    name: string;
+    _dynamicViews: DynamicView[];
+    uniqueNames: string[];
+    transforms: Dict<Transform[]>;
+    binaryIndices: Dict<Collection.BinaryIndex>;
+    data: Doc<any>[];
+    idIndex: number[];
+    maxId: number;
+    dirty: boolean;
+    adaptiveBinaryIndices: boolean;
+    transactional: boolean;
+    asyncListeners: boolean;
+    disableChangesApi: boolean;
+    disableDeltaChangesApi: boolean;
+    cloneObjects: boolean;
+    cloneMethod: CloneMethod;
+    changes: any;
+    _fullTextSearch: FullTextSearch;
+  }
 
-  export interface Transform {
-    type: TransformTypes;
-    value?: any;
-    property?: string;
+  export type Transform<E extends object = object, D extends object = object> = {
+    type: "find";
+    value: ResultSet.Query<Doc<E> & D> | string;
+  } | {
+    type: "where";
+    value: ((obj: Doc<E>) => boolean) | string;
+  } | {
+    type: "simplesort";
+    property: keyof (E & D);
     desc?: boolean;
-    dataOptions?: any;
-    joinData?: any;
-    leftJoinKey?: any;
-    rightJoinKey?: any;
-    mapFun?: any;
-    mapFunction?: any;
-    reduceFunction?: any;
+  } | {
+    type: "compoundsort";
+    value: (keyof (E & D) | [keyof (E & D), boolean])[];
+  } | {
+    type: "sort";
+    value: (a: Doc<E>, b: Doc<E>) => number;
+  } | {
+    type: "sortByScoring";
+    desc?: boolean;
+  } | {
+    type: "limit";
+    value: number;
+  } | {
+    type: "offset";
+    value: number;
+  } | {
+    type: "map";
+    value: (obj: E, index: number, array: E[]) => any;
+    dataOptions?: ResultSet.DataOptions;
+  } | {
+    type: "eqJoin";
+    joinData: Collection<any> | ResultSet<any>;
+    leftJoinKey: string | ((obj: any) => string);
+    rightJoinKey:  string | ((obj: any) => string);
+    mapFun?: (left: any, right: any) => any;
+    dataOptions?: ResultSet.DataOptions;
+  } | {
+    type: "mapReduce";
+    mapFunction: (item: E, index: number, array: E[]) => any;
+    reduceFunction: (array: any[]) => any;
+  } | {
+    type: "update";
+    value: (obj: Doc<E>) => any;
+  } | {
+    type: "remove";
+  };
+
+  export interface TTL {
+    age: number;
+    ttlInterval: number;
+    daemon: any; // setInterval Timer
   }
 }

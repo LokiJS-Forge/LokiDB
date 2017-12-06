@@ -1,5 +1,6 @@
 /* global describe, it, expect */
 import {Loki} from "../../src/loki";
+import {Doc} from "../../../common/types";
 
 describe("typed", () => {
   it("works", () => {
@@ -7,7 +8,7 @@ describe("typed", () => {
     let users;
 
     class User {
-      public name: string;
+      public name?: string;
       public customInflater?: boolean;
       public onlyInflater?: boolean;
       constructor(name: string = "") {
@@ -59,14 +60,11 @@ describe("typed", () => {
     expect(users.get(1) instanceof User).toBe(true);
     expect(users.get(1).name).toBe("joe");
 
-    // TODO
-    type ANY = any;
-
     // Loading using proto and inflate:
     db.loadJSON(JSON.stringify(json), {
       users: {
         proto: User,
-        inflate: function (src: ANY, dest: ANY) {
+        inflate: function (src: Doc<User>, dest: Doc<User>) {
           dest.$loki = src.$loki;
           dest.meta = src.meta;
           dest.customInflater = true;
@@ -83,14 +81,12 @@ describe("typed", () => {
     // Loading only using inflate:
     db.loadJSON(JSON.stringify(json), {
       users: {
-        inflate: function (src: ANY) {
-          const dest: ANY = {};
-
-          dest.$loki = src.$loki;
-          dest.meta = src.meta;
-          dest.onlyInflater = true;
-
-          return dest;
+        inflate: function (src: Doc<User>) {
+          return {
+            $loki: src.$loki,
+            meta: src.meta,
+            onlyInflater: true
+          };
         }
       }
     });

@@ -151,7 +151,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    * @param {object} parameters - optional parameters (if optional transform requires them)
    * @returns {ResultSet} A copy of the internal ResultSet for branched queries.
    */
-  public branchResultSet(transform?: string | Collection.Transform[], parameters?: object): ResultSet<E, D> {
+  public branchResultSet(transform?: string | Collection.Transform<E, D>[], parameters?: object): ResultSet<E, D> {
     const rs = this._resultSet.branch();
     if (transform === undefined) {
       return rs;
@@ -162,7 +162,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
   /**
    * Override of toJSON to avoid circular references.
    */
-  public toJSON(): DynamicView.Serialized<E, D> {
+  public toJSON(): DynamicView.Serialized {
     return {
       name: this.name,
       _persistent: this._persistent,
@@ -181,7 +181,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
     dv._resultDirty = true;
     dv._filterPipeline = obj._filterPipeline;
     dv._resultData = [];
-    dv._sortCriteria = obj._sortCriteria;
+    dv._sortCriteria = obj._sortCriteria as any;
     dv._sortByScoring = obj._sortByScoring;
     dv._sortDirty = obj._sortDirty;
     dv._resultSet._filteredRows = obj._resultSet._filteredRows;
@@ -769,29 +769,25 @@ export namespace DynamicView {
 
   export type SortPriority = "passive" | "active";
 
-  export interface Serialized<E extends object = object, D extends object = object> {
+  export interface Serialized {
     name: string;
     _persistent: boolean;
     _sortPriority: SortPriority;
     _minRebuildInterval: number;
-    _resultSet: ResultSet<E, D>;
-    _filterPipeline: Filter<E, D>[];
-    _sortCriteria: (keyof (E & D) | [keyof (E & D), boolean])[];
+    _resultSet: ResultSet<any>;
+    _filterPipeline: Filter<any>[];
+    _sortCriteria: (string | [string, boolean])[];
     _sortByScoring: boolean;
     _sortDirty: boolean;
   }
 
-  export interface FindFilter<E extends object, D extends object = object> {
+  export type Filter<E extends object = object, D extends object = object> = {
     type: "find";
     val: ResultSet.Query<Doc<E> & D>;
     uid: number | string;
-  }
-
-  export interface WhereFilter<E extends object = object> {
+  } | {
     type: "where";
     val: (obj: Doc<E>) => boolean;
     uid: number | string;
-  }
-
-  export type Filter<E extends object = object, D extends object = object> = FindFilter<E, D> | WhereFilter<E>;
+  };
 }

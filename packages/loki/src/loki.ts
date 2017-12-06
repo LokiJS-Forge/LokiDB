@@ -676,7 +676,7 @@ export class Loki extends LokiEventEmitter {
    * @param {object} options - apply or override collection level settings
    * @param {boolean} options.retainDirtyFlags - whether collection dirty flags will be preserved
    */
-  public loadJSON(serializedDb: string | string[], options?: Collection.DeserializeOptions & { [collName: string]: any | { proto?: any; inflate?: (src: object, dest?: object) => void } }): void {
+  public loadJSON(serializedDb: string | string[], options?: Collection.DeserializeOptions): void {
     let dbObject;
     if (serializedDb.length === 0) {
       dbObject = {};

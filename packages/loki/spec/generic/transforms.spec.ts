@@ -26,7 +26,7 @@ describe("transforms", () => {
   describe("basic find transform", () => {
     it("works", () => {
 
-      const tx: Transform[] = [
+      const tx: Transform<User>[] = [
         {
           type: "find",
           value: {
@@ -44,7 +44,7 @@ describe("transforms", () => {
   describe("basic multi-step transform", () => {
     it("works", () => {
 
-      const tx: Transform[] = [
+      const tx: Transform<User>[] = [
         {
           type: "find",
           value: {
@@ -68,7 +68,7 @@ describe("transforms", () => {
   describe("parameterized find", () => {
     it("works", () => {
 
-      const tx: Transform[] = [
+      const tx: Transform<User>[] = [
         {
           type: "find",
           value: {
@@ -157,17 +157,17 @@ describe("transforms", () => {
 
       // make sure original transform is unchanged
       expect(tx2[0].type).toEqual("find");
-      expect(tx2[0].value.age.$gt).toEqual("[%lktxp]minimumAge");
+      expect(tx2[0]["value"].age.$gt).toEqual("[%lktxp]minimumAge");
       expect(tx2[1].type).toEqual("mapReduce");
-      expect(typeof tx2[1].mapFunction).toEqual("function");
-      expect(typeof tx2[1].reduceFunction).toEqual("function");
+      expect(typeof tx2[1]["mapFunction"]).toEqual("function");
+      expect(typeof tx2[1]["reduceFunction"]).toEqual("function");
     });
   });
 
   describe("parameterized where", () => {
     it("works", () => {
 
-      const tx: Transform[] = [
+      const tx: Transform<User>[] = [
         {
           type: "where",
           value: "[%lktxp]NameFilter"
@@ -189,7 +189,7 @@ describe("transforms", () => {
   describe("named find transform", () => {
     it("works", () => {
 
-      const tx: Transform[] = [
+      const tx: Transform<User>[] = [
         {
           type: "find",
           value: {
@@ -265,7 +265,7 @@ describe("transforms", () => {
 
       // our transform will desc sort string column as 'third', 'second', 'fourth', 'first',
       // and then limit to first two
-      const tx: Transform[] = [
+      const tx: Transform<AB>[] = [
         {
           type: "simplesort",
           property: "a",

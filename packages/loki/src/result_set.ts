@@ -6,7 +6,7 @@ import {ScoreResult} from "../../full-text-search/src/scorer";
 import {Query as FullTextSearchQuery} from "../../full-text-search/src/query_builder";
 
 // used to recursively scan hierarchical transform step object for param substitution
-function resolveTransformObject(subObj: Collection.Transform, params: object, depth: number = 0): Collection.Transform {
+function resolveTransformObject<E extends object, D extends object>(subObj: Collection.Transform<E, D>, params: object, depth: number = 0): Collection.Transform<E, D> {
   if (++depth >= 10) {
     return subObj;
   }
@@ -25,17 +25,17 @@ function resolveTransformObject(subObj: Collection.Transform, params: object, de
 }
 
 // top level utility to resolve an entire (single) transform (array of steps) for parameter substitution
-function resolveTransformParams(transform: Collection.Transform[], params: object): Collection.Transform[] {
+function resolveTransformParams<E extends object, D extends object>(transform: Collection.Transform<E, D>[], params: object): Collection.Transform<E, D>[] {
   if (params === undefined) {
     return transform;
   }
 
   // iterate all steps in the transform array
-  const resolvedTransform: Collection.Transform[] = [];
+  const resolvedTransform: Collection.Transform<E, D>[] = [];
   for (let idx = 0; idx < transform.length; idx++) {
     // clone transform so our scan/replace can operate directly on cloned transform
     const clonedStep = clone(transform[idx], "shallow-recurse-objects");
-    resolvedTransform.push(resolveTransformObject(clonedStep, params));
+    resolvedTransform.push(resolveTransformObject<E, D>(clonedStep, params));
   }
 
   return resolvedTransform;
@@ -388,15 +388,10 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {object} [parameters=] - object property hash of parameters, if the transform requires them.
    * @returns {ResultSet} either (this) ResultSet or a clone of of this ResultSet (depending on steps)
    */
-  public transform(transform: string | Collection.Transform[], parameters?: object): this {
+  public transform(transform: string | Collection.Transform<E, D>[], parameters?: object): this {
     // if transform is name, then do lookup first
     if (typeof transform === "string") {
       transform = this._collection.transforms[transform];
-    }
-
-    // either they passed in raw transform array or we looked it up, so process
-    if (typeof transform !== "object" || !Array.isArray(transform)) {
-      throw new Error("Invalid transform");
     }
 
     if (parameters !== undefined) {
@@ -405,23 +400,26 @@ export class ResultSet<E extends object = object, D extends object = object> {
 
     let rs = this;
     for (let idx = 0; idx < transform.length; idx++) {
-      const step = transform[idx] as Collection.Transform;
+      const step = transform[idx];
 
       switch (step.type) {
         case "find":
-          rs.find(step.value);
+          rs.find(step.value as ResultSet.Query<Doc<E> & D>);
           break;
         case "where":
-          rs.where(step.value);
+          rs.where(step.value as (obj: Doc<E>) => boolean);
           break;
         case "simplesort":
-          rs.simplesort(step.property as keyof (E & D), step.desc);
+          rs.simplesort(step.property, step.desc);
           break;
         case "compoundsort":
           rs.compoundsort(step.value);
           break;
         case "sort":
           rs.sort(step.value);
+          break;
+        case "sortByScoring":
+          rs.sortByScoring(step.desc);
           break;
         case "limit":
           rs = rs.limit(step.value);
