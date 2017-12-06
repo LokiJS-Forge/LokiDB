@@ -41,17 +41,17 @@ describe("remove", () => {
     dv.applyWhere((obj: User) => obj.name.length > 3);
 
     users.removeWhere((obj: User) => obj.age > 35);
-    expect(users.data.length).toEqual(4);
+    expect(users.count()).toEqual(4);
     users.removeWhere({
       "age": {
         $gt: 25
       }
     });
-    expect(users.data.length).toEqual(2);
+    expect(users.count()).toEqual(2);
     users.remove(6);
-    expect(users.data.length).toEqual(1);
+    expect(users.count()).toEqual(1);
     users.removeDataOnly();
-    expect(users.data.length).toEqual(0);
+    expect(users.count()).toEqual(0);
     expect(!!users.getDynamicView("testview")).toEqual(true);
 
 
@@ -60,14 +60,14 @@ describe("remove", () => {
       age: 42
     };
     users.insert(foo);
-    expect(users.data.length).toEqual(1);
+    expect(users.count()).toEqual(1);
     users.remove(foo as Doc<User>);
-    expect(users.data.length).toEqual(0);
+    expect(users.count()).toEqual(0);
     // test that $loki and meta properties have been removed correctly to allow object re-insertion
     expect(foo["$loki"]).toEqual(undefined);
     expect(foo["meta"]).toEqual(undefined);
     users.insert(foo);
-    expect(users.data.length).toEqual(1);
+    expect(users.count()).toEqual(1);
   });
 
   it("removes with unique index", () => {
@@ -86,8 +86,8 @@ describe("remove", () => {
       name: "jack",
       age: 20
     });
-    expect(users1.data.length).toEqual(2);
+    expect(users1.count()).toEqual(2);
     users1.removeDataOnly();
-    expect(users1.data.length).toEqual(0);
+    expect(users1.count()).toEqual(0);
   });
 });

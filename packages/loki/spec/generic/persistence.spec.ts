@@ -48,7 +48,7 @@ describe("testing unique index serialization", () => {
     const ser = db.serialize(), reloaded = new Loki();
     reloaded.loadJSON(ser);
     const coll = reloaded.getCollection<AUser>("users");
-    expect(coll.data.length).toEqual(4);
+    expect(coll.count()).toEqual(4);
     expect(coll.constraints.unique["username"]).toBeDefined();
     const joe = coll.by("username", "joe");
     expect(joe).toBeDefined();
@@ -89,10 +89,10 @@ describe("testing destructured serialization/deserialization", () => {
 
     expect(cddb["_serializationMethod"]).toEqual("destructured");
     expect(cddb["_collections"].length).toEqual(2);
-    expect(cddb["_collections"][0].data.length).toEqual(3);
-    expect(cddb["_collections"][0].data[0]["val"]).toEqual(ddb["_collections"][0].data[0]["val"]);
-    expect(cddb["_collections"][1].data.length).toEqual(1);
-    expect(cddb["_collections"][1].data[0]["a"]).toEqual(ddb["_collections"][1].data[0]["a"]);
+    expect(cddb["_collections"][0].count()).toEqual(3);
+    expect(cddb["_collections"][0]._data[0]["val"]).toEqual(ddb["_collections"][0]._data[0]["val"]);
+    expect(cddb["_collections"][1].count()).toEqual(1);
+    expect(cddb["_collections"][1]._data[0]["a"]).toEqual(ddb["_collections"][1]._data[0]["a"]);
   });
 
   // Destructuring Formats :
@@ -155,12 +155,12 @@ describe("testing destructured serialization/deserialization", () => {
 
       // assert expectations on reinflated database
       expect(cddb["_collections"].length).toEqual(2);
-      expect(cddb["_collections"][0].data.length).toEqual(3);
-      expect(cddb["_collections"][0].data[0]["val"]).toEqual(ddb["_collections"][0].data[0]["val"]);
-      expect(cddb["_collections"][0].data[0].$loki).toEqual(ddb["_collections"][0].data[0].$loki);
-      expect(cddb["_collections"][0].data[2].$loki).toEqual(ddb["_collections"][0].data[2].$loki);
-      expect(cddb["_collections"][1].data.length).toEqual(1);
-      expect(cddb["_collections"][1].data[0]["a"]).toEqual(ddb["_collections"][1].data[0]["a"]);
+      expect(cddb["_collections"][0]._data.length).toEqual(3);
+      expect(cddb["_collections"][0]._data[0]["val"]).toEqual(ddb["_collections"][0]._data[0]["val"]);
+      expect(cddb["_collections"][0]._data[0].$loki).toEqual(ddb["_collections"][0]._data[0].$loki);
+      expect(cddb["_collections"][0]._data[2].$loki).toEqual(ddb["_collections"][0]._data[2].$loki);
+      expect(cddb["_collections"][1].count()).toEqual(1);
+      expect(cddb["_collections"][1]._data[0]["a"]).toEqual(ddb["_collections"][1]._data[0]["a"]);
     }
   });
 
@@ -199,8 +199,8 @@ describe("testing destructured serialization/deserialization", () => {
     cddb.loadJSON(result);
 
     expect(cddb["_collections"].length).toEqual(2);
-    expect(cddb["_collections"][0].data.length).toEqual(0);
-    expect(cddb["_collections"][1].data.length).toEqual(0);
+    expect(cddb["_collections"][0].count()).toEqual(0);
+    expect(cddb["_collections"][1].count()).toEqual(0);
     expect(cddb["_collections"][0].name).toEqual(ddb["_collections"][0]["name"]);
     expect(cddb["_collections"][1].name).toEqual(ddb["_collections"][1]["name"]);
 
@@ -215,13 +215,13 @@ describe("testing destructured serialization/deserialization", () => {
     // so we will just call helper function to deserialize just collection data
     let data = ddb.deserializeCollection<Test>(result, {partitioned: true, delimited: false});
 
-    expect(data.length).toEqual(ddb["_collections"][0].data.length);
-    expect(data[0]["val"]).toEqual(ddb["_collections"][0].data[0]["val"]);
-    expect(data[1]["val"]).toEqual(ddb["_collections"][0].data[1]["val"]);
-    expect(data[2]["val"]).toEqual(ddb["_collections"][0].data[2]["val"]);
-    expect(data[0].$loki).toEqual(ddb["_collections"][0].data[0].$loki);
-    expect(data[1].$loki).toEqual(ddb["_collections"][0].data[1].$loki);
-    expect(data[2].$loki).toEqual(ddb["_collections"][0].data[2].$loki);
+    expect(data.length).toEqual(ddb["_collections"][0].count());
+    expect(data[0]["val"]).toEqual(ddb["_collections"][0]._data[0]["val"]);
+    expect(data[1]["val"]).toEqual(ddb["_collections"][0]._data[1]["val"]);
+    expect(data[2]["val"]).toEqual(ddb["_collections"][0]._data[2]["val"]);
+    expect(data[0].$loki).toEqual(ddb["_collections"][0]._data[0].$loki);
+    expect(data[1].$loki).toEqual(ddb["_collections"][0]._data[1].$loki);
+    expect(data[2].$loki).toEqual(ddb["_collections"][0]._data[2].$loki);
 
     // Verify collection alone works correctly using DA format (the other partitioned format)
     result = ddb.serializeDestructured({
@@ -233,13 +233,13 @@ describe("testing destructured serialization/deserialization", () => {
     // now reinflate from that interim DA format
     data = ddb.deserializeCollection<Test>(result, {partitioned: true, delimited: true});
 
-    expect(data.length).toEqual(ddb["_collections"][0].data.length);
-    expect(data[0]["val"]).toEqual(ddb["_collections"][0].data[0]["val"]);
-    expect(data[1]["val"]).toEqual(ddb["_collections"][0].data[1]["val"]);
-    expect(data[2]["val"]).toEqual(ddb["_collections"][0].data[2]["val"]);
-    expect(data[0].$loki).toEqual(ddb["_collections"][0].data[0].$loki);
-    expect(data[1].$loki).toEqual(ddb["_collections"][0].data[1].$loki);
-    expect(data[2].$loki).toEqual(ddb["_collections"][0].data[2].$loki);
+    expect(data.length).toEqual(ddb["_collections"][0].count());
+    expect(data[0]["val"]).toEqual(ddb["_collections"][0]._data[0]["val"]);
+    expect(data[1]["val"]).toEqual(ddb["_collections"][0]._data[1]["val"]);
+    expect(data[2]["val"]).toEqual(ddb["_collections"][0]._data[2]["val"]);
+    expect(data[0].$loki).toEqual(ddb["_collections"][0]._data[0].$loki);
+    expect(data[1].$loki).toEqual(ddb["_collections"][0]._data[1].$loki);
+    expect(data[2].$loki).toEqual(ddb["_collections"][0]._data[2].$loki);
   });
 
 });
@@ -285,8 +285,8 @@ describe("testing adapter functionality", () => {
     const p2 = cdb.loadDatabase().then(() => {
       expect(cdb["_collections"].length).toEqual(2);
       expect(cdb.getCollection<Test>("testcoll").findOne({name: "test2"})["val"]).toEqual(101);
-      expect(cdb["_collections"][0].data.length).toEqual(3);
-      expect(cdb["_collections"][1].data.length).toEqual(1);
+      expect(cdb["_collections"][0].count()).toEqual(3);
+      expect(cdb["_collections"][1].count()).toEqual(1);
       expect(cdb.getCollection<AB>("another").getDynamicView("test").data()).toEqual(coll2.find({"a": 1}));
     });
 

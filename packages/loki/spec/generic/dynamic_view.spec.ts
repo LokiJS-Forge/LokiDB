@@ -159,16 +159,16 @@ describe("dynamicviews", () => {
       jonas.age = 23;
       users.update(jonas);
       // evaluate documents
-      expect(view.data().length).toEqual(users.data.length - 1);
+      expect(view.data().length).toEqual(users.count() - 1);
       jonas.age = 30;
       users.update(jonas);
-      expect(view.data().length).toEqual(users.data.length);
+      expect(view.data().length).toEqual(users.count());
       jonas.age = 23;
       users.update(jonas);
-      expect(view.data().length).toEqual(users.data.length - 1);
+      expect(view.data().length).toEqual(users.count() - 1);
       jonas.age = 30;
       users.update(jonas);
-      expect(view.data().length).toEqual(users.data.length);
+      expect(view.data().length).toEqual(users.count());
 
       // assert set equality of docArrays irrelevant of sort/sequence
       const result1 = users.find(query).sort(docCompare);
@@ -242,7 +242,7 @@ describe("dynamicviews", () => {
       expect(frcopy2.length).not.toBe(0);
       for (let idxFR = 0; idxFR < frcopy2.length; idxFR++) {
         expect(pview["_resultData"][idxFR]).not.toBe(undefined);
-        expect(pview["_resultData"][idxFR]).toEqual(pview["_collection"].data[frcopy2[idxFR]],
+        expect(pview["_resultData"][idxFR]).toEqual(pview["_collection"]._data[frcopy2[idxFR]],
           "dynamic view ResultSet/resultdata consistency");
       }
       // now verify they are not exactly equal (verify sort moved stuff)
@@ -326,9 +326,9 @@ describe("dynamicviews", () => {
           }];
           t.insert(users);
 
-          expect(2).toEqual(t.data.length);
+          expect(2).toEqual(t.count());
           t.remove(users);
-          expect(0).toEqual(t.data.length);
+          expect(0).toEqual(t.count());
 
           class TestError implements Error {
             public name = "TestError";

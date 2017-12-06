@@ -469,7 +469,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
       this._filteredRows = this._collection._prepareFullDocIndex();
     }
 
-    const data = this._collection.data;
+    const data = this._collection._data;
     const wrappedComparer = (a: number, b: number) => comparefun(data[a], data[b]);
 
     this._filteredRows.sort(wrappedComparer);
@@ -509,7 +509,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
       }
     }
 
-    const data = this._collection.data;
+    const data = this._collection._data;
     const wrappedComparer = (a: number, b: number) => {
       let val1, val2;
       if (~propname.indexOf(".")) {
@@ -570,7 +570,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
       this._filteredRows = this._collection._prepareFullDocIndex();
     }
 
-    const data = this._collection.data;
+    const data = this._collection._data;
     const wrappedComparer = (a: number, b: number) => this._compoundeval(properties as [string, boolean][], data[a], data[b]);
 
     this._filteredRows.sort(wrappedComparer);
@@ -719,7 +719,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @returns {ResultSet} this ResultSet for further chain ops.
    */
   public find(query?: ResultSet.Query<Doc<E> & D>, firstOnly = false): this {
-    if (this._collection.data.length === 0) {
+    if (this._collection._data.length === 0) {
       this._filteredRows = [];
       this._filterInitialized = true;
       return this;
@@ -752,7 +752,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
     // apply no filters if they want all
     if (!property || queryObject === "getAll") {
       if (firstOnly) {
-        this._filteredRows = (this._collection.data.length > 0) ? [0] : [];
+        this._filteredRows = (this._collection._data.length > 0) ? [0] : [];
         this._filterInitialized = true;
       }
       return this;
@@ -819,7 +819,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
     const fun = LokiOps[operator];
 
     // "shortcut" for collection data
-    const data = this._collection.data;
+    const data = this._collection._data;
 
     // Query executed differently depending on :
     //    - whether the property being queried has an index defined
@@ -974,7 +974,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
         let j = this._filteredRows.length;
 
         while (j--) {
-          if (viewFunction(this._collection.data[this._filteredRows[j]]) === true) {
+          if (viewFunction(this._collection._data[this._filteredRows[j]]) === true) {
             result.push(this._filteredRows[j]);
           }
         }
@@ -985,10 +985,10 @@ export class ResultSet<E extends object = object, D extends object = object> {
       }
       // otherwise this is initial chained op, work against data, push into filteredRows[]
       else {
-        let k = this._collection.data.length;
+        let k = this._collection._data.length;
 
         while (k--) {
-          if (viewFunction(this._collection.data[k]) === true) {
+          if (viewFunction(this._collection._data[k]) === true) {
             result.push(k);
           }
         }
@@ -1038,7 +1038,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
     );
 
     let result = [];
-    let data = this._collection.data;
+    let data = this._collection._data;
     let obj;
     let len;
     let i;
@@ -1118,7 +1118,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
     }
 
     const len = this._filteredRows.length;
-    const rcd = this._collection.data;
+    const rcd = this._collection._data;
 
     for (let idx = 0; idx < len; idx++) {
       // pass in each document object currently in ResultSet to user supplied updateFunction

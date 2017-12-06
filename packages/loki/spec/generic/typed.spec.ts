@@ -20,7 +20,7 @@ describe("typed", () => {
       "filename": "test.json",
       "_collections": [{
         "name": "users",
-        "data": [{
+        "_data": [{
           "name": "joe",
           "meta": {
             "version": 0,

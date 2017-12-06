@@ -132,7 +132,7 @@ describe("loki", () => {
 
 
       // insert() : try inserting existing document (should fail), try adding doc with legacy id column
-      const collectionLength = users.data.length;
+      const collectionLength = users.count();
       const objDave = users.findOne({
         "name": "dave"
       });
@@ -143,7 +143,7 @@ describe("loki", () => {
         wasAdded = false;
       }
       expect(wasAdded).toEqual(false);
-      expect(collectionLength).toEqual(users.data.length);
+      expect(collectionLength).toEqual(users.count());
 
       // our collections are not strongly typed so lets invent some object that has its 'own' id column
       let legacyObject = {
@@ -187,7 +187,7 @@ describe("loki", () => {
       expect(wasUpdated).toEqual(false);
 
       // remove() - add some bogus object to remove
-      const userCount1 = users.data.length;
+      const userCount1 = users.count();
 
       const testObject = {
         first: "aaa",
@@ -198,9 +198,9 @@ describe("loki", () => {
 
       users.insert(testObject as any);
 
-      expect(userCount1 + 1).toEqual(users.data.length);
+      expect(userCount1 + 1).toEqual(users.count());
       users.remove(testObject as any);
-      expect(userCount1).toEqual(users.data.length);
+      expect(userCount1).toEqual(users.count());
     });
   });
 
@@ -765,7 +765,7 @@ describe("loki", () => {
       }).where((obj: User) => obj.lang === "Swedish").data().length).toEqual(1);
 
       // ResultSet offset
-      expect(users.chain().offset(1).data().length).toEqual(users.data.length - 1);
+      expect(users.chain().offset(1).data().length).toEqual(users.count() - 1);
 
       // ResultSet limit
       expect(users.chain().limit(2).data().length).toEqual(2);

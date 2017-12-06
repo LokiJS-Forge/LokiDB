@@ -55,7 +55,7 @@ export class Collection<E extends object = object, D extends object = object> ex
 
   public name: string;
   // the data held by the collection
-  public data: Doc<E>[];
+  public _data: Doc<E>[];
   private idIndex: number[]; // index of id
   public binaryIndices: { [P in keyof E]?: Collection.BinaryIndex }; // user defined indexes
 
@@ -181,7 +181,7 @@ export class Collection<E extends object = object, D extends object = object> ex
     // the name of the collection
     this.name = name;
     // the data held by the collection
-    this.data = [];
+    this._data = [];
     this.idIndex = []; // index of id
     this.binaryIndices = {}; // user defined indexes
     this.constraints = {
@@ -330,7 +330,7 @@ export class Collection<E extends object = object, D extends object = object> ex
       uniqueNames: Object.keys(this.constraints.unique),
       transforms: this.transforms as any,
       binaryIndices: this.binaryIndices  as any,
-      data: this.data,
+      _data: this._data,
       idIndex: this.idIndex,
       maxId: this.maxId,
       dirty: this.dirty,
@@ -386,12 +386,12 @@ export class Collection<E extends object = object, D extends object = object> ex
     if (options && options[obj.name] !== undefined) {
       let loader = makeLoader(obj);
 
-      for (let j = 0; j < obj.data.length; j++) {
-        coll.data[j] = loader(obj.data[j]);
+      for (let j = 0; j < obj._data.length; j++) {
+        coll._data[j] = loader(obj._data[j]);
       }
     } else {
-      for (let j = 0; j < obj.data.length; j++) {
-        coll.data[j] = obj.data[j];
+      for (let j = 0; j < obj._data.length; j++) {
+        coll._data[j] = obj._data[j];
       }
     }
 
@@ -494,7 +494,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * create a row filter that covers all documents in the collection
    */
   _prepareFullDocIndex(): number[] {
-    const indexes = new Array(this.data.length);
+    const indexes = new Array(this._data.length);
     for (let i = 0; i < indexes.length; i++) {
       indexes[i] = i;
     }
@@ -528,7 +528,7 @@ export class Collection<E extends object = object, D extends object = object> ex
     };
     this.binaryIndices[property] = index;
 
-    const data = this.data;
+    const data = this._data;
     const wrappedComparer = (a: number, b: number) => {
       let val1, val2;
       if (~property.indexOf(".")) {
@@ -563,7 +563,7 @@ export class Collection<E extends object = object, D extends object = object> ex
     let result = "";
 
     for (idx = 0; idx < idxvals.length; idx++) {
-      result += " [" + idx + "] " + this.data[idxvals[idx]][property];
+      result += " [" + idx + "] " + this._data[idxvals[idx]][property];
     }
 
     return result;
@@ -574,8 +574,8 @@ export class Collection<E extends object = object, D extends object = object> ex
 
     // if index already existed, (re)loading it will likely cause collisions, rebuild always
     this.constraints.unique[field] = index;
-    for (let i = 0; i < this.data.length; i++) {
-      index.set(this.data[i], i);
+    for (let i = 0; i < this._data.length; i++) {
+      index.set(this._data[i], i);
     }
     return index;
   }
@@ -614,7 +614,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    */
   public count(query?: ResultSet.Query<Doc<E> & D>): number {
     if (!query) {
-      return this.data.length;
+      return this._data.length;
     }
     return this.chain().find(query)._filteredRows.length;
   }
@@ -624,8 +624,8 @@ export class Collection<E extends object = object, D extends object = object> ex
    */
   private _ensureId(): void {
     this.idIndex = [];
-    for (let i = 0; i < this.data.length; i++) {
-      this.idIndex.push(this.data[i].$loki);
+    for (let i = 0; i < this._data.length; i++) {
+      this.idIndex.push(this._data[i].$loki);
     }
   }
 
@@ -784,7 +784,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {boolean} [removeIndices=false] - remove indices
    */
   clear({removeIndices: removeIndices = false} = {}) {
-    this.data = [];
+    this._data = [];
     this.idIndex = [];
     this.cachedIndex = null;
     this.cachedBinaryIndex = null;
@@ -863,7 +863,7 @@ export class Collection<E extends object = object, D extends object = object> ex
       });
 
       // operate the update
-      this.data[position] = newInternal;
+      this._data[position] = newInternal;
 
       // now that we can efficiently determine the data[] position of newly added document,
       // submit it for all registered DynamicViews to evaluate for inclusion/exclusion
@@ -923,7 +923,7 @@ export class Collection<E extends object = object, D extends object = object> ex
       this.maxId++;
 
       if (isNaN(this.maxId)) {
-        this.maxId = (this.data[this.data.length - 1].$loki + 1);
+        this.maxId = (this._data[this._data.length - 1].$loki + 1);
       }
 
       const newDoc = obj as Doc<E>;
@@ -933,7 +933,7 @@ export class Collection<E extends object = object, D extends object = object> ex
       const constrUnique = this.constraints.unique;
       for (const key in constrUnique) {
         if (constrUnique[key] !== undefined) {
-          constrUnique[key].set(newDoc, this.data.length);
+          constrUnique[key].set(newDoc, this._data.length);
         }
       }
 
@@ -941,9 +941,9 @@ export class Collection<E extends object = object, D extends object = object> ex
       this.idIndex.push(newDoc.$loki);
 
       // add the object
-      this.data.push(newDoc);
+      this._data.push(newDoc);
 
-      const addedPos = this.data.length - 1;
+      const addedPos = this._data.length - 1;
 
       // now that we can efficiently determine the data[] position of newly added document,
       // submit it for all registered DynamicViews to evaluate for inclusion/exclusion
@@ -1003,14 +1003,14 @@ export class Collection<E extends object = object, D extends object = object> ex
    */
   removeWhere(query: ResultSet.Query<Doc<E> & D> | ((obj: Doc<E>) => boolean)) {
     if (typeof query === "function") {
-      this.remove(this.data.filter(query));
+      this.remove(this._data.filter(query));
     } else {
       this.chain().find(query).remove();
     }
   }
 
   removeDataOnly() {
-    this.remove(this.data.slice());
+    this.remove(this._data.slice());
   }
 
   /**
@@ -1060,7 +1060,7 @@ export class Collection<E extends object = object, D extends object = object> ex
         this.flagBinaryIndexesDirty();
       }
 
-      this.data.splice(position, 1);
+      this._data.splice(position, 1);
 
       // remove id from idIndex
       this.idIndex.splice(position, 1);
@@ -1267,9 +1267,9 @@ export class Collection<E extends object = object, D extends object = object> ex
 
     if (max === min && data[min] === id) {
       if (returnPosition) {
-        return [this.data[min], min];
+        return [this._data[min], min];
       }
-      return this.data[min];
+      return this._data[min];
     }
     return null;
   }
@@ -1278,11 +1278,11 @@ export class Collection<E extends object = object, D extends object = object> ex
    * Perform binary range lookup for the data[dataPosition][binaryIndexName] property value
    *    Since multiple documents may contain the same value (which the index is sorted on),
    *    we hone in on range and then linear scan range to find exact index array position.
-   * @param {int} dataPosition : coll.data array index/position
+   * @param {int} dataPosition : data array index/position
    * @param {string} binaryIndexName : index to search for dataPosition in
    */
   public getBinaryIndexPosition(dataPosition: number, binaryIndexName: keyof E) {
-    const val = this.data[dataPosition][binaryIndexName];
+    const val = this._data[dataPosition][binaryIndexName];
     const index = this.binaryIndices[binaryIndexName].values;
 
     // i think calculateRange can probably be moved to collection
@@ -1316,12 +1316,12 @@ export class Collection<E extends object = object, D extends object = object> ex
    */
   public adaptiveBinaryIndexInsert(dataPosition: number, binaryIndexName: keyof E) {
     const index = this.binaryIndices[binaryIndexName].values;
-    let val: any = this.data[dataPosition][binaryIndexName];
+    let val: any = this._data[dataPosition][binaryIndexName];
 
     // If you are inserting a javascript Date value into a binary index, convert to epoch time
     if (this.serializableIndices === true && val instanceof Date) {
-      this.data[dataPosition][binaryIndexName] = val.getTime();
-      val = this.data[dataPosition][binaryIndexName];
+      this._data[dataPosition][binaryIndexName] = val.getTime();
+      val = this._data[dataPosition][binaryIndexName];
     }
 
     const idxPos = (index.length === 0) ? 0 : this._calculateRangeStart(binaryIndexName, val, true);
@@ -1401,7 +1401,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {bool?} adaptive - if true, we will return insert position
    */
   private _calculateRangeStart(prop: keyof E, val: any, adaptive = false): number {
-    const rcd = this.data;
+    const rcd = this._data;
     const index = this.binaryIndices[prop].values;
     let min = 0;
     let max = index.length - 1;
@@ -1443,7 +1443,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * (which may or may not yet exist) this will find the final position of that upper range value.
    */
   private _calculateRangeEnd(prop: keyof E, val: any) {
-    const rcd = this.data;
+    const rcd = this._data;
     const index = this.binaryIndices[prop].values;
     let min = 0;
     let max = index.length - 1;
@@ -1496,7 +1496,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @returns {array} [start, end] index array positions
    */
   public calculateRange(op: string, prop: keyof E, val: any): [number, number] {
-    const rcd = this.data;
+    const rcd = this._data;
     const index = this.binaryIndices[prop].values;
     const min = 0;
     const max = index.length - 1;
@@ -1732,11 +1732,11 @@ export class Collection<E extends object = object, D extends object = object> ex
    * simply iterates and returns the first element matching the query
    */
   public findOneUnindexed(prop: string, value: any) {
-    let i = this.data.length;
+    let i = this._data.length;
     let doc;
     while (i--) {
-      if (this.data[i][prop] === value) {
-        doc = this.data[i];
+      if (this._data[i][prop] === value) {
+        doc = this._data[i];
         return doc;
       }
     }
@@ -1752,7 +1752,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    */
   public startTransaction(): void {
     if (this.transactional) {
-      this.cachedData = clone(this.data, this.cloneMethod);
+      this.cachedData = clone(this._data, this.cloneMethod);
       this.cachedIndex = this.idIndex;
       this.cachedBinaryIndex = this.binaryIndices;
 
@@ -1785,7 +1785,7 @@ export class Collection<E extends object = object, D extends object = object> ex
   public rollback(): void {
     if (this.transactional) {
       if (this.cachedData !== null && this.cachedIndex !== null) {
-        this.data = this.cachedData;
+        this._data = this.cachedData;
         this.idIndex = this.cachedIndex;
         this.binaryIndices = this.cachedBinaryIndex;
       }
@@ -1818,7 +1818,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @returns {data} The result of your mapReduce operation
    */
   public mapReduce<T, U>(mapFunction: (value: E, index: number, array: E[]) => T, reduceFunction: (array: T[]) => U): U {
-    return reduceFunction(this.data.map(mapFunction));
+    return reduceFunction(this._data.map(mapFunction));
   }
 
   /**
@@ -1891,8 +1891,8 @@ export class Collection<E extends object = object, D extends object = object> ex
   public extract(field: string): any[] {
     const isDotNotation = isDeepProperty(field);
     const result = [];
-    for (let i = 0; i < this.data.length; i++) {
-      result.push(deepProperty(this.data[i], field, isDotNotation));
+    for (let i = 0; i < this._data.length; i++) {
+      result.push(deepProperty(this._data[i], field, isDotNotation));
     }
     return result;
   }
@@ -1920,15 +1920,15 @@ export class Collection<E extends object = object, D extends object = object> ex
     };
 
     let max;
-    for (let i = 0; i < this.data.length; i++) {
+    for (let i = 0; i < this._data.length; i++) {
       if (max !== undefined) {
-        if (max < deepProperty(this.data[i], field, deep)) {
-          max = deepProperty(this.data[i], field, deep);
-          result.index = this.data[i].$loki;
+        if (max < deepProperty(this._data[i], field, deep)) {
+          max = deepProperty(this._data[i], field, deep);
+          result.index = this._data[i].$loki;
         }
       } else {
-        max = deepProperty(this.data[i], field, deep);
-        result.index = this.data[i].$loki;
+        max = deepProperty(this._data[i], field, deep);
+        result.index = this._data[i].$loki;
       }
     }
     result.value = max;
@@ -1946,15 +1946,15 @@ export class Collection<E extends object = object, D extends object = object> ex
     };
 
     let min;
-    for (let i = 0; i < this.data.length; i++) {
+    for (let i = 0; i < this._data.length; i++) {
       if (min !== undefined) {
-        if (min > deepProperty(this.data[i], field, deep)) {
-          min = deepProperty(this.data[i], field, deep);
-          result.index = this.data[i].$loki;
+        if (min > deepProperty(this._data[i], field, deep)) {
+          min = deepProperty(this._data[i], field, deep);
+          result.index = this._data[i].$loki;
         }
       } else {
-        min = deepProperty(this.data[i], field, deep);
-        result.index = this.data[i].$loki;
+        min = deepProperty(this._data[i], field, deep);
+        result.index = this._data[i].$loki;
       }
     }
     result.value = min;
@@ -2072,7 +2072,7 @@ export namespace Collection {
     uniqueNames: string[];
     transforms: Dict<Transform[]>;
     binaryIndices: Dict<Collection.BinaryIndex>;
-    data: Doc<any>[];
+    _data: Doc<any>[];
     idIndex: number[];
     maxId: number;
     dirty: boolean;

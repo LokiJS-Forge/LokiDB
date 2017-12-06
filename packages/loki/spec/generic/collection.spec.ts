@@ -27,7 +27,7 @@ describe("collection", () => {
     coll.insert({
       name: "joe"
     });
-    expect(coll.data.length).toEqual(1);
+    expect(coll.count()).toEqual(1);
   });
 
   it("collection rename works", function () {
@@ -67,7 +67,7 @@ describe("collection", () => {
 
     coll.findAndRemove({a: 6});
 
-    expect(coll.data.length).toEqual(3);
+    expect(coll.count()).toEqual(3);
 
     const result = coll.chain().find().simplesort("b").data();
     expect(result.length).toEqual(3);
@@ -83,7 +83,7 @@ describe("collection", () => {
 
     coll.removeWhere((obj: CL) => obj.a === 6);
 
-    expect(coll.data.length).toEqual(3);
+    expect(coll.count()).toEqual(3);
 
     const result = coll.chain().find().simplesort("b").data();
     expect(result.length).toEqual(3);

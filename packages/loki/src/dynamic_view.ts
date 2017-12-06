@@ -630,7 +630,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
       ofr.push(objIndex);
 
       if (this._persistent) {
-        this._resultData.push(this._collection.data[objIndex]);
+        this._resultData.push(this._collection._data[objIndex]);
       }
 
       // need to re-sort to sort new document
@@ -671,8 +671,8 @@ export class DynamicView<E extends object = object, D extends object = object> e
     // was in ResultSet, should still be now... (update persistent only?)
     if (oldPos !== -1 && newPos !== -1) {
       if (this._persistent) {
-        // in case document changed, replace persistent view data with the latest collection.data document
-        this._resultData[oldPos] = this._collection.data[objIndex];
+        // in case document changed, replace persistent view data with the latest collection._data document
+        this._resultData[oldPos] = this._collection._data[objIndex];
       }
 
       // in case changes to data altered a sort column

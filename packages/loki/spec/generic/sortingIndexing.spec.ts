@@ -278,7 +278,7 @@ describe("sorting and indexing", () => {
       coll.ensureIndex("a");
 
       coll["binaryIndices"].a.values.forEach((vi: any) => {
-        indexVals.push(coll.data[vi].a);
+        indexVals.push(coll._data[vi].a);
       });
 
       expect(indexVals.length).toEqual(14);

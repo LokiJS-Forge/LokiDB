@@ -306,7 +306,7 @@ describe("binary indices", () => {
       expect(items["binaryIndices"].name.values[3]).toBe(2);
 
       // for this test, just update gungnir directly in collection.data
-      items.data[1].name = "ygungnir";
+      items._data[1].name = "ygungnir";
 
       // renegotiate index position of 2nd data element (ygungnir) within name index
       items.adaptiveBinaryIndexUpdate(1, "name");

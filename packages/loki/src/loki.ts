@@ -303,7 +303,7 @@ export class Loki extends LokiEventEmitter {
     for (let i = 0; i < this._collections.length; i++) {
       colls.push({
         name: this._collections[i].name,
-        count: this._collections[i].data.length
+        count: this._collections[i].count()
       });
     }
     return colls;
@@ -414,7 +414,7 @@ export class Loki extends LokiEventEmitter {
     dbcopy.loadJSONObject(this);
 
     for (let idx = 0; idx < dbcopy._collections.length; idx++) {
-      dbcopy._collections[idx].data = [];
+      dbcopy._collections[idx]._data = [];
     }
 
     // if we -only- wanted the db container portion, return it now
@@ -513,11 +513,11 @@ export class Loki extends LokiEventEmitter {
     if (options.collectionIndex === undefined) {
       throw new Error("serializeCollection called without 'collectionIndex' option");
     }
-    const doccount = this._collections[options.collectionIndex].data.length;
+    const doccount = this._collections[options.collectionIndex].count();
 
     let resultlines = [];
     for (let docidx = 0; docidx < doccount; docidx++) {
-      resultlines.push(JSON.stringify(this._collections[options.collectionIndex].data[docidx]));
+      resultlines.push(JSON.stringify(this._collections[options.collectionIndex]._data[docidx]));
     }
 
     // D and DA
@@ -581,7 +581,7 @@ export class Loki extends LokiEventEmitter {
       const collCount = cdb._collections.length;
       for (let collIndex = 0; collIndex < collCount; collIndex++) {
         // attach each collection docarray to container collection data, add 1 to collection array index since db is at 0
-        cdb._collections[collIndex].data = this.deserializeCollection(destructuredSource[collIndex + 1], options);
+        cdb._collections[collIndex]._data = this.deserializeCollection(destructuredSource[collIndex + 1], options);
       }
 
       return cdb;
@@ -622,7 +622,7 @@ export class Loki extends LokiEventEmitter {
           done = true;
         }
       } else {
-        cdb._collections[collIndex].data.push(JSON.parse(workarray[lineIndex]));
+        cdb._collections[collIndex]._data.push(JSON.parse(workarray[lineIndex]));
       }
 
       // lower memory pressure and advance iterator
@@ -1096,6 +1096,4 @@ export namespace Loki {
   export type PersistenceMethod = "fs-storage" | "local-storage" | "indexed-storage" | "memory-storage" | "adapter";
 
   export type Environment = "NATIVESCRIPT" | "NODEJS" | "CORDOVA" | "BROWSER" | "MEMORY";
-
-
 }

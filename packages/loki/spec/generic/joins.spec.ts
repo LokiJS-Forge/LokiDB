@@ -70,20 +70,20 @@ describe("joins", () => {
     let joined;
 
     //Basic non-mapped join
-    joined = films.eqJoin(directors.data, "directorId", "directorId").data();
+    joined = films.eqJoin(directors, "directorId", "directorId").data();
     expect(joined[0].left.title).toEqual("Taxi");
 
     //Basic join with map
-    joined = films.eqJoin(directors.data, "directorId", "directorId", (left: Film, right: Director) => ({
+    joined = films.eqJoin(directors, "directorId", "directorId", (left: Film, right: Director) => ({
       filmTitle: left.title,
       directorName: right.name
     })).data();
-    expect(joined.length).toEqual(films.data.length);
+    expect(joined.length).toEqual(films.count());
     expect(joined[0].filmTitle).toEqual("Taxi");
     expect(joined[0].directorName).toEqual("Martin Scorsese");
 
     //Basic non-mapped join with chained map
-    joined = films.eqJoin(directors.data, "directorId", "directorId")
+    joined = films.eqJoin(directors, "directorId", "directorId")
       .map((obj: {left: Film, right: Director}) => ({
         filmTitle: obj.left.title,
         directorName: obj.right.name

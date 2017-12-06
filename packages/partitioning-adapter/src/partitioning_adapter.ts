@@ -117,7 +117,7 @@ export class LokiPartitioningAdapter implements StorageAdapter {
     }
 
     return this._adapter.loadDatabase(keyname).then((result: string) => {
-      this._dbref._collections[partition].data = this._dbref.deserializeCollection(result, {
+      this._dbref._collections[partition]._data = this._dbref.deserializeCollection(result, {
         delimited: true,
         collectionIndex: partition
       });
@@ -158,7 +158,7 @@ export class LokiPartitioningAdapter implements StorageAdapter {
 
       // convert stringified array elements to object instances and push to collection data
       for (idx = 0; idx < dlen; idx++) {
-        this._dbref._collections[this._pageIterator.collection].data.push(JSON.parse(data[idx]));
+        this._dbref._collections[this._pageIterator.collection]._data.push(JSON.parse(data[idx]));
         data[idx] = null;
       }
       data = [];
@@ -251,7 +251,7 @@ export class LokiPartitioningAdapter implements StorageAdapter {
     const coll = this._dbref._collections[this._pageIterator.collection];
     const keyname = this._dbname + "." + this._pageIterator.collection + "." + this._pageIterator.pageIndex;
     let pageLen = 0;
-    const cdlen = coll.data.length;
+    const cdlen = coll._data.length;
     const delimlen = this._delimiter.length;
     let serializedObject = "";
     let pageBuilder = "";
@@ -268,14 +268,14 @@ export class LokiPartitioningAdapter implements StorageAdapter {
       }
     };
 
-    if (coll.data.length === 0) {
+    if (coll._data.length === 0) {
       doneWithPartition = true;
     }
 
     while (!doneWithPartition && !doneWithPage) {
       if (!doneWithPartition) {
         // serialize object
-        serializedObject = JSON.stringify(coll.data[this._pageIterator.docIndex]);
+        serializedObject = JSON.stringify(coll._data[this._pageIterator.docIndex]);
         pageBuilder += serializedObject;
         pageLen += serializedObject.length;
 
