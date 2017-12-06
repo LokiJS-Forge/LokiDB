@@ -343,7 +343,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    */
   private _indexOfFilterWithId(uid: string | number): number {
     if (typeof uid === "string" || typeof uid === "number") {
-      for (let idx = 0, len = this._filterPipeline.length; idx < len; idx += 1) {
+      for (let idx = 0, len = this._filterPipeline.length; idx < len; idx++) {
         if (uid === this._filterPipeline[idx].uid) {
           return idx;
         }
@@ -379,7 +379,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
     const filters = this._filterPipeline;
     this._filterPipeline = [];
 
-    for (let idx = 0, len = filters.length; idx < len; idx += 1) {
+    for (let idx = 0, len = filters.length; idx < len; idx++) {
       this._addFilter(filters[idx]);
     }
 

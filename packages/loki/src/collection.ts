@@ -833,7 +833,7 @@ export class Collection<E extends object = object, D extends object = object> ex
     if (Array.isArray(doc)) {
       let k = 0;
       const len = doc.length;
-      for (k; k < len; k += 1) {
+      for (k; k < len; k++) {
         this.update(doc[k]);
       }
       return;
@@ -1028,7 +1028,7 @@ export class Collection<E extends object = object, D extends object = object> ex
     if (Array.isArray(doc)) {
       let k = 0;
       const len = doc.length;
-      for (k; k < len; k += 1) {
+      for (k; k < len; k++) {
         this.remove(doc[k]);
       }
       return;
@@ -1943,7 +1943,7 @@ export class Collection<E extends object = object, D extends object = object> ex
     };
 
     let min;
-    for (let i = 0; i < this.data.length; i += 1) {
+    for (let i = 0; i < this.data.length; i++) {
       if (min !== undefined) {
         if (min > deepProperty(this.data[i], field, deep)) {
           min = deepProperty(this.data[i], field, deep);

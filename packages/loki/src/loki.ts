@@ -275,7 +275,7 @@ export class Loki extends LokiEventEmitter {
     let i;
     const len = this._collections.length;
 
-    for (i = 0; i < len; i += 1) {
+    for (i = 0; i < len; i++) {
       if (this._collections[i].name === collectionName) {
         return this._collections[i] as Collection<T>;
       }
@@ -316,7 +316,7 @@ export class Loki extends LokiEventEmitter {
    * @param {string} collectionName - name of collection to remove
    */
   public removeCollection(collectionName: string): void {
-    for (let i = 0; i < this._collections.length; i += 1) {
+    for (let i = 0; i < this._collections.length; i++) {
       if (this._collections[i].name === collectionName) {
         const tmpcol = new Collection(collectionName, {});
         const curcol = this._collections[i];

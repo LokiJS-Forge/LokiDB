@@ -67,16 +67,16 @@ export const LokiOps = {
   // comparison operators
   // a is the value in the _collection
   // b is the query value
-  $eq(a: any, b: any) {
+  $eq(a: any, b: any): boolean {
     return a === b;
   },
 
   // abstract/loose equality
-  $aeq(a: any, b: any) {
+  $aeq(a: any, b: any): boolean {
     return a == b;
   },
 
-  $ne(a: any, b: any) {
+  $ne(a: any, b: any): boolean {
     // ecma 5 safe test for NaN
     if (b !== b) {
       // ecma 5 test value is not NaN
@@ -86,68 +86,68 @@ export const LokiOps = {
   },
 
   // date equality / loki abstract equality test
-  $dteq(a: any, b: any) {
+  $dteq(a: any, b: any): boolean {
     return aeqHelper(a, b);
   },
 
-  $gt(a: any, b: any) {
+  $gt(a: any, b: any): boolean {
     return gtHelper(a, b, false);
   },
 
-  $gte(a: any, b: any) {
+  $gte(a: any, b: any): boolean {
     return gtHelper(a, b, true);
   },
 
-  $lt(a: any, b: any) {
+  $lt(a: any, b: any): boolean {
     return ltHelper(a, b, false);
   },
 
-  $lte(a: any, b: any) {
+  $lte(a: any, b: any): boolean {
     return ltHelper(a, b, true);
   },
 
-  $between(a: any, range: [any, any]) {
+  $between(a: any, range: [any, any]): boolean {
     if (a === undefined || a === null) return false;
     return (gtHelper(a, range[0], true) && ltHelper(a, range[1], true));
   },
 
-  $in(a: any, b: any) {
+  $in(a: any, b: any): boolean {
     return b.indexOf(a) !== -1;
   },
 
-  $nin(a: any, b: any) {
+  $nin(a: any, b: any): boolean {
     return b.indexOf(a) === -1;
   },
 
-  $keyin(a: any, b: any) {
+  $keyin(a: any, b: any): boolean {
     return a in b;
   },
 
-  $nkeyin(a: any, b: any) {
+  $nkeyin(a: any, b: any): boolean {
     return !(a in b);
   },
 
-  $definedin(a: any, b: any) {
+  $definedin(a: any, b: any): boolean {
     return b[a] !== undefined;
   },
 
-  $undefinedin(a: any, b: any) {
+  $undefinedin(a: any, b: any): boolean {
     return b[a] === undefined;
   },
 
-  $regex(a: any, b: any) {
+  $regex(a: any, b: any): boolean {
     return b.test(a);
   },
 
-  $containsString(a: any, b: any) {
+  $containsString(a: any, b: any): boolean {
     return (typeof a === "string") && (a.indexOf(b) !== -1);
   },
 
-  $containsNone(a: any, b: any) {
+  $containsNone(a: any, b: any): boolean {
     return !LokiOps.$containsAny(a, b);
   },
 
-  $containsAny(a: any, b: any) {
+  $containsAny(a: any, b: any): boolean {
     const checkFn = containsCheckFn(a);
     if (checkFn !== null) {
       return (Array.isArray(b)) ? (b.some(checkFn)) : (checkFn(b));
@@ -155,7 +155,7 @@ export const LokiOps = {
     return false;
   },
 
-  $contains(a: any, b: any) {
+  $contains(a: any, b: any): boolean {
     const checkFn = containsCheckFn(a);
     if (checkFn !== null) {
       return (Array.isArray(b)) ? (b.every(checkFn)) : (checkFn(b));
@@ -163,7 +163,7 @@ export const LokiOps = {
     return false;
   },
 
-  $type(a: any, b: any) {
+  $type(a: any, b: any): boolean {
     let type: string = typeof a;
     if (type === "object") {
       if (Array.isArray(a)) {
@@ -175,25 +175,25 @@ export const LokiOps = {
     return (typeof b !== "object") ? (type === b) : doQueryOp(type, b);
   },
 
-  $finite(a: any, b: any) {
+  $finite(a: any, b: any): boolean {
     return (b === isFinite(a));
   },
 
-  $size(a: any, b: any) {
+  $size(a: any, b: any): boolean {
     if (Array.isArray(a)) {
       return (typeof b !== "object") ? (a.length === b) : doQueryOp(a.length, b);
     }
     return false;
   },
 
-  $len(a: any, b: any) {
+  $len(a: any, b: any): boolean {
     if (typeof a === "string") {
       return (typeof b !== "object") ? (a.length === b) : doQueryOp(a.length, b);
     }
     return false;
   },
 
-  $where(a: any, b: any) {
+  $where(a: any, b: any): boolean {
     return b(a) === true;
   },
 
@@ -201,12 +201,12 @@ export const LokiOps = {
   // a is the value in the _collection
   // b is the nested query operation (for '$not')
   //   or an array of nested query operations (for '$and' and '$or')
-  $not(a: any, b: any) {
+  $not(a: any, b: any): boolean {
     return !doQueryOp(a, b);
   },
 
-  $and(a: any, b: any) {
-    for (let idx = 0, len = b.length; idx < len; idx += 1) {
+  $and(a: any, b: any): boolean {
+    for (let idx = 0, len = b.length; idx < len; idx++) {
       if (!doQueryOp(a, b[idx])) {
         return false;
       }
@@ -214,8 +214,8 @@ export const LokiOps = {
     return true;
   },
 
-  $or(a: any, b: any) {
-    for (let idx = 0, len = b.length; idx < len; idx += 1) {
+  $or(a: any, b: any): boolean {
+    for (let idx = 0, len = b.length; idx < len; idx++) {
       if (doQueryOp(a, b[idx])) {
         return true;
       }
@@ -261,7 +261,7 @@ function dotSubScan(root: object, paths: string[], fun: (a: any, b: any) => bool
     // then just evaluate the test function and value on the element
     valueFound = fun(element, value);
   } else if (Array.isArray(element)) {
-    for (let index = 0, len = element.length; index < len; index += 1) {
+    for (let index = 0, len = element.length; index < len; index++) {
       valueFound = dotSubScan(element[index], paths, fun, value, pathOffset + 1);
       if (valueFound === true) {
         break;
@@ -560,7 +560,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
     }
 
     // unify the structure of 'properties' to avoid checking it repeatedly while sorting
-    for (let i = 0, len = properties.length; i < len; i += 1) {
+    for (let i = 0, len = properties.length; i < len; i++) {
       const prop = properties[i];
       if (typeof prop === "string") {
         properties[i] = [prop, false];
