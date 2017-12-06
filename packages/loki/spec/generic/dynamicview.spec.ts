@@ -182,15 +182,15 @@ describe("dynamicviews", () => {
       });
 
       expect(result1).toEqual(result2, "Result data Equality");
-      expect(view["_resultset"]).toEqual(view["_resultset"].copy(), "View data equality");
-      expect(view["_resultset"] === view["_resultset"].copy()).toBeFalsy("View data copy strict equality");
+      expect(view["_resultSet"]).toEqual(view["_resultSet"].copy(), "View data equality");
+      expect(view["_resultSet"] === view["_resultSet"].copy()).toBeFalsy("View data copy strict equality");
 
       return view;
     });
   });
 
   describe("stepDynamicViewPersistence", () => {
-    it("works", () => {
+    it("works 1", () => {
       const query = {
         "age": {
           "$gt": 24
@@ -207,11 +207,11 @@ describe("dynamicviews", () => {
       // the dynamic view depends on an internal resultset
       // the persistent dynamic view also depends on an internal resultdata data array
       // filteredrows should be applied immediately to resultset will be lazily built into resultdata later when data() is called
-      expect(pview["_resultset"]._filteredRows.length).toEqual(3, "dynamic view initialization 1");
-      expect(pview["_resultdata"].length).toEqual(0, "dynamic view initialization 2");
+      expect(pview["_resultSet"]._filteredRows.length).toEqual(3, "dynamic view initialization 1");
+      expect(pview["_resultData"].length).toEqual(0, "dynamic view initialization 2");
 
       // compare how many documents are in results before adding new ones
-      const pviewResultsetLenBefore = pview["_resultset"]._filteredRows.length;
+      const pviewResultsetLenBefore = pview["_resultSet"]._filteredRows.length;
 
       users.insert({
         name: "abc",
@@ -226,7 +226,7 @@ describe("dynamicviews", () => {
       });
 
       // now see how many are in  (without rebuilding persistent view)
-      const pviewResultsetLenAfter = pview["_resultset"]._filteredRows.length;
+      const pviewResultsetLenAfter = pview["_resultSet"]._filteredRows.length;
 
       // only one document should have been added to resultset (1 was filtered out)
       expect(pviewResultsetLenBefore + 1).toEqual(pviewResultsetLenAfter, "dv resultset is valid");
@@ -234,25 +234,24 @@ describe("dynamicviews", () => {
       // Test sorting and lazy build of resultdata
 
       // retain copy of internal resultset's filteredrows before lazy sort
-      const frcopy = pview["_resultset"]._filteredRows.slice();
+      const frcopy = pview["_resultSet"]._filteredRows.slice();
       pview.data();
       // now make a copy of internal result's filteredrows after lazy sort
-      const frcopy2 = pview["_resultset"]._filteredRows.slice();
+      const frcopy2 = pview["_resultSet"]._filteredRows.slice();
 
       // verify filteredrows logically matches resultdata (irrelevant of sort)
       expect(frcopy2.length).not.toBe(0);
       for (let idxFR = 0; idxFR < frcopy2.length; idxFR++) {
-        expect(pview["_resultdata"][idxFR]).not.toBe(undefined);
-        expect(pview["_resultdata"][idxFR]).toEqual(pview["_collection"].data[frcopy2[idxFR]],
+        expect(pview["_resultData"][idxFR]).not.toBe(undefined);
+        expect(pview["_resultData"][idxFR]).toEqual(pview["_collection"].data[frcopy2[idxFR]],
           "dynamic view resultset/resultdata consistency");
       }
       // now verify they are not exactly equal (verify sort moved stuff)
       expect(frcopy).not.toEqual(frcopy2, "dynamic view sort");
     });
-  });
 
-  describe("stepDynamicViewPersistence", () => {
-    it("works", () => {
+
+    it("works 2", () => {
       interface CR {
         index: string;
         a: number;
@@ -282,10 +281,9 @@ describe("dynamicviews", () => {
       expect(results.length).toEqual(1, "one result exists");
       expect(results[0].a).toEqual(2, "the correct result is returned");
     });
-  });
 
-  describe("stepDynamicViewPersistence", () => {
-    it("works", function testEmptyTableWithIndex() {
+
+    it("works 3", function testEmptyTableWithIndex() {
       const itc = db.addCollection("test", {indices: ["testindex"]});
 
       const resultsNoIndex = itc.find({
@@ -300,10 +298,8 @@ describe("dynamicviews", () => {
         expect(resultsWithIndex.length).toEqual(0);
       //});
     });
-  });
 
-  describe("stepDynamicViewPersistence", () => {
-    it("works", (done) => {
+    it("works 4", (done) => {
       // mock persistence by using memory adapter
       const mem = new LokiMemoryAdapter();
       const db = new Loki("testCollections");

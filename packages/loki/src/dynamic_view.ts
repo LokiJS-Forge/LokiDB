@@ -28,16 +28,15 @@ export class DynamicView<E extends object = object, D extends object = object> e
   public name: string;
   private _rebuildPending: boolean;
 
-  private _resultset: ResultSet<E, D>;
-  private _resultdata: Doc<E>[];
-  private _resultsdirty: boolean;
+  private _resultSet: ResultSet<E, D>;
+  private _resultData: Doc<E>[];
+  private _resultDirty: boolean;
 
-  private _cachedresultset: ResultSet<E, D>;
+  private _cachedResultSet: ResultSet<E, D>;
 
   private _filterPipeline: DynamicView.Filter<E, D>[];
 
-
-  private _sortFunction: (lhs: E, rhs: E) => number;
+  private _sortFunction: (lhs: Doc<E>, rhs: Doc<E>) => number;
   private _sortCriteria: (keyof (E & D) | [keyof (E & D), boolean])[];
   private _sortByScoring: boolean;
   private _sortDirty: boolean;
@@ -51,7 +50,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    * @param {string} [options.sortPriority="passive"] - the sort priority
    * @param {number} [options.minRebuildInterval=1] - minimum rebuild interval (need clarification to docs here)
    */
-  constructor(collection: Collection<E>, name: string, options: DynamicView.Options = {}) {
+  constructor(collection: Collection<E, D>, name: string, options: DynamicView.Options = {}) {
     super();
     (
       {
@@ -68,11 +67,11 @@ export class DynamicView<E extends object = object, D extends object = object> e
     // 'passive' will defer the sort phase until they call data(). (most efficient overall)
     // 'active' will sort async whenever next idle. (prioritizes read speeds)
 
-    this._resultset = new ResultSet(collection);
-    this._resultdata = [];
-    this._resultsdirty = false;
+    this._resultSet = new ResultSet(collection);
+    this._resultData = [];
+    this._resultDirty = false;
 
-    this._cachedresultset = null;
+    this._cachedResultSet = null;
 
     // keep ordered filter pipeline
     this._filterPipeline = [];
@@ -103,9 +102,9 @@ export class DynamicView<E extends object = object, D extends object = object> e
    * @fires DynamicView.rebuild
    */
   _rematerialize({removeWhereFilters = false}): this {
-    this._resultdata = [];
-    this._resultsdirty = true;
-    this._resultset = new ResultSet(this._collection);
+    this._resultData = [];
+    this._resultDirty = true;
+    this._resultSet = new ResultSet(this._collection);
 
     if (this._sortFunction || this._sortCriteria || this._sortByScoring !== null) {
       this._sortDirty = true;
@@ -153,7 +152,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    * @returns {ResultSet} A copy of the internal resultset for branched queries.
    */
   public branchResultSet(transform?: string | Collection.Transform[], parameters?: object): ResultSet<E, D> {
-    const rs = this._resultset.branch();
+    const rs = this._resultSet.branch();
     if (transform === undefined) {
       return rs;
     }
@@ -169,7 +168,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
       _persistent: this._persistent,
       _sortPriority: this._sortPriority,
       _minRebuildInterval: this._minRebuildInterval,
-      _resultset: this._resultset,
+      _resultSet: this._resultSet,
       _filterPipeline: this._filterPipeline,
       _sortCriteria: this._sortCriteria,
       _sortByScoring: this._sortByScoring,
@@ -179,14 +178,14 @@ export class DynamicView<E extends object = object, D extends object = object> e
 
   public static fromJSONObject(collection: Collection, obj: DynamicView.Serialized): DynamicView {
     let dv = new DynamicView(collection, obj.name);
-    dv._resultsdirty = true;
+    dv._resultDirty = true;
     dv._filterPipeline = obj._filterPipeline;
-    dv._resultdata = [];
+    dv._resultData = [];
     dv._sortCriteria = obj._sortCriteria;
     dv._sortByScoring = obj._sortByScoring;
     dv._sortDirty = obj._sortDirty;
-    dv._resultset._filteredRows = obj._resultset._filteredRows;
-    dv._resultset._filterInitialized = obj._resultset._filterInitialized;
+    dv._resultSet._filteredRows = obj._resultSet._filteredRows;
+    dv._resultSet._filterInitialized = obj._resultSet._filterInitialized;
     dv._rematerialize({
       removeWhereFilters: true
     });
@@ -200,11 +199,11 @@ export class DynamicView<E extends object = object, D extends object = object> e
    */
   public removeFilters({queueSortPhase = false} = {}): void {
     this._rebuildPending = false;
-    this._resultset.reset();
-    this._resultdata = [];
-    this._resultsdirty = true;
+    this._resultSet.reset();
+    this._resultData = [];
+    this._resultDirty = true;
 
-    this._cachedresultset = null;
+    this._cachedResultSet = null;
 
     // keep ordered filter pipeline
     this._filterPipeline = [];
@@ -233,7 +232,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    * @param {function} comparefun - a javascript compare function used for sorting
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public applySort(comparefun: (lhs: E, rhs: E) => number): this {
+  public applySort(comparefun: (lhs: Doc<E>, rhs: Doc<E>) => number): this {
     this._sortFunction = comparefun;
     this._sortCriteria = null;
     this._sortByScoring = null;
@@ -298,7 +297,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    * @returns {ScoreResult}
    */
   public getScoring(): ScoreResult {
-    return this._resultset.getScoring();
+    return this._resultSet.getScoring();
   }
 
   /**
@@ -306,7 +305,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
   public startTransaction(): this {
-    this._cachedresultset = this._resultset.copy();
+    this._cachedResultSet = this._resultSet.copy();
     return this;
   }
 
@@ -315,7 +314,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
   public commit(): this {
-    this._cachedresultset = null;
+    this._cachedResultSet = null;
     return this;
   }
 
@@ -324,12 +323,12 @@ export class DynamicView<E extends object = object, D extends object = object> e
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
   public rollback(): this {
-    this._resultset = this._cachedresultset;
+    this._resultSet = this._cachedResultSet;
 
     if (this._persistent) {
       // for now just rebuild the persistent dynamic view data in this worst case scenario
       // (a persistent view utilizing transactions which get rolled back), we already know the filter so not too bad.
-      this._resultdata = this._resultset.data();
+      this._resultData = this._resultSet.data();
 
       this.emit("rebuild", this);
     }
@@ -360,7 +359,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    */
   private _addFilter(filter: DynamicView.Filter<E, D>): void {
     this._filterPipeline.push(filter);
-    this._resultset[filter.type as string](filter.val);
+    this._resultSet[filter.type as string](filter.val);
   }
 
   /**
@@ -369,12 +368,12 @@ export class DynamicView<E extends object = object, D extends object = object> e
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
   public reapplyFilters(): this {
-    this._resultset.reset();
+    this._resultSet.reset();
 
-    this._cachedresultset = null;
+    this._cachedResultSet = null;
     if (this._persistent) {
-      this._resultdata = [];
-      this._resultsdirty = true;
+      this._resultData = [];
+      this._resultDirty = true;
     }
 
     const filters = this._filterPipeline;
@@ -407,10 +406,10 @@ export class DynamicView<E extends object = object, D extends object = object> e
       return this.reapplyFilters();
     }
 
-    this._cachedresultset = null;
+    this._cachedResultSet = null;
     if (this._persistent) {
-      this._resultdata = [];
-      this._resultsdirty = true;
+      this._resultData = [];
+      this._resultDirty = true;
     }
 
     this._addFilter(filter);
@@ -446,7 +445,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    * @param {(string|number)} uid - Optional: The unique ID of this filter, to reference it in the future.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public applyWhere(fun: (obj: E) => boolean, uid?: string | number): this {
+  public applyWhere(fun: (obj: Doc<E>) => boolean, uid?: string | number): this {
     this.applyFilter({
       type: "where",
       val: fun,
@@ -480,11 +479,11 @@ export class DynamicView<E extends object = object, D extends object = object> e
     // in order to be accurate we will pay the minimum cost (and not alter dv state management)
     // recurring resultset data resolutions should know internally its already up to date.
     // for persistent data this will not update resultdata nor fire rebuild event.
-    if (this._resultsdirty) {
-      this._resultdata = this._resultset.data();
+    if (this._resultDirty) {
+      this._resultData = this._resultSet.data();
     }
 
-    return this._resultset.count();
+    return this._resultSet.count();
   }
 
   /**
@@ -501,12 +500,12 @@ export class DynamicView<E extends object = object, D extends object = object> e
    */
   public data(options: ResultSet.DataOptions = {}): Doc<E>[] {
     // using final sort phase as 'catch all' for a few use cases which require full rebuild
-    if (this._sortDirty || this._resultsdirty) {
+    if (this._sortDirty || this._resultDirty) {
       this._performSortPhase({
         suppressRebuildEvent: true
       });
     }
-    return (this._persistent) ? (this._resultdata) : (this._resultset.data(options));
+    return (this._persistent) ? (this._resultData) : (this._resultSet.data(options));
   }
 
   /**
@@ -556,17 +555,17 @@ export class DynamicView<E extends object = object, D extends object = object> e
    */
   private _performSortPhase(options: { suppressRebuildEvent?: boolean } = {}): void {
     // async call to this may have been pre-empted by synchronous call to data before async could fire
-    if (!this._sortDirty && !this._resultsdirty) {
+    if (!this._sortDirty && !this._resultDirty) {
       return;
     }
 
     if (this._sortDirty) {
       if (this._sortFunction) {
-        this._resultset.sort(this._sortFunction);
+        this._resultSet.sort(this._sortFunction);
       } else if (this._sortCriteria) {
-        this._resultset.compoundsort(this._sortCriteria);
+        this._resultSet.compoundsort(this._sortCriteria);
       } else if (this._sortByScoring !== null) {
-        this._resultset.sortByScoring(this._sortByScoring);
+        this._resultSet.sortByScoring(this._sortByScoring);
       }
 
       this._sortDirty = false;
@@ -574,8 +573,8 @@ export class DynamicView<E extends object = object, D extends object = object> e
 
     if (this._persistent) {
       // persistent view, rebuild local resultdata array
-      this._resultdata = this._resultset.data();
-      this._resultsdirty = false;
+      this._resultData = this._resultSet.data();
+      this._resultDirty = false;
     }
 
     if (!options.suppressRebuildEvent) {
@@ -592,9 +591,9 @@ export class DynamicView<E extends object = object, D extends object = object> e
    */
   _evaluateDocument(objIndex: number, isNew: boolean): void {
     // if no filter applied yet, the result 'set' should remain 'everything'
-    if (!this._resultset._filterInitialized) {
+    if (!this._resultSet._filterInitialized) {
       if (this._persistent) {
-        this._resultdata = this._resultset.data();
+        this._resultData = this._resultSet.data();
       }
       // need to re-sort to sort new document
       if (this._sortFunction || this._sortCriteria) {
@@ -605,7 +604,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
       return;
     }
 
-    const ofr = this._resultset._filteredRows;
+    const ofr = this._resultSet._filteredRows;
     const oldPos = (isNew) ? (-1) : (ofr.indexOf(+objIndex));
     const oldlen = ofr.length;
 
@@ -631,7 +630,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
       ofr.push(objIndex);
 
       if (this._persistent) {
-        this._resultdata.push(this._collection.data[objIndex]);
+        this._resultData.push(this._collection.data[objIndex]);
       }
 
       // need to re-sort to sort new document
@@ -650,13 +649,13 @@ export class DynamicView<E extends object = object, D extends object = object> e
         ofr.splice(oldPos, 1);
 
         if (this._persistent) {
-          this._resultdata.splice(oldPos, 1);
+          this._resultData.splice(oldPos, 1);
         }
       } else {
         ofr.length = oldlen - 1;
 
         if (this._persistent) {
-          this._resultdata.length = oldlen - 1;
+          this._resultData.length = oldlen - 1;
         }
       }
 
@@ -673,7 +672,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
     if (oldPos !== -1 && newPos !== -1) {
       if (this._persistent) {
         // in case document changed, replace persistent view data with the latest collection.data document
-        this._resultdata[oldPos] = this._collection.data[objIndex];
+        this._resultData[oldPos] = this._collection.data[objIndex];
       }
 
       // in case changes to data altered a sort column
@@ -690,9 +689,9 @@ export class DynamicView<E extends object = object, D extends object = object> e
    */
   _removeDocument(objIndex: number): void {
     // if no filter applied yet, the result 'set' should remain 'everything'
-    if (!this._resultset._filterInitialized) {
+    if (!this._resultSet._filterInitialized) {
       if (this._persistent) {
-        this._resultdata = this._resultset.data();
+        this._resultData = this._resultSet.data();
       }
       // in case changes to data altered a sort column
       if (this._sortFunction || this._sortCriteria) {
@@ -703,7 +702,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
       return;
     }
 
-    const ofr = this._resultset._filteredRows;
+    const ofr = this._resultSet._filteredRows;
     const oldPos = ofr.indexOf(+objIndex);
     let oldlen = ofr.length;
     if (oldPos !== -1) {
@@ -713,8 +712,8 @@ export class DynamicView<E extends object = object, D extends object = object> e
         ofr.length = oldlen - 1;
 
         if (this._persistent) {
-          this._resultdata[oldPos] = this._resultdata[oldlen - 1];
-          this._resultdata.length = oldlen - 1;
+          this._resultData[oldPos] = this._resultData[oldlen - 1];
+          this._resultData.length = oldlen - 1;
         }
       }
       // last row, so just truncate last row
@@ -722,7 +721,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
         ofr.length = oldlen - 1;
 
         if (this._persistent) {
-          this._resultdata.length = oldlen - 1;
+          this._resultData.length = oldlen - 1;
         }
       }
 
@@ -775,7 +774,7 @@ export namespace DynamicView {
     _persistent: boolean;
     _sortPriority: SortPriority;
     _minRebuildInterval: number;
-    _resultset: ResultSet<E, D>;
+    _resultSet: ResultSet<E, D>;
     _filterPipeline: Filter<E, D>[];
     _sortCriteria: (keyof (E & D) | [keyof (E & D), boolean])[];
     _sortByScoring: boolean;
@@ -784,13 +783,13 @@ export namespace DynamicView {
 
   export interface FindFilter<E extends object, D extends object = object> {
     type: "find";
-    val: ResultSet.Query<E>;
+    val: ResultSet.Query<Doc<E> & D>;
     uid: number | string;
   }
 
   export interface WhereFilter<E extends object = object> {
     type: "where";
-    val: (obj: E, index: number, array: E[]) => boolean;
+    val: (obj: Doc<E>) => boolean;
     uid: number | string;
   }
 
