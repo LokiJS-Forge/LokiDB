@@ -411,7 +411,7 @@ export class Collection<E extends object = object, D extends object = object> ex
 
     // in case they are loading a database created before we added dynamic views, handle undefined
     if (obj._dynamicViews !== undefined) {
-      // reinflate DynamicViews and attached Resultsets
+      // reinflate DynamicViews and attached ResultSets
       for (let idx = 0; idx < obj._dynamicViews.length; idx++) {
         coll._dynamicViews.push(DynamicView.fromJSONObject(coll, obj._dynamicViews[idx]));
       }
@@ -1289,7 +1289,7 @@ export class Collection<E extends object = object, D extends object = object> ex
     const index = this.binaryIndices[binaryIndexName].values;
 
     // i think calculateRange can probably be moved to collection
-    // as it doesn't seem to need resultset.  need to verify
+    // as it doesn't seem to need ResultSet.  need to verify
     //let rs = new ResultSet(this, null, null);
     const range = this.calculateRange("$eq", binaryIndexName, val);
 
@@ -1490,7 +1490,7 @@ export class Collection<E extends object = object, D extends object = object> ex
 
   /**
    * Binary Search utility method to find range/segment of values matching criteria.
-   *    this is used for collection.find() and first find filter of resultset/dynview
+   *    this is used for collection.find() and first find filter of ResultSet/dynview
    *    slightly different than get() binary search in that get() hones in on 1 value,
    *    but we have to hone in on many (range)
    * @param {string} op - operation, such as $eq
@@ -1709,7 +1709,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    *
    * @param {array} transform - Ordered array of transform step objects similar to chain
    * @param {object} parameters - Object containing properties representing parameters to substitute
-   * @returns {ResultSet} (this) resultset, or data array if any map or join functions where called
+   * @returns {ResultSet} (this) ResultSet, or data array if any map or join functions where called
    */
   public chain(transform?: string | Collection.Transform[], parameters?: object): ResultSet<E, D> {
     const rs = new ResultSet<E, D>(this);
@@ -1750,7 +1750,9 @@ export class Collection<E extends object = object, D extends object = object> ex
    * Transaction methods
    */
 
-  /** start the transation */
+  /**
+   * start the transation
+   */
   public startTransaction(): void {
     if (this.transactional) {
       this.cachedData = clone(this.data, this.cloneMethod);
@@ -1764,7 +1766,9 @@ export class Collection<E extends object = object, D extends object = object> ex
     }
   }
 
-  /** commit the transation */
+  /**
+   * commit the transation
+   */
   public commit(): void {
     if (this.transactional) {
       this.cachedData = null;
@@ -1778,7 +1782,9 @@ export class Collection<E extends object = object, D extends object = object> ex
     }
   }
 
-  /** roll back the transation */
+  /**
+   * roll back the transation
+   */
   public rollback(): void {
     if (this.transactional) {
       if (this.cachedData !== null && this.cachedIndex !== null) {

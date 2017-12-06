@@ -204,9 +204,9 @@ describe("dynamicviews", () => {
       pview.applyFind(query);
       pview.applySimpleSort("age");
 
-      // the dynamic view depends on an internal resultset
+      // the dynamic view depends on an internal ResultSet
       // the persistent dynamic view also depends on an internal resultdata data array
-      // filteredrows should be applied immediately to resultset will be lazily built into resultdata later when data() is called
+      // filteredrows should be applied immediately to ResultSet will be lazily built into resultdata later when data() is called
       expect(pview["_resultSet"]._filteredRows.length).toEqual(3, "dynamic view initialization 1");
       expect(pview["_resultData"].length).toEqual(0, "dynamic view initialization 2");
 
@@ -228,12 +228,12 @@ describe("dynamicviews", () => {
       // now see how many are in  (without rebuilding persistent view)
       const pviewResultsetLenAfter = pview["_resultSet"]._filteredRows.length;
 
-      // only one document should have been added to resultset (1 was filtered out)
-      expect(pviewResultsetLenBefore + 1).toEqual(pviewResultsetLenAfter, "dv resultset is valid");
+      // only one document should have been added to ResultSet (1 was filtered out)
+      expect(pviewResultsetLenBefore + 1).toEqual(pviewResultsetLenAfter, "dv ResultSet is valid");
 
       // Test sorting and lazy build of resultdata
 
-      // retain copy of internal resultset's filteredrows before lazy sort
+      // retain copy of internal ResultSet's filteredrows before lazy sort
       const frcopy = pview["_resultSet"]._filteredRows.slice();
       pview.data();
       // now make a copy of internal result's filteredrows after lazy sort
@@ -244,7 +244,7 @@ describe("dynamicviews", () => {
       for (let idxFR = 0; idxFR < frcopy2.length; idxFR++) {
         expect(pview["_resultData"][idxFR]).not.toBe(undefined);
         expect(pview["_resultData"][idxFR]).toEqual(pview["_collection"].data[frcopy2[idxFR]],
-          "dynamic view resultset/resultdata consistency");
+          "dynamic view ResultSet/resultdata consistency");
       }
       // now verify they are not exactly equal (verify sort moved stuff)
       expect(frcopy).not.toEqual(frcopy2, "dynamic view sort");

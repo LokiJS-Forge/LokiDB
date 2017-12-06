@@ -10,7 +10,7 @@ describe("sorting and indexing", () => {
     db = new Loki("sortingIndexingTest");
   });
 
-  describe("resultset simplesort", () => {
+  describe("ResultSet simplesort", () => {
     it("works", () => {
       interface Sortable {
         a: number;
@@ -32,7 +32,7 @@ describe("sorting and indexing", () => {
     });
   });
 
-  describe("resultset simplesort descending", () => {
+  describe("ResultSet simplesort descending", () => {
     it("works", () => {
       interface Sortable {
         a: number;
@@ -68,7 +68,7 @@ describe("sorting and indexing", () => {
     });
   });
 
-  describe("resultset simplesort on nested properties", () => {
+  describe("ResultSet simplesort on nested properties", () => {
     it("works", function () {
       interface Sortable {
         foo: {
@@ -92,7 +92,7 @@ describe("sorting and indexing", () => {
     });
   });
 
-  describe("resultset simplesort with dates", () => {
+  describe("ResultSet simplesort with dates", () => {
     it("works", () => {
       const now = new Date().getTime();
       const dt1 = new Date(now - 1000);
@@ -123,7 +123,7 @@ describe("sorting and indexing", () => {
     });
   });
 
-  describe("resultset sort works correctly", () => {
+  describe("ResultSet sort works correctly", () => {
     it("works", () => {
       interface Sortable {
         a: number;
@@ -154,7 +154,7 @@ describe("sorting and indexing", () => {
     });
   });
 
-  describe("resultset compoundsort works correctly", () => {
+  describe("ResultSet compoundsort works correctly", () => {
     it("works", () => {
       const db = new Loki("test.db");
 
@@ -186,7 +186,7 @@ describe("sorting and indexing", () => {
     });
   });
 
-  describe("resultset compoundsort on nested properties works correctly", () => {
+  describe("ResultSet compoundsort on nested properties works correctly", () => {
     it("works", function () {
       const db = new Loki("test.db");
 

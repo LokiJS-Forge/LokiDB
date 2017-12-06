@@ -758,7 +758,7 @@ describe("loki", () => {
     });
   });
 
-  describe("resultSet", () => {
+  describe("ResultSet", () => {
     it("works", () => {
       // ResultSet find
       expect(users.chain().find({
@@ -841,7 +841,7 @@ describe("loki", () => {
         "testString": "bbb"
       }).length).toEqual(1);
 
-      // resultset.find explicit $and
+      // ResultSet.find explicit $and
       expect(eic.chain().find({
         "$and": [{
           "testid": 1
@@ -850,13 +850,13 @@ describe("loki", () => {
         }]
       }).data().length).toEqual(1);
 
-      // resultset.find implicit $and
+      // ResultSet.find implicit $and
       expect(eic.chain().find({
         "testid": 1,
         "testString": "bbb"
       }).data().length).toEqual(1);
 
-      // resultset.find explicit operators
+      // ResultSet.find explicit operators
       expect(eic.chain().find({
         "$and": [{
           "testid": {
@@ -878,7 +878,7 @@ describe("loki", () => {
         }]
       }).length).toEqual(3);
 
-      // resultset.find $or
+      // ResultSet.find $or
       expect(eic.chain().find({
         "$or": [{
           "testid": 1
@@ -887,7 +887,7 @@ describe("loki", () => {
         }]
       }).data().length).toEqual(3);
 
-      // resultset.find explicit operators
+      // ResultSet.find explicit operators
       expect(eic.chain().find({
         "$or": [{
           "testid": 1
@@ -984,7 +984,7 @@ describe("loki", () => {
     });
   });
 
-  describe("resultset unfiltered simplesort works", () => {
+  describe("ResultSet unfiltered simplesort works", () => {
     it("works", () => {
       const ssdb = new Loki("sandbox.db");
 
@@ -1021,7 +1021,7 @@ describe("loki", () => {
     });
   });
 
-  describe("resultset data removeMeta works", () => {
+  describe("ResultSet data removeMeta works", () => {
     it("works", () => {
       const idb = new Loki("sandbox.db");
 

@@ -338,8 +338,8 @@ describe("transforms", () => {
 
       // The 'joinData' in this instance is a Collection which we will call
       //   data() on with the specified (optional) dataOptions on.
-      //   It could also be a resultset or data array.
-      // Our left side resultset which this transform is executed on will also
+      //   It could also be a ResultSet or data array.
+      // Our left side ResultSet which this transform is executed on will also
       //   call data() with specified (optional) dataOptions.
       films.addTransform("filmdirect", [
         {

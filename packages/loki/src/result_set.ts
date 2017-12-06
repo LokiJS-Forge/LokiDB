@@ -305,9 +305,9 @@ export class ResultSet<E extends object = object, D extends object = object> {
   }
 
   /**
-   * reset() - Reset the resultset to its initial state.
+   * reset() - Reset the ResultSet to its initial state.
    *
-   * @returns {ResultSet} Reference to this resultset, for future chain operations.
+   * @returns {ResultSet} Reference to this ResultSet, for future chain operations.
    */
   reset(): this {
     if (this._filteredRows.length > 0) {
@@ -329,10 +329,10 @@ export class ResultSet<E extends object = object, D extends object = object> {
 
   /**
    * Allows you to limit the number of documents passed to next chain operation.
-   *    A resultset copy() is made to avoid altering original resultset.
+   *    A ResultSet copy() is made to avoid altering original ResultSet.
    *
    * @param {int} qty - The number of documents to return.
-   * @returns {ResultSet} Returns a copy of the resultset, limited by qty, for subsequent chain ops.
+   * @returns {ResultSet} Returns a copy of the ResultSet, limited by qty, for subsequent chain ops.
    */
   public limit(qty: number): this {
     // if this has no filters applied, we need to populate filteredRows first
@@ -346,10 +346,10 @@ export class ResultSet<E extends object = object, D extends object = object> {
   }
 
   /**
-   * Used for skipping 'pos' number of documents in the resultset.
+   * Used for skipping 'pos' number of documents in the ResultSet.
    *
    * @param {int} pos - Number of documents to skip; all preceding documents are filtered out.
-   * @returns {ResultSet} Returns a copy of the resultset, containing docs starting at 'pos' for subsequent chain ops.
+   * @returns {ResultSet} Returns a copy of the ResultSet, containing docs starting at 'pos' for subsequent chain ops.
    */
   public offset(pos: number): this {
     // if this has no filters applied, we need to populate filteredRows first
@@ -363,9 +363,9 @@ export class ResultSet<E extends object = object, D extends object = object> {
   }
 
   /**
-   * copy() - To support reuse of resultset in branched query situations.
+   * copy() - To support reuse of ResultSet in branched query situations.
    *
-   * @returns {ResultSet} Returns a copy of the resultset (set) but the underlying document references will be the same.
+   * @returns {ResultSet} Returns a copy of the ResultSet (set) but the underlying document references will be the same.
    */
   public copy(): ResultSet<E, D> {
     const result = new ResultSet<E, D>(this._collection);
@@ -382,11 +382,11 @@ export class ResultSet<E extends object = object, D extends object = object> {
   }
 
   /**
-   * Executes a named collection transform or raw array of transform steps against the resultset.
+   * Executes a named collection transform or raw array of transform steps against the ResultSet.
    *
    * @param {(string|array)} transform - name of collection transform or raw transform array
    * @param {object} [parameters=] - object property hash of parameters, if the transform requires them.
-   * @returns {ResultSet} either (this) resultset or a clone of of this resultset (depending on steps)
+   * @returns {ResultSet} either (this) ResultSet or a clone of of this ResultSet (depending on steps)
    */
   public transform(transform: string | Collection.Transform[], parameters?: object): this {
     // if transform is name, then do lookup first
@@ -439,7 +439,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
         case "mapReduce":
           rs = rs.mapReduce(step.mapFunction, step.reduceFunction);
           break;
-        // following cases update documents in current filtered resultset (use carefully)
+        // following cases update documents in current filtered ResultSet (use carefully)
         case "update":
           rs.update(step.value);
           break;
@@ -463,7 +463,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
 	 *    });
    *
    * @param {function} comparefun - A javascript compare function used for sorting.
-   * @returns {ResultSet} Reference to this resultset, sorted, for future chain operations.
+   * @returns {ResultSet} Reference to this ResultSet, sorted, for future chain operations.
    */
   public sort(comparefun: (a: Doc<E>, b: Doc<E>) => number): this {
     // if this has no filters applied, just we need to populate filteredRows first
@@ -485,7 +485,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    *
    * @param {string} propname - name of property to sort by.
    * @param {boolean} [descending=false] - if true, the property will be sorted in descending order
-   * @returns {ResultSet} Reference to this resultset, sorted, for future chain operations.
+   * @returns {ResultSet} Reference to this ResultSet, sorted, for future chain operations.
    */
   public simplesort(propname: keyof (E & D), descending: boolean = false): this {
     // if this has no filters applied, just we need to populate filteredRows first
@@ -502,7 +502,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
           this._filteredRows.reverse();
         }
 
-        // we are done, return this (resultset) for further chain ops
+        // we are done, return this (ResultSet) for further chain ops
         return this;
       }
       // otherwise initialize array for sort below
@@ -535,7 +535,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
   }
 
   /**
-   * Allows sorting a resultset based on multiple columns.
+   * Allows sorting a ResultSet based on multiple columns.
    * @example
    * // to sort by age and then name (both ascending)
    * rs.compoundsort(['age', 'name']);
@@ -543,7 +543,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * rs.compoundsort(['age', ['name', true]);
    *
    * @param {array} properties - array of property names or subarray of [propertyname, isdesc] used evaluate sort order
-   * @returns {ResultSet} Reference to this resultset, sorted, for future chain operations.
+   * @returns {ResultSet} Reference to this ResultSet, sorted, for future chain operations.
    */
   public compoundsort(properties: (keyof (E & D) | [keyof (E & D), boolean])[]): this {
     if (properties.length === 0) {
@@ -614,7 +614,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
   }
 
   /**
-   * Sorts the resultset based on the last full-text-search scoring.
+   * Sorts the ResultSet based on the last full-text-search scoring.
    * @param {boolean} [ascending=false] - sort ascending
    * @returns {ResultSet<E extends Object>}
    */
@@ -650,7 +650,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    *    Each evaluation can utilize a binary index to prevent multiple linear array scans.
    *
    * @param {array} expressionArray - array of expressions
-   * @returns {ResultSet} this resultset for further chain ops.
+   * @returns {ResultSet} this ResultSet for further chain ops.
    */
   public findOr(expressionArray: ResultSet.Query<Doc<E> & D>[]): this {
     const docset = [];
@@ -691,11 +691,11 @@ export class ResultSet<E extends object = object, D extends object = object> {
   /**
    * Oversee the operation of AND'ed query expressions.
    *    AND'ed expression evaluation runs each expression progressively against the full collection,
-   *    internally utilizing existing chained resultset functionality.
+   *    internally utilizing existing chained ResultSet functionality.
    *    Only the first filter can utilize a binary index.
    *
    * @param {array} expressionArray - array of expressions
-   * @returns {ResultSet} this resultset for further chain ops.
+   * @returns {ResultSet} this ResultSet for further chain ops.
    */
   public findAnd(expressionArray: ResultSet.Query<Doc<E> & D>[]): this {
     // we have already implementing method chaining in this (our ResultSet class)
@@ -718,7 +718,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    *
    * @param {object} query - A mongo-style query object used for filtering current results.
    * @param {boolean} firstOnly - (Optional) Used by collection.findOne() - flag if this was invoked via findOne()
-   * @returns {ResultSet} this resultset for further chain ops.
+   * @returns {ResultSet} this ResultSet for further chain ops.
    */
   public find(query?: ResultSet.Query<Doc<E> & D>, firstOnly = false): this {
     if (this._collection.data.length === 0) {
@@ -959,7 +959,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * Used for filtering via a javascript filter function.
    *
    * @param {function} fun - A javascript function used for filtering current results by.
-   * @returns {ResultSet} this resultset for further chain ops.
+   * @returns {ResultSet} this ResultSet for further chain ops.
    */
   public where(fun: (obj: Doc<E>) => boolean): this {
     let viewFunction;
@@ -1006,8 +1006,8 @@ export class ResultSet<E extends object = object, D extends object = object> {
   }
 
   /**
-   * Returns the number of documents in the resultset.
-   * @returns {number} The number of documents in the resultset.
+   * Returns the number of documents in the ResultSet.
+   * @returns {number} The number of documents in the ResultSet.
    */
   public count(): number {
     if (this._filterInitialized) {
@@ -1025,7 +1025,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    *        Possible values 'parse-stringify', 'deep', and 'shallow' and
    * @param {boolean} [options.removeMeta] - will force clones and strip $loki and meta properties from documents
    *
-   * @returns {Array} Array of documents in the resultset
+   * @returns {Array} Array of documents in the ResultSet
    */
   public data(options: ResultSet.DataOptions = {}): Doc<E>[] {
     let forceClones: boolean;
@@ -1108,10 +1108,10 @@ export class ResultSet<E extends object = object, D extends object = object> {
   }
 
   /**
-   * Used to run an update operation on all documents currently in the resultset.
+   * Used to run an update operation on all documents currently in the ResultSet.
    *
    * @param {function} updateFunction - User supplied updateFunction(obj) will be executed for each document object.
-   * @returns {ResultSet} this resultset for further chain ops.
+   * @returns {ResultSet} this ResultSet for further chain ops.
    */
   update(updateFunction: (obj: Doc<E>) => E): this {
     // if this has no filters applied, we need to populate filteredRows first
@@ -1123,7 +1123,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
     const rcd = this._collection.data;
 
     for (let idx = 0; idx < len; idx++) {
-      // pass in each document object currently in resultset to user supplied updateFunction
+      // pass in each document object currently in ResultSet to user supplied updateFunction
       updateFunction(rcd[this._filteredRows[idx]]);
 
       // notify collection we have changed this object so it can update meta and allow DynamicViews to re-evaluate
@@ -1134,9 +1134,9 @@ export class ResultSet<E extends object = object, D extends object = object> {
   }
 
   /**
-   * Removes all document objects which are currently in resultset from collection (as well as resultset)
+   * Removes all document objects which are currently in ResultSet from collection (as well as ResultSet)
    *
-   * @returns {ResultSet} this (empty) resultset for further chain ops.
+   * @returns {ResultSet} this (empty) ResultSet for further chain ops.
    */
   public remove(): this {
     // if this has no filters applied, we need to populate filteredRows first
@@ -1174,7 +1174,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {boolean} dataOptions.removeMeta - allows removing meta before calling mapFun
    * @param {boolean} dataOptions.forceClones - forcing the return of cloned objects to your map object
    * @param {string} dataOptions.forceCloneMethod - allows overriding the default or collection specified cloning method
-   * @returns {ResultSet} A resultset with data in the format [{left: leftObj, right: rightObj}]
+   * @returns {ResultSet} A ResultSet with data in the format [{left: leftObj, right: rightObj}]
    */
   public eqJoin(joinData: Collection<any> | ResultSet<any> | any[], leftJoinKey: string | ((obj: any) => string),
                 rightJoinKey: string | ((obj: any) => string), mapFun?: (left: any, right: any) => any,
@@ -1218,7 +1218,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
       });
     }
 
-    //Run map function over each object in the resultset
+    //Run map function over each object in the ResultSet
     for (let j = 0; j < leftDataLength; j++) {
       key = leftKeyisFunction
         ? (leftJoinKey as (obj: any) => string)(leftData[j])
@@ -1226,7 +1226,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
       result.push(mapFun(leftData[j], joinMap[key] || {}));
     }
 
-    //return a new resultset with no filters
+    //return a new ResultSet with no filters
     this._collection = new Collection("joinData");
     this._collection.insert(result);
     this._filteredRows = [];
@@ -1246,7 +1246,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    */
   map<U extends object>(mapFun: (obj: E, index: number, array: E[]) => U, dataOptions?: ResultSet.DataOptions): ResultSet<U> {
     const data = this.data(dataOptions).map(mapFun);
-    //return return a new resultset with no filters
+    //return return a new ResultSet with no filters
     this._collection = new Collection("mappedData");
     this._collection.insert(data as any as E);
     this._filteredRows = [];

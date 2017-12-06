@@ -143,13 +143,13 @@ export class DynamicView<E extends object = object, D extends object = object> e
   }
 
   /**
-   * Makes a copy of the internal resultset for branched queries.
-   * Unlike this dynamic view, the branched resultset will not be 'live' updated,
+   * Makes a copy of the internal ResultSet for branched queries.
+   * Unlike this dynamic view, the branched ResultSet will not be 'live' updated,
    * so your branched query should be immediately resolved and not held for future evaluation.
    *
    * @param {(string|array=)} transform - Optional name of collection transform, or an array of transform steps
    * @param {object} parameters - optional parameters (if optional transform requires them)
-   * @returns {ResultSet} A copy of the internal resultset for branched queries.
+   * @returns {ResultSet} A copy of the internal ResultSet for branched queries.
    */
   public branchResultSet(transform?: string | Collection.Transform[], parameters?: object): ResultSet<E, D> {
     const rs = this._resultSet.branch();
@@ -260,7 +260,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
   }
 
   /**
-   * Allows sorting a resultset based on multiple columns.
+   * Allows sorting a ResultSet based on multiple columns.
    * @example
    * // to sort by age and then name (both ascending)
    * dv.applySortCriteria(['age', 'name']);
@@ -353,7 +353,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
   }
 
   /**
-   * Add the filter object to the end of view's filter pipeline and apply the filter to the resultset.
+   * Add the filter object to the end of view's filter pipeline and apply the filter to the ResultSet.
    *
    * @param {object} filter - The filter object. Refer to applyFilter() for extra details.
    */
@@ -477,7 +477,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    */
   public count(): number {
     // in order to be accurate we will pay the minimum cost (and not alter dv state management)
-    // recurring resultset data resolutions should know internally its already up to date.
+    // recurring ResultSet data resolutions should know internally its already up to date.
     // for persistent data this will not update resultdata nor fire rebuild event.
     if (this._resultDirty) {
       this._resultData = this._resultSet.data();
@@ -489,7 +489,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
   /**
    * Resolves and pending filtering and sorting, then returns document array as result.
    *
-   * @param {object} options - optional parameters to pass to resultset.data() if non-persistent
+   * @param {object} options - optional parameters to pass to ResultSet.data() if non-persistent
    * @param {boolean} [options.forceClones] - Allows forcing the return of cloned objects even when
    *        the collection is not configured for clone object.
    * @param {string} [options.forceCloneMethod] - Allows overriding the default or collection specified cloning method.
@@ -608,7 +608,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
     const oldPos = (isNew) ? (-1) : (ofr.indexOf(+objIndex));
     const oldlen = ofr.length;
 
-    // creating a 1-element resultset to run filter chain ops on to see if that doc passes filters;
+    // creating a 1-element ResultSet to run filter chain ops on to see if that doc passes filters;
     // mostly efficient algorithm, slight stack overhead price (this function is called on inserts and updates)
     const evalResultSet = new ResultSet(this._collection);
     evalResultSet._filteredRows = [objIndex];
@@ -625,7 +625,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
     // wasn't in old, shouldn't be now... do nothing
     if (oldPos === -1 && newPos === -1) return;
 
-    // wasn't in resultset, should be now... add
+    // wasn't in ResultSet, should be now... add
     if (oldPos === -1 && newPos !== -1) {
       ofr.push(objIndex);
 
@@ -643,7 +643,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
       return;
     }
 
-    // was in resultset, shouldn't be now... delete
+    // was in ResultSet, shouldn't be now... delete
     if (oldPos !== -1 && newPos === -1) {
       if (oldPos < oldlen - 1) {
         ofr.splice(oldPos, 1);
@@ -668,7 +668,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
       return;
     }
 
-    // was in resultset, should still be now... (update persistent only?)
+    // was in ResultSet, should still be now... (update persistent only?)
     if (oldPos !== -1 && newPos !== -1) {
       if (this._persistent) {
         // in case document changed, replace persistent view data with the latest collection.data document
