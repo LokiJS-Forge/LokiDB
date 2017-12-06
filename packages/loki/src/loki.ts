@@ -3,8 +3,6 @@ import {Collection} from "./collection";
 import {Doc, StorageAdapter} from "../../common/types";
 import {PLUGINS} from "../../common/plugin";
 
-export type ANY = any;
-
 function getENV(): Loki.Environment {
   if (global !== undefined && (global["android"] || global["NSObject"])) {
     return "NATIVESCRIPT";
@@ -142,7 +140,7 @@ export class Loki extends LokiEventEmitter {
         persistenceMethod: this._persistenceMethod,
         // TODO
         //inflate: this.options.inflate,
-        throttledSaves: this._throttledSaves = true,
+        throttledSaves: this._throttledSaves = true
       } = options
     );
 
@@ -371,7 +369,7 @@ export class Loki extends LokiEventEmitter {
       _persistenceAdapter: this._persistenceAdapter,
       _persistenceMethod: this._persistenceMethod,
       _throttledSaves: this._throttledSaves,
-      _verbose: this._verbose,
+      _verbose: this._verbose
     };
   }
 
@@ -644,7 +642,7 @@ export class Loki extends LokiEventEmitter {
    *
    * @returns {Array} an array of documents to attach to collection.data.
    */
-  public deserializeCollection<T extends object>(destructuredSource: string | string[], options: Loki.DeserializeCollectionOptions = {}) {
+  public deserializeCollection<T extends object = object>(destructuredSource: string | string[], options: Loki.DeserializeCollectionOptions = {}): Doc<T>[] {
     if (options.partitioned === undefined) {
       options.partitioned = false;
     }
@@ -668,7 +666,7 @@ export class Loki extends LokiEventEmitter {
     for (let idx = 0; idx < workarray.length; idx++) {
       workarray[idx] = JSON.parse(workarray[idx]);
     }
-    return workarray as any as Doc<T>;
+    return workarray as any as Doc<T>[];
   }
 
   /**
@@ -703,11 +701,13 @@ export class Loki extends LokiEventEmitter {
   /**
    * Inflates a loki database from a JS object
    *
-   * @param {object} dbObject - a serialized loki database string
+   * @param {object} dbObject - a serialized loki database object
    * @param {object} options - apply or override collection level settings
    * @param {boolean} options.retainDirtyFlags - whether collection dirty flags will be preserved
    */
-  public loadJSONObject(dbObject: ANY, options: Collection.DeserializeOptions = {}): void {
+  public loadJSONObject(dbObject: Loki, options?: Collection.DeserializeOptions): void;
+  public loadJSONObject(dbObject: Loki.Serialized, options?: Collection.DeserializeOptions): void;
+  public loadJSONObject(dbObject: any, options: Collection.DeserializeOptions = {}): void {
     const len = dbObject._collections ? dbObject._collections.length : 0;
 
     this.filename = dbObject.filename;

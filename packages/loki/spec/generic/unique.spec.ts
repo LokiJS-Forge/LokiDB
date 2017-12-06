@@ -2,8 +2,6 @@
 import {Loki} from "../../src/loki";
 import {LokiMemoryAdapter} from "../../src/memory_adapter";
 
-export type ANY = any;
-
 describe("Constraints", () => {
 
   it("should retrieve records with by()", () => {

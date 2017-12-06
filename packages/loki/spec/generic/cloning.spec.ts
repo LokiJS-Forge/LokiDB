@@ -2,8 +2,6 @@
 import {Loki} from "../../src/loki";
 import {Collection, CloneMethod} from "../../src/collection";
 
-export type ANY = any;
-
 describe("cloning behavior", () => {
   interface User {
     name: string;
@@ -183,10 +181,10 @@ describe("cloning behavior", () => {
 
       // just to prove that ResultSet.data() is not giving the user the actual object reference we keep internally
       // we will modify the object and see if future requests for that object show the change
-      const mj = citems.where((obj: ANY) => obj.name === "mjolnir")[0];
+      const mj = citems.where((obj: User) => obj.name === "mjolnir")[0];
       mj.maker = "the dwarves";
 
-      const mj2 = citems.where((obj: ANY) => obj.name === "mjolnir")[0];
+      const mj2 = citems.where((obj: User) => obj.name === "mjolnir")[0];
       expect(mj2.maker).toBe("dwarves");
     });
   });

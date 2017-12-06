@@ -1,8 +1,6 @@
 /* global describe, beforeEach, it, expect */
 import {Loki} from "../../src/loki";
 
-export type ANY = any;
-
 describe("eventEmitter", () => {
   let db: Loki;
   let users;
@@ -23,7 +21,7 @@ describe("eventEmitter", () => {
   });
 
   it("emit", () => {
-    const index = db.on("test", function test(obj: ANY) {
+    const index = db.on("test", function test(obj: number) {
       expect(obj).toEqual(42);
     });
 

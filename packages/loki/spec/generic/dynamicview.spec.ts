@@ -2,8 +2,7 @@
 import {Loki} from "../../src/loki";
 import {LokiMemoryAdapter} from "../../src/memory_adapter";
 import {Collection} from "../../src/collection";
-
-export type ANY = any;
+import {Doc} from "../../../common/types";
 
 describe("dynamicviews", () => {
   interface User {
@@ -11,13 +10,13 @@ describe("dynamicviews", () => {
     owner?: string;
     maker?: string;
     age?: number;
-    lang: string;
+    lang?: string;
   }
 
-  let testRecords: ANY;
+  let testRecords: User[];
   let db: Loki;
   let users: Collection<User>;
-  let jonas: ANY;
+  let jonas: Doc<User>;
 
   beforeEach(() => {
     testRecords = [
@@ -49,7 +48,7 @@ describe("dynamicviews", () => {
     });
   });
 
-  function docCompare(a: ANY, b: ANY) {
+  function docCompare(a: Doc<User>, b: Doc<User>) {
     if (a.$loki < b.$loki) return -1;
     if (a.$loki > b.$loki) return 1;
 
@@ -87,7 +86,7 @@ describe("dynamicviews", () => {
       const dv = items.addDynamicView("view");
 
       dv.applyFind({"owner": "odin"});
-      dv.applyWhere((obj: ANY) => obj.maker === "elves");
+      dv.applyWhere((obj: User) => obj.maker === "elves");
 
       expect(dv.data().length).toEqual(2);
       expect(dv["_filterPipeline"].length).toEqual(2);
@@ -117,7 +116,7 @@ describe("dynamicviews", () => {
       items.insert(testRecords);
       const dv = items.addDynamicView("ownr");
       dv.applyFind({"owner": "odin"});
-      dv.applyWhere((obj: ANY) => obj.maker === "elves");
+      dv.applyWhere((obj: User) => obj.maker === "elves");
 
       expect(dv["_filterPipeline"].length).toEqual(2);
       expect(dv.data().length).toEqual(2);
@@ -136,7 +135,7 @@ describe("dynamicviews", () => {
       const dv = items.addDynamicView("ownr", {persistent: true});
 
       dv.applyFind({"owner": "odin"});
-      dv.applyWhere((obj: ANY) => obj.maker === "elves");
+      dv.applyWhere((obj: User) => obj.maker === "elves");
 
       expect(items["_dynamicViews"].length).toEqual(1);
 
@@ -174,10 +173,10 @@ describe("dynamicviews", () => {
       // assert set equality of docArrays irrelevant of sort/sequence
       const result1 = users.find(query).sort(docCompare);
       const result2 = view.data().sort(docCompare);
-      result1.forEach((obj: ANY) => {
+      result1.forEach((obj: Doc<User>) => {
         delete obj.meta;
       });
-      result2.forEach((obj: ANY) => {
+      result2.forEach((obj: Doc<User>) => {
         delete obj.meta;
       });
 
@@ -303,44 +302,45 @@ describe("dynamicviews", () => {
       // mock persistence by using memory adapter
       const mem = new LokiMemoryAdapter();
       const db = new Loki("testCollections");
-      db.initializePersistence({adapter: mem});
-      it("DB name", () => {
-        expect(db.getName()).toEqual("testCollections");
-      });
-      const t = db.addCollection("test1", {
-        transactional: true
-      });
-      db.addCollection("test2");
-      // Throw error on wrong remove.
-      expect(() => t.remove("foo")).toThrowErrorOfType("Error");
-      // Throw error on non-synced doc
-      expect(() => t.remove({
-        name: "joe"
-      })).toThrowErrorOfType("Error");
+      db.initializePersistence({adapter: mem})
+        .then(() => {
+          expect(db.getName()).toEqual("testCollections");
 
-      expect(db.listCollections().length).toEqual(2);
-      t.clear();
-      const users = [{
-        name: "joe"
-      }, {
-        name: "dave"
-      }];
-      t.insert(users);
+          const t = db.addCollection("test1", {
+            transactional: true
+          });
+          db.addCollection("test2");
+          // Throw error on wrong remove.
+          expect(() => t.remove("foo")).toThrowErrorOfType("Error");
+          // Throw error on non-synced doc
+          expect(() => t.remove({
+            name: "joe"
+          })).toThrowErrorOfType("Error");
 
-      expect(2).toEqual(t.data.length);
-      t.remove(users);
-      expect(0).toEqual(t.data.length);
+          expect(db.listCollections().length).toEqual(2);
+          t.clear();
+          const users = [{
+            name: "joe"
+          }, {
+            name: "dave"
+          }];
+          t.insert(users);
 
-      class TestError implements Error {
-        public name = "TestError";
-        public message = "TestErrorMessage";
-      }
+          expect(2).toEqual(t.data.length);
+          t.remove(users);
+          expect(0).toEqual(t.data.length);
 
-      db.autosaveEnable();
-      db.on("close", () => {
-        throw new TestError();
-      });
-      db.close().then(() => done.fail, done);
+          class TestError implements Error {
+            public name = "TestError";
+            public message = "TestErrorMessage";
+          }
+
+          db.autosaveEnable();
+          db.on("close", () => {
+            throw new TestError();
+          });
+          db.close().then(() => done.fail, done);
+        });
     });
   });
 });

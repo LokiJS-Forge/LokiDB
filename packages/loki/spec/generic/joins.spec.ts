@@ -4,8 +4,6 @@ import {Collection} from "../../src/collection";
 import {ResultSet} from "../../src/result_set";
 import {Doc} from "../../../common/types";
 
-export type ANY = any;
-
 interface Director {
   name: string;
   directorId: number;
@@ -72,24 +70,24 @@ describe("joins", () => {
     let joined;
 
     //Basic non-mapped join
-    joined = films.eqJoin(directors.data, "directorId", "directorId").data() as ANY;
+    joined = films.eqJoin(directors.data, "directorId", "directorId").data();
     expect(joined[0].left.title).toEqual("Taxi");
 
     //Basic join with map
-    joined = films.eqJoin(directors.data, "directorId", "directorId", (left: ANY, right: ANY) => ({
+    joined = films.eqJoin(directors.data, "directorId", "directorId", (left: Film, right: Director) => ({
       filmTitle: left.title,
       directorName: right.name
-    })).data()  as ANY;
+    })).data();
     expect(joined.length).toEqual(films.data.length);
     expect(joined[0].filmTitle).toEqual("Taxi");
     expect(joined[0].directorName).toEqual("Martin Scorsese");
 
     //Basic non-mapped join with chained map
     joined = films.eqJoin(directors.data, "directorId", "directorId")
-      .map((obj: ANY) => ({
+      .map((obj: {left: Film, right: Director}) => ({
         filmTitle: obj.left.title,
         directorName: obj.right.name
-      })).data()  as ANY;
+      })).data();
     expect(joined[0].filmTitle).toEqual("Taxi");
     expect(joined[0].directorName).toEqual("Martin Scorsese");
 
@@ -106,7 +104,7 @@ describe("joins", () => {
         directorId: 3
       })
       .simplesort("title")
-      .eqJoin(directors.data, "directorId", "directorId", (left: ANY, right: ANY) => ({
+      .eqJoin(directors.data, "directorId", "directorId", (left: Film, right: Director) => ({
         filmTitle: left.title,
         directorName: right.name
       })) as any as ResultSet<Join1>;
@@ -125,8 +123,8 @@ describe("joins", () => {
 
     //Test calculated keys
     joined = films.chain().eqJoin(directors.data,
-      (director: ANY) => director.directorId + 1,
-      (film: ANY) => String(film.directorId - 1))
+      (director: any) => director.directorId + 1,
+      (film: any) => String(film.directorId - 1))
       .data() as Join2[];
 
     expect(joined[0].right.name).toEqual("Steven Spielberg");

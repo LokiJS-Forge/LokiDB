@@ -2,8 +2,6 @@
 import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
 
-export type ANY = any;
-
 interface Director {
   name: string;
   directorId: number;

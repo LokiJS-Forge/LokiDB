@@ -3,8 +3,6 @@ import {Loki} from "../../src/loki";
 import {LokiOps} from "../../src/result_set";
 import {Collection} from "../../src/collection";
 
-export type ANY = any;
-
 describe("Testing operators", () => {
 
   interface Tree {
@@ -110,7 +108,7 @@ describe("Testing operators", () => {
 
 describe("Individual operator tests", () => {
 
-  let ops: ANY;
+  let ops: typeof LokiOps;
   beforeEach(() => {
     ops = LokiOps;
   });

@@ -2,8 +2,6 @@
 import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
 
-export type ANY = any;
-
 describe("loki", () => {
   let db: Loki;
 
@@ -14,7 +12,6 @@ describe("loki", () => {
   }
 
   let users: Collection<User>;
-  let testObject: ANY;
 
   beforeEach(() => {
     db = new Loki("test.json");
@@ -192,7 +189,7 @@ describe("loki", () => {
       // remove() - add some bogus object to remove
       const userCount1 = users.data.length;
 
-      testObject = {
+      const testObject = {
         first: "aaa",
         last: "bbb",
         city: "pasadena",
@@ -765,7 +762,7 @@ describe("loki", () => {
         "age": {
           "$gte": 30
         }
-      }).where((obj: ANY) => obj.lang === "Swedish").data().length).toEqual(1);
+      }).where((obj: User) => obj.lang === "Swedish").data().length).toEqual(1);
 
       // ResultSet offset
       expect(users.chain().offset(1).data().length).toEqual(users.data.length - 1);

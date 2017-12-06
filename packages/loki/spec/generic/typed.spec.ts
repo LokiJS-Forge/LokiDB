@@ -1,8 +1,6 @@
 /* global describe, it, expect */
 import {Loki} from "../../src/loki";
 
-export type ANY = any;
-
 describe("typed", () => {
   it("works", () => {
     const db = new Loki("test.json");
@@ -60,6 +58,9 @@ describe("typed", () => {
 
     expect(users.get(1) instanceof User).toBe(true);
     expect(users.get(1).name).toBe("joe");
+
+    // TODO
+    type ANY = any;
 
     // Loading using proto and inflate:
     db.loadJSON(JSON.stringify(json), {

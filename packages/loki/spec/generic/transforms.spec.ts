@@ -3,8 +3,6 @@ import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
 import Transform = Collection.Transform;
 
-export type ANY = any;
-
 describe("transforms", () => {
   interface User {
     name: string;
@@ -55,7 +53,7 @@ describe("transforms", () => {
         },
         {
           type: "where",
-          value: function (obj: ANY) {
+          value: function (obj: User) {
             return (obj.name.indexOf("drau") !== -1);
           }
         }
@@ -177,7 +175,7 @@ describe("transforms", () => {
       ];
 
       const params = {
-        NameFilter: function (obj: ANY) {
+        NameFilter: function (obj: User) {
           return (obj.name.indexOf("nir") !== -1);
         }
       };

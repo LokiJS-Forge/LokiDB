@@ -5,8 +5,6 @@ import {Collection} from "../../src/collection";
 import SerializationMethod = Loki.SerializationMethod;
 import {StorageAdapter} from "../../../common/types";
 
-export type ANY = any;
-
 interface AB {
   a: number;
   b: number;
@@ -215,7 +213,7 @@ describe("testing destructured serialization/deserialization", () => {
 
     // we dont need to test all components of reassembling whole database
     // so we will just call helper function to deserialize just collection data
-    let data: ANY = ddb.deserializeCollection<Test>(result, {partitioned: true, delimited: false});
+    let data = ddb.deserializeCollection<Test>(result, {partitioned: true, delimited: false});
 
     expect(data.length).toEqual(ddb["_collections"][0].data.length);
     expect(data[0]["val"]).toEqual(ddb["_collections"][0].data[0]["val"]);

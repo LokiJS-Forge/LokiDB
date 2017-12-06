@@ -683,7 +683,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {object|function} filterObject - 'mongo-like' query object (or deprecated filterFunction mode)
    * @param {function} updateFunction - update function to run against filtered documents
    */
-  findAndUpdate(filterObject: ResultSet.Query<Doc<E> & D> | ((obj: E) => boolean), updateFunction: (obj: Doc<E>) => any) {
+  findAndUpdate(filterObject: ResultSet.Query<Doc<E> & D> | ((obj: Doc<E>) => boolean), updateFunction: (obj: Doc<E>) => any) {
     if (typeof(filterObject) === "function") {
       this.updateWhere(filterObject, updateFunction);
     } else {
@@ -1810,7 +1810,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {function} fun - filter function to run against all collection docs
    * @returns {array} all documents which pass your filter function
    */
-  public where(fun: (obj: E) => boolean): Doc<E>[] {
+  public where(fun: (obj: Doc<E>) => boolean): Doc<E>[] {
     return this.chain().where(fun).data();
   }
 

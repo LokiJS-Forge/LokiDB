@@ -1,12 +1,9 @@
 /* global describe, beforeEach, it, expect */
 import {LokiOps} from "../../src/result_set";
 
-export type ANY = any;
-
 describe("Testing comparator helpers", () => {
 
-  let ops: ANY;
-
+  let ops: typeof LokiOps;
   beforeEach(() => {
     ops = LokiOps;
   });
