@@ -275,8 +275,8 @@ describe("testing adapter functionality", () => {
     dv.data();
 
     const p1 = ddb.saveDatabase().then(() => {
-      expect(memAdapter["hashStore"].hasOwnProperty("test.db")).toEqual(true);
-      expect(memAdapter["hashStore"]["test.db"].savecount).toEqual(1);
+      expect(memAdapter["_hashStore"].hasOwnProperty("test.db")).toEqual(true);
+      expect(memAdapter["_hashStore"]["test.db"].savecount).toEqual(1);
     });
 
     const cdb = new Loki("test.db");
@@ -313,12 +313,12 @@ describe("testing adapter functionality", () => {
     });
 
     ddb.saveDatabase().then(() => {
-      expect(memAdapter["hashStore"].hasOwnProperty("test.db")).toEqual(true);
-      expect(memAdapter["hashStore"]["test.db"].savecount).toEqual(1);
+      expect(memAdapter["_hashStore"].hasOwnProperty("test.db")).toEqual(true);
+      expect(memAdapter["_hashStore"]["test.db"].savecount).toEqual(1);
 
       return ddb.deleteDatabase();
     }).then(() => {
-      expect(memAdapter["hashStore"].hasOwnProperty("test.db")).toEqual(false);
+      expect(memAdapter["_hashStore"].hasOwnProperty("test.db")).toEqual(false);
     }).then(done, done.fail);
   });
 
@@ -436,7 +436,7 @@ describe("async adapter tests", () => {
 
       db2.loadDatabase().then(() => {
         // total of 2 saves should have occurred
-        expect(mem["hashStore"]["sandbox.db"].savecount).toEqual(2);
+        expect(mem["_hashStore"]["sandbox.db"].savecount).toEqual(2);
 
         // verify the saved database contains all expected changes
         expect(db2.getCollection<AB>("another").findOne({a: 1}).b).toEqual(3);
@@ -530,7 +530,7 @@ describe("async adapter tests", () => {
     // give all async saves time to complete and then verify outcome
     setTimeout(() => {
       // total of 2 saves should have occurred
-      expect(mem["hashStore"]["sandbox.db"].savecount).toEqual(2);
+      expect(mem["_hashStore"]["sandbox.db"].savecount).toEqual(2);
 
       // verify the saved database contains all expected changes
       const db2 = new Loki("sandbox.db");

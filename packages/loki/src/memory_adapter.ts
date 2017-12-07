@@ -1,6 +1,4 @@
-import {StorageAdapter} from "../../common/types";
-
-export type ANY = any;
+import {Dict, StorageAdapter} from "../../common/types";
 
 /**
  * In in-memory persistence adapter for an in-memory database.
@@ -8,25 +6,28 @@ export type ANY = any;
  */
 export class LokiMemoryAdapter implements StorageAdapter {
 
-  private hashStore: object;
-  private options: ANY;
+  private _hashStore: Dict<{
+    savecount: number;
+    lastsave: Date;
+    value: string;
+  }>;
+  private _options: LokiMemoryAdapter.Options;
 
   /**
    * @param {object} options - memory adapter options
    * @param {boolean} [options.asyncResponses=false] - whether callbacks are invoked asynchronously (default: false)
    * @param {int} [options.asyncTimeout=50] - timeout in ms to queue callbacks (default: 50)
-   * @param {ANY} options
    */
-  constructor(options?: ANY) {
-    this.hashStore = {};
-    this.options = options || {};
+  constructor(options?: LokiMemoryAdapter.Options) {
+    this._hashStore = {};
+    this._options = options || {};
 
-    if (this.options.asyncResponses === undefined) {
-      this.options.asyncResponses = false;
+    if (this._options.asyncResponses === undefined) {
+      this._options.asyncResponses = false;
     }
 
-    if (this.options.asyncTimeout === undefined) {
-      this.options.asyncTimeout = 50; // 50 ms default
+    if (this._options.asyncTimeout === undefined) {
+      this._options.asyncTimeout = 50; // 50 ms default
     }
   }
 
@@ -38,21 +39,21 @@ export class LokiMemoryAdapter implements StorageAdapter {
    * @returns {Promise} a Promise that resolves after the database was loaded
    */
   loadDatabase(dbname: string): Promise<string> {
-    if (this.options.asyncResponses) {
+    if (this._options.asyncResponses) {
       return new Promise((resolve, reject) => {
         setTimeout(() => {
-          if (this.hashStore[dbname] !== undefined) {
-            resolve(this.hashStore[dbname].value);
+          if (this._hashStore[dbname] !== undefined) {
+            resolve(this._hashStore[dbname].value);
           }
           else {
             reject(new Error("unable to load database, " + dbname + " was not found in memory adapter"));
           }
-        }, this.options.asyncTimeout);
+        }, this._options.asyncTimeout);
       });
     }
     else {
-      if (this.hashStore[dbname] !== undefined) {
-        return Promise.resolve(this.hashStore[dbname].value);
+      if (this._hashStore[dbname] !== undefined) {
+        return Promise.resolve(this._hashStore[dbname].value);
       }
       else {
         return Promise.reject(new Error("unable to load database, " + dbname + " was not found in memory adapter"));
@@ -68,27 +69,25 @@ export class LokiMemoryAdapter implements StorageAdapter {
    * @returns {Promise} a Promise that resolves after the database was persisted
    */
   saveDatabase(dbname: string, dbstring: string): Promise<void> {
-    let saveCount;
-
-    if (this.options.asyncResponses) {
+    if (this._options.asyncResponses) {
       return new Promise((resolve) => {
         setTimeout(() => {
-          saveCount = (this.hashStore[dbname] !== undefined ? this.hashStore[dbname].savecount : 0);
+          const saveCount = (this._hashStore[dbname] !== undefined ? this._hashStore[dbname].savecount : 0);
 
-          this.hashStore[dbname] = {
+          this._hashStore[dbname] = {
             savecount: saveCount + 1,
             lastsave: new Date(),
             value: dbstring
           };
 
           resolve();
-        }, this.options.asyncTimeout);
+        }, this._options.asyncTimeout);
         return Promise.resolve();
       });
     } else {
-      saveCount = (this.hashStore[dbname] !== undefined ? this.hashStore[dbname].savecount : 0);
+      const saveCount = (this._hashStore[dbname] !== undefined ? this._hashStore[dbname].savecount : 0);
 
-      this.hashStore[dbname] = {
+      this._hashStore[dbname] = {
         savecount: saveCount + 1,
         lastsave: new Date(),
         value: dbstring
@@ -104,11 +103,15 @@ export class LokiMemoryAdapter implements StorageAdapter {
    * @param {string} dbname - name of the database (filename/keyname)
    * @returns {Promise} a Promise that resolves after the database was deleted
    */
-  deleteDatabase(dbname: string) {
-    if (this.hashStore[dbname] !== undefined) {
-      delete this.hashStore[dbname];
-    }
-
+  deleteDatabase(dbname: string): Promise<void> {
+    delete this._hashStore[dbname];
     return Promise.resolve();
+  }
+}
+
+export namespace LokiMemoryAdapter {
+  export interface Options {
+    asyncResponses?: boolean;
+    asyncTimeout?: number;
   }
 }
