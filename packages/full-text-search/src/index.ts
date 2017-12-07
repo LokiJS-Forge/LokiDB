@@ -1,7 +1,9 @@
 import {FullTextSearch} from "./full_text_search";
-export {Tokenizer} from "./tokenizer";
-export {QueryBuilder} from "./query_builder";
-export {InvertedIndex} from "./inverted_index";
+import {Tokenizer} from "./tokenizer";
+import {QueryBuilder} from "./query_builder";
 
-export {FullTextSearch};
+FullTextSearch["Tokenizer"] = Tokenizer;
+FullTextSearch["QueryBuilder"] = QueryBuilder;
+
+export {FullTextSearch, Tokenizer, QueryBuilder};
 export default FullTextSearch;

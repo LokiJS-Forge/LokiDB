@@ -2,15 +2,13 @@
 import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
 
-export type ANY = any;
-
 describe("sorting and indexing", () => {
   let db: Loki;
   beforeEach(() => {
     db = new Loki("sortingIndexingTest");
   });
 
-  describe("resultset simplesort", () => {
+  describe("ResultSet simplesort", () => {
     it("works", () => {
       interface Sortable {
         a: number;
@@ -32,7 +30,7 @@ describe("sorting and indexing", () => {
     });
   });
 
-  describe("resultset simplesort descending", () => {
+  describe("ResultSet simplesort descending", () => {
     it("works", () => {
       interface Sortable {
         a: number;
@@ -68,7 +66,7 @@ describe("sorting and indexing", () => {
     });
   });
 
-  describe("resultset simplesort on nested properties", () => {
+  describe("ResultSet simplesort on nested properties", () => {
     it("works", function () {
       interface Sortable {
         foo: {
@@ -77,7 +75,7 @@ describe("sorting and indexing", () => {
         };
       }
 
-      const rss = db.addCollection<Sortable>("rssort");
+      const rss = db.addCollection<Sortable, {"foo.a": number}>("rssort");
 
       rss.insert({foo: {a: 4, b: 2}});
       rss.insert({foo: {a: 7, b: 1}});
@@ -92,7 +90,7 @@ describe("sorting and indexing", () => {
     });
   });
 
-  describe("resultset simplesort with dates", () => {
+  describe("ResultSet simplesort with dates", () => {
     it("works", () => {
       const now = new Date().getTime();
       const dt1 = new Date(now - 1000);
@@ -123,7 +121,7 @@ describe("sorting and indexing", () => {
     });
   });
 
-  describe("resultset sort works correctly", () => {
+  describe("ResultSet sort works correctly", () => {
     it("works", () => {
       interface Sortable {
         a: number;
@@ -140,7 +138,7 @@ describe("sorting and indexing", () => {
         {a: 2, b: 9, c: "third"}
       ]);
 
-      const sortfun = (obj1: ANY, obj2: ANY) => {
+      const sortfun = (obj1: Sortable, obj2: Sortable) => {
         if (obj1.a === obj2.a) return 0;
         if (obj1.a > obj2.a) return 1;
         if (obj1.a < obj2.a) return -1;
@@ -154,7 +152,7 @@ describe("sorting and indexing", () => {
     });
   });
 
-  describe("resultset compoundsort works correctly", () => {
+  describe("ResultSet compoundsort works correctly", () => {
     it("works", () => {
       const db = new Loki("test.db");
 
@@ -186,7 +184,7 @@ describe("sorting and indexing", () => {
     });
   });
 
-  describe("resultset compoundsort on nested properties works correctly", () => {
+  describe("ResultSet compoundsort on nested properties works correctly", () => {
     it("works", function () {
       const db = new Loki("test.db");
 
@@ -200,7 +198,7 @@ describe("sorting and indexing", () => {
         };
       }
 
-      const coll = db.addCollection<AZYBC>("coll");
+      const coll = db.addCollection<AZYBC, {"z.y.b": number, "z.y.c": number}>("coll");
 
       coll.insert([
         {a: 1, z: {y: {b: 9, c: "first"}}},
@@ -247,7 +245,7 @@ describe("sorting and indexing", () => {
       coll.insert({a: [8, 1, 15], b: 5});
       coll.insert({a: "asdf", b: 5});
 
-      let indexVals: ANY[] = [];
+      let indexVals: any[] = [];
 
       // make sure unindexed sort is as expected
 
@@ -279,8 +277,8 @@ describe("sorting and indexing", () => {
       indexVals = [];
       coll.ensureIndex("a");
 
-      coll["binaryIndices"].a.values.forEach((vi: ANY) => {
-        indexVals.push(coll.data[vi].a);
+      coll["binaryIndices"].a.values.forEach((vi: any) => {
+        indexVals.push(coll._data[vi].a);
       });
 
       expect(indexVals.length).toEqual(14);

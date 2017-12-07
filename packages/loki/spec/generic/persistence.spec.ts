@@ -5,8 +5,6 @@ import {Collection} from "../../src/collection";
 import SerializationMethod = Loki.SerializationMethod;
 import {StorageAdapter} from "../../../common/types";
 
-export type ANY = any;
-
 interface AB {
   a: number;
   b: number;
@@ -30,7 +28,7 @@ describe("testing unique index serialization", () => {
     username: string;
   }
 
-  let users: Collection;
+  let users: Collection<AUser>;
   beforeEach(() => {
     db = new Loki();
     users = db.addCollection<AUser>("users");
@@ -50,20 +48,20 @@ describe("testing unique index serialization", () => {
     const ser = db.serialize(), reloaded = new Loki();
     reloaded.loadJSON(ser);
     const coll = reloaded.getCollection<AUser>("users");
-    expect(coll.data.length).toEqual(4);
+    expect(coll.count()).toEqual(4);
     expect(coll.constraints.unique["username"]).toBeDefined();
     const joe = coll.by("username", "joe");
     expect(joe).toBeDefined();
     expect(joe.username).toEqual("joe");
 
-    expect(reloaded["_serializationMethod"]).toBe(SerializationMethod.NORMAL);
+    expect(reloaded["_serializationMethod"]).toBe("normal");
     expect(reloaded["_destructureDelimiter"]).toBe("$<\n");
   });
 });
 
 describe("testing destructured serialization/deserialization", () => {
   it("verify default (D) destructuring works as expected", () => {
-    const ddb = new Loki("test.db", {serializationMethod: SerializationMethod.DESTRUCTURED});
+    const ddb = new Loki("test.db", {serializationMethod: "destructured"});
     const coll = ddb.addCollection<Test>("testcoll");
     coll.insert({
       name: "test1",
@@ -86,15 +84,15 @@ describe("testing destructured serialization/deserialization", () => {
 
     const destructuredJson = ddb.serialize();
 
-    const cddb = new Loki("test.db", {serializationMethod: SerializationMethod.DESTRUCTURED});
+    const cddb = new Loki("test.db", {serializationMethod: "destructured"});
     cddb.loadJSON(destructuredJson);
 
-    expect(cddb["_serializationMethod"]).toEqual(SerializationMethod.DESTRUCTURED);
+    expect(cddb["_serializationMethod"]).toEqual("destructured");
     expect(cddb["_collections"].length).toEqual(2);
-    expect(cddb["_collections"][0].data.length).toEqual(3);
-    expect(cddb["_collections"][0].data[0]["val"]).toEqual(ddb["_collections"][0].data[0]["val"]);
-    expect(cddb["_collections"][1].data.length).toEqual(1);
-    expect(cddb["_collections"][1].data[0]["a"]).toEqual(ddb["_collections"][1].data[0]["a"]);
+    expect(cddb["_collections"][0].count()).toEqual(3);
+    expect(cddb["_collections"][0]._data[0]["val"]).toEqual(ddb["_collections"][0]._data[0]["val"]);
+    expect(cddb["_collections"][1].count()).toEqual(1);
+    expect(cddb["_collections"][1]._data[0]["a"]).toEqual(ddb["_collections"][1]._data[0]["a"]);
   });
 
   // Destructuring Formats :
@@ -157,12 +155,12 @@ describe("testing destructured serialization/deserialization", () => {
 
       // assert expectations on reinflated database
       expect(cddb["_collections"].length).toEqual(2);
-      expect(cddb["_collections"][0].data.length).toEqual(3);
-      expect(cddb["_collections"][0].data[0]["val"]).toEqual(ddb["_collections"][0].data[0]["val"]);
-      expect(cddb["_collections"][0].data[0].$loki).toEqual(ddb["_collections"][0].data[0].$loki);
-      expect(cddb["_collections"][0].data[2].$loki).toEqual(ddb["_collections"][0].data[2].$loki);
-      expect(cddb["_collections"][1].data.length).toEqual(1);
-      expect(cddb["_collections"][1].data[0]["a"]).toEqual(ddb["_collections"][1].data[0]["a"]);
+      expect(cddb["_collections"][0]._data.length).toEqual(3);
+      expect(cddb["_collections"][0]._data[0]["val"]).toEqual(ddb["_collections"][0]._data[0]["val"]);
+      expect(cddb["_collections"][0]._data[0].$loki).toEqual(ddb["_collections"][0]._data[0].$loki);
+      expect(cddb["_collections"][0]._data[2].$loki).toEqual(ddb["_collections"][0]._data[2].$loki);
+      expect(cddb["_collections"][1].count()).toEqual(1);
+      expect(cddb["_collections"][1]._data[0]["a"]).toEqual(ddb["_collections"][1]._data[0]["a"]);
     }
   });
 
@@ -201,8 +199,8 @@ describe("testing destructured serialization/deserialization", () => {
     cddb.loadJSON(result);
 
     expect(cddb["_collections"].length).toEqual(2);
-    expect(cddb["_collections"][0].data.length).toEqual(0);
-    expect(cddb["_collections"][1].data.length).toEqual(0);
+    expect(cddb["_collections"][0].count()).toEqual(0);
+    expect(cddb["_collections"][1].count()).toEqual(0);
     expect(cddb["_collections"][0].name).toEqual(ddb["_collections"][0]["name"]);
     expect(cddb["_collections"][1].name).toEqual(ddb["_collections"][1]["name"]);
 
@@ -215,15 +213,15 @@ describe("testing destructured serialization/deserialization", () => {
 
     // we dont need to test all components of reassembling whole database
     // so we will just call helper function to deserialize just collection data
-    let data: ANY = ddb.deserializeCollection<Test>(result, {partitioned: true, delimited: false});
+    let data = ddb.deserializeCollection<Test>(result, {partitioned: true, delimited: false});
 
-    expect(data.length).toEqual(ddb["_collections"][0].data.length);
-    expect(data[0]["val"]).toEqual(ddb["_collections"][0].data[0]["val"]);
-    expect(data[1]["val"]).toEqual(ddb["_collections"][0].data[1]["val"]);
-    expect(data[2]["val"]).toEqual(ddb["_collections"][0].data[2]["val"]);
-    expect(data[0].$loki).toEqual(ddb["_collections"][0].data[0].$loki);
-    expect(data[1].$loki).toEqual(ddb["_collections"][0].data[1].$loki);
-    expect(data[2].$loki).toEqual(ddb["_collections"][0].data[2].$loki);
+    expect(data.length).toEqual(ddb["_collections"][0].count());
+    expect(data[0]["val"]).toEqual(ddb["_collections"][0]._data[0]["val"]);
+    expect(data[1]["val"]).toEqual(ddb["_collections"][0]._data[1]["val"]);
+    expect(data[2]["val"]).toEqual(ddb["_collections"][0]._data[2]["val"]);
+    expect(data[0].$loki).toEqual(ddb["_collections"][0]._data[0].$loki);
+    expect(data[1].$loki).toEqual(ddb["_collections"][0]._data[1].$loki);
+    expect(data[2].$loki).toEqual(ddb["_collections"][0]._data[2].$loki);
 
     // Verify collection alone works correctly using DA format (the other partitioned format)
     result = ddb.serializeDestructured({
@@ -235,13 +233,13 @@ describe("testing destructured serialization/deserialization", () => {
     // now reinflate from that interim DA format
     data = ddb.deserializeCollection<Test>(result, {partitioned: true, delimited: true});
 
-    expect(data.length).toEqual(ddb["_collections"][0].data.length);
-    expect(data[0]["val"]).toEqual(ddb["_collections"][0].data[0]["val"]);
-    expect(data[1]["val"]).toEqual(ddb["_collections"][0].data[1]["val"]);
-    expect(data[2]["val"]).toEqual(ddb["_collections"][0].data[2]["val"]);
-    expect(data[0].$loki).toEqual(ddb["_collections"][0].data[0].$loki);
-    expect(data[1].$loki).toEqual(ddb["_collections"][0].data[1].$loki);
-    expect(data[2].$loki).toEqual(ddb["_collections"][0].data[2].$loki);
+    expect(data.length).toEqual(ddb["_collections"][0].count());
+    expect(data[0]["val"]).toEqual(ddb["_collections"][0]._data[0]["val"]);
+    expect(data[1]["val"]).toEqual(ddb["_collections"][0]._data[1]["val"]);
+    expect(data[2]["val"]).toEqual(ddb["_collections"][0]._data[2]["val"]);
+    expect(data[0].$loki).toEqual(ddb["_collections"][0]._data[0].$loki);
+    expect(data[1].$loki).toEqual(ddb["_collections"][0]._data[1].$loki);
+    expect(data[2].$loki).toEqual(ddb["_collections"][0]._data[2].$loki);
   });
 
 });
@@ -277,8 +275,8 @@ describe("testing adapter functionality", () => {
     dv.data();
 
     const p1 = ddb.saveDatabase().then(() => {
-      expect(memAdapter["hashStore"].hasOwnProperty("test.db")).toEqual(true);
-      expect(memAdapter["hashStore"]["test.db"].savecount).toEqual(1);
+      expect(memAdapter["_hashStore"].hasOwnProperty("test.db")).toEqual(true);
+      expect(memAdapter["_hashStore"]["test.db"].savecount).toEqual(1);
     });
 
     const cdb = new Loki("test.db");
@@ -287,8 +285,8 @@ describe("testing adapter functionality", () => {
     const p2 = cdb.loadDatabase().then(() => {
       expect(cdb["_collections"].length).toEqual(2);
       expect(cdb.getCollection<Test>("testcoll").findOne({name: "test2"})["val"]).toEqual(101);
-      expect(cdb["_collections"][0].data.length).toEqual(3);
-      expect(cdb["_collections"][1].data.length).toEqual(1);
+      expect(cdb["_collections"][0].count()).toEqual(3);
+      expect(cdb["_collections"][1].count()).toEqual(1);
       expect(cdb.getCollection<AB>("another").getDynamicView("test").data()).toEqual(coll2.find({"a": 1}));
     });
 
@@ -315,12 +313,12 @@ describe("testing adapter functionality", () => {
     });
 
     ddb.saveDatabase().then(() => {
-      expect(memAdapter["hashStore"].hasOwnProperty("test.db")).toEqual(true);
-      expect(memAdapter["hashStore"]["test.db"].savecount).toEqual(1);
+      expect(memAdapter["_hashStore"].hasOwnProperty("test.db")).toEqual(true);
+      expect(memAdapter["_hashStore"]["test.db"].savecount).toEqual(1);
 
       return ddb.deleteDatabase();
     }).then(() => {
-      expect(memAdapter["hashStore"].hasOwnProperty("test.db")).toEqual(false);
+      expect(memAdapter["_hashStore"].hasOwnProperty("test.db")).toEqual(false);
     }).then(done, done.fail);
   });
 
@@ -438,7 +436,7 @@ describe("async adapter tests", () => {
 
       db2.loadDatabase().then(() => {
         // total of 2 saves should have occurred
-        expect(mem["hashStore"]["sandbox.db"].savecount).toEqual(2);
+        expect(mem["_hashStore"]["sandbox.db"].savecount).toEqual(2);
 
         // verify the saved database contains all expected changes
         expect(db2.getCollection<AB>("another").findOne({a: 1}).b).toEqual(3);
@@ -532,7 +530,7 @@ describe("async adapter tests", () => {
     // give all async saves time to complete and then verify outcome
     setTimeout(() => {
       // total of 2 saves should have occurred
-      expect(mem["hashStore"]["sandbox.db"].savecount).toEqual(2);
+      expect(mem["_hashStore"]["sandbox.db"].savecount).toEqual(2);
 
       // verify the saved database contains all expected changes
       const db2 = new Loki("sandbox.db");

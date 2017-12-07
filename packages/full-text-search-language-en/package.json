@@ -8,6 +8,7 @@
     "url": "https://github.com/LokiJS-Forge/LokiJS2.git"
   },
   "main": "lokijs.full-text-search-language-en.js",
+  "types": "./types/full-text-search-language-en/src/index.d.ts",
   "dependencies": {
     "@lokijs/full-text-search": "0",
     "@lokijs/full-text-search-language": "0"

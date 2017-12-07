@@ -2,8 +2,6 @@
 import {Loki} from "../../src/loki";
 import {Collection, CloneMethod} from "../../src/collection";
 
-export type ANY = any;
-
 describe("cloning behavior", () => {
   interface User {
     name: string;
@@ -89,7 +87,7 @@ describe("cloning behavior", () => {
       }
 
       const cdb = new Loki("clonetest");
-      const citems = cdb.addCollection<User>("items", {clone: true, cloneMethod: CloneMethod.SHALLOW});
+      const citems = cdb.addCollection<User>("items", {clone: true, cloneMethod: "shallow"});
       const oldObject = new Item("mjolnir", "thor", "dwarves");
       const insObject = citems.insert(oldObject);
 
@@ -115,7 +113,7 @@ describe("cloning behavior", () => {
       citems.insert({name: "tyrfing", owner: "Svafrlami", maker: "dwarves"});
       citems.insert({name: "draupnir", owner: "odin", maker: "elves"});
 
-      // just to prove that resultset.data() is not giving the user the actual object reference we keep internally
+      // just to prove that ResultSet.data() is not giving the user the actual object reference we keep internally
       // we will modify the object and see if future requests for that object show the change
       const mj = citems.find({name: "mjolnir"})[0];
       mj.maker = "the dwarves";
@@ -128,7 +126,7 @@ describe("cloning behavior", () => {
       const cdb = new Loki("cloningEnabled");
       const citems = cdb.addCollection<User>("items", {
         clone: true,
-        cloneMethod: CloneMethod.PARSE_STRINGIFY
+        cloneMethod: "parse-stringify"
       });
 
       citems.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
@@ -136,7 +134,7 @@ describe("cloning behavior", () => {
       citems.insert({name: "tyrfing", owner: "Svafrlami", maker: "dwarves"});
       citems.insert({name: "draupnir", owner: "odin", maker: "elves"});
 
-      // just to prove that resultset.data() is not giving the user the actual object reference we keep internally
+      // just to prove that ResultSet.data() is not giving the user the actual object reference we keep internally
       // we will modify the object and see if future requests for that object show the change
       const mj = citems.find({name: "mjolnir"})[0];
       mj.maker = "the dwarves";
@@ -158,7 +156,7 @@ describe("cloning behavior", () => {
       citems.insert({name: "tyrfing", owner: "Svafrlami", maker: "dwarves"});
       citems.insert({name: "draupnir", owner: "odin", maker: "elves"});
 
-      // just to prove that resultset.data() is not giving the user the actual object reference we keep internally
+      // just to prove that ResultSet.data() is not giving the user the actual object reference we keep internally
       // we will modify the object and see if future requests for that object show the change
       const mj = citems.findOne({name: "mjolnir"});
       mj.maker = "the dwarves";
@@ -181,12 +179,12 @@ describe("cloning behavior", () => {
       citems.insert({name: "tyrfing", owner: "Svafrlami", maker: "dwarves"});
       citems.insert({name: "draupnir", owner: "odin", maker: "elves"});
 
-      // just to prove that resultset.data() is not giving the user the actual object reference we keep internally
+      // just to prove that ResultSet.data() is not giving the user the actual object reference we keep internally
       // we will modify the object and see if future requests for that object show the change
-      const mj = citems.where((obj: ANY) => obj.name === "mjolnir")[0];
+      const mj = citems.where((obj: User) => obj.name === "mjolnir")[0];
       mj.maker = "the dwarves";
 
-      const mj2 = citems.where((obj: ANY) => obj.name === "mjolnir")[0];
+      const mj2 = citems.where((obj: User) => obj.name === "mjolnir")[0];
       expect(mj2.maker).toBe("dwarves");
     });
   });
@@ -204,7 +202,7 @@ describe("cloning behavior", () => {
       citems.insert({name: "tyrfing", owner: "Svafrlami", maker: "dwarves"});
       citems.insert({name: "draupnir", owner: "odin", maker: "elves"});
 
-      // just to prove that resultset.data() is not giving the user the actual object reference we keep internally
+      // just to prove that ResultSet.data() is not giving the user the actual object reference we keep internally
       // we will modify the object and see if future requests for that object show the change
       const mj = citems.by("name", "mjolnir");
       mj.maker = "the dwarves";
@@ -233,7 +231,7 @@ describe("cloning behavior", () => {
     });
   });
 
-  describe("resultset data cloning works", () => {
+  describe("ResultSet data cloning works", () => {
     it("works", () => {
       const cdb = new Loki("cloningEnabled");
       const citems = cdb.addCollection<User>("items", {
@@ -245,7 +243,7 @@ describe("cloning behavior", () => {
       citems.insert({name: "tyrfing", owner: "Svafrlami", maker: "dwarves"});
       citems.insert({name: "draupnir", owner: "odin", maker: "elves"});
 
-      // just to prove that resultset.data() is not giving the user the actual object reference we keep internally
+      // just to prove that ResultSet.data() is not giving the user the actual object reference we keep internally
       // we will modify the object and see if future requests for that object show the change
       const mj = citems.chain().find({name: "mjolnir"}).data()[0];
       mj.maker = "the dwarves";
@@ -255,10 +253,10 @@ describe("cloning behavior", () => {
     });
   });
 
-  describe("resultset data forced cloning works", () => {
+  describe("ResultSet data forced cloning works", () => {
     it("works", () => {
       // although our collection does not define cloning, we can choose to clone results
-      // within resultset.data() options
+      // within ResultSet.data() options
       const mj = items.chain().find({name: "mjolnir"}).data({
         forceClones: true
       })[0];

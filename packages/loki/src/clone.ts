@@ -1,10 +1,4 @@
-export enum CloneMethod {
-  PARSE_STRINGIFY,
-  DEEP,
-  SHALLOW,
-  SHALLOW_ASSIGN,
-  SHALLOW_RECURSE_OBJECTS,
-}
+export type CloneMethod = "parse-stringify" | "deep" | "shallow" | "shallow-recurse-objects";
 
 function add(copy: any, key: any, value: any) {
   if (copy instanceof Array) {
@@ -66,7 +60,7 @@ function deepCopy(target: any) {
 /**
  * @hidden
  */
-export function clone<T>(data: T, method: CloneMethod = CloneMethod.PARSE_STRINGIFY): T {
+export function clone<T>(data: T, method: CloneMethod = "parse-stringify"): T {
   if (data === null || data === undefined) {
     return null;
   }
@@ -74,25 +68,25 @@ export function clone<T>(data: T, method: CloneMethod = CloneMethod.PARSE_STRING
   let cloned: any;
 
   switch (method) {
-    case CloneMethod.PARSE_STRINGIFY:
+    case "parse-stringify":
       cloned = JSON.parse(JSON.stringify(data));
       break;
-    case CloneMethod.DEEP:
+    case "deep":
       cloned = deepCopy(data);
       break;
-    case CloneMethod.SHALLOW:
+    case "shallow":
       cloned = Object.create(data.constructor.prototype);
       Object.assign(cloned, data);
       break;
-    case CloneMethod.SHALLOW_RECURSE_OBJECTS:
+    case "shallow-recurse-objects":
       // shallow clone top level properties
-      cloned = clone(data, CloneMethod.SHALLOW);
+      cloned = clone(data, "shallow");
       const keys = Object.keys(data);
       // for each of the top level properties which are object literals, recursively shallow copy
       for (let i = 0; i < keys.length; i++) {
         const key = keys[i];
         if (typeof data[key] === "object" && data[key].constructor.name === "Object") {
-          cloned[key] = clone(data[key], CloneMethod.SHALLOW_RECURSE_OBJECTS);
+          cloned[key] = clone(data[key], "shallow-recurse-objects");
         }
       }
       break;

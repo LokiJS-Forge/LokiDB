@@ -80,7 +80,7 @@ class EnglishStemmer {
     const re_3 = /^(.+?)(icate|ative|alize|iciti|ical|ful|ness)$/;
 
     const re_4 = /^(.+?)(al|ance|ence|er|ic|able|ible|ant|ement|ment|ent|ou|ism|ate|iti|ous|ive|ize)$/;
-    const re2_4 = /^(.+?)(s|t)(ion)$/;
+    const re2_4 = /^(.+?)([st])(ion)$/;
 
     const re_5 = /^(.+?)e$/;
     const re_5_1 = /ll$/;

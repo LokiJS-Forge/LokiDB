@@ -8,6 +8,7 @@
     "url": "https://github.com/LokiJS-Forge/LokiJS2.git"
   },
   "main": "lokijs.partitioning-adapter.js",
+  "types": "./types/partitioning-adapter/src/index.d.ts",
   "dependencies": {
     "@lokijs/loki": "0"
   }

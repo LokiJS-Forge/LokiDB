@@ -1,8 +1,6 @@
 /* global describe, beforeEach, it, expect */
 import {Loki} from "../../src/loki";
 
-export type ANY = any;
-
 describe("binary indices", () => {
   interface User {
     name: string;
@@ -308,7 +306,7 @@ describe("binary indices", () => {
       expect(items["binaryIndices"].name.values[3]).toBe(2);
 
       // for this test, just update gungnir directly in collection.data
-      items.data[1].name = "ygungnir";
+      items._data[1].name = "ygungnir";
 
       // renegotiate index position of 2nd data element (ygungnir) within name index
       items.adaptiveBinaryIndexUpdate(1, "name");
@@ -494,7 +492,7 @@ describe("binary indices", () => {
 
       let jsonString = db.serialize();
       let newDatabase = new Loki("idxtest");
-      newDatabase.loadJSON(jsonString as any);
+      newDatabase.loadJSON(jsonString);
 
       expect(newDatabase.getCollection("users").adaptiveBinaryIndices).toBe(true);
 

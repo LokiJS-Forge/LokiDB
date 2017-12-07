@@ -39,8 +39,8 @@ export class BaseQueryBuilder {
   }
 }
 
-export interface BaseQuery {
-  type: string;
+export interface BaseQuery<Type> {
+  type: Type;
   boost?: number;
 }
 
@@ -72,7 +72,7 @@ export class TermQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-export interface TermQuery extends BaseQuery {
+export interface TermQuery extends BaseQuery<"term"> {
   field: string;
   value: string;
 }
@@ -105,7 +105,7 @@ export class TermsQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-export interface TermsQuery extends BaseQuery {
+export interface TermsQuery extends BaseQuery<"terms"> {
   field: string;
   value: string[];
 }
@@ -156,7 +156,7 @@ export class WildcardQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-export interface WildcardQuery extends BaseQuery {
+export interface WildcardQuery extends BaseQuery<"wildcard"> {
   field: string;
   value: string;
   enable_scoring?: boolean;
@@ -212,7 +212,7 @@ export class FuzzyQueryBuilder extends BaseQueryBuilder {
    *
    * @return {FuzzyQueryBuilder} - object itself for cascading
    */
-  fuzziness(fuzziness: number | "AUTO") {
+  fuzziness(fuzziness: 0 | 1 | 2 | "AUTO") {
     if (fuzziness !== "AUTO" && (fuzziness < 0 || fuzziness > 2)) {
       throw TypeError("Fuzziness must be 0, 1, 2 or AUTO.");
     }
@@ -244,10 +244,10 @@ export class FuzzyQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-export interface FuzzyQuery extends BaseQuery {
+export interface FuzzyQuery extends BaseQuery<"fuzzy"> {
   field: string;
   value: string;
-  fuzziness?: number | "AUTO";
+  fuzziness?: 0 | 1 | 2 | "AUTO";
   prefix_length?: number;
   extended?: boolean;
 }
@@ -292,7 +292,7 @@ export class PrefixQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-export interface PrefixQuery extends BaseQuery {
+export interface PrefixQuery extends BaseQuery<"prefix"> {
   field: string;
   value: string;
   enable_scoring?: boolean;
@@ -323,7 +323,7 @@ export class ExistsQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-export interface ExistsQuery extends BaseQuery {
+export interface ExistsQuery extends BaseQuery<"exists"> {
   field: string;
 }
 
@@ -415,7 +415,7 @@ export class MatchQueryBuilder extends BaseQueryBuilder {
    *
    * @return {MatchQueryBuilder} - object itself for cascading
    */
-  fuzziness(fuzziness: number | "AUTO") {
+  fuzziness(fuzziness: 0 | 1 | 2 | "AUTO") {
     if (fuzziness !== "AUTO" && (fuzziness < 0 || fuzziness > 2)) {
       throw TypeError("Fuzziness must be 0, 1, 2 or AUTO.");
     }
@@ -447,12 +447,12 @@ export class MatchQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-export interface MatchQuery extends BaseQuery {
+export interface MatchQuery extends BaseQuery<"match"> {
   field: string;
   value: string;
   minimum_should_match?: number;
   operator?: "and" | "or";
-  fuzziness?: number | "AUTO";
+  fuzziness?: 0 | 1 | 2 | "AUTO";
   prefix_length?: number;
   extended?: boolean;
 }
@@ -482,7 +482,7 @@ export class MatchAllQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-export interface MatchQueryAll extends BaseQuery {
+export interface MatchQueryAll extends BaseQuery<"match_all"> {
 }
 
 /**
@@ -514,15 +514,15 @@ export class ConstantScoreQueryBuilder extends BaseQueryBuilder {
    * Starts an array of queries. Use endFilter() to finish the array.
    * @return {ArrayQueryBuilder} array query for holding sub queries
    */
-  beginFilter() {
+  beginFilter(): ArrayQueryBuilder & { endFilter(): ConstantScoreQueryBuilder } {
     this._data.filter = {};
     return new ArrayQueryBuilder("endFilter", () => {
       return this;
-    }, this._data.filter);
+    }, this._data.filter) as any;
   }
 }
 
-export interface ConstantScoreQuery extends BaseQuery {
+export interface ConstantScoreQuery extends BaseQuery<"constant_score"> {
   filter: ArrayQuery;
 }
 
@@ -578,44 +578,44 @@ export class BoolQueryBuilder extends BaseQueryBuilder {
    * Starts an array of queries for must clause. Use endMust() to finish the array.
    * @return {ArrayQueryBuilder} array query for holding sub queries
    */
-  beginMust() {
+  beginMust(): ArrayQueryBuilder & { endMust(): BoolQueryBuilder } {
     this._data.must = {};
     return new ArrayQueryBuilder("endMust", () => {
       return this;
-    }, this._data.must);
+    }, this._data.must) as any;
   }
 
   /**
    * Starts an array of queries for filter clause. Use endFilter() to finish the array.
    * @return {ArrayQueryBuilder} array query for holding sub queries
    */
-  beginFilter() {
+  beginFilter(): ArrayQueryBuilder & { endFilter(): BoolQueryBuilder } {
     this._data.filter = {};
     return new ArrayQueryBuilder("endFilter", () => {
       return this;
-    }, this._data.filter);
+    }, this._data.filter) as any;
   }
 
   /**
    * Starts an array of queries for should clause. Use endShould() to finish the array.
    * @return {ArrayQueryBuilder} array query for holding sub queries
    */
-  beginShould() {
+  beginShould(): ArrayQueryBuilder & { endShould(): BoolQueryBuilder } {
     this._data.should = {};
     return new ArrayQueryBuilder("endShould", () => {
       return this;
-    }, this._data.should);
+    }, this._data.should) as any;
   }
 
   /**
    * Starts an array of queries for not clause. Use endNot() to finish the array.
    * @return {ArrayQueryBuilder} array query for holding sub queries
    */
-  beginNot() {
+  beginNot(): ArrayQueryBuilder & { endNot(): BoolQueryBuilder } {
     this._data.not = {};
     return new ArrayQueryBuilder("endNot", () => {
       return this;
-    }, this._data.not);
+    }, this._data.not) as any;
   }
 
   /**
@@ -636,7 +636,7 @@ export class BoolQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-export interface BoolQuery extends BaseQuery {
+export interface BoolQuery extends BaseQuery<"bool"> {
   must?: ArrayQuery;
   filter?: ArrayQuery;
   should?: ArrayQuery;
@@ -650,7 +650,7 @@ export interface BoolQuery extends BaseQuery {
  */
 export class ArrayQueryBuilder extends BaseQueryBuilder {
   private _callbackName: string;
-  private _prepare: Function;
+  private _prepare: (queryType: { new(...args: any[]): any }, ...args: any[]) => any;
 
   constructor(callbackName: string, callback: Function, data: any = {}) {
     super("array", data);
@@ -719,8 +719,8 @@ export class ArrayQueryBuilder extends BaseQueryBuilder {
   }
 }
 
-export interface ArrayQuery {
-  values: any[];
+export interface ArrayQuery extends BaseQuery<"array"> {
+  values: QueryTypes[];
 }
 
 /**
@@ -835,8 +835,11 @@ export class QueryBuilder {
   }
 }
 
+export type QueryTypes = BoolQuery | ConstantScoreQuery | TermQuery | TermsQuery | WildcardQuery | FuzzyQuery
+  | MatchQuery | MatchQueryAll | PrefixQuery | ExistsQuery;
+
 export interface Query {
-  query: any;
+  query: QueryTypes;
   final_scoring?: boolean;
   bm25?: {
     k1: number;

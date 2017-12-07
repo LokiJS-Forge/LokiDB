@@ -1,8 +1,7 @@
 /* global describe, beforeEach, it, expect */
 import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
-
-export type ANY = any;
+import Transform = Collection.Transform;
 
 describe("transforms", () => {
   interface User {
@@ -27,7 +26,7 @@ describe("transforms", () => {
   describe("basic find transform", () => {
     it("works", () => {
 
-      const tx = [
+      const tx: Transform<User>[] = [
         {
           type: "find",
           value: {
@@ -45,7 +44,7 @@ describe("transforms", () => {
   describe("basic multi-step transform", () => {
     it("works", () => {
 
-      const tx = [
+      const tx: Transform<User>[] = [
         {
           type: "find",
           value: {
@@ -54,7 +53,7 @@ describe("transforms", () => {
         },
         {
           type: "where",
-          value: function (obj: ANY) {
+          value: function (obj: User) {
             return (obj.name.indexOf("drau") !== -1);
           }
         }
@@ -69,7 +68,7 @@ describe("transforms", () => {
   describe("parameterized find", () => {
     it("works", () => {
 
-      const tx = [
+      const tx: Transform<User>[] = [
         {
           type: "find",
           value: {
@@ -126,7 +125,7 @@ describe("transforms", () => {
       // that our parameter substitution method does not have problem with
       // non-serializable transforms.
 
-      let tx1 = [
+      let tx1: Transform[] = [
         {
           type: "mapReduce",
           mapFunction: mapper,
@@ -134,7 +133,7 @@ describe("transforms", () => {
         }
       ];
 
-      let tx2 = [
+      let tx2: Transform[] = [
         {
           type: "find",
           value: {
@@ -158,17 +157,17 @@ describe("transforms", () => {
 
       // make sure original transform is unchanged
       expect(tx2[0].type).toEqual("find");
-      expect(tx2[0].value.age.$gt).toEqual("[%lktxp]minimumAge");
+      expect(tx2[0]["value"].age.$gt).toEqual("[%lktxp]minimumAge");
       expect(tx2[1].type).toEqual("mapReduce");
-      expect(typeof tx2[1].mapFunction).toEqual("function");
-      expect(typeof tx2[1].reduceFunction).toEqual("function");
+      expect(typeof tx2[1]["mapFunction"]).toEqual("function");
+      expect(typeof tx2[1]["reduceFunction"]).toEqual("function");
     });
   });
 
   describe("parameterized where", () => {
     it("works", () => {
 
-      const tx = [
+      const tx: Transform<User>[] = [
         {
           type: "where",
           value: "[%lktxp]NameFilter"
@@ -176,7 +175,7 @@ describe("transforms", () => {
       ];
 
       const params = {
-        NameFilter: function (obj: ANY) {
+        NameFilter: function (obj: User) {
           return (obj.name.indexOf("nir") !== -1);
         }
       };
@@ -190,7 +189,7 @@ describe("transforms", () => {
   describe("named find transform", () => {
     it("works", () => {
 
-      const tx = [
+      const tx: Transform<User>[] = [
         {
           type: "find",
           value: {
@@ -266,7 +265,7 @@ describe("transforms", () => {
 
       // our transform will desc sort string column as 'third', 'second', 'fourth', 'first',
       // and then limit to first two
-      const tx = [
+      const tx: Transform<AB>[] = [
         {
           type: "simplesort",
           property: "a",
@@ -278,12 +277,12 @@ describe("transforms", () => {
         }
       ];
 
-      expect(dv.branchResultset(tx).data().length).toBe(2);
+      expect(dv.branchResultSet(tx).data().length).toBe(2);
 
       // now store as named (collection) transform and run off dynamic view
       testColl.addTransform("desc4limit2", tx);
 
-      const results = dv.branchResultset("desc4limit2").data();
+      const results = dv.branchResultSet("desc4limit2").data();
       expect(results.length).toBe(2);
       expect(results[0].a).toBe("third");
       expect(results[1].a).toBe("second");
@@ -337,8 +336,8 @@ describe("transforms", () => {
 
       // The 'joinData' in this instance is a Collection which we will call
       //   data() on with the specified (optional) dataOptions on.
-      //   It could also be a resultset or data array.
-      // Our left side resultset which this transform is executed on will also
+      //   It could also be a ResultSet or data array.
+      // Our left side ResultSet which this transform is executed on will also
       //   call data() with specified (optional) dataOptions.
       films.addTransform("filmdirect", [
         {
@@ -391,7 +390,7 @@ describe("transforms", () => {
         return obj;
       }
 
-      const tx = [{
+      const tx: Transform[] = [{
         type: "map",
         value: graftMap,
         dataOptions: {removeMeta: true}

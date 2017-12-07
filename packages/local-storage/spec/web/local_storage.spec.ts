@@ -1,6 +1,6 @@
 /* global describe, it, expect */
 import {Loki} from "../../../loki/src/loki";
-import {LokiLocalStorage} from "../../src/local_storage";
+import {LocalStorage} from "../../src/local_storage";
 
 describe("testing local storage", function () {
 
@@ -9,16 +9,16 @@ describe("testing local storage", function () {
   }
 
   beforeAll(() => {
-    LokiLocalStorage.register();
+    LocalStorage.register();
   });
 
   afterAll(() => {
-    LokiLocalStorage.deregister();
+    LocalStorage.deregister();
   });
 
   it("LokiLocalStorage", function (done) {
     const db = new Loki("myTestApp");
-    const adapter = {adapter: new LokiLocalStorage()};
+    const adapter = {adapter: new LocalStorage()};
     db.initializePersistence(adapter)
       .then(() => {
         db.addCollection<Name>("myColl").insert({name: "Hello World"});
@@ -35,7 +35,7 @@ describe("testing local storage", function () {
       })
       .then(() => {
         const db2 = new Loki("myTestApp");
-        return db2.initializePersistence({persistenceMethod: Loki.PersistenceMethod.LOCAL_STORAGE})
+        return db2.initializePersistence({persistenceMethod: "local-storage"})
           .then(() => {
             return db2.loadDatabase();
           }).then(() => {

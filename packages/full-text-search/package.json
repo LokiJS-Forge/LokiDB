@@ -8,6 +8,7 @@
     "url": "https://github.com/LokiJS-Forge/LokiJS2.git"
   },
   "main": "lokijs.full-text-search.js",
+  "types": "./types/full-text-search/src/index.d.ts",
   "optionalDependencies": {
     "@lokijs/loki": "0"
   }

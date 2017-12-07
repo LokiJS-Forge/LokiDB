@@ -7,5 +7,6 @@
     "type": "git",
     "url": "https://github.com/LokiJS-Forge/LokiJS2.git"
   },
-  "main": "lokijs.full-text-search-language.js"
+  "main": "lokijs.full-text-search-language.js",
+  "types": "./types/full-text-search-language/src/index.d.ts"
 }
