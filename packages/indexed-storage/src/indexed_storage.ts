@@ -22,7 +22,7 @@ declare type ANY = any;
  *     IndexedDb storage is provided per-domain, so we implement app/key/value database to
  *     allow separate contexts for separate apps within a domain.
  */
-export class LokiIndexedStorage implements StorageAdapter {
+export class IndexedStorage implements StorageAdapter {
   private _appname: string;
   private catalog: any;
 
@@ -30,14 +30,14 @@ export class LokiIndexedStorage implements StorageAdapter {
    * Registers the indexed storage as plugin.
    */
   static register(): void {
-    PLUGINS["LokiIndexedStorage"] = LokiIndexedStorage;
+    PLUGINS["IndexedStorage"] = IndexedStorage;
   }
 
   /**
    * Deregisters the indexed storage as plugin.
    */
   static deregister(): void {
-    delete PLUGINS["LokiIndexedStorage"];
+    delete PLUGINS["IndexedStorage"];
   }
 
   /**
@@ -566,4 +566,4 @@ class LokiCatalog {
   }
 }
 
-export default LokiIndexedStorage;
+export default IndexedStorage;

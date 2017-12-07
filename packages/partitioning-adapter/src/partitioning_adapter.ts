@@ -12,13 +12,13 @@ import {PLUGINS} from "../../common/plugin";
  * single IndexedDB row. If a single document update causes the collection to be flagged as dirty, all
  * of that collection's pages will be written on next save.
  */
-export class LokiPartitioningAdapter implements StorageAdapter {
+export class PartitioningAdapter implements StorageAdapter {
 
   public mode: string;
   private _adapter: StorageAdapter;
   private _dbref: ANY;
   private _dbname: string;
-  private _pageIterator: LokiPartitioningAdapter.PageIterator;
+  private _pageIterator: PartitioningAdapter.PageIterator;
   private _paging: boolean;
   private _pageSize: number;
   private _delimiter: string;
@@ -28,14 +28,14 @@ export class LokiPartitioningAdapter implements StorageAdapter {
    * Registers the partitioning adapter as plugin.
    */
   static register(): void {
-    PLUGINS["LokiPartitioningAdapter"] = LokiPartitioningAdapter;
+    PLUGINS["PartitioningAdapter"] = PartitioningAdapter;
   }
 
   /**
    * Deregisters the partitioning storage as plugin.
    */
   static deregister(): void {
-    delete PLUGINS["LokiPartitioningAdapter"];
+    delete PLUGINS["PartitioningAdapter"];
   }
 
   /**
@@ -297,12 +297,10 @@ export class LokiPartitioningAdapter implements StorageAdapter {
   }
 }
 
-namespace LokiPartitioningAdapter {
+namespace PartitioningAdapter {
   export interface PageIterator {
     collection?: ANY;
     docIndex?: number;
     pageIndex?: number;
   }
 }
-
-export default LokiPartitioningAdapter;

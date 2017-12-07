@@ -1,6 +1,6 @@
 /* global describe, it, expect */
 import {Loki} from "../../../loki/src/loki";
-import {LokiIndexedStorage} from "../../src/indexed_storage";
+import {IndexedStorage} from "../../src/indexed_storage";
 
 describe("testing indexed storage", function () {
 
@@ -9,16 +9,16 @@ describe("testing indexed storage", function () {
   }
 
   beforeAll(() => {
-    LokiIndexedStorage.register();
+    IndexedStorage.register();
   });
 
   afterAll(() => {
-    LokiIndexedStorage.deregister();
+    IndexedStorage.deregister();
   });
 
   it("LokiIndexedStorage", function (done) {
     const db = new Loki("myTestApp");
-    const adapter = {adapter: new LokiIndexedStorage()};
+    const adapter = {adapter: new IndexedStorage()};
     db.initializePersistence(adapter)
       .then(() => {
         db.addCollection<Name>("myColl").insert({name: "Hello World"});

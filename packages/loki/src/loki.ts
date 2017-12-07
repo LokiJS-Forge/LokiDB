@@ -152,10 +152,10 @@ export class Loki extends LokiEventEmitter {
     };
 
     const PERSISTENCE_METHODS = {
-      "fs-storage": PLUGINS["LokiFSStorage"],
-      "local-storage": PLUGINS["LokiLocalStorage"],
-      "indexed-storage": PLUGINS["LokiIndexedStorage"],
-      "memory-storage": PLUGINS["LokiMemoryStorage"]
+      "fs-storage": PLUGINS["FSStorage"],
+      "local-storage": PLUGINS["LocalStorage"],
+      "indexed-storage": PLUGINS["IndexedStorage"],
+      "memory-storage": PLUGINS["MemoryStorage"]
     };
 
     // process the options

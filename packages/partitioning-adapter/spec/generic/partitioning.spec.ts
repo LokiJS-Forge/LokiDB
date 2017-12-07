@@ -1,7 +1,7 @@
 /* global describe, it, expect */
 import {Loki} from "../../../loki/src/loki";
 import {LokiMemoryAdapter} from "../../../loki/src/memory_adapter";
-import {LokiPartitioningAdapter} from "../../src/partitioning_adapter";
+import {PartitioningAdapter} from "../../src/partitioning_adapter";
 
 
 interface AB {
@@ -21,7 +21,7 @@ describe("partitioning adapter", () => {
 
   it("verify partioning adapter works", (done) => {
     const mem = new LokiMemoryAdapter();
-    const adapter = new LokiPartitioningAdapter(mem);
+    const adapter = new PartitioningAdapter(mem);
 
     const db = new Loki("sandbox.db");
 
@@ -83,7 +83,7 @@ describe("partitioning adapter", () => {
     // we will use an exceptionally low page size (64bytes) to test with small dataset
     // every object will serialize to over 64bytes so that is not a hard limit but when
     // we exceed that we will stop adding to page (so for this test 1 doc per page)
-    const adapter = new LokiPartitioningAdapter(mem, {paging: true, pageSize: 64});
+    const adapter = new PartitioningAdapter(mem, {paging: true, pageSize: 64});
 
     const db = new Loki("sandbox.db");
 
@@ -183,7 +183,7 @@ describe("partitioning adapter", () => {
 
   it("verify throttled async works as expected", (done) => {
     const mem = new LokiMemoryAdapter({asyncResponses: true, asyncTimeout: 50});
-    const adapter = new LokiPartitioningAdapter(mem);
+    const adapter = new PartitioningAdapter(mem);
     const throttled = true;
     const db = new Loki("sandbox.db");
     db.initializePersistence({adapter: adapter, throttledSaves: throttled});
