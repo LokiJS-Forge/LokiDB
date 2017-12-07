@@ -43,11 +43,11 @@ describe("query builder", () => {
     expect(() => mqb.operator("and")).toThrowErrorOfType("SyntaxError");
     expect(() => mqb.operator("not")).toThrowErrorOfType("SyntaxError");
     mqb = new Query.MatchQueryBuilder("1", "1").operator("and");
-    expect(() => mqb.minimumShouldMatch(3)).toThrowErrorOfType("SyntaxError");
+    expect(() => mqb.minimumShouldMatch(3 as any)).toThrowErrorOfType("SyntaxError");
     mqb = new Query.MatchQueryBuilder("1", "1");
-    expect(() => mqb.fuzziness(3)).toThrowErrorOfType("TypeError");
+    expect(() => mqb.fuzziness(3 as any)).toThrowErrorOfType("TypeError");
     expect(() => mqb.fuzziness("3" as any)).toThrowErrorOfType("TypeError");
-    expect(() => mqb.fuzziness(-3)).toThrowErrorOfType("TypeError");
+    expect(() => mqb.fuzziness(-3 as any)).toThrowErrorOfType("TypeError");
     expect(() => mqb.prefixLength(-1)).toThrowErrorOfType("TypeError");
   });
 

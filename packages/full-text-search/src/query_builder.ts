@@ -212,7 +212,7 @@ export class FuzzyQueryBuilder extends BaseQueryBuilder {
    *
    * @return {FuzzyQueryBuilder} - object itself for cascading
    */
-  fuzziness(fuzziness: number | "AUTO") {
+  fuzziness(fuzziness: 0 | 1 | 2 | "AUTO") {
     if (fuzziness !== "AUTO" && (fuzziness < 0 || fuzziness > 2)) {
       throw TypeError("Fuzziness must be 0, 1, 2 or AUTO.");
     }
@@ -247,7 +247,7 @@ export class FuzzyQueryBuilder extends BaseQueryBuilder {
 export interface FuzzyQuery extends BaseQuery<"fuzzy"> {
   field: string;
   value: string;
-  fuzziness?: number | "AUTO";
+  fuzziness?: 0 | 1 | 2 | "AUTO";
   prefix_length?: number;
   extended?: boolean;
 }
@@ -415,7 +415,7 @@ export class MatchQueryBuilder extends BaseQueryBuilder {
    *
    * @return {MatchQueryBuilder} - object itself for cascading
    */
-  fuzziness(fuzziness: number | "AUTO") {
+  fuzziness(fuzziness: 0 | 1 | 2 | "AUTO") {
     if (fuzziness !== "AUTO" && (fuzziness < 0 || fuzziness > 2)) {
       throw TypeError("Fuzziness must be 0, 1, 2 or AUTO.");
     }
@@ -452,7 +452,7 @@ export interface MatchQuery extends BaseQuery<"match"> {
   value: string;
   minimum_should_match?: number;
   operator?: "and" | "or";
-  fuzziness?: number | "AUTO";
+  fuzziness?: 0 | 1 | 2 | "AUTO";
   prefix_length?: number;
   extended?: boolean;
 }

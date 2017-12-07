@@ -268,6 +268,66 @@ describe("Individual operator tests", () => {
     expect(results[1].count).toEqual(73);
   });
 
+  it("$keyin and $nkeyin", () => {
+    interface User {
+      name: string;
+    }
+
+    const db = new Loki("db");
+    const coll = db.addCollection<User>("coll");
+    coll.insert({name: "mjolnir"});
+
+    let results = coll.find({name: {$keyin: {mjolnir: "not relevant"}}});
+    expect(results.length).toEqual(1);
+
+    results = coll.find({name: {$keyin: {mjolnir: undefined}}});
+    expect(results.length).toEqual(1);
+
+    results = coll.find({name: {$nkeyin: {mjolnir: "not relevant"}}});
+    expect(results.length).toEqual(0);
+
+    results = coll.find({name: {$nkeyin: {mjolnir: undefined}}});
+    expect(results.length).toEqual(0);
+  });
+
+  it("$definedin and $ndefinedin", () => {
+    interface User {
+      name: string;
+    }
+
+    const db = new Loki("db");
+    const coll = db.addCollection<User>("coll");
+    coll.insert({name: "mjolnir"});
+
+    let results = coll.find({name: {$definedin: {mjolnir: "not relevant"}}});
+    expect(results.length).toEqual(1);
+
+    results = coll.find({name: {$definedin: {mjolnir: undefined}}});
+    expect(results.length).toEqual(0);
+
+    results = coll.find({name: {$undefinedin: {mjolnir: "not relevant"}}});
+    expect(results.length).toEqual(0);
+
+    results = coll.find({name: {$undefinedin: {mjolnir: undefined}}});
+    expect(results.length).toEqual(1);
+  });
+
+  it("$containsString", () => {
+    interface User {
+      name: string;
+    }
+
+    const db = new Loki("db");
+    const coll = db.addCollection<User>("coll");
+    coll.insert({name: "mjolnir"});
+
+    let results = coll.find({name: {$containsString: "mj"}});
+    expect(results.length).toEqual(1);
+
+    results = coll.find({name: {$containsString: "nj"}});
+    expect(results.length).toEqual(0);
+  });
+
   it("ops work with mixed datatypes", () => {
     const db = new Loki("db");
 

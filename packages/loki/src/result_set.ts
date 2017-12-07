@@ -119,27 +119,27 @@ export const LokiOps = {
     return b.indexOf(a) === -1;
   },
 
-  $keyin(a: any, b: any): boolean {
+  $keyin(a: string, b: object): boolean {
     return a in b;
   },
 
-  $nkeyin(a: any, b: any): boolean {
+  $nkeyin(a: string, b: object): boolean {
     return !(a in b);
   },
 
-  $definedin(a: any, b: any): boolean {
+  $definedin(a: string, b: object): boolean {
     return b[a] !== undefined;
   },
 
-  $undefinedin(a: any, b: any): boolean {
+  $undefinedin(a: string, b: object): boolean {
     return b[a] === undefined;
   },
 
-  $regex(a: any, b: any): boolean {
+  $regex(a: string, b: RegExp): boolean {
     return b.test(a);
   },
 
-  $containsString(a: any, b: any): boolean {
+  $containsString(a: any, b: string): boolean {
     return (typeof a === "string") && (a.indexOf(b) !== -1);
   },
 
@@ -175,7 +175,7 @@ export const LokiOps = {
     return (typeof b !== "object") ? (type === b) : doQueryOp(type, b);
   },
 
-  $finite(a: any, b: any): boolean {
+  $finite(a: number, b: boolean): boolean {
     return (b === isFinite(a));
   },
 
@@ -1260,25 +1260,37 @@ export namespace ResultSet {
     removeMeta?: boolean;
   }
 
-  export type PartialModel<E, T> = { [P in keyof E]?: T | E[P] };
-
-  export type Query<E> = PartialModel<E & { $and: Query<E>[]; $or: Query<E>[], $fts: FullTextSearchQuery },
-    { [Y in keyof typeof LokiOps]?: any }>;
-
-  interface AB {
-    name: string;
-  }
-
-  let rqwe: Query<AB> = {
-    $fts: {
-      query: {
-        type: "term",
-        value: "c",
-        field: "r"
-      }
-    },
-    $and: [{
-      name: "abc"
-    }]
+  export type LokiOps<R> = {
+    $eq?: R;
+    $aeq?: R;
+    $ne?: R;
+    $dteq?: R;
+    $gt?: R;
+    $gte?: R;
+    $lt?: R;
+    $lte?: R;
+    $between?: [R, R];
+    $in?: R[];
+    $nin?: R[];
+    $keyin?: object;
+    $nkeyin?: object;
+    $definedin?: object;
+    $undefinedin?: object;
+    $regex?: RegExp | string | [string, string] // string and [string, string] are better for serialization
+    $containsString?: string;
+    $containsNone?: R[] | R; // Only R if string.
+    $containsAny?: R[] | R; // Only R if string.
+    $contains?: any; // ? R without array!
+    $type?: string;
+    $finite?: boolean;
+    $size?: number;
+    $len?: number;
+    $where?: (val?: R) => boolean;
   };
+
+  export type Query<E> =
+    { [P in keyof E]?: LokiOps<E[P]> | E[P] }
+    & { $and?: Query<E>[] }
+    & { $or?: Query<E>[] }
+    & { $fts?: FullTextSearchQuery };
 }
