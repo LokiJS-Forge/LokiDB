@@ -38,14 +38,14 @@ module.exports = function (config) {
             exclude: /node_modules/,
             options: {
               failOnHint: false,
-              configFile: path.join("config", "tslint.json"),
+              configFile: path.join(__dirname, "tslint.json"),
             }
           },
           {
             test: /\.ts$/,
             loader: "ts-loader",
             options: {
-              configFile: path.join("config", "tsconfig.webpack.json")
+              configFile: path.join(__dirname, "tsconfig.webpack.json")
             }
           },
           {

@@ -1,6 +1,6 @@
 /* global describe, it, expect */
 import {Loki} from "../../../loki/src/loki";
-import {LokiFSStorage} from "../../src/fs_storage";
+import {FSStorage} from "../../src/fs_storage";
 
 describe("testing fs storage", function () {
 
@@ -9,16 +9,16 @@ describe("testing fs storage", function () {
   }
 
   beforeAll(() => {
-    LokiFSStorage.register();
+    FSStorage.register();
   });
 
   afterAll(() => {
-    LokiFSStorage.deregister();
+    FSStorage.deregister();
   });
 
   it("LokiFSStorage", function (done) {
     const db = new Loki("myTestApp");
-    const adapter = {adapter: new LokiFSStorage()};
+    const adapter = {adapter: new FSStorage()};
     db.initializePersistence(adapter)
       .then(() => {
         db.addCollection<Name>("myColl").insert({name: "Hello World"});
@@ -35,7 +35,7 @@ describe("testing fs storage", function () {
       })
       .then(() => {
         const db2 = new Loki("myTestApp");
-        return db2.initializePersistence({persistenceMethod: Loki.PersistenceMethod.FS_STORAGE})
+        return db2.initializePersistence({persistenceMethod: "fs-storage"})
           .then(() => {
             return db2.loadDatabase();
           }).then(() => {

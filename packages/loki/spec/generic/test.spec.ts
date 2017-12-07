@@ -2,10 +2,9 @@
 import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
 
-export type ANY = any;
-
 describe("loki", () => {
   let db: Loki;
+
   interface User {
     name: string;
     age: number;
@@ -13,7 +12,6 @@ describe("loki", () => {
   }
 
   let users: Collection<User>;
-  let testObject: ANY;
 
   beforeEach(() => {
     db = new Loki("test.json");
@@ -42,7 +40,7 @@ describe("loki", () => {
   describe("core methods", () => {
     it("works", () => {
       const tdb = new Loki("regextests");
-      const tcu = tdb.addCollection("user");
+      const tcu = tdb.addCollection<User>("user");
       tcu.insert({
         name: "abcd",
         age: 25,
@@ -134,7 +132,7 @@ describe("loki", () => {
 
 
       // insert() : try inserting existing document (should fail), try adding doc with legacy id column
-      const collectionLength = users.data.length;
+      const collectionLength = users.count();
       const objDave = users.findOne({
         "name": "dave"
       });
@@ -145,7 +143,7 @@ describe("loki", () => {
         wasAdded = false;
       }
       expect(wasAdded).toEqual(false);
-      expect(collectionLength).toEqual(users.data.length);
+      expect(collectionLength).toEqual(users.count());
 
       // our collections are not strongly typed so lets invent some object that has its 'own' id column
       let legacyObject = {
@@ -168,7 +166,7 @@ describe("loki", () => {
 
       // remove object so later queries access valid properties on all objects
       if (wasAdded) {
-        users.remove(legacyObject); // the object itself should have been modified
+        users.remove(legacyObject as any); // the object itself should have been modified
       }
 
       // update()
@@ -189,9 +187,9 @@ describe("loki", () => {
       expect(wasUpdated).toEqual(false);
 
       // remove() - add some bogus object to remove
-      const userCount1 = users.data.length;
+      const userCount1 = users.count();
 
-      testObject = {
+      const testObject = {
         first: "aaa",
         last: "bbb",
         city: "pasadena",
@@ -200,9 +198,9 @@ describe("loki", () => {
 
       users.insert(testObject as any);
 
-      expect(userCount1 + 1).toEqual(users.data.length);
+      expect(userCount1 + 1).toEqual(users.count());
       users.remove(testObject as any);
-      expect(userCount1).toEqual(users.data.length);
+      expect(userCount1).toEqual(users.count());
     });
   });
 
@@ -219,7 +217,7 @@ describe("loki", () => {
         };
       }
 
-      const dnc = db.addCollection<DNC>("dncoll");
+      const dnc = db.addCollection<DNC, { "addr.state": string, "addr.zip": number }>("dncoll");
 
       dnc.insert({
         first: "aaa",
@@ -290,7 +288,15 @@ describe("loki", () => {
   // the leaf property is the array.  This verifies that functionality
   describe("dot notation across leaf object array", () => {
     it("works", () => {
-      const dna = db.addCollection("dnacoll");
+
+      interface ABC {
+        id: number;
+        children: {
+          someProperty?: number
+        }[];
+      }
+
+      const dna = db.addCollection<ABC, { "children.someProperty": number }>("dnacoll");
 
       dna.insert({
         id: 1,
@@ -325,7 +331,7 @@ describe("loki", () => {
       dna.insert({
         id: 5,
         children: [{
-          missing: null
+          // Missing
         }]
       });
 
@@ -350,7 +356,14 @@ describe("loki", () => {
 
   describe("dot notation terminating at leaf array", () => {
     it("works", () => {
-      const dna = db.addCollection("dnacoll");
+
+      interface ABC {
+        relations: {
+          ids: number[];
+        };
+      }
+
+      const dna = db.addCollection<ABC, { "relations.ids": number[] }>("dnacoll");
 
       dna.insert({
         "relations": {
@@ -380,7 +393,18 @@ describe("loki", () => {
 
   describe("dot notation across child array", () => {
     it("works", () => {
-      const dna = db.addCollection("dnacoll");
+
+      interface ABC {
+        id: number;
+        children: {
+          id: number;
+          someArray: {
+            someProperty?: number
+          }[]
+        }[];
+      }
+
+      const dna = db.addCollection<ABC, { "children.someArray.someProperty": number }>("dnacoll");
 
       dna.insert({
         id: 1,
@@ -429,7 +453,7 @@ describe("loki", () => {
         children: [{
           id: 55,
           someArray: [{
-            missing: null
+            // Missing
           }]
         }]
       });
@@ -731,19 +755,19 @@ describe("loki", () => {
     });
   });
 
-  describe("resultSet", () => {
+  describe("ResultSet", () => {
     it("works", () => {
-      // Resultset find
+      // ResultSet find
       expect(users.chain().find({
         "age": {
           "$gte": 30
         }
-      }).where((obj: ANY) => obj.lang === "Swedish").data().length).toEqual(1);
+      }).where((obj: User) => obj.lang === "Swedish").data().length).toEqual(1);
 
-      // Resultset offset
-      expect(users.chain().offset(1).data().length).toEqual(users.data.length - 1);
+      // ResultSet offset
+      expect(users.chain().offset(1).data().length).toEqual(users.count() - 1);
 
-      // Resultset limit
+      // ResultSet limit
       expect(users.chain().limit(2).data().length).toEqual(2);
     });
   });
@@ -814,7 +838,7 @@ describe("loki", () => {
         "testString": "bbb"
       }).length).toEqual(1);
 
-      // resultset.find explicit $and
+      // ResultSet.find explicit $and
       expect(eic.chain().find({
         "$and": [{
           "testid": 1
@@ -823,13 +847,13 @@ describe("loki", () => {
         }]
       }).data().length).toEqual(1);
 
-      // resultset.find implicit $and
+      // ResultSet.find implicit $and
       expect(eic.chain().find({
         "testid": 1,
         "testString": "bbb"
       }).data().length).toEqual(1);
 
-      // resultset.find explicit operators
+      // ResultSet.find explicit operators
       expect(eic.chain().find({
         "$and": [{
           "testid": {
@@ -851,7 +875,7 @@ describe("loki", () => {
         }]
       }).length).toEqual(3);
 
-      // resultset.find $or
+      // ResultSet.find $or
       expect(eic.chain().find({
         "$or": [{
           "testid": 1
@@ -860,7 +884,7 @@ describe("loki", () => {
         }]
       }).data().length).toEqual(3);
 
-      // resultset.find explicit operators
+      // ResultSet.find explicit operators
       expect(eic.chain().find({
         "$or": [{
           "testid": 1
@@ -957,7 +981,7 @@ describe("loki", () => {
     });
   });
 
-  describe("resultset unfiltered simplesort works", () => {
+  describe("ResultSet unfiltered simplesort works", () => {
     it("works", () => {
       const ssdb = new Loki("sandbox.db");
 
@@ -994,7 +1018,7 @@ describe("loki", () => {
     });
   });
 
-  describe("resultset data removeMeta works", () => {
+  describe("ResultSet data removeMeta works", () => {
     it("works", () => {
       const idb = new Loki("sandbox.db");
 

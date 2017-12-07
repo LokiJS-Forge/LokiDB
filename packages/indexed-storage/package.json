@@ -8,6 +8,7 @@
     "url": "https://github.com/LokiJS-Forge/LokiJS2.git"
   },
   "main": "lokijs.indexed-storage.js",
+  "types": "./types/indexed-storage/src/index.d.ts",
   "dependencies": {
     "@lokijs/loki": "0"
   }

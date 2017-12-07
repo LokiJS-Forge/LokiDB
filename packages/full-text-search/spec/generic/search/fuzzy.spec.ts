@@ -29,7 +29,7 @@ describe("fuzzy query", () => {
 
     let fb = new QB().fuzzy("a", "abc");
     expect(() => fb.fuzziness("AUTO")).not.toThrowErrorOfType("TypeError");
-    expect(() => fb.fuzziness(-3)).toThrowErrorOfType("TypeError");
+    expect(() => fb.fuzziness(-3 as any)).toThrowErrorOfType("TypeError");
     expect(() => fb.fuzziness("3" as any)).toThrowErrorOfType("TypeError");
     expect(() => fb.prefixLength(-1)).toThrowErrorOfType("TypeError");
     expect(() => fb.prefixLength("-1" as any)).toThrowErrorOfType("TypeError");

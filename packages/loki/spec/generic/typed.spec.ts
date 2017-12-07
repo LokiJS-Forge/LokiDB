@@ -1,7 +1,6 @@
 /* global describe, it, expect */
 import {Loki} from "../../src/loki";
-
-export type ANY = any;
+import {Doc} from "../../../common/types";
 
 describe("typed", () => {
   it("works", () => {
@@ -9,7 +8,7 @@ describe("typed", () => {
     let users;
 
     class User {
-      public name: string;
+      public name?: string;
       public customInflater?: boolean;
       public onlyInflater?: boolean;
       constructor(name: string = "") {
@@ -21,7 +20,7 @@ describe("typed", () => {
       "filename": "test.json",
       "_collections": [{
         "name": "users",
-        "data": [{
+        "_data": [{
           "name": "joe",
           "meta": {
             "version": 0,
@@ -65,7 +64,7 @@ describe("typed", () => {
     db.loadJSON(JSON.stringify(json), {
       users: {
         proto: User,
-        inflate: function (src: ANY, dest: ANY) {
+        inflate: function (src: Doc<User>, dest: Doc<User>) {
           dest.$loki = src.$loki;
           dest.meta = src.meta;
           dest.customInflater = true;
@@ -82,14 +81,12 @@ describe("typed", () => {
     // Loading only using inflate:
     db.loadJSON(JSON.stringify(json), {
       users: {
-        inflate: function (src: ANY) {
-          const dest: ANY = {};
-
-          dest.$loki = src.$loki;
-          dest.meta = src.meta;
-          dest.onlyInflater = true;
-
-          return dest;
+        inflate: function (src: Doc<User>) {
+          return {
+            $loki: src.$loki,
+            meta: src.meta,
+            onlyInflater: true
+          };
         }
       }
     });

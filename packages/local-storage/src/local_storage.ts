@@ -3,21 +3,21 @@ import {StorageAdapter} from "../../common/types";
 
 /**
  * A loki persistence adapter which persists to web browser's local storage object
- * @constructor LokiLocalStorageAdapter
+ * @constructor LocalStorageAdapter
  */
-export class LokiLocalStorage implements StorageAdapter {
+export class LocalStorage implements StorageAdapter {
   /**
    * Registers the local storage as plugin.
    */
   static register(): void {
-    PLUGINS["LokiLocalStorage"] = LokiLocalStorage;
+    PLUGINS["LocalStorage"] = LocalStorage;
   }
 
   /**
    * Deregisters the local storage as plugin.
    */
   static deregister(): void {
-    delete PLUGINS["LokiLocalStorage"];
+    delete PLUGINS["LocalStorage"];
   }
 
   /**
@@ -50,4 +50,4 @@ export class LokiLocalStorage implements StorageAdapter {
   }
 }
 
-export default LokiLocalStorage;
+export default LocalStorage;

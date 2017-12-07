@@ -1,8 +1,8 @@
 import {Dict, Doc} from "../../common/types";
 
-export class UniqueIndex {
+export class UniqueIndex<E extends object = object> {
   // The property field to index.
-  private _field: number | string;
+  private _field: keyof E;
   // The map with the indices rows of unique property fields.
   private _keyMap: Dict<number>;
 
@@ -10,7 +10,7 @@ export class UniqueIndex {
    * Constructs an unique index object.
    * @param {number|string} propertyField - the property field to index
    */
-  constructor(propertyField: number | string) {
+  constructor(propertyField: keyof E) {
     this._field = propertyField;
     this._keyMap = {};
   }
@@ -20,7 +20,7 @@ export class UniqueIndex {
    * @param {Doc} doc - the document
    * @param {number} row - the data row of the document
    */
-  public set(doc: Doc, row: number): void {
+  public set(doc: Doc<E>, row: number): void {
     const fieldValue = doc[this._field];
     if (fieldValue !== null && fieldValue !== undefined) {
       if (this._keyMap[fieldValue] !== undefined) {
@@ -36,7 +36,7 @@ export class UniqueIndex {
    * @param {number|string} index - the index
    * @returns {number | string} - the row
    */
-  public get(index: number | string): number {
+  public get(index: keyof E): number {
     return this._keyMap[index];
   }
 
@@ -45,7 +45,7 @@ export class UniqueIndex {
    * @param  {Object} doc - the document
    * @param  {number} row - the data row of the document
    */
-  public update(doc: Doc, row: number): void {
+  public update(doc: Doc<E>, row: number): void {
     // Find and remove current keyMap for row.
     const uniqueNames = Object.keys(this._keyMap);
     for (let i = 0; i < uniqueNames.length; i++) {

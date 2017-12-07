@@ -1,6 +1,7 @@
-import {Loki} from "../loki/src/loki";
-
-export type ANY = any;
+/**
+ * @hidden
+ */
+import {Loki} from "../loki/src";
 
 export interface StorageAdapter {
   loadDatabase(dbname: string): Promise<any>;
@@ -11,7 +12,7 @@ export interface StorageAdapter {
 
   mode?: string;
 
-  exportDatabase?(dbname: string, dbref: ANY): Promise<void>;
+  exportDatabase?(dbname: string, dbref: Loki): Promise<void>;
 }
 
 export type Doc<T extends object = object> = T & { $loki: number; meta: any; };
@@ -23,13 +24,5 @@ export interface Dict<T> {
 }
 
 
-export interface Query {
 
-}
 
-export interface Filter<E> {
-  type: string;
-  /*'find', 'where'*/
-  val: Query | ((obj: E, index: number, array: E[]) => boolean);
-  uid: number | string;
-}

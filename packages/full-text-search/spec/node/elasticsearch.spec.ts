@@ -120,8 +120,7 @@ function fieldLengthES6(fieldLength: number) {
     if (i < NUM_FREE_VALUES) {
       return i;
     } else {
-      let decoded = NUM_FREE_VALUES + int4ToLong(i - NUM_FREE_VALUES);
-      return decoded;
+      return NUM_FREE_VALUES + int4ToLong(i - NUM_FREE_VALUES);
     }
   }
 

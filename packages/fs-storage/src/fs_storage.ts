@@ -5,19 +5,19 @@ import * as fs from "fs";
 /**
  * A loki persistence adapter which persists using node fs module.
  */
-export class LokiFSStorage implements StorageAdapter {
+export class FSStorage implements StorageAdapter {
   /**
    * Registers the fs storage as plugin.
    */
   static register(): void {
-    PLUGINS["LokiFSStorage"] = LokiFSStorage;
+    PLUGINS["FSStorage"] = FSStorage;
   }
 
   /**
    * Deregisters the fs storage as plugin.
    */
   static deregister(): void {
-    delete PLUGINS["LokiFSStorage"];
+    delete PLUGINS["FSStorage"];
   }
 
   /**
@@ -88,5 +88,3 @@ export class LokiFSStorage implements StorageAdapter {
     });
   }
 }
-
-export default LokiFSStorage;
