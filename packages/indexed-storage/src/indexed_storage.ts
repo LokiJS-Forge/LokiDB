@@ -13,6 +13,9 @@ import {StorageAdapter} from "../../common/types";
  Should usercallback be still used?
  */
 
+/**
+ * @hidden
+ */
 declare type ANY = any;
 
 /**

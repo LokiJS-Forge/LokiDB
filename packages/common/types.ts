@@ -1,7 +1,7 @@
 /**
  * @hidden
  */
-export type ANY = any;
+import {Loki} from "../loki/src";
 
 export interface StorageAdapter {
   loadDatabase(dbname: string): Promise<any>;
@@ -12,7 +12,7 @@ export interface StorageAdapter {
 
   mode?: string;
 
-  exportDatabase?(dbname: string, dbref: ANY): Promise<void>;
+  exportDatabase?(dbname: string, dbref: Loki): Promise<void>;
 }
 
 export type Doc<T extends object = object> = T & { $loki: number; meta: any; };

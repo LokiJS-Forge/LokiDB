@@ -1,5 +1,5 @@
 import {Loki} from "../../loki/src/loki";
-import {ANY, StorageAdapter} from "../../common/types";
+import {StorageAdapter} from "../../common/types";
 import {PLUGINS} from "../../common/plugin";
 
 /**
@@ -16,7 +16,7 @@ export class PartitioningAdapter implements StorageAdapter {
 
   public mode: string;
   private _adapter: StorageAdapter;
-  private _dbref: ANY;
+  private _dbref: Loki;
   private _dbname: string;
   private _pageIterator: PartitioningAdapter.PageIterator;
   private _paging: boolean;
@@ -89,7 +89,7 @@ export class PartitioningAdapter implements StorageAdapter {
       this._dbref.loadJSONObject(db);
       db = null;
 
-      if (this._dbref._collections.length === 0) {
+      if (this._dbref["_collections"].length === 0) {
         return this._dbref;
       }
 
@@ -109,20 +109,18 @@ export class PartitioningAdapter implements StorageAdapter {
    * @returns {Promise} a Promise that resolves after the next partition is loaded
    */
   private _loadNextPartition(partition: number): Promise<void> {
-    const keyname = this._dbname + "." + partition;
-
     if (this._paging === true) {
       this._pageIterator.pageIndex = 0;
       return this._loadNextPage();
     }
 
+    const keyname = this._dbname + "." + partition;
     return this._adapter.loadDatabase(keyname).then((result: string) => {
-      this._dbref._collections[partition]._data = this._dbref.deserializeCollection(result, {
-        delimited: true,
-        collectionIndex: partition
+      this._dbref["_collections"][partition]._data = this._dbref.deserializeCollection(result, {
+        delimited: true
       });
 
-      if (++partition < this._dbref._collections.length) {
+      if (++partition < this._dbref["_collections"].length) {
         return this._loadNextPartition(partition);
       }
     });
@@ -142,7 +140,6 @@ export class PartitioningAdapter implements StorageAdapter {
       let data = result.split(this._delimiter);
       result = ""; // free up memory now that we have split it into array
       let dlen = data.length;
-      let idx;
 
       // detect if last page by presence of final empty string element and remove it if so
       const isLastPage = (data[dlen - 1] === "");
@@ -157,8 +154,8 @@ export class PartitioningAdapter implements StorageAdapter {
       }
 
       // convert stringified array elements to object instances and push to collection data
-      for (idx = 0; idx < dlen; idx++) {
-        this._dbref._collections[this._pageIterator.collection]._data.push(JSON.parse(data[idx]));
+      for (let idx = 0; idx < dlen; idx++) {
+        this._dbref["_collections"][this._pageIterator.collection]._data.push(JSON.parse(data[idx]));
         data[idx] = null;
       }
       data = [];
@@ -166,7 +163,7 @@ export class PartitioningAdapter implements StorageAdapter {
       // if last page, we are done with this partition
       if (isLastPage) {
         // if there are more partitions, kick off next partition load
-        if (++this._pageIterator.collection < this._dbref._collections.length) {
+        if (++this._pageIterator.collection < this._dbref["_collections"].length) {
           return this._loadNextPartition(this._pageIterator.collection);
         }
       } else {
@@ -185,17 +182,14 @@ export class PartitioningAdapter implements StorageAdapter {
    * @returns {Promise} a Promise that resolves after the database was deleted
    *
    */
-  public exportDatabase(dbname: string, dbref: ANY): Promise<void> {
-    let idx;
-    const clen = dbref._collections.length;
-
+  public exportDatabase(dbname: string, dbref: Loki): Promise<void> {
     this._dbref = dbref;
     this._dbname = dbname;
 
     // queue up dirty partitions to be saved
     this._dirtyPartitions = [-1];
-    for (idx = 0; idx < clen; idx++) {
-      if (dbref._collections[idx].dirty) {
+    for (let idx = 0; idx < dbref["_collections"].length; idx++) {
+      if (dbref["_collections"][idx].dirty) {
         this._dirtyPartitions.push(idx);
       }
     }
@@ -235,7 +229,7 @@ export class PartitioningAdapter implements StorageAdapter {
       partition
     });
 
-    return this._adapter.saveDatabase(keyname, result).then(() => {
+    return this._adapter.saveDatabase(keyname, result as string).then(() => {
       if (this._dirtyPartitions.length !== 0) {
         return this._saveNextPartition();
       }
@@ -248,7 +242,7 @@ export class PartitioningAdapter implements StorageAdapter {
    * @returns {Promise} a Promise that resolves after the next partition is saved
    */
   private _saveNextPage(): Promise<void> {
-    const coll = this._dbref._collections[this._pageIterator.collection];
+    const coll = this._dbref["_collections"][this._pageIterator.collection];
     const keyname = this._dbname + "." + this._pageIterator.collection + "." + this._pageIterator.pageIndex;
     let pageLen = 0;
     const cdlen = coll._data.length;
@@ -299,7 +293,7 @@ export class PartitioningAdapter implements StorageAdapter {
 
 namespace PartitioningAdapter {
   export interface PageIterator {
-    collection?: ANY;
+    collection?: number;
     docIndex?: number;
     pageIndex?: number;
   }
