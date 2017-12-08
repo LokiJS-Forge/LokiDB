@@ -1,6 +1,6 @@
 /* global describe, it, expect */
 import {Loki} from "../../src/loki";
-import {LokiMemoryAdapter} from "../../src/memory_adapter";
+import {MemoryStorage} from "../../src/memory_storage";
 
 describe("Constraints", () => {
 
@@ -170,7 +170,7 @@ describe("Constraints", () => {
       name: "Jack"
     });
 
-    let mem = new LokiMemoryAdapter();
+    let mem = new MemoryStorage();
 
     expect(() => coll.insert({name: "Jack"})).toThrow();
 
