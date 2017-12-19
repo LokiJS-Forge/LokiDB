@@ -1,7 +1,7 @@
 /* global describe, ddescribe, it, expect */
 import {Loki} from "../../../loki/src/loki";
 import {QueryBuilder} from "../../src/query_builder";
-import {LokiMemoryAdapter} from "../../../loki/src/memory_adapter";
+import {MemoryStorage} from "../../../memory-storage/src/memory_storage";
 import {Collection} from "../../../loki/src/collection";
 import {FullTextSearch} from "../../src/full_text_search";
 import {Tokenizer} from "../../src/tokenizer";
@@ -143,7 +143,7 @@ describe("full-text search", () => {
   });
 
   it("save/load", (done) => {
-    const adapter = {adapter: new LokiMemoryAdapter()};
+    const adapter = {adapter: new MemoryStorage()};
     db.initializePersistence(adapter)
       .then(() => {
         return db.saveDatabase();
@@ -167,7 +167,7 @@ describe("full-text search", () => {
   });
 
   it("save/load with tokenizer", (done) => {
-    const adapter = {adapter: new LokiMemoryAdapter()};
+    const adapter = {adapter: new MemoryStorage()};
     db = new Loki("MyDB");
     const tkz = new Tokenizer();
     tkz.setSplitter("abc", (a: string) => a.split(" "));

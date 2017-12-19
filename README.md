@@ -33,6 +33,7 @@ Check out our interactive [documentation](https://lokijs-forge.github.io/LokiJS2
 |[@loki/fs-storage][fs-storage-npm-url]                             |  A persistence adapter which persists to node fs module storage. |
 |[@loki/local-storage][local-storage-npm-url]                       |  A persistence adapter which persists to web browser's indexed db storage. |
 |[@loki/indexed-storage][indexed-storage-npm-url]                   |  A persistence adapter which persists to web browser's local storage. |
+|[@loki/memory-storage][memory-storage-npm-url]                     |  A persistence adapter which persists to memory. |
 |[@loki/partitioning-adapter][partitioning-adapter-npm-url]         |  An adapter for adapters. Converts a non reference mode adapter into a reference mode adapter which can perform destructuring and partitioning.|
 
 <h3>Full-Text Search</h3>
@@ -60,6 +61,9 @@ Check out our interactive [documentation](https://lokijs-forge.github.io/LokiJS2
 
 [indexed-storage]: https://github.com/LokiJS-Forge/LokiJS2
 [indexed-storage-npm-url]: https://www.npmjs.com/package/@lokijs/indexed-storage
+
+[memory-storage]: https://github.com/LokiJS-Forge/LokiJS2
+[memory-storage-npm-url]: https://www.npmjs.com/package/@lokijs/memory-storage
 
 [partitioning-adapter]: https://github.com/LokiJS-Forge/LokiJS2
 [partitioning-adapter-npm-url]: https://www.npmjs.com/package/@lokijs/partitioning-adapter

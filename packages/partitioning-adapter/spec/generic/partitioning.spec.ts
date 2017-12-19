@@ -1,6 +1,6 @@
 /* global describe, it, expect */
 import {Loki} from "../../../loki/src/loki";
-import {LokiMemoryAdapter} from "../../../loki/src/memory_adapter";
+import {MemoryStorage} from "../../../memory-storage/src/memory_storage";
 import {PartitioningAdapter} from "../../src/partitioning_adapter";
 
 
@@ -20,7 +20,7 @@ describe("partitioning adapter", () => {
   let db2: Loki;
 
   it("verify partioning adapter works", (done) => {
-    const mem = new LokiMemoryAdapter();
+    const mem = new MemoryStorage();
     const adapter = new PartitioningAdapter(mem);
 
     const db = new Loki("sandbox.db");
@@ -39,14 +39,14 @@ describe("partitioning adapter", () => {
 
     db.saveDatabase().then(() => {
       // should have partitioned the data
-      expect(Object.keys(mem["_hashStore"]).length).toEqual(3);
-      expect(mem["_hashStore"].hasOwnProperty("sandbox.db")).toEqual(true);
-      expect(mem["_hashStore"].hasOwnProperty("sandbox.db.0")).toEqual(true);
-      expect(mem["_hashStore"].hasOwnProperty("sandbox.db.1")).toEqual(true);
+      expect(Object.keys(mem.hashStore).length).toEqual(3);
+      expect(mem.hashStore.hasOwnProperty("sandbox.db")).toEqual(true);
+      expect(mem.hashStore.hasOwnProperty("sandbox.db.0")).toEqual(true);
+      expect(mem.hashStore.hasOwnProperty("sandbox.db.1")).toEqual(true);
       // all partitions should have been saved once each
-      expect(mem["_hashStore"]["sandbox.db"].savecount).toEqual(1);
-      expect(mem["_hashStore"]["sandbox.db.0"].savecount).toEqual(1);
-      expect(mem["_hashStore"]["sandbox.db.1"].savecount).toEqual(1);
+      expect(mem.hashStore["sandbox.db"].savecount).toEqual(1);
+      expect(mem.hashStore["sandbox.db.0"].savecount).toEqual(1);
+      expect(mem.hashStore["sandbox.db.1"].savecount).toEqual(1);
 
       // so let's go ahead and update one of our collections to make it dirty
       ai.b = 3;
@@ -56,11 +56,11 @@ describe("partitioning adapter", () => {
       return db.saveDatabase();
     }).then(() => {
       // db container always gets saved since we currently have no 'dirty' flag on it to check
-      expect(mem["_hashStore"]["sandbox.db"].savecount).toEqual(2);
+      expect(mem.hashStore["sandbox.db"].savecount).toEqual(2);
       // we didn't change this
-      expect(mem["_hashStore"]["sandbox.db.0"].savecount).toEqual(1);
+      expect(mem.hashStore["sandbox.db.0"].savecount).toEqual(1);
       // we updated this collection so it should have been saved again
-      expect(mem["_hashStore"]["sandbox.db.1"].savecount).toEqual(2);
+      expect(mem.hashStore["sandbox.db.1"].savecount).toEqual(2);
 
       // ok now lets load from it
       db2 = new Loki("sandbox.db");
@@ -78,7 +78,7 @@ describe("partitioning adapter", () => {
   });
 
   it("verify partioning adapter with paging mode enabled works", (done) => {
-    const mem = new LokiMemoryAdapter();
+    const mem = new MemoryStorage();
 
     // we will use an exceptionally low page size (64bytes) to test with small dataset
     // every object will serialize to over 64bytes so that is not a hard limit but when
@@ -99,23 +99,23 @@ describe("partitioning adapter", () => {
     const another = db.addCollection<AB>("another");
     const ai = another.insert({a: 1, b: 2});
 
-    // for purposes of our memory adapter it is pretty much synchronous
+    // for purposes of our memory storage it is pretty much synchronous
     db.saveDatabase().then(() => {
       // should have partitioned the data
-      expect(Object.keys(mem["_hashStore"]).length).toEqual(6);
-      expect(mem["_hashStore"].hasOwnProperty("sandbox.db")).toEqual(true);
-      expect(mem["_hashStore"].hasOwnProperty("sandbox.db.0.0")).toEqual(true);
-      expect(mem["_hashStore"].hasOwnProperty("sandbox.db.0.1")).toEqual(true);
-      expect(mem["_hashStore"].hasOwnProperty("sandbox.db.0.2")).toEqual(true);
-      expect(mem["_hashStore"].hasOwnProperty("sandbox.db.0.3")).toEqual(true);
-      expect(mem["_hashStore"].hasOwnProperty("sandbox.db.1.0")).toEqual(true);
+      expect(Object.keys(mem.hashStore).length).toEqual(6);
+      expect(mem.hashStore.hasOwnProperty("sandbox.db")).toEqual(true);
+      expect(mem.hashStore.hasOwnProperty("sandbox.db.0.0")).toEqual(true);
+      expect(mem.hashStore.hasOwnProperty("sandbox.db.0.1")).toEqual(true);
+      expect(mem.hashStore.hasOwnProperty("sandbox.db.0.2")).toEqual(true);
+      expect(mem.hashStore.hasOwnProperty("sandbox.db.0.3")).toEqual(true);
+      expect(mem.hashStore.hasOwnProperty("sandbox.db.1.0")).toEqual(true);
       // all partitions should have been saved once each
-      expect(mem["_hashStore"]["sandbox.db"].savecount).toEqual(1);
-      expect(mem["_hashStore"]["sandbox.db.0.0"].savecount).toEqual(1);
-      expect(mem["_hashStore"]["sandbox.db.0.1"].savecount).toEqual(1);
-      expect(mem["_hashStore"]["sandbox.db.0.2"].savecount).toEqual(1);
-      expect(mem["_hashStore"]["sandbox.db.0.3"].savecount).toEqual(1);
-      expect(mem["_hashStore"]["sandbox.db.1.0"].savecount).toEqual(1);
+      expect(mem.hashStore["sandbox.db"].savecount).toEqual(1);
+      expect(mem.hashStore["sandbox.db.0.0"].savecount).toEqual(1);
+      expect(mem.hashStore["sandbox.db.0.1"].savecount).toEqual(1);
+      expect(mem.hashStore["sandbox.db.0.2"].savecount).toEqual(1);
+      expect(mem.hashStore["sandbox.db.0.3"].savecount).toEqual(1);
+      expect(mem.hashStore["sandbox.db.1.0"].savecount).toEqual(1);
 
       // so let's go ahead and update one of our collections to make it dirty
       ai.b = 3;
@@ -125,13 +125,13 @@ describe("partitioning adapter", () => {
       return db.saveDatabase();
     }).then(() => {
       // db container always gets saved since we currently have no 'dirty' flag on it to check
-      expect(mem["_hashStore"]["sandbox.db"].savecount).toEqual(2);
+      expect(mem.hashStore["sandbox.db"].savecount).toEqual(2);
       // we didn't change this
-      expect(mem["_hashStore"]["sandbox.db.0.0"].savecount).toEqual(1);
-      expect(mem["_hashStore"]["sandbox.db.0.2"].savecount).toEqual(1);
-      expect(mem["_hashStore"]["sandbox.db.0.3"].savecount).toEqual(1);
+      expect(mem.hashStore["sandbox.db.0.0"].savecount).toEqual(1);
+      expect(mem.hashStore["sandbox.db.0.2"].savecount).toEqual(1);
+      expect(mem.hashStore["sandbox.db.0.3"].savecount).toEqual(1);
       // we updated this collection so it should have been saved again
-      expect(mem["_hashStore"]["sandbox.db.1.0"].savecount).toEqual(2);
+      expect(mem.hashStore["sandbox.db.1.0"].savecount).toEqual(2);
 
       // now update a multi page items collection and verify both pages were saved
       tyr.maker = "elves";
@@ -139,12 +139,12 @@ describe("partitioning adapter", () => {
 
       return db.saveDatabase();
     }).then(() => {
-      expect(mem["_hashStore"]["sandbox.db"].savecount).toEqual(3);
-      expect(mem["_hashStore"]["sandbox.db.0.0"].savecount).toEqual(2);
-      expect(mem["_hashStore"]["sandbox.db.0.1"].savecount).toEqual(2);
-      expect(mem["_hashStore"]["sandbox.db.0.2"].savecount).toEqual(2);
-      expect(mem["_hashStore"]["sandbox.db.0.3"].savecount).toEqual(2);
-      expect(mem["_hashStore"]["sandbox.db.1.0"].savecount).toEqual(2);
+      expect(mem.hashStore["sandbox.db"].savecount).toEqual(3);
+      expect(mem.hashStore["sandbox.db.0.0"].savecount).toEqual(2);
+      expect(mem.hashStore["sandbox.db.0.1"].savecount).toEqual(2);
+      expect(mem.hashStore["sandbox.db.0.2"].savecount).toEqual(2);
+      expect(mem.hashStore["sandbox.db.0.3"].savecount).toEqual(2);
+      expect(mem.hashStore["sandbox.db.1.0"].savecount).toEqual(2);
 
       // ok now lets load from it
       db2 = new Loki("sandbox.db");
@@ -161,13 +161,13 @@ describe("partitioning adapter", () => {
       db.addCollection("extracoll");
       return db.saveDatabase();
     }).then(() => {
-      expect(mem["_hashStore"]["sandbox.db"].savecount).toEqual(4);
-      expect(mem["_hashStore"]["sandbox.db.0.0"].savecount).toEqual(2);
-      expect(mem["_hashStore"]["sandbox.db.0.1"].savecount).toEqual(2);
-      expect(mem["_hashStore"]["sandbox.db.0.2"].savecount).toEqual(2);
-      expect(mem["_hashStore"]["sandbox.db.0.3"].savecount).toEqual(2);
-      expect(mem["_hashStore"]["sandbox.db.1.0"].savecount).toEqual(2);
-      expect(mem["_hashStore"]["sandbox.db.2.0"].savecount).toEqual(1);
+      expect(mem.hashStore["sandbox.db"].savecount).toEqual(4);
+      expect(mem.hashStore["sandbox.db.0.0"].savecount).toEqual(2);
+      expect(mem.hashStore["sandbox.db.0.1"].savecount).toEqual(2);
+      expect(mem.hashStore["sandbox.db.0.2"].savecount).toEqual(2);
+      expect(mem.hashStore["sandbox.db.0.3"].savecount).toEqual(2);
+      expect(mem.hashStore["sandbox.db.1.0"].savecount).toEqual(2);
+      expect(mem.hashStore["sandbox.db.2.0"].savecount).toEqual(1);
 
       // now verify loading empty collection works with paging codepath
       db2 = new Loki("sandbox.db");
@@ -182,7 +182,7 @@ describe("partitioning adapter", () => {
   });
 
   it("verify throttled async works as expected", (done) => {
-    const mem = new LokiMemoryAdapter({asyncResponses: true, asyncTimeout: 50});
+    const mem = new MemoryStorage({asyncResponses: true, asyncTimeout: 50});
     const adapter = new PartitioningAdapter(mem);
     const throttled = true;
     const db = new Loki("sandbox.db");
@@ -200,14 +200,14 @@ describe("partitioning adapter", () => {
 
     db.saveDatabase().then(() => {
       // should have partitioned the data
-      expect(Object.keys(mem["_hashStore"]).length).toEqual(3);
-      expect(mem["_hashStore"].hasOwnProperty("sandbox.db")).toEqual(true);
-      expect(mem["_hashStore"].hasOwnProperty("sandbox.db.0")).toEqual(true);
-      expect(mem["_hashStore"].hasOwnProperty("sandbox.db.1")).toEqual(true);
+      expect(Object.keys(mem.hashStore).length).toEqual(3);
+      expect(mem.hashStore.hasOwnProperty("sandbox.db")).toEqual(true);
+      expect(mem.hashStore.hasOwnProperty("sandbox.db.0")).toEqual(true);
+      expect(mem.hashStore.hasOwnProperty("sandbox.db.1")).toEqual(true);
       // all partitions should have been saved once each
-      expect(mem["_hashStore"]["sandbox.db"].savecount).toEqual(1);
-      expect(mem["_hashStore"]["sandbox.db.0"].savecount).toEqual(1);
-      expect(mem["_hashStore"]["sandbox.db.1"].savecount).toEqual(1);
+      expect(mem.hashStore["sandbox.db"].savecount).toEqual(1);
+      expect(mem.hashStore["sandbox.db.0"].savecount).toEqual(1);
+      expect(mem.hashStore["sandbox.db.1"].savecount).toEqual(1);
 
       // so let's go ahead and update one of our collections to make it dirty
       ai.b = 3;
@@ -216,19 +216,19 @@ describe("partitioning adapter", () => {
       // and save again to ensure lastsave is different on for db container and that one collection
       db.saveDatabase().then(() => {
         // db container always gets saved since we currently have no 'dirty' flag on it to check
-        expect(mem["_hashStore"]["sandbox.db"].savecount).toEqual(2);
+        expect(mem.hashStore["sandbox.db"].savecount).toEqual(2);
         // we didn't change this
-        expect(mem["_hashStore"]["sandbox.db.0"].savecount).toEqual(1);
+        expect(mem.hashStore["sandbox.db.0"].savecount).toEqual(1);
         // we updated this collection so it should have been saved again
-        expect(mem["_hashStore"]["sandbox.db.1"].savecount).toEqual(2);
+        expect(mem.hashStore["sandbox.db.1"].savecount).toEqual(2);
 
         // now update a multi page items collection and verify both pages were saved
         tyr.maker = "elves";
         items.update(tyr);
         db.saveDatabase().then(() => {
-          expect(mem["_hashStore"]["sandbox.db"].savecount).toEqual(3);
-          expect(mem["_hashStore"]["sandbox.db.0"].savecount).toEqual(2);
-          expect(mem["_hashStore"]["sandbox.db.1"].savecount).toEqual(2);
+          expect(mem.hashStore["sandbox.db"].savecount).toEqual(3);
+          expect(mem.hashStore["sandbox.db.0"].savecount).toEqual(2);
+          expect(mem.hashStore["sandbox.db.1"].savecount).toEqual(2);
 
           // ok now lets load from it
           let db2 = new Loki("sandbox.db");
@@ -243,10 +243,10 @@ describe("partitioning adapter", () => {
             // verify empty collection saves with paging
             db.addCollection("extracoll");
             db.saveDatabase().then(() => {
-              expect(mem["_hashStore"]["sandbox.db"].savecount).toEqual(4);
-              expect(mem["_hashStore"]["sandbox.db.0"].savecount).toEqual(2);
-              expect(mem["_hashStore"]["sandbox.db.1"].savecount).toEqual(2);
-              expect(mem["_hashStore"]["sandbox.db.2"].savecount).toEqual(1);
+              expect(mem.hashStore["sandbox.db"].savecount).toEqual(4);
+              expect(mem.hashStore["sandbox.db.0"].savecount).toEqual(2);
+              expect(mem.hashStore["sandbox.db.1"].savecount).toEqual(2);
+              expect(mem.hashStore["sandbox.db.2"].savecount).toEqual(1);
 
               // now verify loading empty collection works with paging codepath
               db2 = new Loki("sandbox.db");

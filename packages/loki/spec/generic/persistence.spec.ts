@@ -1,6 +1,6 @@
 /* global describe, beforeEach, it, expect */
 import {Loki} from "../../src/loki";
-import {LokiMemoryAdapter} from "../../src/memory_adapter";
+import {MemoryStorage} from "../../../memory-storage/src/memory_storage";
 import {Collection} from "../../src/collection";
 import SerializationMethod = Loki.SerializationMethod;
 import {StorageAdapter} from "../../../common/types";
@@ -245,8 +245,8 @@ describe("testing destructured serialization/deserialization", () => {
 });
 
 describe("testing adapter functionality", () => {
-  it("verify basic memory adapter functionality works", (done) => {
-    const memAdapter = new LokiMemoryAdapter();
+  it("verify basic memory storage functionality works", (done) => {
+    const memAdapter = new MemoryStorage();
     const ddb = new Loki("test.db");
 
     ddb.initializePersistence({adapter: memAdapter});
@@ -275,8 +275,8 @@ describe("testing adapter functionality", () => {
     dv.data();
 
     const p1 = ddb.saveDatabase().then(() => {
-      expect(memAdapter["_hashStore"].hasOwnProperty("test.db")).toEqual(true);
-      expect(memAdapter["_hashStore"]["test.db"].savecount).toEqual(1);
+      expect(memAdapter.hashStore.hasOwnProperty("test.db")).toEqual(true);
+      expect(memAdapter.hashStore["test.db"].savecount).toEqual(1);
     });
 
     const cdb = new Loki("test.db");
@@ -294,7 +294,7 @@ describe("testing adapter functionality", () => {
   });
 
   it("verify loki deleteDatabase works", (done) => {
-    const memAdapter = new LokiMemoryAdapter();
+    const memAdapter = new MemoryStorage();
     const ddb = new Loki("test.db");
     ddb.initializePersistence({adapter: memAdapter});
 
@@ -313,12 +313,12 @@ describe("testing adapter functionality", () => {
     });
 
     ddb.saveDatabase().then(() => {
-      expect(memAdapter["_hashStore"].hasOwnProperty("test.db")).toEqual(true);
-      expect(memAdapter["_hashStore"]["test.db"].savecount).toEqual(1);
+      expect(memAdapter.hashStore.hasOwnProperty("test.db")).toEqual(true);
+      expect(memAdapter.hashStore["test.db"].savecount).toEqual(1);
 
       return ddb.deleteDatabase();
     }).then(() => {
-      expect(memAdapter["_hashStore"].hasOwnProperty("test.db")).toEqual(false);
+      expect(memAdapter.hashStore.hasOwnProperty("test.db")).toEqual(false);
     }).then(done, done.fail);
   });
 
@@ -398,7 +398,7 @@ describe("testing adapter functionality", () => {
 
 describe("async adapter tests", () => {
   it("verify throttled async drain", (done) => {
-    const mem = new LokiMemoryAdapter({asyncResponses: true, asyncTimeout: 50});
+    const mem = new MemoryStorage({asyncResponses: true, asyncTimeout: 50});
     const db = new Loki("sandbox.db");
     db.initializePersistence({adapter: mem, throttledSaves: true});
 
@@ -436,7 +436,7 @@ describe("async adapter tests", () => {
 
       db2.loadDatabase().then(() => {
         // total of 2 saves should have occurred
-        expect(mem["_hashStore"]["sandbox.db"].savecount).toEqual(2);
+        expect(mem.hashStore["sandbox.db"].savecount).toEqual(2);
 
         // verify the saved database contains all expected changes
         expect(db2.getCollection<AB>("another").findOne({a: 1}).b).toEqual(3);
@@ -448,7 +448,7 @@ describe("async adapter tests", () => {
   });
 
   it("verify throttledSaveDrain with duration timeout works", (done) => {
-    const mem = new LokiMemoryAdapter({asyncResponses: true, asyncTimeout: 200});
+    const mem = new MemoryStorage({asyncResponses: true, asyncTimeout: 200});
     const db = new Loki("sandbox.db");
     db.initializePersistence({adapter: mem});
 
@@ -497,7 +497,7 @@ describe("async adapter tests", () => {
   });
 
   it("verify throttled async throttles", (done) => {
-    const mem = new LokiMemoryAdapter({asyncResponses: true, asyncTimeout: 50});
+    const mem = new MemoryStorage({asyncResponses: true, asyncTimeout: 50});
     const db = new Loki("sandbox.db");
     db.initializePersistence({adapter: mem});
 
@@ -530,7 +530,7 @@ describe("async adapter tests", () => {
     // give all async saves time to complete and then verify outcome
     setTimeout(() => {
       // total of 2 saves should have occurred
-      expect(mem["_hashStore"]["sandbox.db"].savecount).toEqual(2);
+      expect(mem.hashStore["sandbox.db"].savecount).toEqual(2);
 
       // verify the saved database contains all expected changes
       const db2 = new Loki("sandbox.db");
@@ -545,7 +545,7 @@ describe("async adapter tests", () => {
   });
 
   it("verify loadDatabase in the middle of throttled saves will wait for queue to drain first", (done) => {
-    const mem = new LokiMemoryAdapter({asyncResponses: true, asyncTimeout: 75});
+    const mem = new MemoryStorage({asyncResponses: true, asyncTimeout: 75});
     const db = new Loki("sandbox.db");
     db.initializePersistence({adapter: mem});
 
@@ -599,7 +599,7 @@ describe("async adapter tests", () => {
 
 describe("testing changesAPI", () => {
   it("verify pending changes persist across save/load cycle", (done) => {
-    const mem = new LokiMemoryAdapter();
+    const mem = new MemoryStorage();
     const db = new Loki("sandbox.db");
     let db2: Loki;
     db.initializePersistence({adapter: mem});
@@ -618,7 +618,7 @@ describe("testing changesAPI", () => {
     tyrfing.owner = "arngrim";
     items.update(tyrfing);
 
-    // memory adapter is synchronous so i will not bother with callbacks
+    // memory storage is synchronous so i will not bother with callbacks
     db.saveDatabase().then(() => {
       db2 = new Loki("sandbox.db");
       db2.initializePersistence({adapter: mem});

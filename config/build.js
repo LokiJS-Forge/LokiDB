@@ -13,6 +13,7 @@ const PACKAGES = [
   "local-storage",
   "indexed-storage",
   "fs-storage",
+  "memory-storage",
   "full-text-search",
   "full-text-search-language",
   "full-text-search-language-de",

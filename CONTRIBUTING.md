@@ -140,7 +140,11 @@ The following is the list of supported scopes:
 * **local-storage**: The local storage adapter.
 * **indexed-storage**: The indexed db storage adapter.
 * **fs-storage**: The file system storage adapter.
-* **full-text-search**: The full text search engine.
+* **memory-storage**: The in-memory storage adapter.
+* **full-text-search**: The full-text search engine.
+* **full-text-search-language**: The language analyzer utility package.
+* **full-text-search-language-de**: The german language analyzer.
+* **full-text-search-language-en**: The english language analyzer.
 
 There are currently a few exceptions to the "use package name" rule:
 
