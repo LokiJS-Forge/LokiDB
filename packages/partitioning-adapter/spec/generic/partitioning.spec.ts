@@ -1,6 +1,6 @@
 /* global describe, it, expect */
 import {Loki} from "../../../loki/src/loki";
-import {MemoryStorage} from "../../../loki/src/memory_storage";
+import {MemoryStorage} from "../../../memory-storage/src/memory_storage";
 import {PartitioningAdapter} from "../../src/partitioning_adapter";
 
 
@@ -99,7 +99,7 @@ describe("partitioning adapter", () => {
     const another = db.addCollection<AB>("another");
     const ai = another.insert({a: 1, b: 2});
 
-    // for purposes of our memory adapter it is pretty much synchronous
+    // for purposes of our memory storage it is pretty much synchronous
     db.saveDatabase().then(() => {
       // should have partitioned the data
       expect(Object.keys(mem.hashStore).length).toEqual(6);

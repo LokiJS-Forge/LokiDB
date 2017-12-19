@@ -1,6 +1,6 @@
 /* global describe, beforeEach, it, expect */
 import {Loki} from "../../src/loki";
-import {MemoryStorage} from "../../src/memory_storage";
+import {MemoryStorage} from "../../../memory-storage/src/memory_storage";
 import {Collection} from "../../src/collection";
 import {Doc} from "../../../common/types";
 
@@ -299,7 +299,7 @@ describe("dynamicviews", () => {
     });
 
     it("works 4", (done) => {
-      // mock persistence by using memory adapter
+      // mock persistence by using memory storage
       const mem = new MemoryStorage();
       const db = new Loki("testCollections");
       db.initializePersistence({adapter: mem})

@@ -1,7 +1,8 @@
+import {PLUGINS} from "../../common/plugin";
 import {Dict, StorageAdapter} from "../../common/types";
 
 /**
- * In in-memory persistence adapter for an in-memory database.
+ * An in-memory persistence adapter for an in-memory database.
  * This simple 'key/value' adapter is intended for unit testing and diagnostics.
  */
 export class MemoryStorage implements StorageAdapter {
@@ -14,7 +15,21 @@ export class MemoryStorage implements StorageAdapter {
   public options: MemoryStorage.Options;
 
   /**
-   * @param {object} options - memory adapter options
+   * Registers the local storage as plugin.
+   */
+  static register(): void {
+    PLUGINS["MemoryStorage"] = MemoryStorage;
+  }
+
+  /**
+   * Deregisters the local storage as plugin.
+   */
+  static deregister(): void {
+    delete PLUGINS["MemoryStorage"];
+  }
+
+  /**
+   * @param {object} options - memory storage options
    * @param {boolean} [options.asyncResponses=false] - whether callbacks are invoked asynchronously (default: false)
    * @param {int} [options.asyncTimeout=50] - timeout in ms to queue callbacks (default: 50)
    */
@@ -46,7 +61,7 @@ export class MemoryStorage implements StorageAdapter {
             resolve(this.hashStore[dbname].value);
           }
           else {
-            reject(new Error("unable to load database, " + dbname + " was not found in memory adapter"));
+            reject(new Error("unable to load database, " + dbname + " was not found in memory storage"));
           }
         }, this.options.asyncTimeout);
       });
@@ -56,7 +71,7 @@ export class MemoryStorage implements StorageAdapter {
         return Promise.resolve(this.hashStore[dbname].value);
       }
       else {
-        return Promise.reject(new Error("unable to load database, " + dbname + " was not found in memory adapter"));
+        return Promise.reject(new Error("unable to load database, " + dbname + " was not found in memory storage"));
       }
     }
   }

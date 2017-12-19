@@ -1,6 +1,6 @@
 /* global describe, beforeEach, it, expect */
 import {Loki} from "../../src/loki";
-import {MemoryStorage} from "../../src/memory_storage";
+import {MemoryStorage} from "../../../memory-storage/src/memory_storage";
 import {Collection} from "../../src/collection";
 import SerializationMethod = Loki.SerializationMethod;
 import {StorageAdapter} from "../../../common/types";
@@ -245,7 +245,7 @@ describe("testing destructured serialization/deserialization", () => {
 });
 
 describe("testing adapter functionality", () => {
-  it("verify basic memory adapter functionality works", (done) => {
+  it("verify basic memory storage functionality works", (done) => {
     const memAdapter = new MemoryStorage();
     const ddb = new Loki("test.db");
 
@@ -618,7 +618,7 @@ describe("testing changesAPI", () => {
     tyrfing.owner = "arngrim";
     items.update(tyrfing);
 
-    // memory adapter is synchronous so i will not bother with callbacks
+    // memory storage is synchronous so i will not bother with callbacks
     db.saveDatabase().then(() => {
       db2 = new Loki("sandbox.db");
       db2.initializePersistence({adapter: mem});

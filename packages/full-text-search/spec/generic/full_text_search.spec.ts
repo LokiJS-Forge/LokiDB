@@ -1,7 +1,7 @@
 /* global describe, ddescribe, it, expect */
 import {Loki} from "../../../loki/src/loki";
 import {QueryBuilder} from "../../src/query_builder";
-import {MemoryStorage} from "../../../loki/src/memory_storage";
+import {MemoryStorage} from "../../../memory-storage/src/memory_storage";
 import {Collection} from "../../../loki/src/collection";
 import {FullTextSearch} from "../../src/full_text_search";
 import {Tokenizer} from "../../src/tokenizer";
