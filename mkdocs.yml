@@ -18,6 +18,16 @@ extra_javascript:
   - js/codemirror/addon/fold/foldgutter.js
   - js/codemirror/addon/edit/matchbrackets.js
   - js/codemirror/mode/javascript/javascript.js
+  - js/@lokijs/lokijs.fs-storage.min.js
+  - js/@lokijs/lokijs.full-text-search.min.js
+  - js/@lokijs/lokijs.full-text-search-language.min.js
+  - js/@lokijs/lokijs.full-text-search-language-de.min.js
+  - js/@lokijs/lokijs.full-text-search-language-en.min.js
+  - js/@lokijs/lokijs.indexed-storage.min.js
+  - js/@lokijs/lokijs.local-storage.min.js
+  - js/@lokijs/lokijs.loki.min.js
+  - js/@lokijs/lokijs.memory-storage.min.js
+  - js/@lokijs/lokijs.partitioning-adapter.min.js
 
 
 theme: readthedocs

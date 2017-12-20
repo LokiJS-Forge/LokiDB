@@ -152,6 +152,9 @@ function build() {
 
   const README = `${ROOT_DIR}/README.md`;
 
+  const DOC_DIR = `${ROOT_DIR}/docs/js/@lokijs`;
+  mkdir(DOC_DIR);
+
   for (const PACKAGE of PACKAGES) {
 
     const SRC_DIR = path.join(ROOT_DIR, "packages", PACKAGE);
@@ -206,6 +209,8 @@ function build() {
 
     print(`======      [${PACKAGE}]: MINIFY     =====`);
     run("node", [UGLIFYJS, OUT_DIR_FILENAME, "--output", OUT_DIR_FILENAME_MINIFIED]);
+    // Copy minified to docs.
+    catch.cp(OUT_DIR_FILENAME_MINIFIED, DOC_DIR_FILENAME_MINIFIED);
 
     print(`======      [${PACKAGE}]: VERSIONING =====`);
     const data = fs.readFileSync(NPM_PACKAGE_JSON);
