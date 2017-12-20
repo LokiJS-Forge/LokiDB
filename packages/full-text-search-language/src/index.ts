@@ -1,1 +1,1 @@
-export {Among, SnowballProgram} from "./language";
+export {generateStopWordFilter, generateTrimmer, Among, SnowballProgram} from "./language";
