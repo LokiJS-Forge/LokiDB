@@ -8,11 +8,11 @@ class JavascriptEditor {
     this._parent = this._view.parent();
 
     // Buttons in view mode.
-    this._view_controll = $('<div />');
-    let edit_btn = $('<input />', {
-      type: 'button',
-      class: 'jse-button',
-      value: 'Run this code',
+    this._view_controll = $("<div />");
+    let edit_btn = $("<input />", {
+      type: "button",
+      class: "jse-button",
+      value: "Run this code",
       on: {
         click: () => {
           this.switchToEditMode();
@@ -23,21 +23,21 @@ class JavascriptEditor {
     this._parent.prepend(this._view_controll);
 
     // Buttons in edit mode.
-    this._edit_controll = $('<div />');
-    let run_btn = $('<input />', {
-      type: 'button',
-      class: 'jse-button',
-      value: 'Run',
+    this._edit_controll = $("<div />");
+    let run_btn = $("<input />", {
+      type: "button",
+      class: "jse-button",
+      value: "Run",
       on: {
         click: () => {
           this.compile();
         }
       }
     });
-    let exit_btn = $('<input />', {
-      type: 'button',
-      class: 'jse-button',
-      value: 'Exit',
+    let exit_btn = $("<input />", {
+      type: "button",
+      class: "jse-button",
+      value: "Exit",
       on: {
         click: () => {
           this.switchToViewMode();
@@ -49,8 +49,8 @@ class JavascriptEditor {
     this._parent.prepend(this._edit_controll);
 
     // Editor in edit mode.
-    this._editor = $('<div />', {
-      class: 'jse-editor',
+    this._editor = $("<div />", {
+      class: "jse-editor",
     });
     this._parent.append(this._editor);
 
@@ -72,8 +72,8 @@ class JavascriptEditor {
     });
 
     // Add output window
-    this._output = $('<div />', {
-      class: 'jse-output',
+    this._output = $("<div />", {
+      class: "jse-output",
     });
     this._editor.append(this._output);
 
@@ -99,65 +99,48 @@ class JavascriptEditor {
   compile() {
     // Clear output window and disable buttons.
     this._output.empty();
-    this._edit_controll.children('input').each(function () {
+    this._edit_controll.children("input").each(function () {
       $(this).attr("disabled", true);
     });
 
-    // Hook console log and error.
-    const console_log = console.log;
-    const console_error = console.error;
-
+    // Collection of cout and cerr.
     let results = [];
-    console.log = function () {
-      let result = {
-        type: "log",
-        value: ""
-      };
+
+    // Hook cout and cerr.
+    let hook = `
+    function cout() {
+      console.log.apply(this, arguments);
+      let result = "";
       for (let i = 0; i < arguments.length; i++) {
-        result.value += JavascriptEditor.stringify(arguments[i]) + " ";
+        result += JavascriptEditor.stringify(arguments[i]) + " ";
       }
-      results.push(result);
+      $__output$.append($("<span />", {
+        class: "jse-output-log",
+        text: result
+      }));
     };
-    console.error = function () {
-      let result = {
-        type: "error",
-        value: ""
-      };
+    
+    function cerr() {
+      console.error.apply(this, arguments);
+      let result = "";
       for (let i = 0; i < arguments.length; i++) {
-        result.value += JavascriptEditor.stringify(arguments[i]) + " ";
+        result += JavascriptEditor.stringify(arguments[i]) + " ";
       }
-      results.push(result);
-    };
+      $__output$.append($("<span />", {
+          class: "jse-output-error",
+          text: result
+      }));
+    };`;
 
     // Run code.
     try {
-      eval("(() => {" + this._editor_window.getValue() + "})()");
+      eval("(($__output$) => {" + hook + this._editor_window.getValue() + "})")(this._output);
     } catch (e) {
       console.error(e);
     }
 
-    // Disable hook.
-    console.log = console_log;
-    console.error = console_error;
-
-    // Put log results into output window.
-    for (let i = 0; i < results.length; i++) {
-      let result = results[i];
-      if (result.type === 'log') {
-        this._output.append($('<span />', {
-          class: 'jse-output-log',
-          text: result.value
-        }));
-      } else {
-        this._output.append($('<span />', {
-          class: 'jse-output-error',
-          text: result.value
-        }));
-      }
-    }
-
     // Enable buttons.
-    this._edit_controll.children('input').each(function () {
+    this._edit_controll.children("input").each(function () {
       $(this).removeAttr("disabled");
     });
   }
@@ -177,13 +160,13 @@ class JavascriptEditor {
     if (type !== "[object Object]") {
       return "" + value;
     }
-    return '{' + Object.keys(value).map(key => `${key}: ${JavascriptEditor.stringify(value[key])}`).join(",") + "}";
+    return "{" + Object.keys(value).map(key => `${key}: ${JavascriptEditor.stringify(value[key])}`).join(",") + "}";
   }
 }
 
-$('document').ready(function () {
+$("document").ready(function () {
   // Iterate over each javascript code block.
-  $('code.javascript').each(function () {
+  $("code.javascript").each(function () {
     let code_block = $(this);
     let html = code_block.html();
     // Check if code block should be runnable.
