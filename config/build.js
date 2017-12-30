@@ -56,6 +56,7 @@ const CHANGELOG = {
 };
 
 let DO_RELEASE = false;
+let DO_DOCUMENTATION_UPDATE = false;
 let VERSION = "0.0.0.0";
 let CURRENT_COMMIT;
 let RELEASE_BRANCH = "";
@@ -65,6 +66,7 @@ async function main() {
   try {
     fetch_all();
     DO_RELEASE = check_if_release_is_triggered();
+    DO_DOCUMENTATION_UPDATE = DO_RELEASE || check_if_documentation_update_is_triggered();
 
     if (DO_RELEASE) {
       print("! Release !");
@@ -85,6 +87,10 @@ async function main() {
       await npm_login();
       npm_publish();
       merge();
+    }
+
+    if (DO_DOCUMENTATION_UPDATE) {
+      update_documentation();
     }
   } catch (e) {
     print_error(e.message);
@@ -139,9 +145,10 @@ function merge() {
     "prerelease": false
   };
   run("curl", ["--request", "POST", "--data", JSON.stringify(release),
-    `https://${GH_TOKEN}@api.github.com/repos/${TRAVIS_REPO_SLUG}/releases`]);
 
+function update_documentation() {
   print("====== Update documentation");
+  run("npm", ["run", "docs"]);
   run("mkdocs", ["gh-deploy"]);
 }
 
@@ -244,6 +251,19 @@ function check_if_release_is_triggered() {
     // Go back to current commit.
     run("git", ["checkout", CURRENT_COMMIT]);
     return is_release;
+  }
+  return false;
+}
+
+function check_if_documentation_update_is_triggered() {
+  if (!IS_PULL_REQUEST && !IS_MASTER_TARGET && COMMIT_TAG === "Documentation") {
+    // Safe current commit.
+    run("git", ["checkout", "master"]);
+    // Check if head has the same tag.
+    const is_documentation_update = run("git", ["describe", "--tags", "--always"])[1].toString() === COMMIT_TAG + "\n";
+    // Go back to current commit.
+    run("git", ["checkout", CURRENT_COMMIT]);
+    return is_documentation_update;
   }
   return false;
 }
