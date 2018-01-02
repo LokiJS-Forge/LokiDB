@@ -41,8 +41,13 @@ describe("binary indices", () => {
     it("works", () => {
       const db = new Loki("ugly.db");
 
+      interface AB {
+        a: number;
+        b?: any;
+      }
+
       // Add a collection to the database
-      const dirtydata = db.addCollection("dirtydata", {indices: ["b"]});
+      const dirtydata = db.addCollection<AB>("dirtydata", {indices: ["b"]});
 
       // Add some documents to the collection
       dirtydata.insert({a: 0});
@@ -484,7 +489,7 @@ describe("binary indices", () => {
     it("works", () => {
 
       let db = new Loki("idxtest");
-      let coll = db.addCollection("users", {
+      let coll = db.addCollection<any>("users", {
         adaptiveBinaryIndices: true,
         indices: ["customIdx"]
       });
@@ -499,7 +504,7 @@ describe("binary indices", () => {
 
       // repeat without option set
       db = new Loki("idxtest");
-      coll = db.addCollection("users", {
+      coll = db.addCollection<any>("users", {
         adaptiveBinaryIndices: false,
         indices: ["customIdx"]
       });

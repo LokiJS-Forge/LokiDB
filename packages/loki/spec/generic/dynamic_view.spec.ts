@@ -283,7 +283,7 @@ describe("dynamicviews", () => {
 
 
     it("works 3", function testEmptyTableWithIndex() {
-      const itc = db.addCollection("test", {indices: ["testindex"]});
+      const itc = db.addCollection<any>("test", {indices: ["testindex"]});
 
       const resultsNoIndex = itc.find({
         "testid": 2
@@ -306,7 +306,7 @@ describe("dynamicviews", () => {
         .then(() => {
           expect(db.getName()).toEqual("testCollections");
 
-          const t = db.addCollection("test1", {
+          const t = db.addCollection<any>("test1", {
             transactional: true
           });
           db.addCollection("test2");

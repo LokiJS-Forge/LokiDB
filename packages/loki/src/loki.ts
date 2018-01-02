@@ -1,3 +1,4 @@
+/* global global */
 import {LokiEventEmitter} from "./event_emitter";
 import {Collection} from "./collection";
 import {Doc, StorageAdapter} from "../../common/types";
@@ -247,7 +248,7 @@ export class Loki extends LokiEventEmitter {
    * @param {int} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
    * @returns {Collection} a reference to the collection which was just added
    */
-  public addCollection<T extends object = any, U extends object = object>(name: string, options: Collection.Options<T> = {}): Collection<T, U> {
+  public addCollection<T extends object = object, U extends object = object>(name: string, options: Collection.Options<T> = {}): Collection<T, U> {
     const collection = new Collection<T, U>(name, options);
     this._collections.push(collection);
 
@@ -269,7 +270,7 @@ export class Loki extends LokiEventEmitter {
    * @param {string} collectionName - name of collection to look up
    * @returns {Collection} Reference to collection in database by that name, or null if not found
    */
-  public getCollection<T extends object = any>(collectionName: string): Collection<T> {
+  public getCollection<T extends object = object>(collectionName: string): Collection<T> {
     let i;
     const len = this._collections.length;
 
@@ -290,7 +291,7 @@ export class Loki extends LokiEventEmitter {
    * @param {string} newName - new name of collection
    * @returns {Collection} reference to the newly renamed collection
    */
-  public renameCollection<T extends object = any>(oldName: string, newName: string): Collection<T> {
+  public renameCollection<T extends object = object>(oldName: string, newName: string): Collection<T> {
     const c = this.getCollection<T>(oldName);
     if (c) {
       c.name = newName;

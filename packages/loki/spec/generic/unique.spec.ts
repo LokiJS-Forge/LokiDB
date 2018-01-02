@@ -4,13 +4,14 @@ import {MemoryStorage} from "../../../memory-storage/src/memory_storage";
 
 describe("Constraints", () => {
 
+  interface User {
+    numb?: number;
+    username?: string;
+    name: string;
+  }
+
   it("should retrieve records with by()", () => {
     const db = new Loki();
-
-    interface User {
-      username: string;
-      name: string;
-    }
 
     const coll = db.addCollection<User>("users", {
       unique: ["username"]
@@ -42,7 +43,7 @@ describe("Constraints", () => {
 
   it("should create a unique index", () => {
     const db = new Loki();
-    const coll2 = db.addCollection("moreusers");
+    const coll2 = db.addCollection<User>("moreusers");
     coll2.insert({
       name: "jack"
     });
@@ -54,7 +55,7 @@ describe("Constraints", () => {
 
   it("should not add record with null index", () => {
     const db = new Loki();
-    const coll3 = db.addCollection("nullusers", {
+    const coll3 = db.addCollection<User>("nullusers", {
       unique: ["username"]
     });
     coll3.insert({
@@ -71,7 +72,7 @@ describe("Constraints", () => {
 
   it("chained search", () => {
     const db = new Loki();
-    const coll = db.addCollection("morenullusers", {
+    const coll = db.addCollection<User>("morenullusers", {
       unique: ["name"]
     });
     coll.insert({
@@ -112,7 +113,7 @@ describe("Constraints", () => {
 
   it("should not throw an error id multiple nulls are added", () => {
     const db = new Loki();
-    const coll4 = db.addCollection("morenullusers", {
+    const coll4 = db.addCollection<User>("morenullusers", {
       unique: ["username"]
     });
     coll4.insert({
@@ -132,7 +133,7 @@ describe("Constraints", () => {
 
   it("coll.clear should affect unique indices correctly", () => {
     let db = new Loki();
-    let coll = db.addCollection("users", {unique: ["username"]});
+    let coll = db.addCollection<User>("users", {unique: ["username"]});
     coll.insert({username: "joe", name: "Joe"});
     coll.insert({username: "jack", name: "Jack"});
     coll.insert({username: "jake", name: "Jake"});
@@ -146,7 +147,7 @@ describe("Constraints", () => {
     expect(Object.keys(coll["constraints"].unique["username"]["_keyMap"]).length).toEqual(3);
 
     db = new Loki();
-    coll = db.addCollection("users", {unique: ["username"]});
+    coll = db.addCollection<User>("users", {unique: ["username"]});
 
     coll.insert({username: "joe", name: "Joe"});
     coll.insert({username: "jack", name: "Jack"});
@@ -162,7 +163,7 @@ describe("Constraints", () => {
 
   it("persistence check", () => {
     let db = new Loki("TestUnique");
-    let coll = db.addCollection("users", {unique: ["name"]});
+    let coll = db.addCollection<User>("users", {unique: ["name"]});
     coll.insert({
       name: "Joe"
     });
