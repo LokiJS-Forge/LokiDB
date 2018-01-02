@@ -79,24 +79,36 @@ return /******/ (function(modules) { // webpackBootstrap
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__common_plugin__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__local_storage__ = __webpack_require__(1);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "LocalStorage", function() { return __WEBPACK_IMPORTED_MODULE_0__local_storage__["a"]; });
+
+
+/* harmony default export */ __webpack_exports__["default"] = (__WEBPACK_IMPORTED_MODULE_0__local_storage__["a" /* LocalStorage */]);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__common_plugin__ = __webpack_require__(2);
 
 /**
  * A loki persistence adapter which persists to web browser's local storage object
- * @constructor LokiLocalStorageAdapter
+ * @constructor LocalStorageAdapter
  */
-class LokiLocalStorage {
+class LocalStorage {
     /**
      * Registers the local storage as plugin.
      */
     static register() {
-        __WEBPACK_IMPORTED_MODULE_0__common_plugin__["a" /* PLUGINS */]["LokiLocalStorage"] = LokiLocalStorage;
+        __WEBPACK_IMPORTED_MODULE_0__common_plugin__["a" /* PLUGINS */]["LocalStorage"] = LocalStorage;
     }
     /**
      * Deregisters the local storage as plugin.
      */
     static deregister() {
-        delete __WEBPACK_IMPORTED_MODULE_0__common_plugin__["a" /* PLUGINS */]["LokiLocalStorage"];
+        delete __WEBPACK_IMPORTED_MODULE_0__common_plugin__["a" /* PLUGINS */]["LocalStorage"];
     }
     /**
      * loadDatabase() - Load data from localstorage
@@ -125,13 +137,13 @@ class LokiLocalStorage {
         return Promise.resolve(localStorage.removeItem(dbname));
     }
 }
-/* harmony export (immutable) */ __webpack_exports__["LokiLocalStorage"] = LokiLocalStorage;
+/* harmony export (immutable) */ __webpack_exports__["a"] = LocalStorage;
 
-/* harmony default export */ __webpack_exports__["default"] = (LokiLocalStorage);
+/* unused harmony default export */ var _unused_webpack_default_export = (LocalStorage);
 
 
 /***/ }),
-/* 1 */
+/* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -157,10 +169,10 @@ const PLUGINS = create();
 /* harmony export (immutable) */ __webpack_exports__["a"] = PLUGINS;
 
 
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(3)))
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports) {
 
 var g;

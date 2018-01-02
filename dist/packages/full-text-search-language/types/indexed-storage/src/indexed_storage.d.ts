@@ -6,7 +6,7 @@ import { StorageAdapter } from "../../common/types";
  *     IndexedDb storage is provided per-domain, so we implement app/key/value database to
  *     allow separate contexts for separate apps within a domain.
  */
-export declare class LokiIndexedStorage implements StorageAdapter {
+export declare class IndexedStorage implements StorageAdapter {
     private _appname;
     private catalog;
     /**
@@ -98,4 +98,4 @@ export interface Entry {
     key: string;
     size: number;
 }
-export default LokiIndexedStorage;
+export default IndexedStorage;

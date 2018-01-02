@@ -78,6 +78,67 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/**
+ * Class supports 64Bit integer operations.
+ * A cut-down version of dcodeIO/long.js.
+ * @hidden
+ */
+class Long {
+    constructor(low = 0, high = 0) {
+        this._low = low;
+        this._high = high;
+    }
+    /**
+     * Returns this long with bits arithmetically shifted to the right by the given amount.
+     * @param {number} numBits - number of bits
+     * @returns {Long} the long
+     */
+    shiftRight(numBits) {
+        if ((numBits &= 63) === 0)
+            return this;
+        else if (numBits < 32)
+            return new Long((this._low >>> numBits) | (this._high << (32 - numBits)), this._high >> numBits);
+        else
+            return new Long((this._high >> (numBits - 32)), this._high >= 0 ? 0 : -1);
+    }
+    /**
+     * Returns this long with bits arithmetically shifted to the left by the given amount.
+     * @param {number} numBits - number of bits
+     * @returns {Long} the long
+     */
+    shiftLeft(numBits) {
+        if ((numBits &= 63) === 0)
+            return this;
+        else if (numBits < 32)
+            return new Long(this._low << numBits, (this._high << numBits) | (this._low >>> (32 - numBits)));
+        else
+            return new Long(0, this._low << (numBits - 32));
+    }
+    /**
+     * Returns the bitwise AND of this Long and the specified.
+     * @param {Long} other - the other Long
+     * @returns {Long} the long
+     */
+    and(other) {
+        return new Long(this._low & other._low, this._high & other._high);
+    }
+    /**
+     * Converts the Long to a 32 bit integer, assuming it is a 32 bit integer.
+     * @returns {number}
+     */
+    toInt() {
+        return this._low;
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Long;
+
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 /* harmony export (immutable) */ __webpack_exports__["b"] = toCodePoints;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__tokenizer__ = __webpack_require__(2);
 
@@ -185,9 +246,7 @@ class InvertedIndex {
                 if (child === undefined) {
                     child = new Map();
                     if (this._optimizeChanges) {
-                        Object.defineProperties(child, {
-                            pa: { enumerable: false, configurable: true, writable: true, value: branch }
-                        });
+                        child.pa = branch;
                     }
                     branch.set(c, child);
                 }
@@ -381,9 +440,7 @@ class InvertedIndex {
     _regenerate(index, parent) {
         // Set parent.
         if (parent !== null) {
-            Object.defineProperties(index, {
-                pa: { enumerable: false, configurable: true, writable: false, value: parent }
-            });
+            index.pa = parent;
         }
         // Iterate over subtree.
         for (const child of index.values()) {
@@ -435,67 +492,6 @@ class InvertedIndex {
     }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = InvertedIndex;
-
-
-
-/***/ }),
-/* 1 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/**
- * Class supports 64Bit integer operations.
- * A cut-down version of dcodeIO/long.js.
- * @hidden
- */
-class Long {
-    constructor(low = 0, high = 0) {
-        this._low = low;
-        this._high = high;
-    }
-    /**
-     * Returns this long with bits arithmetically shifted to the right by the given amount.
-     * @param {number} numBits - number of bits
-     * @returns {Long} the long
-     */
-    shiftRight(numBits) {
-        if ((numBits &= 63) === 0)
-            return this;
-        else if (numBits < 32)
-            return new Long((this._low >>> numBits) | (this._high << (32 - numBits)), this._high >> numBits);
-        else
-            return new Long((this._high >> (numBits - 32)), this._high >= 0 ? 0 : -1);
-    }
-    /**
-     * Returns this long with bits arithmetically shifted to the left by the given amount.
-     * @param {number} numBits - number of bits
-     * @returns {Long} the long
-     */
-    shiftLeft(numBits) {
-        if ((numBits &= 63) === 0)
-            return this;
-        else if (numBits < 32)
-            return new Long(this._low << numBits, (this._high << numBits) | (this._low >>> (32 - numBits)));
-        else
-            return new Long(0, this._low << (numBits - 32));
-    }
-    /**
-     * Returns the bitwise AND of this Long and the specified.
-     * @param {Long} other - the other Long
-     * @returns {Long} the long
-     */
-    and(other) {
-        return new Long(this._low & other._low, this._high & other._high);
-    }
-    /**
-     * Converts the Long to a 32 bit integer, assuming it is a 32 bit integer.
-     * @returns {number}
-     */
-    toInt() {
-        return this._low;
-    }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = Long;
 
 
 
@@ -1417,10 +1413,19 @@ class QueryBuilder {
     /**
      * The query performs a final scoring over all scored sub queries.
      * @param {boolean} enable - flag to enable or disable final scoring
-     * @return {QueryBuilder}
+     * @return {this}
      */
     enableFinalScoring(enable) {
         this._data.final_scoring = enable;
+        return this;
+    }
+    /**
+     * Adds an explanation of the scoring of each document for all matched terms.
+     * @param {boolean} enable -flag to enable or disable explanation
+     * @returns {this}
+     */
+    explain(enable) {
+        this._data.explain = enable;
         return this;
     }
     /**
@@ -1430,10 +1435,10 @@ class QueryBuilder {
      * and [Elasticsearch#BM25]{@link https://www.elastic.co/guide/en/elasticsearch/guide/current/pluggable-similarites.html#bm25}.
      *
      * @param {number} [k1=1.2] - controls how quickly an increase in term frequency results in term-frequency saturation.
-     *                            Lower values result in quicker saturation, and higher values in slower saturation.
+     *                            Lower values result in quicker saturation, and higher values in slower saturation
      * @param {number} [b=0.75] - controls how much effect field-length normalization should have.
-     *                            A value of 0.0 disables normalization completely, and a value of 1.0 normalizes fully.
-     * @return {QueryBuilder}
+     *                            A value of 0.0 disables normalization completely, and a value of 1.0 normalizes fully
+     * @return {this}
      */
     BM25Similarity(k1 = 1.2, b = 0.75) {
         if (k1 < 0) {
@@ -1495,7 +1500,7 @@ class QueryBuilder {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__long__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__long__ = __webpack_require__(0);
 
 const MASKS = [new __WEBPACK_IMPORTED_MODULE_0__long__["a" /* Long */](0x1), new __WEBPACK_IMPORTED_MODULE_0__long__["a" /* Long */](0x3), new __WEBPACK_IMPORTED_MODULE_0__long__["a" /* Long */](0x7), new __WEBPACK_IMPORTED_MODULE_0__long__["a" /* Long */](0xf),
     new __WEBPACK_IMPORTED_MODULE_0__long__["a" /* Long */](0x1f), new __WEBPACK_IMPORTED_MODULE_0__long__["a" /* Long */](0x3f), new __WEBPACK_IMPORTED_MODULE_0__long__["a" /* Long */](0x7f), new __WEBPACK_IMPORTED_MODULE_0__long__["a" /* Long */](0xff),
@@ -1574,16 +1579,15 @@ class ParametricDescription {
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__full_text_search__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tokenizer__ = __webpack_require__(2);
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Tokenizer", function() { return __WEBPACK_IMPORTED_MODULE_1__tokenizer__["a"]; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__query_builder__ = __webpack_require__(3);
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "QueryBuilder", function() { return __WEBPACK_IMPORTED_MODULE_2__query_builder__["a"]; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__inverted_index__ = __webpack_require__(0);
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "InvertedIndex", function() { return __WEBPACK_IMPORTED_MODULE_3__inverted_index__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "FullTextSearch", function() { return __WEBPACK_IMPORTED_MODULE_0__full_text_search__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Tokenizer", function() { return __WEBPACK_IMPORTED_MODULE_1__tokenizer__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "QueryBuilder", function() { return __WEBPACK_IMPORTED_MODULE_2__query_builder__["a"]; });
 
 
 
-
+__WEBPACK_IMPORTED_MODULE_0__full_text_search__["a" /* FullTextSearch */]["Tokenizer"] = __WEBPACK_IMPORTED_MODULE_1__tokenizer__["a" /* Tokenizer */];
+__WEBPACK_IMPORTED_MODULE_0__full_text_search__["a" /* FullTextSearch */]["QueryBuilder"] = __WEBPACK_IMPORTED_MODULE_2__query_builder__["a" /* QueryBuilder */];
 
 /* harmony default export */ __webpack_exports__["default"] = (__WEBPACK_IMPORTED_MODULE_0__full_text_search__["a" /* FullTextSearch */]);
 
@@ -1593,7 +1597,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__inverted_index__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__inverted_index__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__index_searcher__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__common_plugin__ = __webpack_require__(14);
 
@@ -1609,9 +1613,9 @@ class FullTextSearch {
      * @param {boolean=true} fields.optimizeChanges - flag to indicate if deleting/updating a document should be optimized
      *  (requires more memory but performs better)
      * @param {Tokenizer=Tokenizer} fields.tokenizer - the tokenizer of the field
-     * @param {string=$loki} id - the property name of the document index
+     * @param {string} [id] - the property name of the document index
      */
-    constructor(fields = [], id = "$loki") {
+    constructor(fields = [], id) {
         this._invIdxs = {};
         // Create inverted indices for each field.
         for (let i = 0; i < fields.length; i++) {
@@ -1687,7 +1691,7 @@ class FullTextSearch {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__scorer__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__inverted_index__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__inverted_index__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__query_builder__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__fuzzy_run_automaton__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__fuzzy_levenshtein_automata__ = __webpack_require__(10);
@@ -1709,14 +1713,14 @@ class IndexSearcher {
         this._scorer = new __WEBPACK_IMPORTED_MODULE_0__scorer__["a" /* Scorer */](this._invIdxs);
     }
     search(query) {
-        let docResults = this._recursive(query.query, true);
+        let queryResults = this._recursive(query.query, true);
         // Do final scoring.
         if (query.final_scoring !== undefined ? query.final_scoring : true) {
-            return this._scorer.finalScore(query, docResults);
+            return this._scorer.finalScore(query, queryResults);
         }
         const result = {};
-        for (const key of docResults.keys()) {
-            result[key] = 1;
+        for (const key of queryResults.keys()) {
+            result[key] = { score: 1 };
         }
         return result;
     }
@@ -1724,7 +1728,7 @@ class IndexSearcher {
         this._scorer.setDirty();
     }
     _recursive(query, doScoring) {
-        let docResults = new Map();
+        let queryResults = new Map();
         const boost = query.boost !== undefined ? query.boost : 1;
         const fieldName = query.field !== undefined ? query.field : null;
         let root = null;
@@ -1735,18 +1739,18 @@ class IndexSearcher {
         }
         switch (query.type) {
             case "bool": {
-                docResults = null;
+                queryResults = null;
                 if (query.must !== undefined) {
-                    docResults = this._getUnique(query.must.values, doScoring, docResults);
+                    queryResults = this._getUnique(query.must.values, doScoring, queryResults);
                 }
                 if (query.filter !== undefined) {
-                    docResults = this._getUnique(query.filter.values, false, docResults);
+                    queryResults = this._getUnique(query.filter.values, false, queryResults);
                 }
                 if (query.should !== undefined) {
                     let shouldDocs = this._getAll(query.should.values, doScoring);
                     let empty = false;
-                    if (docResults === null) {
-                        docResults = new Map();
+                    if (queryResults === null) {
+                        queryResults = new Map();
                         empty = true;
                     }
                     let msm = 1;
@@ -1767,14 +1771,14 @@ class IndexSearcher {
                     // Remove all docs with fewer matches.
                     for (const [docId, res] of shouldDocs) {
                         if (res.length >= msm) {
-                            if (docResults.has(docId)) {
-                                docResults.get(docId).push(...res);
+                            if (queryResults.has(docId)) {
+                                queryResults.get(docId).push(...res);
                             }
                             else if (empty) {
-                                docResults.set(docId, res);
+                                queryResults.set(docId, res);
                             }
                             else {
-                                docResults.delete(docId);
+                                queryResults.delete(docId);
                             }
                         }
                     }
@@ -1783,8 +1787,8 @@ class IndexSearcher {
                     let notDocs = this._getAll(query.not.values, false);
                     // Remove all docs.
                     for (const docId of notDocs.keys()) {
-                        if (docResults.has(docId)) {
-                            docResults.delete(docId);
+                        if (queryResults.has(docId)) {
+                            queryResults.delete(docId);
                         }
                     }
                 }
@@ -1793,21 +1797,21 @@ class IndexSearcher {
             case "term": {
                 const cps = Object(__WEBPACK_IMPORTED_MODULE_1__inverted_index__["b" /* toCodePoints */])(query.value);
                 let termIdx = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].getTermIndex(cps, root);
-                this._scorer.score(fieldName, boost, termIdx, doScoring, docResults, cps);
+                this._scorer.score(fieldName, boost, termIdx, doScoring, queryResults, cps);
                 break;
             }
             case "terms": {
                 for (let i = 0; i < query.value.length; i++) {
                     const cps = Object(__WEBPACK_IMPORTED_MODULE_1__inverted_index__["b" /* toCodePoints */])(query.value[i]);
                     let termIdx = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].getTermIndex(cps, root);
-                    this._scorer.score(fieldName, boost, termIdx, doScoring, docResults, cps);
+                    this._scorer.score(fieldName, boost, termIdx, doScoring, queryResults, cps);
                 }
                 break;
             }
             case "fuzzy": {
                 const f = fuzzySearch(query, root);
                 for (let i = 0; i < f.length; i++) {
-                    this._scorer.score(fieldName, boost * f[i].boost, f[i].index, doScoring, docResults, f[i].term);
+                    this._scorer.score(fieldName, boost * f[i].boost, f[i].index, doScoring, queryResults, f[i].term);
                 }
                 break;
             }
@@ -1815,21 +1819,21 @@ class IndexSearcher {
                 const enableScoring = query.enable_scoring !== undefined ? query.enable_scoring : false;
                 const w = wildcardSearch(query, root);
                 for (let i = 0; i < w.length; i++) {
-                    this._scorer.score(fieldName, boost, w[i].index, doScoring && enableScoring, docResults, w[i].term);
+                    this._scorer.score(fieldName, boost, w[i].index, doScoring && enableScoring, queryResults, w[i].term);
                 }
                 break;
             }
             case "match_all": {
                 for (let docId of this._docs) {
-                    this._scorer.scoreConstant(boost, docId, docResults);
+                    this._scorer.scoreConstant(boost, docId, queryResults);
                 }
                 break;
             }
             case "constant_score": {
-                let tmpDocResults = this._getAll(query.filter.values, false);
+                let tmpQueryResults = this._getAll(query.filter.values, false);
                 // Add to each document a constant score.
-                for (const docId of tmpDocResults.keys()) {
-                    this._scorer.scoreConstant(boost, docId, docResults);
+                for (const docId of tmpQueryResults.keys()) {
+                    this._scorer.scoreConstant(boost, docId, queryResults);
                 }
                 break;
             }
@@ -1840,7 +1844,7 @@ class IndexSearcher {
                 if (termIdx !== null) {
                     const termIdxs = __WEBPACK_IMPORTED_MODULE_1__inverted_index__["a" /* InvertedIndex */].extendTermIndex(termIdx);
                     for (let i = 0; i < termIdxs.length; i++) {
-                        this._scorer.score(fieldName, boost, termIdxs[i].index, doScoring && enableScoring, docResults, [...cps, ...termIdxs[i].term]);
+                        this._scorer.score(fieldName, boost, termIdxs[i].index, doScoring && enableScoring, queryResults, [...cps, ...termIdxs[i].term]);
                     }
                 }
                 break;
@@ -1848,7 +1852,7 @@ class IndexSearcher {
             case "exists": {
                 if (root !== null) {
                     for (const docId of this._invIdxs[fieldName].documentStore.keys()) {
-                        this._scorer.scoreConstant(boost, docId, docResults);
+                        this._scorer.scoreConstant(boost, docId, queryResults);
                     }
                 }
                 break;
@@ -1889,49 +1893,49 @@ class IndexSearcher {
                 else {
                     tmpQuery = tmpQuery.endMust();
                 }
-                docResults = this._recursive(tmpQuery.build().query, doScoring);
+                queryResults = this._recursive(tmpQuery.build().query, doScoring);
                 break;
             }
             default:
                 break;
         }
-        return docResults;
+        return queryResults;
     }
-    _getUnique(queries, doScoring, docResults) {
+    _getUnique(queries, doScoring, queryResults) {
         if (queries.length === 0) {
-            return docResults;
+            return queryResults;
         }
         for (let i = 0; i < queries.length; i++) {
             let currDocs = this._recursive(queries[i], doScoring);
-            if (docResults === null) {
-                docResults = this._recursive(queries[0], doScoring);
+            if (queryResults === null) {
+                queryResults = this._recursive(queries[0], doScoring);
                 continue;
             }
-            for (const docId of docResults.keys()) {
+            for (const docId of queryResults.keys()) {
                 if (!currDocs.has(docId)) {
-                    docResults.delete(docId);
+                    queryResults.delete(docId);
                 }
                 else {
-                    docResults.get(docId).push(...currDocs.get(docId));
+                    queryResults.get(docId).push(...currDocs.get(docId));
                 }
             }
         }
-        return docResults;
+        return queryResults;
     }
     _getAll(queries, doScoring) {
-        let docResults = new Map();
+        let queryResults = new Map();
         for (let i = 0; i < queries.length; i++) {
             let currDocs = this._recursive(queries[i], doScoring);
             for (const docId of currDocs.keys()) {
-                if (!docResults.has(docId)) {
-                    docResults.set(docId, currDocs.get(docId));
+                if (!queryResults.has(docId)) {
+                    queryResults.set(docId, currDocs.get(docId));
                 }
                 else {
-                    docResults.get(docId).push(...currDocs.get(docId));
+                    queryResults.get(docId).push(...currDocs.get(docId));
                 }
             }
         }
-        return docResults;
+        return queryResults;
     }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = IndexSearcher;
@@ -2117,70 +2121,89 @@ class Scorer {
     setDirty() {
         this._cache = {};
     }
-    score(fieldName, boost, termIdx, doScoring, docResults, term) {
+    score(fieldName, boost, termIdx, doScoring, queryResults, term) {
         if (termIdx === null || termIdx.dc === undefined) {
             return;
         }
         const idf = this._idf(fieldName, termIdx.df);
         for (const [docId, tf] of termIdx.dc) {
-            if (!docResults.has(docId)) {
-                docResults.set(docId, []);
+            if (!queryResults.has(docId)) {
+                queryResults.set(docId, []);
             }
             if (doScoring) {
                 // BM25 scoring.
-                docResults.get(docId).push({ tf, idf, boost, fieldName, term });
+                queryResults.get(docId).push({ tf, idf, boost, fieldName, term });
             }
             else {
                 // Constant scoring.
-                docResults.set(docId, [{ boost }]);
+                queryResults.set(docId, [{ boost }]);
             }
         }
     }
-    scoreConstant(boost, docId, docResults) {
-        if (!docResults.has(docId)) {
-            docResults.set(docId, []);
+    scoreConstant(boost, docId, queryResults) {
+        if (!queryResults.has(docId)) {
+            queryResults.set(docId, []);
         }
-        docResults.get(docId).push({ boost });
-        return docResults;
+        queryResults.get(docId).push({ boost });
+        return queryResults;
     }
-    finalScore(query, docResults) {
+    finalScore(query, queryResults) {
         const result = {};
         const k1 = query.bm25 !== undefined ? query.bm25.k1 : 1.2;
         const b = query.bm25 !== undefined ? query.bm25.b : 0.75;
-        for (const [docId, result1] of docResults) {
+        const explain = query.explain !== undefined ? query.explain : false;
+        for (const [docId, result1] of queryResults) {
             let docScore = 0;
+            let docExplanation = [];
             for (let j = 0; j < result1.length; j++) {
-                const docResult = result1[j];
-                let res = 0;
-                if (docResult.tf !== undefined) {
+                const queryResult = result1[j];
+                let score = 0;
+                if (queryResult.tf !== undefined) {
                     // BM25 scoring.
-                    const tf = docResult.tf;
-                    const fieldLength = Scorer._calculateFieldLength(this._invIdxs[docResult.fieldName].documentStore.get(+docId)
+                    const tf = queryResult.tf;
+                    const fieldLength = Scorer._calculateFieldLength(this._invIdxs[queryResult.fieldName].documentStore.get(+docId)
                         .fieldLength);
-                    const avgFieldLength = this._avgFieldLength(docResult.fieldName);
+                    const avgFieldLength = this._avgFieldLength(queryResult.fieldName);
                     const tfNorm = (tf * (k1 + 1)) / (tf + k1 * (1 - b + b * (fieldLength / avgFieldLength)));
-                    res = docResult.idf * tfNorm * docResult.boost;
-                    // console.log(
-                    // 	docId + ":" + docResult.fieldName + ":" + String.fromCharCode(...docResult.term) + " = " + res,
-                    // 	"\n\ttype: BM25",
-                    // 	"\n\tboost: " + docResult.boost,
-                    // 	"\n\tidf : " + docResult.idf,
-                    // 	"\n\ttfNorm : " + tfNorm,
-                    // 	"\n\ttf : " + tf,
-                    // 	"\n\tavg : " + avgFieldLength,
-                    // 	"\n\tfl : " + fieldLength);
+                    score = queryResult.idf * tfNorm * queryResult.boost;
+                    if (explain) {
+                        docExplanation.push({
+                            boost: queryResult.boost,
+                            score: score,
+                            docID: docId,
+                            fieldName: queryResult.fieldName,
+                            index: String.fromCharCode(...queryResult.term),
+                            idf: queryResult.idf,
+                            tfNorm: tfNorm,
+                            tf: tf,
+                            fieldLength: fieldLength,
+                            avgFieldLength: avgFieldLength,
+                        });
+                    }
                 }
                 else {
                     // Constant scoring.
-                    res = docResult.boost;
-                    // console.log(
-                    //  "Constant: " + res,
-                    //  "\n\tboost: " + docResult.boost);
+                    score = queryResult.boost;
+                    if (explain) {
+                        docExplanation.push({
+                            boost: queryResult.boost,
+                            score: score
+                        });
+                    }
                 }
-                docScore += res;
+                docScore += score;
             }
-            //console.log(docId, " === ", docScore);
-            result[docId] = docScore;
+            if (explain) {
+                result[docId] = {
+                    score: docScore,
+                    explanation: docExplanation
+                };
+            }
+            else {
+                result[docId] = {
+                    score: docScore
+                };
+            }
         }
         return result;
     }
@@ -2588,7 +2611,7 @@ class Automaton {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__long__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__long__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__parametric_description__ = __webpack_require__(4);
 
 
@@ -2673,7 +2696,7 @@ class Lev1TParametricDescription extends __WEBPACK_IMPORTED_MODULE_1__parametric
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__long__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__long__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__parametric_description__ = __webpack_require__(4);
 
 

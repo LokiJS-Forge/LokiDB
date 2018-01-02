@@ -2,7 +2,7 @@ import { InvertedIndex } from "./inverted_index";
 import { Tokenizer } from "./tokenizer";
 import { Dict } from "../../common/types";
 import { Query } from "./query_builder";
-import { ScoreResult } from "./scorer";
+import { Scorer } from "./scorer";
 export declare class FullTextSearch {
     private _id;
     private _docs;
@@ -21,14 +21,14 @@ export declare class FullTextSearch {
      * @param {boolean=true} fields.optimizeChanges - flag to indicate if deleting/updating a document should be optimized
      *  (requires more memory but performs better)
      * @param {Tokenizer=Tokenizer} fields.tokenizer - the tokenizer of the field
-     * @param {string=$loki} id - the property name of the document index
+     * @param {string} [id] - the property name of the document index
      */
     constructor(fields?: FullTextSearch.FieldOptions[], id?: string);
     addDocument(doc: object, id?: number): void;
     removeDocument(doc: object, id?: number): void;
     updateDocument(doc: object, id?: number): void;
     clear(): void;
-    search(query: Query): ScoreResult;
+    search(query: Query): Scorer.ScoreResult;
     toJSON(): FullTextSearch.Serialization;
     static fromJSONObject(serialized: FullTextSearch.Serialization, tokenizers?: Dict<Tokenizer.FunctionSerialization>): FullTextSearch;
 }

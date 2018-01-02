@@ -2,7 +2,7 @@ import { StorageAdapter } from "../../common/types";
 /**
  * A loki persistence adapter which persists using node fs module.
  */
-export declare class LokiFSStorage implements StorageAdapter {
+export declare class FSStorage implements StorageAdapter {
     /**
      * Registers the fs storage as plugin.
      */
@@ -32,4 +32,3 @@ export declare class LokiFSStorage implements StorageAdapter {
      */
     deleteDatabase(dbname: string): Promise<void>;
 }
-export default LokiFSStorage;

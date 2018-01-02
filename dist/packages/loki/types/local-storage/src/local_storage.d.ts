@@ -1,9 +1,9 @@
 import { StorageAdapter } from "../../common/types";
 /**
  * A loki persistence adapter which persists to web browser's local storage object
- * @constructor LokiLocalStorageAdapter
+ * @constructor LocalStorageAdapter
  */
-export declare class LokiLocalStorage implements StorageAdapter {
+export declare class LocalStorage implements StorageAdapter {
     /**
      * Registers the local storage as plugin.
      */
@@ -33,4 +33,4 @@ export declare class LokiLocalStorage implements StorageAdapter {
      */
     deleteDatabase(dbname: string): Promise<void>;
 }
-export default LokiLocalStorage;
+export default LocalStorage;

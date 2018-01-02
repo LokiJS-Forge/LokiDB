@@ -1,34 +1,39 @@
 import { LokiEventEmitter } from "./event_emitter";
 import { UniqueIndex } from "./unique_index";
-import { Resultset } from "./resultset";
+import { ResultSet } from "./result_set";
 import { DynamicView } from "./dynamic_view";
 import { CloneMethod } from "./clone";
-import { Doc, Dict, Query } from "../../common/types";
+import { Doc, Dict } from "../../common/types";
 import { FullTextSearch } from "../../full-text-search/src/full_text_search";
 import { Tokenizer } from "../../full-text-search/src/tokenizer";
-export declare type ANY = any;
 export { CloneMethod } from "./clone";
 /**
  * Collection class that handles documents of same type
  * @extends LokiEventEmitter
+ * @param <TData> - the data type
+ * @param <TNested> - nested properties of data type
  */
-export declare class Collection<E extends object = object> extends LokiEventEmitter {
+export declare class Collection<TData extends object = object, TNested extends object = object> extends LokiEventEmitter {
     name: string;
-    data: Doc<E>[];
+    _data: Doc<TData>[];
     private idIndex;
-    binaryIndices: Dict<Collection.BinaryIndex>;
+    binaryIndices: {
+        [P in keyof TData]?: Collection.BinaryIndex;
+    };
     /**
-     * Unique contraints contain duplicate object references, so they are not persisted.
-     * We will keep track of properties which have unique contraint applied here, and regenerate on load.
+     * Unique constraints contain duplicate object references, so they are not persisted.
+     * We will keep track of properties which have unique constraints applied here, and regenerate on load.
      */
     constraints: {
-        unique: {};
+        unique: {
+            [P in keyof TData]?: UniqueIndex<TData>;
+        };
     };
     /**
      * Transforms will be used to store frequently used query chains as a series of steps which itself can be stored along
      * with the database.
      */
-    transforms: {};
+    transforms: Dict<Collection.Transform<TData, TNested>[]>;
     /**
      * In autosave scenarios we will use collection level dirty flags to determine whether save is needed.
      * currently, if any collection is dirty we will autosave the whole database if autosave is configured.
@@ -62,7 +67,7 @@ export declare class Collection<E extends object = object> extends LokiEventEmit
     /**
      * Disable delta update object style on changes.
      */
-    disableDeltaChangesApi: ANY;
+    disableDeltaChangesApi: boolean;
     /**
      * By default, if you insert a document into a collection with binary indices, if those indexed properties contain
      * a DateTime we will convert to epoch time format so that (across serializations) its value position will be the
@@ -72,7 +77,7 @@ export declare class Collection<E extends object = object> extends LokiEventEmit
     /**
      * Option to activate a cleaner daemon - clears "aged" documents at set intervals.
      */
-    ttl: ANY;
+    ttl: Collection.TTL;
     private maxId;
     private _dynamicViews;
     /**
@@ -81,7 +86,15 @@ export declare class Collection<E extends object = object> extends LokiEventEmit
     private changes;
     private insertHandler;
     private updateHandler;
-    console: ANY;
+    console: {
+        log(...args: any[]): void;
+        warn(...args: any[]): void;
+        error(...args: any[]): void;
+    };
+    /**
+     * stages: a map of uniquely identified 'stages', which hold copies of objects to be
+     * manipulated without affecting the data in the original collection
+     */
     private stages;
     private commitLog;
     _fullTextSearch: FullTextSearch;
@@ -97,69 +110,50 @@ export declare class Collection<E extends object = object> extends LokiEventEmit
      * @param {boolean} [options.disableDeltaChangesApi=true] - set to false to enable Delta Changes API (requires Changes API, forces cloning)
      * @param {boolean} [options.clone=false] - specify whether inserts and queries clone to/from user
      * @param {boolean} [options.serializableIndices =true] - converts date values on binary indexed property values are serializable
-     * @param {string} [options.cloneMethod=CloneMethod.DEEP] - the clone method
+     * @param {string} [options.cloneMethod="deep"] - the clone method
      * @param {number} [options.transactional=false] - ?
      * @param {number} options.ttl - ?
      * @param {number} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
      * @see {@link Loki#addCollection} for normal creation of collections
      */
-    constructor(name: string, options?: Collection.Options);
-    toJSON(): {
-        name: string;
-        _dynamicViews: DynamicView<E>[];
-        uniqueNames: string[];
-        transforms: {};
-        binaryIndices: Dict<Collection.BinaryIndex>;
-        data: Doc<E>[];
-        idIndex: number[];
-        maxId: number;
-        dirty: boolean;
-        adaptiveBinaryIndices: boolean;
-        transactional: boolean;
-        asyncListeners: boolean;
-        disableChangesApi: boolean;
-        cloneObjects: boolean;
-        cloneMethod: CloneMethod;
-        changes: any[];
-        _fullTextSearch: FullTextSearch;
-    };
-    static fromJSONObject(obj: ANY, options?: Collection.DeserializeOptions): Collection<object>;
+    constructor(name: string, options?: Collection.Options<TData>);
+    toJSON(): Collection.Serialized;
+    static fromJSONObject(obj: Collection.Serialized, options?: Collection.DeserializeOptions): Collection<any, object>;
     /**
      * Adds a named collection transform to the collection
      * @param {string} name - name to associate with transform
      * @param {array} transform - an array of transformation 'step' objects to save into the collection
      */
-    addTransform(name: string, transform: ANY[]): void;
+    addTransform(name: string, transform: Collection.Transform<TData, TNested>[]): void;
     /**
      * Retrieves a named transform from the collection.
      * @param {string} name - name of the transform to lookup.
      */
-    getTransform(name: string): any;
+    getTransform(name: string): Collection.Transform<TData, TNested>[];
     /**
      * Updates a named collection transform to the collection
      * @param {string} name - name to associate with transform
      * @param {object} transform - a transformation object to save into collection
      */
-    setTransform(name: string, transform: ANY[]): void;
+    setTransform(name: string, transform: Collection.Transform<TData, TNested>[]): void;
     /**
      * Removes a named collection transform from the collection
      * @param {string} name - name of collection transform to remove
      */
     removeTransform(name: string): void;
-    ttlDaemonFuncGen(): () => void;
     private setTTL(age, interval);
     /**
      * create a row filter that covers all documents in the collection
      */
-    prepareFullDocIndex(): any[];
+    _prepareFullDocIndex(): number[];
     /**
      * Ensure binary index on a certain field
      * @param {string} property - name of property to create binary index on
-     * @param {boolean} force - (Optional) flag indicating whether to construct index immediately
+     * @param {boolean} [force=false] - flag indicating whether to construct index immediately
      */
-    ensureIndex(property: string, force?: boolean): void;
-    getSequencedIndexValues(property: string): string;
-    ensureUniqueIndex(field: string): UniqueIndex;
+    ensureIndex(property: keyof TData, force?: boolean): void;
+    getSequencedIndexValues(property: keyof TData): string;
+    ensureUniqueIndex(field: keyof TData): UniqueIndex<TData>;
     /**
      * Ensure all binary indices
      */
@@ -171,11 +165,11 @@ export declare class Collection<E extends object = object> extends LokiEventEmit
      * @param {object} query - (optional) query object to count results of
      * @returns {number} number of documents in the collection
      */
-    count(query?: object): number;
+    count(query?: ResultSet.Query<Doc<TData> & TNested>): number;
     /**
      * Rebuild idIndex
      */
-    ensureId(): void;
+    private _ensureId();
     /**
      * Add a dynamic view to the collection
      * @param {string} name - name of dynamic view to add
@@ -185,7 +179,7 @@ export declare class Collection<E extends object = object> extends LokiEventEmit
      * @param {number} options.minRebuildInterval - minimum rebuild interval (need clarification to docs here)
      * @returns {DynamicView} reference to the dynamic view added
      **/
-    addDynamicView(name: string, options?: DynamicView.Options): DynamicView<E>;
+    addDynamicView(name: string, options?: DynamicView.Options): DynamicView<TData, TNested>;
     /**
      * Remove a dynamic view from the collection
      * @param {string} name - name of dynamic view to remove
@@ -196,7 +190,7 @@ export declare class Collection<E extends object = object> extends LokiEventEmit
      * @param {string} name - name of dynamic view to retrieve reference of
      * @returns {DynamicView} A reference to the dynamic view with that name
      **/
-    getDynamicView(name: string): DynamicView<E>;
+    getDynamicView(name: string): DynamicView<TData, TNested>;
     /**
      * Applies a 'mongo-like' find query object and passes all results to an update function.
      * For filter function querying you should migrate to [
@@ -205,38 +199,39 @@ export declare class Collection<E extends object = object> extends LokiEventEmit
      * @param {object|function} filterObject - 'mongo-like' query object (or deprecated filterFunction mode)
      * @param {function} updateFunction - update function to run against filtered documents
      */
-    findAndUpdate(filterObject: Query | ((obj: E) => boolean), updateFunction: (obj: E) => E): void;
+    findAndUpdate(filterObject: ResultSet.Query<Doc<TData> & TNested> | ((obj: Doc<TData>) => boolean), updateFunction: (obj: Doc<TData>) => any): void;
     /**
      * Applies a 'mongo-like' find query object removes all documents which match that filter.
      *
      * @param {object} filterObject - 'mongo-like' query object
      */
-    findAndRemove(filterObject: object): void;
+    findAndRemove(filterObject: ResultSet.Query<Doc<TData> & TNested>): void;
     /**
      * Adds object(s) to collection, ensure object(s) have meta properties, clone it if necessary, etc.
      * @param {(object|array)} doc - the document (or array of documents) to be inserted
      * @returns {(object|array)} document or documents inserted
      */
-    insert(doc: E | E[]): Doc<E>;
-    insert(doc: E[]): Doc<E>[];
+    insert(doc: TData): Doc<TData>;
+    insert(doc: TData[]): Doc<TData>[];
     /**
      * Adds a single object, ensures it has meta properties, clone it if necessary, etc.
      * @param {object} doc - the document to be inserted
      * @param {boolean} bulkInsert - quiet pre-insert and insert event emits
      * @returns {object} document or 'undefined' if there was a problem inserting it
      */
-    insertOne(doc: E, bulkInsert?: boolean): Doc<E>;
+    insertOne(doc: TData, bulkInsert?: boolean): Doc<TData>;
     /**
      * Empties the collection.
-     * @param {object} options - configure clear behavior
-     * @param {boolean} options.removeIndices - (default: false)
+     * @param {boolean} [removeIndices=false] - remove indices
      */
-    clear(options?: ANY): void;
+    clear({removeIndices: removeIndices}?: {
+        removeIndices?: boolean;
+    }): void;
     /**
      * Updates an object and notifies collection that the document has changed.
      * @param {object} doc - document to update within the collection
      */
-    update(doc: ANY): any;
+    update(doc: Doc<TData> | Doc<TData>[]): void;
     /**
      * Add object to collection
      */
@@ -247,24 +242,24 @@ export declare class Collection<E extends object = object> extends LokiEventEmit
      * @param {function} filterFunction - filter function whose results will execute update
      * @param {function} updateFunction - update function to run against filtered documents
      */
-    updateWhere(filterFunction: (obj: E) => boolean, updateFunction: (obj: E) => E): void;
+    updateWhere(filterFunction: (obj: Doc<TData>) => boolean, updateFunction: (obj: Doc<TData>) => any): void;
     /**
      * Remove all documents matching supplied filter function.
      * For 'mongo-like' querying you should migrate to [findAndRemove()]{@link Collection#findAndRemove}.
      * @param {function|object} query - query object to filter on
      */
-    removeWhere(query: Query | ((obj: E) => boolean)): void;
+    removeWhere(query: ResultSet.Query<Doc<TData> & TNested> | ((obj: Doc<TData>) => boolean)): void;
     removeDataOnly(): void;
     /**
      * Remove a document from the collection
-     * @param {object} doc - document to remove from collection
+     * @param {number|object} doc - document to remove from collection
      */
-    remove(doc: ANY): any;
+    remove(doc: number | Doc<TData> | Doc<TData>[]): void;
     /**
      * Returns all changes.
-     * @returns {ANY}
+     * @returns {Collection.Change[]}
      */
-    getChanges(): any[];
+    getChanges(): Collection.Change[];
     /**
      * Enables/disables changes api.
      * @param {boolean} disableChangesApi
@@ -301,34 +296,35 @@ export declare class Collection<E extends object = object> extends LokiEventEmit
      * @returns {(object|array|null)} Object reference if document was found, null if not,
      *     or an array if 'returnPosition' was passed.
      */
-    get(id: number): Doc<E>;
-    get(id: number, returnPosition: boolean): Doc<E> | [Doc<E>, number];
+    get(id: number): Doc<TData>;
+    get(id: number, returnPosition: boolean): Doc<TData> | [Doc<TData>, number];
     /**
      * Perform binary range lookup for the data[dataPosition][binaryIndexName] property value
      *    Since multiple documents may contain the same value (which the index is sorted on),
      *    we hone in on range and then linear scan range to find exact index array position.
-     * @param {int} dataPosition : coll.data array index/position
+     * @param {int} dataPosition : data array index/position
      * @param {string} binaryIndexName : index to search for dataPosition in
      */
-    getBinaryIndexPosition(dataPosition: number, binaryIndexName: string): number;
+    getBinaryIndexPosition(dataPosition: number, binaryIndexName: keyof TData): number;
     /**
      * Adaptively insert a selected item to the index.
      * @param {int} dataPosition : coll.data array index/position
      * @param {string} binaryIndexName : index to search for dataPosition in
      */
-    adaptiveBinaryIndexInsert(dataPosition: number, binaryIndexName: string): void;
+    adaptiveBinaryIndexInsert(dataPosition: number, binaryIndexName: keyof TData): void;
     /**
      * Adaptively update a selected item within an index.
      * @param {int} dataPosition : coll.data array index/position
      * @param {string} binaryIndexName : index to search for dataPosition in
      */
-    adaptiveBinaryIndexUpdate(dataPosition: number, binaryIndexName: string): void;
+    adaptiveBinaryIndexUpdate(dataPosition: number, binaryIndexName: keyof TData): void;
     /**
      * Adaptively remove a selected item from the index.
-     * @param {int} dataPosition : coll.data array index/position
+     * @param {number} dataPosition : coll.data array index/position
      * @param {string} binaryIndexName : index to search for dataPosition in
+     * @param {boolean} removedFromIndexOnly - remove from index only
      */
-    adaptiveBinaryIndexRemove(dataPosition: number, binaryIndexName: string, removedFromIndexOnly?: boolean): ANY;
+    adaptiveBinaryIndexRemove(dataPosition: number, binaryIndexName: keyof TData, removedFromIndexOnly?: boolean): void;
     /**
      * Internal method used for index maintenance and indexed searching.
      * Calculates the beginning of an index range for a given value.
@@ -351,7 +347,7 @@ export declare class Collection<E extends object = object> extends LokiEventEmit
     private _calculateRangeEnd(prop, val);
     /**
      * Binary Search utility method to find range/segment of values matching criteria.
-     *    this is used for collection.find() and first find filter of resultset/dynview
+     *    this is used for collection.find() and first find filter of ResultSet/dynview
      *    slightly different than get() binary search in that get() hones in on 1 value,
      *    but we have to hone in on many (range)
      * @param {string} op - operation, such as $eq
@@ -359,29 +355,29 @@ export declare class Collection<E extends object = object> extends LokiEventEmit
      * @param {object} val - value to use for range calculation.
      * @returns {array} [start, end] index array positions
      */
-    calculateRange(op: string, prop: string, val: ANY): [number, number];
+    calculateRange(op: string, prop: keyof TData, val: any): [number, number];
     /**
      * Retrieve doc by Unique index
      * @param {string} field - name of uniquely indexed property to use when doing lookup
      * @param {any} value - unique value to search for
      * @returns {object} document matching the value passed
      */
-    by(field: string, value: ANY): Doc<E>;
+    by(field: string, value: any): Doc<TData>;
     /**
      * Find one object by index property, by property equal to value
      * @param {object} query - query object used to perform search with
      * @returns {(object|null)} First matching document, or null if none
      */
-    findOne(query: object): Doc<E>;
+    findOne(query: ResultSet.Query<Doc<TData> & TNested>): Doc<TData>;
     /**
      * Chain method, used for beginning a series of chained find() and/or view() operations
      * on a collection.
      *
      * @param {array} transform - Ordered array of transform step objects similar to chain
      * @param {object} parameters - Object containing properties representing parameters to substitute
-     * @returns {Resultset} (this) resultset, or data array if any map or join functions where called
+     * @returns {ResultSet} (this) ResultSet, or data array if any map or join functions where called
      */
-    chain(transform?: string | ANY[], parameters?: ANY): Resultset<E>;
+    chain(transform?: string | Collection.Transform<TData, TNested>[], parameters?: object): ResultSet<TData, TNested>;
     /**
      * Find method, api is similar to mongodb.
      * for more complex queries use [chain()]{@link Collection#chain} or [where()]{@link Collection#where}.
@@ -389,20 +385,26 @@ export declare class Collection<E extends object = object> extends LokiEventEmit
      * @param {object} query - 'mongo-like' query object
      * @returns {array} Array of matching documents
      */
-    find(query?: Query): Doc<E>[];
+    find(query?: ResultSet.Query<Doc<TData> & TNested>): Doc<TData>[];
     /**
      * Find object by unindexed field by property equal to value,
      * simply iterates and returns the first element matching the query
      */
-    findOneUnindexed(prop: string, value: ANY): Doc<E>;
+    findOneUnindexed(prop: string, value: any): Doc<TData>;
     /**
      * Transaction methods
      */
-    /** start the transation */
+    /**
+     * start the transation
+     */
     startTransaction(): void;
-    /** commit the transation */
+    /**
+     * commit the transation
+     */
     commit(): void;
-    /** roll back the transation */
+    /**
+     * roll back the transation
+     */
     rollback(): void;
     /**
      * Query the collection by supplying a javascript filter function.
@@ -414,14 +416,14 @@ export declare class Collection<E extends object = object> extends LokiEventEmit
      * @param {function} fun - filter function to run against all collection docs
      * @returns {array} all documents which pass your filter function
      */
-    where(fun: (obj: E) => boolean): Doc<E>[];
+    where(fun: (obj: Doc<TData>) => boolean): Doc<TData>[];
     /**
      * Map Reduce operation
      * @param {function} mapFunction - function to use as map function
      * @param {function} reduceFunction - function to use as reduce function
      * @returns {data} The result of your mapReduce operation
      */
-    mapReduce<T, U>(mapFunction: (value: E, index: number, array: E[]) => T, reduceFunction: (array: T[]) => U): U;
+    mapReduce<T, U>(mapFunction: (value: TData, index: number, array: TData[]) => T, reduceFunction: (array: T[]) => U): U;
     /**
      * Join two collections on specified properties
      *
@@ -429,13 +431,13 @@ export declare class Collection<E extends object = object> extends LokiEventEmit
      * @param {string} leftJoinProp - property name in collection
      * @param {string} rightJoinProp - property name in joinData
      * @param {function} mapFun - (Optional) map function to use
-     * @returns {Resultset} Result of the mapping operation
+     * @param dataOptions - options to data() before input to your map function
+     * @param [dataOptions.removeMeta] - allows removing meta before calling mapFun
+     * @param [dataOptions.forceClones] - forcing the return of cloned objects to your map object
+     * @param [dataOptions.forceCloneMethod] - allows overriding the default or collection specified cloning method
+     * @returns {ResultSet} Result of the mapping operation
      */
-    eqJoin(joinData: ANY[], leftJoinProp: string, rightJoinProp: string, mapFun?: Function): Resultset;
-    /**
-     * stages: a map of uniquely identified 'stages', which hold copies of objects to be
-     * manipulated without affecting the data in the original collection
-     */
+    eqJoin(joinData: Collection<any> | ResultSet<any> | any[], leftJoinProp: string | ((obj: any) => string), rightJoinProp: string | ((obj: any) => string), mapFun?: (left: any, right: any) => any, dataOptions?: ResultSet.DataOptions): ResultSet<any>;
     /**
      * (Staging API) create a stage and/or retrieve it
      */
@@ -446,7 +448,7 @@ export declare class Collection<E extends object = object> extends LokiEventEmit
     /**
      * (Staging API) create a copy of an object and insert it into a stage
      */
-    stage(stageName: string, obj: ANY): any;
+    stage<F extends TData>(stageName: string, obj: Doc<F>): F;
     /**
      * (Staging API) re-attach all objects to the original collection, so indexes and views can be rebuilt
      * then create a message to be inserted in the commitlog
@@ -459,10 +461,10 @@ export declare class Collection<E extends object = object> extends LokiEventEmit
     extract(field: string): any[];
     /**
      */
-    max(field: string): any;
+    max(field: string): number;
     /**
      */
-    min(field: string): any;
+    min(field: string): number;
     /**
      */
     maxRecord(field: string): {
@@ -500,9 +502,9 @@ export declare class Collection<E extends object = object> extends LokiEventEmit
     median(field: string): number;
 }
 export declare namespace Collection {
-    interface Options {
-        unique?: string[];
-        indices?: string[];
+    interface Options<TData> {
+        unique?: (keyof TData)[];
+        indices?: (keyof TData)[];
         adaptiveBinaryIndices?: boolean;
         asyncListeners?: boolean;
         disableChangesApi?: boolean;
@@ -518,10 +520,89 @@ export declare namespace Collection {
     interface DeserializeOptions {
         retainDirtyFlags?: boolean;
         fullTextSearch?: Dict<Tokenizer.FunctionSerialization>;
+        [collName: string]: any | {
+            proto?: any;
+            inflate?: (src: object, dest?: object) => void;
+        };
     }
     interface BinaryIndex {
         dirty: boolean;
         values: any;
     }
-    type Change = any;
+    interface Change {
+        name: string;
+        operation: string;
+        obj: any;
+    }
+    interface Serialized {
+        name: string;
+        _dynamicViews: DynamicView[];
+        uniqueNames: string[];
+        transforms: Dict<Transform[]>;
+        binaryIndices: Dict<Collection.BinaryIndex>;
+        _data: Doc<any>[];
+        idIndex: number[];
+        maxId: number;
+        dirty: boolean;
+        adaptiveBinaryIndices: boolean;
+        transactional: boolean;
+        asyncListeners: boolean;
+        disableChangesApi: boolean;
+        disableDeltaChangesApi: boolean;
+        cloneObjects: boolean;
+        cloneMethod: CloneMethod;
+        changes: any;
+        _fullTextSearch: FullTextSearch;
+    }
+    type Transform<TData extends object = object, TNested extends object = object> = {
+        type: "find";
+        value: ResultSet.Query<Doc<TData> & TNested> | string;
+    } | {
+        type: "where";
+        value: ((obj: Doc<TData>) => boolean) | string;
+    } | {
+        type: "simplesort";
+        property: keyof (TData & TNested);
+        desc?: boolean;
+    } | {
+        type: "compoundsort";
+        value: (keyof (TData & TNested) | [keyof (TData & TNested), boolean])[];
+    } | {
+        type: "sort";
+        value: (a: Doc<TData>, b: Doc<TData>) => number;
+    } | {
+        type: "sortByScoring";
+        desc?: boolean;
+    } | {
+        type: "limit";
+        value: number;
+    } | {
+        type: "offset";
+        value: number;
+    } | {
+        type: "map";
+        value: (obj: TData, index: number, array: TData[]) => any;
+        dataOptions?: ResultSet.DataOptions;
+    } | {
+        type: "eqJoin";
+        joinData: Collection<any> | ResultSet<any>;
+        leftJoinKey: string | ((obj: any) => string);
+        rightJoinKey: string | ((obj: any) => string);
+        mapFun?: (left: any, right: any) => any;
+        dataOptions?: ResultSet.DataOptions;
+    } | {
+        type: "mapReduce";
+        mapFunction: (item: TData, index: number, array: TData[]) => any;
+        reduceFunction: (array: any[]) => any;
+    } | {
+        type: "update";
+        value: (obj: Doc<TData>) => any;
+    } | {
+        type: "remove";
+    };
+    interface TTL {
+        age: number;
+        ttlInterval: number;
+        daemon: any;
+    }
 }

@@ -1,10 +1,4 @@
-export declare enum CloneMethod {
-    PARSE_STRINGIFY = 0,
-    DEEP = 1,
-    SHALLOW = 2,
-    SHALLOW_ASSIGN = 3,
-    SHALLOW_RECURSE_OBJECTS = 4,
-}
+export declare type CloneMethod = "parse-stringify" | "deep" | "shallow" | "shallow-recurse-objects";
 /**
  * @hidden
  */

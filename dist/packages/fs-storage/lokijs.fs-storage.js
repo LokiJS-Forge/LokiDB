@@ -87,18 +87,18 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /**
  * A loki persistence adapter which persists using node fs module.
  */
-class LokiFSStorage {
+class FSStorage {
     /**
      * Registers the fs storage as plugin.
      */
     static register() {
-        __WEBPACK_IMPORTED_MODULE_0__common_plugin__["a" /* PLUGINS */]["LokiFSStorage"] = LokiFSStorage;
+        __WEBPACK_IMPORTED_MODULE_0__common_plugin__["a" /* PLUGINS */]["FSStorage"] = FSStorage;
     }
     /**
      * Deregisters the fs storage as plugin.
      */
     static deregister() {
-        delete __WEBPACK_IMPORTED_MODULE_0__common_plugin__["a" /* PLUGINS */]["LokiFSStorage"];
+        delete __WEBPACK_IMPORTED_MODULE_0__common_plugin__["a" /* PLUGINS */]["FSStorage"];
     }
     /**
      * Load data from file, will throw an error if the file does not exist
@@ -171,9 +171,8 @@ class LokiFSStorage {
         });
     }
 }
-/* harmony export (immutable) */ __webpack_exports__["LokiFSStorage"] = LokiFSStorage;
+/* harmony export (immutable) */ __webpack_exports__["FSStorage"] = FSStorage;
 
-/* harmony default export */ __webpack_exports__["default"] = (LokiFSStorage);
 
 
 /***/ }),

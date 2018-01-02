@@ -1,4 +1,5 @@
-import { ANY, StorageAdapter } from "../../common/types";
+import { Loki } from "../../loki/src/loki";
+import { StorageAdapter } from "../../common/types";
 /**
  * An adapter for adapters. Converts a non reference mode adapter into a reference mode adapter
  * which can perform destructuring and partitioning. Each collection will be stored in its own key/save and
@@ -9,7 +10,7 @@ import { ANY, StorageAdapter } from "../../common/types";
  * single IndexedDB row. If a single document update causes the collection to be flagged as dirty, all
  * of that collection's pages will be written on next save.
  */
-export declare class LokiPartitioningAdapter implements StorageAdapter {
+export declare class PartitioningAdapter implements StorageAdapter {
     mode: string;
     private _adapter;
     private _dbref;
@@ -68,7 +69,7 @@ export declare class LokiPartitioningAdapter implements StorageAdapter {
      * @returns {Promise} a Promise that resolves after the database was deleted
      *
      */
-    exportDatabase(dbname: string, dbref: ANY): Promise<void>;
+    exportDatabase(dbname: string, dbref: Loki): Promise<void>;
     /**
      * Helper method used internally to save each dirty collection, one at a time.
      *
@@ -82,11 +83,3 @@ export declare class LokiPartitioningAdapter implements StorageAdapter {
      */
     private _saveNextPage();
 }
-declare namespace LokiPartitioningAdapter {
-    interface PageIterator {
-        collection?: ANY;
-        docIndex?: number;
-        pageIndex?: number;
-    }
-}
-export default LokiPartitioningAdapter;

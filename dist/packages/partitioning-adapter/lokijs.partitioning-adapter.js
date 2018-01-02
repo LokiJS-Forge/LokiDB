@@ -7,7 +7,7 @@
 		exports["@lokijs/partitioning-adapter"] = factory(require("@lokijs/loki"));
 	else
 {		root["@lokijs/partitioning-adapter"] = factory(root["@lokijs/loki"]); root["LokiPartitioningAdapter"] = root["@lokijs/partitioning-adapter"].default;}
-})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE_1__) {
+})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE_2__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -79,9 +79,21 @@ return /******/ (function(modules) { // webpackBootstrap
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__loki_src_loki__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__partitioning_adapter__ = __webpack_require__(1);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "PartitioningAdapter", function() { return __WEBPACK_IMPORTED_MODULE_0__partitioning_adapter__["a"]; });
+
+
+/* harmony default export */ __webpack_exports__["default"] = (__WEBPACK_IMPORTED_MODULE_0__partitioning_adapter__["a" /* PartitioningAdapter */]);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__loki_src_loki__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__loki_src_loki___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__loki_src_loki__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__common_plugin__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__common_plugin__ = __webpack_require__(3);
 
 
 /**
@@ -94,18 +106,18 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
  * single IndexedDB row. If a single document update causes the collection to be flagged as dirty, all
  * of that collection's pages will be written on next save.
  */
-class LokiPartitioningAdapter {
+class PartitioningAdapter {
     /**
      * Registers the partitioning adapter as plugin.
      */
     static register() {
-        __WEBPACK_IMPORTED_MODULE_1__common_plugin__["a" /* PLUGINS */]["LokiPartitioningAdapter"] = LokiPartitioningAdapter;
+        __WEBPACK_IMPORTED_MODULE_1__common_plugin__["a" /* PLUGINS */]["PartitioningAdapter"] = PartitioningAdapter;
     }
     /**
      * Deregisters the partitioning storage as plugin.
      */
     static deregister() {
-        delete __WEBPACK_IMPORTED_MODULE_1__common_plugin__["a" /* PLUGINS */]["LokiPartitioningAdapter"];
+        delete __WEBPACK_IMPORTED_MODULE_1__common_plugin__["a" /* PLUGINS */]["PartitioningAdapter"];
     }
     /**
      * @param {object} adapter - reference to a 'non-reference' mode loki adapter instance.
@@ -154,7 +166,7 @@ class LokiPartitioningAdapter {
             let db = JSON.parse(result);
             this._dbref.loadJSONObject(db);
             db = null;
-            if (this._dbref._collections.length === 0) {
+            if (this._dbref["_collections"].length === 0) {
                 return this._dbref;
             }
             this._pageIterator = {
@@ -171,18 +183,16 @@ class LokiPartitioningAdapter {
      * @returns {Promise} a Promise that resolves after the next partition is loaded
      */
     _loadNextPartition(partition) {
-        const keyname = this._dbname + "." + partition;
         if (this._paging === true) {
             this._pageIterator.pageIndex = 0;
             return this._loadNextPage();
         }
+        const keyname = this._dbname + "." + partition;
         return this._adapter.loadDatabase(keyname).then((result) => {
-            const data = this._dbref.deserializeCollection(result, {
-                delimited: true,
-                collectionIndex: partition
+            this._dbref["_collections"][partition]._data = this._dbref.deserializeCollection(result, {
+                delimited: true
             });
-            this._dbref._collections[partition].data = data;
-            if (++partition < this._dbref._collections.length) {
+            if (++partition < this._dbref["_collections"].length) {
                 return this._loadNextPartition(partition);
             }
         });
@@ -200,7 +210,6 @@ class LokiPartitioningAdapter {
             let data = result.split(this._delimiter);
             result = ""; // free up memory now that we have split it into array
             let dlen = data.length;
-            let idx;
             // detect if last page by presence of final empty string element and remove it if so
             const isLastPage = (data[dlen - 1] === "");
             if (isLastPage) {
@@ -213,15 +222,15 @@ class LokiPartitioningAdapter {
                 }
             }
             // convert stringified array elements to object instances and push to collection data
-            for (idx = 0; idx < dlen; idx++) {
-                this._dbref._collections[this._pageIterator.collection].data.push(JSON.parse(data[idx]));
+            for (let idx = 0; idx < dlen; idx++) {
+                this._dbref["_collections"][this._pageIterator.collection]._data.push(JSON.parse(data[idx]));
                 data[idx] = null;
             }
             data = [];
             // if last page, we are done with this partition
             if (isLastPage) {
                 // if there are more partitions, kick off next partition load
-                if (++this._pageIterator.collection < this._dbref._collections.length) {
+                if (++this._pageIterator.collection < this._dbref["_collections"].length) {
                     return this._loadNextPartition(this._pageIterator.collection);
                 }
             }
@@ -241,14 +250,12 @@ class LokiPartitioningAdapter {
      *
      */
     exportDatabase(dbname, dbref) {
-        let idx;
-        const clen = dbref._collections.length;
         this._dbref = dbref;
         this._dbname = dbname;
         // queue up dirty partitions to be saved
         this._dirtyPartitions = [-1];
-        for (idx = 0; idx < clen; idx++) {
-            if (dbref._collections[idx].dirty) {
+        for (let idx = 0; idx < dbref["_collections"].length; idx++) {
+            if (dbref["_collections"][idx].dirty) {
                 this._dirtyPartitions.push(idx);
             }
         }
@@ -294,10 +301,10 @@ class LokiPartitioningAdapter {
      * @returns {Promise} a Promise that resolves after the next partition is saved
      */
     _saveNextPage() {
-        const coll = this._dbref._collections[this._pageIterator.collection];
+        const coll = this._dbref["_collections"][this._pageIterator.collection];
         const keyname = this._dbname + "." + this._pageIterator.collection + "." + this._pageIterator.pageIndex;
         let pageLen = 0;
-        const cdlen = coll.data.length;
+        const cdlen = coll._data.length;
         const delimlen = this._delimiter.length;
         let serializedObject = "";
         let pageBuilder = "";
@@ -311,13 +318,13 @@ class LokiPartitioningAdapter {
                 return this._saveNextPage();
             }
         };
-        if (coll.data.length === 0) {
+        if (coll._data.length === 0) {
             doneWithPartition = true;
         }
         while (!doneWithPartition && !doneWithPage) {
             if (!doneWithPartition) {
                 // serialize object
-                serializedObject = JSON.stringify(coll.data[this._pageIterator.docIndex]);
+                serializedObject = JSON.stringify(coll._data[this._pageIterator.docIndex]);
                 pageBuilder += serializedObject;
                 pageLen += serializedObject.length;
                 // if no more documents in collection to add, we are done with partition
@@ -338,18 +345,18 @@ class LokiPartitioningAdapter {
         return this._adapter.saveDatabase(keyname, pageBuilder).then(pageSaveCallback);
     }
 }
-/* harmony export (immutable) */ __webpack_exports__["LokiPartitioningAdapter"] = LokiPartitioningAdapter;
+/* harmony export (immutable) */ __webpack_exports__["a"] = PartitioningAdapter;
 
 
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports) {
-
-module.exports = __WEBPACK_EXTERNAL_MODULE_1__;
 
 /***/ }),
 /* 2 */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE_2__;
+
+/***/ }),
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -375,10 +382,10 @@ const PLUGINS = create();
 /* harmony export (immutable) */ __webpack_exports__["a"] = PLUGINS;
 
 
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(4)))
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports) {
 
 var g;

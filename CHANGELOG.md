@@ -1,3 +1,19 @@
+<a name="2.0.0-beta.5"></a>
+# [2.0.0-beta.5](https://github.com/LokiJS-Forge/LokiJS2/compare/2.0.0-beta.4...2.0.0-beta.5) (2018-01-02)
+
+
+### Bug Fixes
+
+* **full-text-search-language:** add missing function export ([#64](https://github.com/LokiJS-Forge/LokiJS2/issues/64)) ([9b926e2](https://github.com/LokiJS-Forge/LokiJS2/commit/9b926e2))
+
+
+### Features
+
+* improve typings ([#62](https://github.com/LokiJS-Forge/LokiJS2/issues/62)) ([b44f550](https://github.com/LokiJS-Forge/LokiJS2/commit/b44f550))
+* **full-text-search:** add an optional score explanation ([#65](https://github.com/LokiJS-Forge/LokiJS2/issues/65)) ([9fde195](https://github.com/LokiJS-Forge/LokiJS2/commit/9fde195))
+* **memory-storage:** move memory storage to a separate package ([#63](https://github.com/LokiJS-Forge/LokiJS2/issues/63)) ([7cea02a](https://github.com/LokiJS-Forge/LokiJS2/commit/7cea02a))
+
+
 <a name="2.0.0-beta.4"></a>
 # [2.0.0-beta.4](https://github.com/LokiJS-Forge/LokiJS2/compare/2.0.0-beta.3...2.0.0-beta.4) (2017-12-01)
 

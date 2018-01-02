@@ -1,4 +1,3 @@
-export declare type ANY = any;
 /**
  * LokiEventEmitter is a minimalist version of EventEmitter. It enables any
  * constructor that inherits EventEmitter to emit events and trigger
@@ -31,7 +30,7 @@ export declare class LokiEventEmitter {
      * @param {string} eventName - the name of the event
      * @param {object} data - optional object passed with the event
      */
-    emit(eventName: string, ...data: ANY[]): void;
+    emit(eventName: string, ...data: any[]): void;
     /**
      * Alias of LokiEventEmitter.prototype.on
      * addListener(eventName, listener) - adds a listener to the queue of callbacks associated to an event

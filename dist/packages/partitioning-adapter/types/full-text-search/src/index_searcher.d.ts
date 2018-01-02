@@ -1,4 +1,4 @@
-import { ScoreResult } from "./scorer";
+import { Scorer } from "./scorer";
 import { InvertedIndex } from "./inverted_index";
 import { Query } from "./query_builder";
 import { Dict } from "../../common/types";
@@ -13,9 +13,9 @@ export declare class IndexSearcher {
      * @param {object} invIdxs
      */
     constructor(invIdxs: Dict<InvertedIndex>, docs: Set<number>);
-    search(query: Query): ScoreResult;
+    search(query: Query): Scorer.ScoreResult;
     setDirty(): void;
     private _recursive(query, doScoring);
-    private _getUnique(queries, doScoring, docResults);
+    private _getUnique(queries, doScoring, queryResults);
     private _getAll(queries, doScoring);
 }

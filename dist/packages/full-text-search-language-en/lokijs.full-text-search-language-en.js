@@ -7,7 +7,7 @@
 		exports["@lokijs/full-text-search-language-en"] = factory(require("@lokijs/full-text-search"), require("@lokijs/full-text-search-language"));
 	else
 {		root["@lokijs/full-text-search-language-en"] = factory(root["@lokijs/full-text-search"], root["@lokijs/full-text-search-language"]); root["LokiFullTextSearchLanguageEn"] = root["@lokijs/full-text-search-language-en"].default;}
-})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE_1__, __WEBPACK_EXTERNAL_MODULE_2__) {
+})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -79,9 +79,21 @@ return /******/ (function(modules) { // webpackBootstrap
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__full_text_search_src_index__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__en__ = __webpack_require__(1);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "EN", function() { return __WEBPACK_IMPORTED_MODULE_0__en__["a"]; });
+
+
+/* harmony default export */ __webpack_exports__["default"] = (__WEBPACK_IMPORTED_MODULE_0__en__["a" /* EN */]);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__full_text_search_src_index__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__full_text_search_src_index___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__full_text_search_src_index__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__full_text_search_language_src_language__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__full_text_search_language_src_language__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__full_text_search_language_src_language___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__full_text_search_language_src_language__);
 /*
  * From olivernn/lunr.js.
@@ -149,7 +161,7 @@ class EnglishStemmer {
         const re_2 = /^(.+?)(ational|tional|enci|anci|izer|bli|alli|entli|eli|ousli|ization|ation|ator|alism|iveness|fulness|ousness|aliti|iviti|biliti|logi)$/;
         const re_3 = /^(.+?)(icate|ative|alize|iciti|ical|ful|ness)$/;
         const re_4 = /^(.+?)(al|ance|ence|er|ic|able|ible|ant|ement|ment|ent|ou|ism|ate|iti|ous|ive|ize)$/;
-        const re2_4 = /^(.+?)(s|t)(ion)$/;
+        const re2_4 = /^(.+?)([st])(ion)$/;
         const re_5 = /^(.+?)e$/;
         const re_5_1 = /ll$/;
         const re3_5 = new RegExp("^" + C + v + "[^aeiouwxy]$");
@@ -302,7 +314,7 @@ const trimmer = Object(__WEBPACK_IMPORTED_MODULE_1__full_text_search_language_sr
 const stopWordFilter = Object(__WEBPACK_IMPORTED_MODULE_1__full_text_search_language_src_language__["generateStopWordFilter"])(["a", "able", "about", "across", "after", "all", "almost", "also", "am", "among", "an", "and", "any", "are", "as", "at", "be", "because", "been", "but", "by", "can", "cannot", "could", "dear", "did", "do", "does", "either", "else", "ever", "every", "for", "from", "get", "got", "had", "has", "have", "he", "her", "hers", "him", "his", "how", "however", "i", "if", "in", "into", "is", "it", "its", "just", "least", "let", "like", "likely", "may", "me", "might", "most", "must", "my", "neither", "no", "nor", "not", "of", "off", "often", "on", "only", "or", "other", "our", "own", "rather", "said", "say", "says", "she", "should", "since", "so", "some", "than", "that", "the", "their", "them", "then", "there", "these", "they", "this", "tis", "to", "too", "twas", "us", "wants", "was", "we", "were", "what", "when", "where", "which", "while", "who", "whom", "why", "will", "with", "would", "yet", "you", "your"]);
 // Create, configure and export the tokenizer.
 const EN = new __WEBPACK_IMPORTED_MODULE_0__full_text_search_src_index__["Tokenizer"]();
-/* harmony export (immutable) */ __webpack_exports__["EN"] = EN;
+/* harmony export (immutable) */ __webpack_exports__["a"] = EN;
 
 EN.setSplitter("whitespace-splitter", splitter);
 EN.add("trimmer-en", trimmer);
@@ -311,16 +323,16 @@ EN.add("stopWordFilter-en", stopWordFilter);
 
 
 /***/ }),
-/* 1 */
-/***/ (function(module, exports) {
-
-module.exports = __WEBPACK_EXTERNAL_MODULE_1__;
-
-/***/ }),
 /* 2 */
 /***/ (function(module, exports) {
 
 module.exports = __WEBPACK_EXTERNAL_MODULE_2__;
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE_3__;
 
 /***/ })
 /******/ ]);

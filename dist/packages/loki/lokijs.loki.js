@@ -170,13 +170,11 @@ class LokiEventEmitter {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__event_emitter__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__unique_index__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__resultset__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__result_set__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__dynamic_view__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__helper__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__clone__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__clone__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__common_plugin__ = __webpack_require__(6);
-/* unused harmony reexport CloneMethod */
-
 
 
 
@@ -217,6 +215,8 @@ function deepProperty(obj, property, isDeep) {
 /**
  * Collection class that handles documents of same type
  * @extends LokiEventEmitter
+ * @param <TData> - the data type
+ * @param <TNested> - nested properties of data type
  */
 class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEventEmitter */] {
     /**
@@ -231,7 +231,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
      * @param {boolean} [options.disableDeltaChangesApi=true] - set to false to enable Delta Changes API (requires Changes API, forces cloning)
      * @param {boolean} [options.clone=false] - specify whether inserts and queries clone to/from user
      * @param {boolean} [options.serializableIndices =true] - converts date values on binary indexed property values are serializable
-     * @param {string} [options.cloneMethod=CloneMethod.DEEP] - the clone method
+     * @param {string} [options.cloneMethod="deep"] - the clone method
      * @param {number} [options.transactional=false] - ?
      * @param {number} options.ttl - ?
      * @param {number} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
@@ -239,21 +239,14 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
      */
     constructor(name, options = {}) {
         super();
-        /**
-         * Unique contraints contain duplicate object references, so they are not persisted.
-         * We will keep track of properties which have unique contraint applied here, and regenerate on load.
-         */
-        this.constraints = {
-            unique: {}
-        };
         // the name of the collection
         this.name = name;
         // the data held by the collection
-        this.data = [];
+        this._data = [];
         this.idIndex = []; // index of id
         this.binaryIndices = {}; // user defined indexes
         this.constraints = {
-            unique: {},
+            unique: {}
         };
         // .
         this.transforms = {};
@@ -294,7 +287,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
         // .
         this.disableDeltaChangesApi = options.disableDeltaChangesApi !== undefined ? options.disableDeltaChangesApi : true;
         // .
-        this.cloneMethod = options.cloneMethod !== undefined ? options.cloneMethod : __WEBPACK_IMPORTED_MODULE_5__clone__["a" /* CloneMethod */].DEEP;
+        this.cloneMethod = options.cloneMethod !== undefined ? options.cloneMethod : "deep";
         if (this.disableChangesApi) {
             this.disableDeltaChangesApi = true;
         }
@@ -325,7 +318,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
         // .
         this.changes = [];
         // initialize the id index
-        this.ensureId();
+        this._ensureId();
         let indices = options.indices ? options.indices : [];
         for (let idx = 0; idx < indices.length; idx++) {
             this.ensureIndex(options.indices[idx]);
@@ -354,7 +347,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
             warn() {
             },
             error() {
-            },
+            }
         };
         /* ------ STAGING API -------- */
         /**
@@ -371,7 +364,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
             uniqueNames: Object.keys(this.constraints.unique),
             transforms: this.transforms,
             binaryIndices: this.binaryIndices,
-            data: this.data,
+            _data: this._data,
             idIndex: this.idIndex,
             maxId: this.maxId,
             dirty: this.dirty,
@@ -379,6 +372,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
             transactional: this.transactional,
             asyncListeners: this.asyncListeners,
             disableChangesApi: this.disableChangesApi,
+            disableDeltaChangesApi: this.disableDeltaChangesApi,
             cloneObjects: this.cloneObjects,
             cloneMethod: this.cloneMethod,
             changes: this.changes,
@@ -395,13 +389,13 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
         coll.asyncListeners = obj.asyncListeners;
         coll.disableChangesApi = obj.disableChangesApi;
         coll.cloneObjects = obj.cloneObjects;
-        coll.cloneMethod = obj.cloneMethod || __WEBPACK_IMPORTED_MODULE_5__clone__["a" /* CloneMethod */].DEEP;
+        coll.cloneMethod = obj.cloneMethod || "deep";
         coll.changes = obj.changes;
         coll.dirty = (options && options.retainDirtyFlags === true) ? obj.dirty : false;
         function makeLoader(coll) {
             const collOptions = options[coll.name];
             if (collOptions.proto) {
-                let inflater = collOptions.inflate || ((src, dest) => {
+                const inflater = collOptions.inflate || ((src, dest) => {
                     for (let prop in src) {
                         dest[prop] = src[prop];
                     }
@@ -415,17 +409,15 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
             return collOptions.inflate;
         }
         // load each element individually
-        let clen = obj.data.length;
-        let j = 0;
         if (options && options[obj.name] !== undefined) {
             let loader = makeLoader(obj);
-            for (j; j < clen; j++) {
-                coll.data[j] = loader(obj.data[j]);
+            for (let j = 0; j < obj._data.length; j++) {
+                coll._data[j] = loader(obj._data[j]);
             }
         }
         else {
-            for (j; j < clen; j++) {
-                coll.data[j] = obj.data[j];
+            for (let j = 0; j < obj._data.length; j++) {
+                coll._data[j] = obj._data[j];
             }
         }
         coll.maxId = (obj.maxId === undefined) ? 0 : obj.maxId;
@@ -436,16 +428,16 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
         if (obj.transforms !== undefined) {
             coll.transforms = obj.transforms;
         }
-        coll.ensureId();
+        coll._ensureId();
         // regenerate unique indexes
         if (obj.uniqueNames !== undefined) {
-            for (j = 0; j < obj.uniqueNames.length; j++) {
+            for (let j = 0; j < obj.uniqueNames.length; j++) {
                 coll.ensureUniqueIndex(obj.uniqueNames[j]);
             }
         }
         // in case they are loading a database created before we added dynamic views, handle undefined
         if (obj._dynamicViews !== undefined) {
-            // reinflate DynamicViews and attached Resultsets
+            // reinflate DynamicViews and attached ResultSets
             for (let idx = 0; idx < obj._dynamicViews.length; idx++) {
                 coll._dynamicViews.push(__WEBPACK_IMPORTED_MODULE_3__dynamic_view__["a" /* DynamicView */].fromJSONObject(coll, obj._dynamicViews[idx]));
             }
@@ -489,21 +481,8 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
         delete this.transforms[name];
     }
     /*----------------------------+
-     | TTL daemon                  |
+     | TTL                        |
      +----------------------------*/
-    ttlDaemonFuncGen() {
-        const collection = this;
-        const age = this.ttl.age;
-        return function ttlDaemon() {
-            const now = Date.now();
-            const toRemove = collection.chain().where((member) => {
-                const timestamp = member.meta.updated || member.meta.created;
-                const diff = now - timestamp;
-                return age < diff;
-            });
-            toRemove.remove();
-        };
-    }
     setTTL(age, interval) {
         if (age < 0) {
             clearInterval(this.ttl.daemon);
@@ -511,19 +490,26 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
         else {
             this.ttl.age = age;
             this.ttl.ttlInterval = interval;
-            this.ttl.daemon = setInterval(this.ttlDaemonFuncGen(), interval);
+            this.ttl.daemon = setInterval(() => {
+                const now = Date.now();
+                const toRemove = this.chain().where((member) => {
+                    const timestamp = member.meta.updated || member.meta.created;
+                    const diff = now - timestamp;
+                    return this.ttl.age < diff;
+                });
+                toRemove.remove();
+            }, interval);
         }
     }
     /*----------------------------+
-     | INDEXING                    |
+     | INDEXING                   |
      +----------------------------*/
     /**
      * create a row filter that covers all documents in the collection
      */
-    prepareFullDocIndex() {
-        const len = this.data.length;
-        const indexes = new Array(len);
-        for (let i = 0; i < len; i += 1) {
+    _prepareFullDocIndex() {
+        const indexes = new Array(this._data.length);
+        for (let i = 0; i < indexes.length; i++) {
             indexes[i] = i;
         }
         return indexes;
@@ -531,7 +517,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
     /**
      * Ensure binary index on a certain field
      * @param {string} property - name of property to create binary index on
-     * @param {boolean} force - (Optional) flag indicating whether to construct index immediately
+     * @param {boolean} [force=false] - flag indicating whether to construct index immediately
      */
     ensureIndex(property, force = false) {
         // optional parameter to force rebuild whether flagged as dirty or not
@@ -549,13 +535,14 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
         const index = {
             "name": property,
             "dirty": true,
-            "values": this.prepareFullDocIndex()
+            "values": this._prepareFullDocIndex()
         };
         this.binaryIndices[property] = index;
-        const wrappedComparer = (((prop, data) => (a, b) => {
-            let val1, val2, arr;
-            if (~prop.indexOf(".")) {
-                arr = prop.split(".");
+        const data = this._data;
+        const wrappedComparer = (a, b) => {
+            let val1, val2;
+            if (~property.indexOf(".")) {
+                const arr = property.split(".");
                 val1 = arr.reduce(function (obj, i) {
                     return obj && obj[i] || undefined;
                 }, data[a]);
@@ -564,8 +551,8 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
                 }, data[b]);
             }
             else {
-                val1 = data[a][prop];
-                val2 = data[b][prop];
+                val1 = data[a][property];
+                val2 = data[b][property];
             }
             if (val1 !== val2) {
                 if (Object(__WEBPACK_IMPORTED_MODULE_4__helper__["c" /* ltHelper */])(val1, val2, false))
@@ -574,7 +561,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
                     return 1;
             }
             return 0;
-        }))(property, this.data);
+        };
         index.values.sort(wrappedComparer);
         index.dirty = false;
         this.dirty = true; // for autosave scenarios
@@ -584,7 +571,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
         const idxvals = this.binaryIndices[property].values;
         let result = "";
         for (idx = 0; idx < idxvals.length; idx++) {
-            result += " [" + idx + "] " + this.data[idxvals[idx]][property];
+            result += " [" + idx + "] " + this._data[idxvals[idx]][property];
         }
         return result;
     }
@@ -592,8 +579,8 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
         let index = new __WEBPACK_IMPORTED_MODULE_1__unique_index__["a" /* UniqueIndex */](field);
         // if index already existed, (re)loading it will likely cause collisions, rebuild always
         this.constraints.unique[field] = index;
-        for (let i = 0; i < this.data.length; i++) {
-            index.set(this.data[i], i);
+        for (let i = 0; i < this._data.length; i++) {
+            index.set(this._data[i], i);
         }
         return index;
     }
@@ -601,9 +588,8 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
      * Ensure all binary indices
      */
     ensureAllIndexes(force = false) {
-        let key;
         const bIndices = this.binaryIndices;
-        for (key in bIndices) {
+        for (const key in bIndices) {
             if (bIndices[key] !== undefined) {
                 this.ensureIndex(key, force);
             }
@@ -629,19 +615,17 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
      */
     count(query) {
         if (!query) {
-            return this.data.length;
+            return this._data.length;
         }
-        return this.chain().find(query).filteredrows.length;
+        return this.chain().find(query)._filteredRows.length;
     }
     /**
      * Rebuild idIndex
      */
-    ensureId() {
-        const len = this.data.length;
-        let i = 0;
+    _ensureId() {
         this.idIndex = [];
-        for (i; i < len; i += 1) {
-            this.idIndex.push(this.data[i].$loki);
+        for (let i = 0; i < this._data.length; i++) {
+            this.idIndex.push(this._data[i].$loki);
         }
     }
     /**
@@ -724,7 +708,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
         // at the 'batch' level, if clone option is true then emitted docs are clones
         this.emit("insert", results);
         // if clone option is set, clone return values
-        results = this.cloneObjects ? Object(__WEBPACK_IMPORTED_MODULE_5__clone__["b" /* clone */])(results, this.cloneMethod) : results;
+        results = this.cloneObjects ? Object(__WEBPACK_IMPORTED_MODULE_5__clone__["a" /* clone */])(results, this.cloneMethod) : results;
         return results.length === 1 ? results[0] : results;
     }
     /**
@@ -747,7 +731,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
             throw err;
         }
         // if configured to clone, do so now... otherwise just use same obj reference
-        const obj = this.cloneObjects ? Object(__WEBPACK_IMPORTED_MODULE_5__clone__["b" /* clone */])(doc, this.cloneMethod) : doc;
+        const obj = this.cloneObjects ? Object(__WEBPACK_IMPORTED_MODULE_5__clone__["a" /* clone */])(doc, this.cloneMethod) : doc;
         if (obj.meta === undefined) {
             obj.meta = {
                 revision: 0,
@@ -765,17 +749,16 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
         returnObj = obj;
         if (!bulkInsert) {
             this.emit("insert", obj);
-            returnObj = this.cloneObjects ? Object(__WEBPACK_IMPORTED_MODULE_5__clone__["b" /* clone */])(obj, this.cloneMethod) : obj;
+            returnObj = this.cloneObjects ? Object(__WEBPACK_IMPORTED_MODULE_5__clone__["a" /* clone */])(obj, this.cloneMethod) : obj;
         }
         return returnObj;
     }
     /**
      * Empties the collection.
-     * @param {object} options - configure clear behavior
-     * @param {boolean} options.removeIndices - (default: false)
+     * @param {boolean} [removeIndices=false] - remove indices
      */
-    clear(options = {}) {
-        this.data = [];
+    clear({ removeIndices: removeIndices = false } = {}) {
+        this._data = [];
         this.idIndex = [];
         this.cachedIndex = null;
         this.cachedBinaryIndex = null;
@@ -784,10 +767,10 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
         this._dynamicViews = [];
         this.dirty = true;
         // if removing indices entirely
-        if (options.removeIndices === true) {
+        if (removeIndices === true) {
             this.binaryIndices = {};
             this.constraints = {
-                unique: {},
+                unique: {}
             };
         }
         else {
@@ -815,7 +798,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
         if (Array.isArray(doc)) {
             let k = 0;
             const len = doc.length;
-            for (k; k < len; k += 1) {
+            for (k; k < len; k++) {
                 this.update(doc[k]);
             }
             return;
@@ -835,23 +818,22 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
             let position = arr[1]; // position in data array
             // ref to new internal obj
             // if configured to clone, do so now... otherwise just use same obj reference
-            let newInternal = this.cloneObjects || !this.disableDeltaChangesApi ? Object(__WEBPACK_IMPORTED_MODULE_5__clone__["b" /* clone */])(doc, this.cloneMethod) : doc;
+            let newInternal = this.cloneObjects || !this.disableDeltaChangesApi ? Object(__WEBPACK_IMPORTED_MODULE_5__clone__["a" /* clone */])(doc, this.cloneMethod) : doc;
             this.emit("pre-update", doc);
             Object.keys(this.constraints.unique).forEach((key) => {
                 this.constraints.unique[key].update(newInternal, position);
             });
             // operate the update
-            this.data[position] = newInternal;
+            this._data[position] = newInternal;
             // now that we can efficiently determine the data[] position of newly added document,
             // submit it for all registered DynamicViews to evaluate for inclusion/exclusion
             for (let idx = 0; idx < this._dynamicViews.length; idx++) {
                 this._dynamicViews[idx]._evaluateDocument(position, false);
             }
-            let key;
             if (this.adaptiveBinaryIndices) {
                 // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
                 const bIndices = this.binaryIndices;
-                for (key in bIndices) {
+                for (const key in bIndices) {
                     this.adaptiveBinaryIndexUpdate(position, key);
                 }
             }
@@ -865,8 +847,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
             }
             this.commit();
             this.dirty = true; // for autosave scenarios
-            this.emit("update", doc, this.cloneObjects || !this.disableDeltaChangesApi ? Object(__WEBPACK_IMPORTED_MODULE_5__clone__["b" /* clone */])(oldInternal, this.cloneMethod) : null);
-            return doc;
+            this.emit("update", doc, this.cloneObjects || !this.disableDeltaChangesApi ? Object(__WEBPACK_IMPORTED_MODULE_5__clone__["a" /* clone */])(oldInternal, this.cloneMethod) : null);
         }
         catch (err) {
             this.rollback();
@@ -896,23 +877,22 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
             this.startTransaction();
             this.maxId++;
             if (isNaN(this.maxId)) {
-                this.maxId = (this.data[this.data.length - 1].$loki + 1);
+                this.maxId = (this._data[this._data.length - 1].$loki + 1);
             }
             const newDoc = obj;
             newDoc.$loki = this.maxId;
             newDoc.meta.version = 0;
-            let key;
             const constrUnique = this.constraints.unique;
-            for (key in constrUnique) {
+            for (const key in constrUnique) {
                 if (constrUnique[key] !== undefined) {
-                    constrUnique[key].set(newDoc, this.data.length);
+                    constrUnique[key].set(newDoc, this._data.length);
                 }
             }
             // add new obj id to idIndex
             this.idIndex.push(newDoc.$loki);
             // add the object
-            this.data.push(newDoc);
-            const addedPos = this.data.length - 1;
+            this._data.push(newDoc);
+            const addedPos = this._data.length - 1;
             // now that we can efficiently determine the data[] position of newly added document,
             // submit it for all registered DynamicViews to evaluate for inclusion/exclusion
             const dvlen = this._dynamicViews.length;
@@ -921,8 +901,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
             }
             if (this.adaptiveBinaryIndices) {
                 // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
-                const bIndices = this.binaryIndices;
-                for (key in bIndices) {
+                for (const key in this.binaryIndices) {
                     this.adaptiveBinaryIndexInsert(addedPos, key);
                 }
             }
@@ -935,7 +914,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
             }
             this.commit();
             this.dirty = true; // for autosave scenarios
-            return (this.cloneObjects) ? (Object(__WEBPACK_IMPORTED_MODULE_5__clone__["b" /* clone */])(newDoc, this.cloneMethod)) : (newDoc);
+            return (this.cloneObjects) ? (Object(__WEBPACK_IMPORTED_MODULE_5__clone__["a" /* clone */])(newDoc, this.cloneMethod)) : (newDoc);
         }
         catch (err) {
             this.rollback();
@@ -952,12 +931,9 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
      */
     updateWhere(filterFunction, updateFunction) {
         const results = this.where(filterFunction);
-        let i = 0;
-        let obj;
         try {
-            for (i; i < results.length; i++) {
-                obj = updateFunction(results[i]);
-                this.update(obj);
+            for (let i = 0; i < results.length; i++) {
+                this.update(updateFunction(results[i]));
             }
         }
         catch (err) {
@@ -971,33 +947,28 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
      * @param {function|object} query - query object to filter on
      */
     removeWhere(query) {
-        let list;
         if (typeof query === "function") {
-            list = this.data.filter(query);
-            this.remove(list);
+            this.remove(this._data.filter(query));
         }
         else {
             this.chain().find(query).remove();
         }
     }
     removeDataOnly() {
-        this.remove(this.data.slice());
+        this.remove(this._data.slice());
     }
     /**
      * Remove a document from the collection
-     * @param {object} doc - document to remove from collection
+     * @param {number|object} doc - document to remove from collection
      */
     remove(doc) {
         if (typeof doc === "number") {
             doc = this.get(doc);
         }
-        if ("object" !== typeof doc) {
-            throw new Error("Parameter is not an object");
-        }
         if (Array.isArray(doc)) {
             let k = 0;
             const len = doc.length;
-            for (k; k < len; k += 1) {
+            for (k; k < len; k++) {
                 this.remove(doc[k]);
             }
             return;
@@ -1021,16 +992,14 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
             }
             if (this.adaptiveBinaryIndices) {
                 // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
-                let key;
-                const bIndices = this.binaryIndices;
-                for (key in bIndices) {
+                for (const key in this.binaryIndices) {
                     this.adaptiveBinaryIndexRemove(position, key);
                 }
             }
             else {
                 this.flagBinaryIndexesDirty();
             }
-            this.data.splice(position, 1);
+            this._data.splice(position, 1);
             // remove id from idIndex
             this.idIndex.splice(position, 1);
             // FullTextSearch.
@@ -1042,7 +1011,6 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
             this.emit("delete", arr[0]);
             delete doc.$loki;
             delete doc.meta;
-            return doc;
         }
         catch (err) {
             this.rollback();
@@ -1056,7 +1024,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
      +------------*/
     /**
      * Returns all changes.
-     * @returns {ANY}
+     * @returns {Collection.Change[]}
      */
     getChanges() {
         return this.changes;
@@ -1196,9 +1164,9 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
         }
         if (max === min && data[min] === id) {
             if (returnPosition) {
-                return [this.data[min], min];
+                return [this._data[min], min];
             }
-            return this.data[min];
+            return this._data[min];
         }
         return null;
     }
@@ -1206,15 +1174,15 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
      * Perform binary range lookup for the data[dataPosition][binaryIndexName] property value
      *    Since multiple documents may contain the same value (which the index is sorted on),
      *    we hone in on range and then linear scan range to find exact index array position.
-     * @param {int} dataPosition : coll.data array index/position
+     * @param {int} dataPosition : data array index/position
      * @param {string} binaryIndexName : index to search for dataPosition in
      */
     getBinaryIndexPosition(dataPosition, binaryIndexName) {
-        const val = this.data[dataPosition][binaryIndexName];
+        const val = this._data[dataPosition][binaryIndexName];
         const index = this.binaryIndices[binaryIndexName].values;
         // i think calculateRange can probably be moved to collection
-        // as it doesn't seem to need resultset.  need to verify
-        //let rs = new Resultset(this, null, null);
+        // as it doesn't seem to need ResultSet.  need to verify
+        //let rs = new ResultSet(this, null, null);
         const range = this.calculateRange("$eq", binaryIndexName, val);
         if (range[0] === 0 && range[1] === -1) {
             // uhoh didn't find range
@@ -1239,11 +1207,11 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
      */
     adaptiveBinaryIndexInsert(dataPosition, binaryIndexName) {
         const index = this.binaryIndices[binaryIndexName].values;
-        let val = this.data[dataPosition][binaryIndexName];
+        let val = this._data[dataPosition][binaryIndexName];
         // If you are inserting a javascript Date value into a binary index, convert to epoch time
         if (this.serializableIndices === true && val instanceof Date) {
-            this.data[dataPosition][binaryIndexName] = val.getTime();
-            val = this.data[dataPosition][binaryIndexName];
+            this._data[dataPosition][binaryIndexName] = val.getTime();
+            val = this._data[dataPosition][binaryIndexName];
         }
         const idxPos = (index.length === 0) ? 0 : this._calculateRangeStart(binaryIndexName, val, true);
         // insert new data index into our binary index at the proper sorted location for relevant property calculated by idxPos.
@@ -1272,17 +1240,14 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
     }
     /**
      * Adaptively remove a selected item from the index.
-     * @param {int} dataPosition : coll.data array index/position
+     * @param {number} dataPosition : coll.data array index/position
      * @param {string} binaryIndexName : index to search for dataPosition in
+     * @param {boolean} removedFromIndexOnly - remove from index only
      */
     adaptiveBinaryIndexRemove(dataPosition, binaryIndexName, removedFromIndexOnly = false) {
         const idxPos = this.getBinaryIndexPosition(dataPosition, binaryIndexName);
-        const index = this.binaryIndices[binaryIndexName].values;
-        let len;
-        let idx;
         if (idxPos === null) {
-            // throw new Error('unable to determine binary index position');
-            return null;
+            return;
         }
         // remove document from index
         this.binaryIndices[binaryIndexName].values.splice(idxPos, 1);
@@ -1293,8 +1258,8 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
         }
         // since index stores data array positions, if we remove a document
         // we need to adjust array positions -1 for all document positions greater than removed position
-        len = index.length;
-        for (idx = 0; idx < len; idx++) {
+        const index = this.binaryIndices[binaryIndexName].values;
+        for (let idx = 0; idx < index.length; idx++) {
             if (index[idx] > dataPosition) {
                 index[idx]--;
             }
@@ -1315,7 +1280,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
      * @param {bool?} adaptive - if true, we will return insert position
      */
     _calculateRangeStart(prop, val, adaptive = false) {
-        const rcd = this.data;
+        const rcd = this._data;
         const index = this.binaryIndices[prop].values;
         let min = 0;
         let max = index.length - 1;
@@ -1350,7 +1315,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
      * (which may or may not yet exist) this will find the final position of that upper range value.
      */
     _calculateRangeEnd(prop, val) {
-        const rcd = this.data;
+        const rcd = this._data;
         const index = this.binaryIndices[prop].values;
         let min = 0;
         let max = index.length - 1;
@@ -1386,7 +1351,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
     }
     /**
      * Binary Search utility method to find range/segment of values matching criteria.
-     *    this is used for collection.find() and first find filter of resultset/dynview
+     *    this is used for collection.find() and first find filter of ResultSet/dynview
      *    slightly different than get() binary search in that get() hones in on 1 value,
      *    but we have to hone in on many (range)
      * @param {string} op - operation, such as $eq
@@ -1395,7 +1360,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
      * @returns {array} [start, end] index array positions
      */
     calculateRange(op, prop, val) {
-        const rcd = this.data;
+        const rcd = this._data;
         const index = this.binaryIndices[prop].values;
         const min = 0;
         const max = index.length - 1;
@@ -1513,20 +1478,10 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
             case "$eq":
             case "$aeq":
             case "$dteq":
-                // if hole (not found)
-                //if (ltHelper(lval, val, false) || gtHelper(lval, val, false)) {
-                //  return [0, -1];
-                //}
                 if (!Object(__WEBPACK_IMPORTED_MODULE_4__helper__["a" /* aeqHelper */])(lval, val)) {
                     return [0, -1];
                 }
                 return [lbound, ubound];
-            //case '$dteq':
-            // if hole (not found)
-            //  if (lval > val || lval < val) {
-            //    return [0, -1];
-            //  }
-            //  return [lbound, ubound];
             case "$gt":
                 // (an eqHelper would probably be better test)
                 // if hole (not found) ub position is already greater
@@ -1580,7 +1535,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
      */
     findOne(query) {
         query = query || {};
-        // Instantiate Resultset and exec find op passing firstOnly = true param
+        // Instantiate ResultSet and exec find op passing firstOnly = true param
         const result = this.chain().find(query, true).data();
         if (Array.isArray(result) && result.length === 0) {
             return null;
@@ -1590,7 +1545,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
                 return result[0];
             }
             else {
-                return Object(__WEBPACK_IMPORTED_MODULE_5__clone__["b" /* clone */])(result[0], this.cloneMethod);
+                return Object(__WEBPACK_IMPORTED_MODULE_5__clone__["a" /* clone */])(result[0], this.cloneMethod);
             }
         }
     }
@@ -1600,10 +1555,10 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
      *
      * @param {array} transform - Ordered array of transform step objects similar to chain
      * @param {object} parameters - Object containing properties representing parameters to substitute
-     * @returns {Resultset} (this) resultset, or data array if any map or join functions where called
+     * @returns {ResultSet} (this) ResultSet, or data array if any map or join functions where called
      */
     chain(transform, parameters) {
-        const rs = new __WEBPACK_IMPORTED_MODULE_2__resultset__["a" /* Resultset */](this);
+        const rs = new __WEBPACK_IMPORTED_MODULE_2__result_set__["a" /* ResultSet */](this);
         if (transform === undefined) {
             return rs;
         }
@@ -1624,11 +1579,11 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
      * simply iterates and returns the first element matching the query
      */
     findOneUnindexed(prop, value) {
-        let i = this.data.length;
+        let i = this._data.length;
         let doc;
         while (i--) {
-            if (this.data[i][prop] === value) {
-                doc = this.data[i];
+            if (this._data[i][prop] === value) {
+                doc = this._data[i];
                 return doc;
             }
         }
@@ -1637,10 +1592,12 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
     /**
      * Transaction methods
      */
-    /** start the transation */
+    /**
+     * start the transation
+     */
     startTransaction() {
         if (this.transactional) {
-            this.cachedData = Object(__WEBPACK_IMPORTED_MODULE_5__clone__["b" /* clone */])(this.data, this.cloneMethod);
+            this.cachedData = Object(__WEBPACK_IMPORTED_MODULE_5__clone__["a" /* clone */])(this._data, this.cloneMethod);
             this.cachedIndex = this.idIndex;
             this.cachedBinaryIndex = this.binaryIndices;
             // propagate startTransaction to dynamic views
@@ -1649,7 +1606,9 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
             }
         }
     }
-    /** commit the transation */
+    /**
+     * commit the transation
+     */
     commit() {
         if (this.transactional) {
             this.cachedData = null;
@@ -1661,11 +1620,13 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
             }
         }
     }
-    /** roll back the transation */
+    /**
+     * roll back the transation
+     */
     rollback() {
         if (this.transactional) {
             if (this.cachedData !== null && this.cachedIndex !== null) {
-                this.data = this.cachedData;
+                this._data = this.cachedData;
                 this.idIndex = this.cachedIndex;
                 this.binaryIndices = this.cachedBinaryIndex;
             }
@@ -1695,12 +1656,7 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
      * @returns {data} The result of your mapReduce operation
      */
     mapReduce(mapFunction, reduceFunction) {
-        try {
-            return reduceFunction(this.data.map(mapFunction));
-        }
-        catch (err) {
-            throw err;
-        }
+        return reduceFunction(this._data.map(mapFunction));
     }
     /**
      * Join two collections on specified properties
@@ -1709,20 +1665,16 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
      * @param {string} leftJoinProp - property name in collection
      * @param {string} rightJoinProp - property name in joinData
      * @param {function} mapFun - (Optional) map function to use
-     * @returns {Resultset} Result of the mapping operation
+     * @param dataOptions - options to data() before input to your map function
+     * @param [dataOptions.removeMeta] - allows removing meta before calling mapFun
+     * @param [dataOptions.forceClones] - forcing the return of cloned objects to your map object
+     * @param [dataOptions.forceCloneMethod] - allows overriding the default or collection specified cloning method
+     * @returns {ResultSet} Result of the mapping operation
      */
-    //eqJoin<T extends object>(joinData: T[] | Resultset<T>, leftJoinProp: string | ((obj: E) => string), rightJoinProp: string | ((obj: T) => string)): Resultset<{ left: E; right: T; }>;
-    // eqJoin<T extends object, U extends object>(joinData: T[] | Resultset<T>, leftJoinProp: string | ((obj: E) => string), rightJoinProp: string | ((obj: T) => string), mapFun?: (a: E, b: T) => U): Resultset<U> {
-    //eqJoin<T extends object, U extends object>(joinData: T[] | Resultset<T>, leftJoinKey: string | ((obj: E) => string), rightJoinKey: string | ((obj: T) => string), mapFun?: (a: E, b: T) => U, dataOptions?: Resultset.DataOptions): Resultset<{ left: E; right: T; }> {
-    eqJoin(joinData, leftJoinProp, rightJoinProp, mapFun) {
-        // logic in Resultset class
-        return new __WEBPACK_IMPORTED_MODULE_2__resultset__["a" /* Resultset */](this).eqJoin(joinData, leftJoinProp, rightJoinProp, mapFun);
+    eqJoin(joinData, leftJoinProp, rightJoinProp, mapFun, dataOptions) {
+        return new __WEBPACK_IMPORTED_MODULE_2__result_set__["a" /* ResultSet */](this).eqJoin(joinData, leftJoinProp, rightJoinProp, mapFun, dataOptions);
     }
     /* ------ STAGING API -------- */
-    /**
-     * stages: a map of uniquely identified 'stages', which hold copies of objects to be
-     * manipulated without affecting the data in the original collection
-     */
     /**
      * (Staging API) create a stage and/or retrieve it
      */
@@ -1751,9 +1703,8 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
      */
     commitStage(stageName, message) {
         const stage = this.getStage(stageName);
-        let prop;
         const timestamp = new Date().getTime();
-        for (prop in stage) {
+        for (const prop in stage) {
             this.update(stage[prop]);
             this.commitLog.push({
                 timestamp,
@@ -1766,12 +1717,10 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
     /**
      */
     extract(field) {
-        let i = 0;
-        const len = this.data.length;
         const isDotNotation = isDeepProperty(field);
         const result = [];
-        for (i; i < len; i += 1) {
-            result.push(deepProperty(this.data[i], field, isDotNotation));
+        for (let i = 0; i < this._data.length; i++) {
+            result.push(deepProperty(this._data[i], field, isDotNotation));
         }
         return result;
     }
@@ -1788,24 +1737,22 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
     /**
      */
     maxRecord(field) {
-        let i = 0;
-        const len = this.data.length;
         const deep = isDeepProperty(field);
         const result = {
             index: 0,
             value: 0
         };
         let max;
-        for (i; i < len; i += 1) {
+        for (let i = 0; i < this._data.length; i++) {
             if (max !== undefined) {
-                if (max < deepProperty(this.data[i], field, deep)) {
-                    max = deepProperty(this.data[i], field, deep);
-                    result.index = this.data[i].$loki;
+                if (max < deepProperty(this._data[i], field, deep)) {
+                    max = deepProperty(this._data[i], field, deep);
+                    result.index = this._data[i].$loki;
                 }
             }
             else {
-                max = deepProperty(this.data[i], field, deep);
-                result.index = this.data[i].$loki;
+                max = deepProperty(this._data[i], field, deep);
+                result.index = this._data[i].$loki;
             }
         }
         result.value = max;
@@ -1814,24 +1761,22 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
     /**
      */
     minRecord(field) {
-        let i = 0;
-        const len = this.data.length;
         const deep = isDeepProperty(field);
         const result = {
             index: 0,
             value: 0
         };
         let min;
-        for (i; i < len; i += 1) {
+        for (let i = 0; i < this._data.length; i++) {
             if (min !== undefined) {
-                if (min > deepProperty(this.data[i], field, deep)) {
-                    min = deepProperty(this.data[i], field, deep);
-                    result.index = this.data[i].$loki;
+                if (min > deepProperty(this._data[i], field, deep)) {
+                    min = deepProperty(this._data[i], field, deep);
+                    result.index = this._data[i].$loki;
                 }
             }
             else {
-                min = deepProperty(this.data[i], field, deep);
-                result.index = this.data[i].$loki;
+                min = deepProperty(this._data[i], field, deep);
+                result.index = this._data[i].$loki;
             }
         }
         result.value = min;
@@ -1909,112 +1854,6 @@ class Collection extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lok
 
 /***/ }),
 /* 2 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CloneMethod; });
-/* harmony export (immutable) */ __webpack_exports__["b"] = clone;
-var CloneMethod;
-(function (CloneMethod) {
-    CloneMethod[CloneMethod["PARSE_STRINGIFY"] = 0] = "PARSE_STRINGIFY";
-    CloneMethod[CloneMethod["DEEP"] = 1] = "DEEP";
-    CloneMethod[CloneMethod["SHALLOW"] = 2] = "SHALLOW";
-    CloneMethod[CloneMethod["SHALLOW_ASSIGN"] = 3] = "SHALLOW_ASSIGN";
-    CloneMethod[CloneMethod["SHALLOW_RECURSE_OBJECTS"] = 4] = "SHALLOW_RECURSE_OBJECTS";
-})(CloneMethod || (CloneMethod = {}));
-function add(copy, key, value) {
-    if (copy instanceof Array) {
-        copy.push(value);
-        return copy[copy.length - 1];
-    }
-    else if (copy instanceof Object) {
-        copy[key] = value;
-        return copy[key];
-    }
-}
-function walk(target, copy) {
-    for (let key in target) {
-        let obj = target[key];
-        if (obj instanceof Date) {
-            let value = new Date(obj.getTime());
-            add(copy, key, value);
-        }
-        else if (obj instanceof Function) {
-            let value = obj;
-            add(copy, key, value);
-        }
-        else if (obj instanceof Array) {
-            let value = [];
-            let last = add(copy, key, value);
-            walk(obj, last);
-        }
-        else if (obj instanceof Object) {
-            let value = {};
-            let last = add(copy, key, value);
-            walk(obj, last);
-        }
-        else {
-            let value = obj;
-            add(copy, key, value);
-        }
-    }
-}
-// Deep copy from Simeon Velichkov.
-/**
- * @param target
- * @returns {any}
- */
-function deepCopy(target) {
-    if (/number|string|boolean/.test(typeof target)) {
-        return target;
-    }
-    if (target instanceof Date) {
-        return new Date(target.getTime());
-    }
-    const copy = (target instanceof Array) ? [] : {};
-    walk(target, copy);
-    return copy;
-}
-/**
- * @hidden
- */
-function clone(data, method = CloneMethod.PARSE_STRINGIFY) {
-    if (data === null || data === undefined) {
-        return null;
-    }
-    let cloned;
-    switch (method) {
-        case CloneMethod.PARSE_STRINGIFY:
-            cloned = JSON.parse(JSON.stringify(data));
-            break;
-        case CloneMethod.DEEP:
-            cloned = deepCopy(data);
-            break;
-        case CloneMethod.SHALLOW:
-            cloned = Object.create(data.constructor.prototype);
-            Object.assign(cloned, data);
-            break;
-        case CloneMethod.SHALLOW_RECURSE_OBJECTS:
-            // shallow clone top level properties
-            cloned = clone(data, CloneMethod.SHALLOW);
-            const keys = Object.keys(data);
-            // for each of the top level properties which are object literals, recursively shallow copy
-            for (let i = 0; i < keys.length; i++) {
-                const key = keys[i];
-                if (typeof data[key] === "object" && data[key].constructor.name === "Object") {
-                    cloned[key] = clone(data[key], CloneMethod.SHALLOW_RECURSE_OBJECTS);
-                }
-            }
-            break;
-        default:
-            break;
-    }
-    return cloned;
-}
-
-
-/***/ }),
-/* 3 */
 /***/ (function(module, exports) {
 
 var g;
@@ -2041,25 +1880,24 @@ module.exports = g;
 
 
 /***/ }),
-/* 4 */
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__collection__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__clone__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__clone__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__helper__ = __webpack_require__(5);
 
 
 
 // used to recursively scan hierarchical transform step object for param substitution
 function resolveTransformObject(subObj, params, depth = 0) {
-    let prop;
-    let pname;
-    if (++depth >= 10)
+    if (++depth >= 10) {
         return subObj;
-    for (prop in subObj) {
+    }
+    for (const prop in subObj) {
         if (typeof subObj[prop] === "string" && subObj[prop].indexOf("[%lktxp]") === 0) {
-            pname = subObj[prop].substring(8);
+            const pname = subObj[prop].substring(8);
             if (params[pname] !== undefined) {
                 subObj[prop] = params[pname];
             }
@@ -2072,15 +1910,14 @@ function resolveTransformObject(subObj, params, depth = 0) {
 }
 // top level utility to resolve an entire (single) transform (array of steps) for parameter substitution
 function resolveTransformParams(transform, params) {
-    let idx;
-    let clonedStep;
-    const resolvedTransform = [];
-    if (params === undefined)
+    if (params === undefined) {
         return transform;
+    }
     // iterate all steps in the transform array
-    for (idx = 0; idx < transform.length; idx++) {
+    const resolvedTransform = [];
+    for (let idx = 0; idx < transform.length; idx++) {
         // clone transform so our scan/replace can operate directly on cloned transform
-        clonedStep = Object(__WEBPACK_IMPORTED_MODULE_1__clone__["b" /* clone */])(transform[idx], __WEBPACK_IMPORTED_MODULE_1__clone__["a" /* CloneMethod */].SHALLOW_RECURSE_OBJECTS);
+        const clonedStep = Object(__WEBPACK_IMPORTED_MODULE_1__clone__["a" /* clone */])(transform[idx], "shallow-recurse-objects");
         resolvedTransform.push(resolveTransformObject(clonedStep, params));
     }
     return resolvedTransform;
@@ -2107,7 +1944,7 @@ function doQueryOp(val, op) {
  */
 const LokiOps = {
     // comparison operators
-    // a is the value in the collection
+    // a is the value in the _collection
     // b is the query value
     $eq(a, b) {
         return a === b;
@@ -2140,11 +1977,10 @@ const LokiOps = {
     $lte(a, b) {
         return Object(__WEBPACK_IMPORTED_MODULE_2__helper__["c" /* ltHelper */])(a, b, true);
     },
-    // ex : coll.find({'orderCount': {$between: [10, 50]}});
-    $between(a, vals) {
+    $between(a, range) {
         if (a === undefined || a === null)
             return false;
-        return (Object(__WEBPACK_IMPORTED_MODULE_2__helper__["b" /* gtHelper */])(a, vals[0], true) && Object(__WEBPACK_IMPORTED_MODULE_2__helper__["c" /* ltHelper */])(a, vals[1], true));
+        return (Object(__WEBPACK_IMPORTED_MODULE_2__helper__["b" /* gtHelper */])(a, range[0], true) && Object(__WEBPACK_IMPORTED_MODULE_2__helper__["c" /* ltHelper */])(a, range[1], true));
     },
     $in(a, b) {
         return b.indexOf(a) !== -1;
@@ -2218,14 +2054,14 @@ const LokiOps = {
         return b(a) === true;
     },
     // field-level logical operators
-    // a is the value in the collection
+    // a is the value in the _collection
     // b is the nested query operation (for '$not')
     //   or an array of nested query operations (for '$and' and '$or')
     $not(a, b) {
         return !doQueryOp(a, b);
     },
     $and(a, b) {
-        for (let idx = 0, len = b.length; idx < len; idx += 1) {
+        for (let idx = 0, len = b.length; idx < len; idx++) {
             if (!doQueryOp(a, b[idx])) {
                 return false;
             }
@@ -2233,7 +2069,7 @@ const LokiOps = {
         return true;
     },
     $or(a, b) {
-        for (let idx = 0, len = b.length; idx < len; idx += 1) {
+        for (let idx = 0, len = b.length; idx < len; idx++) {
             if (doQueryOp(a, b[idx])) {
                 return true;
             }
@@ -2279,7 +2115,7 @@ function dotSubScan(root, paths, fun, value, pathOffset = 0) {
         valueFound = fun(element, value);
     }
     else if (Array.isArray(element)) {
-        for (let index = 0, len = element.length; index < len; index += 1) {
+        for (let index = 0, len = element.length; index < len; index++) {
             valueFound = dotSubScan(element[index], paths, fun, value, pathOffset + 1);
             if (valueFound === true) {
                 break;
@@ -2292,7 +2128,7 @@ function dotSubScan(root, paths, fun, value, pathOffset = 0) {
     return valueFound;
 }
 /**
- * Resultset class allowing chainable queries.  Intended to be instanced internally.
+ * ResultSet class allowing chainable queries.  Intended to be instanced internally.
  *    Collection.find(), Collection.where(), and Collection.chain() instantiate this.
  *
  * @example
@@ -2300,82 +2136,83 @@ function dotSubScan(root, paths, fun, value, pathOffset = 0) {
  *      .find({ 'doors' : 4 })
  *      .where(function(obj) { return obj.name === 'Toyota' })
  *      .data();
+ *
+ * @param <TData> - the data type
+ * @param <TNested> - nested properties of data type
  */
-class Resultset {
+class ResultSet {
     /**
      * Constructor.
-     * @param {Collection} collection - the collection which this Resultset will query against
+     * @param {Collection} collection - the collection which this ResultSet will query against
      */
     constructor(collection) {
         // retain reference to collection we are querying against
-        this.collection = collection;
-        this.filteredrows = [];
-        this.filterInitialized = false;
+        this._collection = collection;
+        this._filteredRows = [];
+        this._filterInitialized = false;
         this._scoring = null;
     }
     /**
-     * reset() - Reset the resultset to its initial state.
+     * reset() - Reset the ResultSet to its initial state.
      *
-     * @returns {Resultset} Reference to this resultset, for future chain operations.
+     * @returns {ResultSet} Reference to this ResultSet, for future chain operations.
      */
     reset() {
-        if (this.filteredrows.length > 0) {
-            this.filteredrows = [];
+        if (this._filteredRows.length > 0) {
+            this._filteredRows = [];
         }
-        this.filterInitialized = false;
+        this._filterInitialized = false;
         return this;
     }
     /**
-     * toJSON() - Override of toJSON to avoid circular references
+     * Override of toJSON to avoid circular references
      *
      */
     toJSON() {
         const copy = this.copy();
-        copy.collection = null;
+        copy._collection = null;
         return copy;
     }
     /**
      * Allows you to limit the number of documents passed to next chain operation.
-     *    A resultset copy() is made to avoid altering original resultset.
+     *    A ResultSet copy() is made to avoid altering original ResultSet.
      *
      * @param {int} qty - The number of documents to return.
-     * @returns {Resultset} Returns a copy of the resultset, limited by qty, for subsequent chain ops.
+     * @returns {ResultSet} Returns a copy of the ResultSet, limited by qty, for subsequent chain ops.
      */
     limit(qty) {
-        // if this has no filters applied, we need to populate filteredrows first
-        if (!this.filterInitialized && this.filteredrows.length === 0) {
-            this.filteredrows = this.collection.prepareFullDocIndex();
+        // if this has no filters applied, we need to populate filteredRows first
+        if (!this._filterInitialized && this._filteredRows.length === 0) {
+            this._filteredRows = this._collection._prepareFullDocIndex();
         }
-        this.filteredrows = this.filteredrows.slice(0, qty);
-        this.filterInitialized = true;
+        this._filteredRows = this._filteredRows.slice(0, qty);
+        this._filterInitialized = true;
         return this;
     }
     /**
-     * Used for skipping 'pos' number of documents in the resultset.
+     * Used for skipping 'pos' number of documents in the ResultSet.
      *
      * @param {int} pos - Number of documents to skip; all preceding documents are filtered out.
-     * @returns {Resultset} Returns a copy of the resultset, containing docs starting at 'pos' for subsequent chain ops.
+     * @returns {ResultSet} Returns a copy of the ResultSet, containing docs starting at 'pos' for subsequent chain ops.
      */
     offset(pos) {
-        // if this has no filters applied, we need to populate filteredrows first
-        if (!this.filterInitialized && this.filteredrows.length === 0) {
-            this.filteredrows = this.collection.prepareFullDocIndex();
+        // if this has no filters applied, we need to populate filteredRows first
+        if (!this._filterInitialized && this._filteredRows.length === 0) {
+            this._filteredRows = this._collection._prepareFullDocIndex();
         }
-        this.filteredrows = this.filteredrows.slice(pos);
-        this.filterInitialized = true;
+        this._filteredRows = this._filteredRows.slice(pos);
+        this._filterInitialized = true;
         return this;
     }
     /**
-     * copy() - To support reuse of resultset in branched query situations.
+     * copy() - To support reuse of ResultSet in branched query situations.
      *
-     * @returns {Resultset} Returns a copy of the resultset (set) but the underlying document references will be the same.
+     * @returns {ResultSet} Returns a copy of the ResultSet (set) but the underlying document references will be the same.
      */
     copy() {
-        const result = new Resultset(this.collection);
-        if (this.filteredrows.length > 0) {
-            result.filteredrows = this.filteredrows.slice();
-        }
-        result.filterInitialized = this.filterInitialized;
+        const result = new ResultSet(this._collection);
+        result._filteredRows = this._filteredRows.slice();
+        result._filterInitialized = this._filterInitialized;
         return result;
     }
     /**
@@ -2385,31 +2222,23 @@ class Resultset {
         return this.copy();
     }
     /**
-     * Executes a named collection transform or raw array of transform steps against the resultset.
+     * Executes a named collection transform or raw array of transform steps against the ResultSet.
      *
      * @param {(string|array)} transform - name of collection transform or raw transform array
      * @param {object} [parameters=] - object property hash of parameters, if the transform requires them.
-     * @returns {Resultset} either (this) resultset or a clone of of this resultset (depending on steps)
+     * @returns {ResultSet} either (this) ResultSet or a clone of of this ResultSet (depending on steps)
      */
     transform(transform, parameters) {
-        let idx;
-        let step;
-        let rs = this;
         // if transform is name, then do lookup first
         if (typeof transform === "string") {
-            if (this.collection.transforms[transform] !== undefined) {
-                transform = this.collection.transforms[transform];
-            }
-        }
-        // either they passed in raw transform array or we looked it up, so process
-        if (typeof transform !== "object" || !Array.isArray(transform)) {
-            throw new Error("Invalid transform");
+            transform = this._collection.transforms[transform];
         }
         if (parameters !== undefined) {
             transform = resolveTransformParams(transform, parameters);
         }
-        for (idx = 0; idx < transform.length; idx++) {
-            step = transform[idx];
+        let rs = this;
+        for (let idx = 0; idx < transform.length; idx++) {
+            const step = transform[idx];
             switch (step.type) {
                 case "find":
                     rs.find(step.value);
@@ -2425,6 +2254,9 @@ class Resultset {
                     break;
                 case "sort":
                     rs.sort(step.value);
+                    break;
+                case "sortByScoring":
+                    rs.sortByScoring(step.desc);
                     break;
                 case "limit":
                     rs = rs.limit(step.value);
@@ -2442,7 +2274,7 @@ class Resultset {
                 case "mapReduce":
                     rs = rs.mapReduce(step.mapFunction, step.reduceFunction);
                     break;
-                // following cases update documents in current filtered resultset (use carefully)
+                // following cases update documents in current filtered ResultSet (use carefully)
                 case "update":
                     rs.update(step.value);
                     break;
@@ -2465,15 +2297,16 @@ class Resultset {
        *    });
      *
      * @param {function} comparefun - A javascript compare function used for sorting.
-     * @returns {Resultset} Reference to this resultset, sorted, for future chain operations.
+     * @returns {ResultSet} Reference to this ResultSet, sorted, for future chain operations.
      */
     sort(comparefun) {
-        // if this has no filters applied, just we need to populate filteredrows first
-        if (!this.filterInitialized && this.filteredrows.length === 0) {
-            this.filteredrows = this.collection.prepareFullDocIndex();
+        // if this has no filters applied, just we need to populate filteredRows first
+        if (!this._filterInitialized && this._filteredRows.length === 0) {
+            this._filteredRows = this._collection._prepareFullDocIndex();
         }
-        const wrappedComparer = (((userComparer, data) => (a, b) => userComparer(data[a], data[b])))(comparefun, this.collection.data);
-        this.filteredrows.sort(wrappedComparer);
+        const data = this._collection._data;
+        const wrappedComparer = (a, b) => comparefun(data[a], data[b]);
+        this._filteredRows.sort(wrappedComparer);
         return this;
     }
     /**
@@ -2481,35 +2314,34 @@ class Resultset {
      *    Sorting based on the same lt/gt helper functions used for binary indices.
      *
      * @param {string} propname - name of property to sort by.
-     * @param {boolean} isdesc - (Optional) If true, the property will be sorted in descending order
-     * @returns {Resultset} Reference to this resultset, sorted, for future chain operations.
+     * @param {boolean} [descending=false] - if true, the property will be sorted in descending order
+     * @returns {ResultSet} Reference to this ResultSet, sorted, for future chain operations.
      */
-    simplesort(propname, isdesc) {
-        if (isdesc === undefined) {
-            isdesc = false;
-        }
-        // if this has no filters applied, just we need to populate filteredrows first
-        if (!this.filterInitialized && this.filteredrows.length === 0) {
+    simplesort(propname, descending = false) {
+        // if this has no filters applied, just we need to populate filteredRows first
+        if (!this._filterInitialized && this._filteredRows.length === 0) {
+            //TODO:
             // if we have a binary index and no other filters applied, we can use that instead of sorting (again)
-            if (this.collection.binaryIndices[propname] !== undefined) {
+            if (this._collection.binaryIndices[propname] !== undefined) {
                 // make sure index is up-to-date
-                this.collection.ensureIndex(propname);
-                // copy index values into filteredrows
-                this.filteredrows = this.collection.binaryIndices[propname].values.slice(0);
-                if (isdesc) {
-                    this.filteredrows.reverse();
+                this._collection.ensureIndex(propname);
+                // copy index values into filteredRows
+                this._filteredRows = this._collection.binaryIndices[propname].values.slice(0);
+                if (descending) {
+                    this._filteredRows.reverse();
                 }
-                // we are done, return this (resultset) for further chain ops
+                // we are done, return this (ResultSet) for further chain ops
                 return this;
             }
             else {
-                this.filteredrows = this.collection.prepareFullDocIndex();
+                this._filteredRows = this._collection._prepareFullDocIndex();
             }
         }
-        const wrappedComparer = ((prop, desc, data) => (a, b) => {
-            let val1, val2, arr;
-            if (~prop.indexOf(".")) {
-                arr = prop.split(".");
+        const data = this._collection._data;
+        const wrappedComparer = (a, b) => {
+            let val1, val2;
+            if (~propname.indexOf(".")) {
+                const arr = propname.split(".");
                 val1 = arr.reduce(function (obj, i) {
                     return obj && obj[i] || undefined;
                 }, data[a]);
@@ -2518,16 +2350,16 @@ class Resultset {
                 }, data[b]);
             }
             else {
-                val1 = data[a][prop];
-                val2 = data[b][prop];
+                val1 = data[a][propname];
+                val2 = data[b][propname];
             }
-            return Object(__WEBPACK_IMPORTED_MODULE_2__helper__["d" /* sortHelper */])(val1, val2, desc);
-        })(propname, isdesc, this.collection.data);
-        this.filteredrows.sort(wrappedComparer);
+            return Object(__WEBPACK_IMPORTED_MODULE_2__helper__["d" /* sortHelper */])(val1, val2, descending);
+        };
+        this._filteredRows.sort(wrappedComparer);
         return this;
     }
     /**
-     * Allows sorting a resultset based on multiple columns.
+     * Allows sorting a ResultSet based on multiple columns.
      * @example
      * // to sort by age and then name (both ascending)
      * rs.compoundsort(['age', 'name']);
@@ -2535,15 +2367,14 @@ class Resultset {
      * rs.compoundsort(['age', ['name', true]);
      *
      * @param {array} properties - array of property names or subarray of [propertyname, isdesc] used evaluate sort order
-     * @returns {Resultset} Reference to this resultset, sorted, for future chain operations.
+     * @returns {ResultSet} Reference to this ResultSet, sorted, for future chain operations.
      */
     compoundsort(properties) {
         if (properties.length === 0) {
             throw new Error("Invalid call to compoundsort, need at least one property");
         }
-        let prop;
         if (properties.length === 1) {
-            prop = properties[0];
+            const prop = properties[0];
             if (typeof prop === "string") {
                 return this.simplesort(prop, false);
             }
@@ -2552,18 +2383,19 @@ class Resultset {
             }
         }
         // unify the structure of 'properties' to avoid checking it repeatedly while sorting
-        for (let i = 0, len = properties.length; i < len; i += 1) {
-            prop = properties[i];
+        for (let i = 0, len = properties.length; i < len; i++) {
+            const prop = properties[i];
             if (typeof prop === "string") {
                 properties[i] = [prop, false];
             }
         }
-        // if this has no filters applied, just we need to populate filteredrows first
-        if (!this.filterInitialized && this.filteredrows.length === 0) {
-            this.filteredrows = this.collection.prepareFullDocIndex();
+        // if this has no filters applied, just we need to populate filteredRows first
+        if (!this._filterInitialized && this._filteredRows.length === 0) {
+            this._filteredRows = this._collection._prepareFullDocIndex();
         }
-        const wrappedComparer = (((props, data) => (a, b) => this._compoundeval(props, data[a], data[b])))(properties, this.collection.data);
-        this.filteredrows.sort(wrappedComparer);
+        const data = this._collection._data;
+        const wrappedComparer = (a, b) => this._compoundeval(properties, data[a], data[b]);
+        this._filteredRows.sort(wrappedComparer);
         return this;
     }
     /**
@@ -2575,13 +2407,10 @@ class Resultset {
      * @returns {number} 0, -1, or 1 to designate if identical (sortwise) or which should be first
      */
     _compoundeval(properties, obj1, obj2) {
-        let res = 0;
-        let prop;
-        let field;
-        let val1, val2, arr;
         for (let i = 0, len = properties.length; i < len; i++) {
-            prop = properties[i];
-            field = prop[0];
+            const prop = properties[i];
+            const field = prop[0];
+            let val1, val2, arr;
             if (~field.indexOf(".")) {
                 arr = field.split(".");
                 val1 = arr.reduce((obj, i) => {
@@ -2595,7 +2424,7 @@ class Resultset {
                 val1 = obj1[field];
                 val2 = obj2[field];
             }
-            res = Object(__WEBPACK_IMPORTED_MODULE_2__helper__["d" /* sortHelper */])(val1, val2, prop[1]);
+            const res = Object(__WEBPACK_IMPORTED_MODULE_2__helper__["d" /* sortHelper */])(val1, val2, prop[1]);
             if (res !== 0) {
                 return res;
             }
@@ -2603,19 +2432,19 @@ class Resultset {
         return 0;
     }
     /**
-     * Sorts the resultset based on the last full-text-search scoring.
+     * Sorts the ResultSet based on the last full-text-search scoring.
      * @param {boolean} [ascending=false] - sort ascending
-     * @returns {Resultset<E extends Object>}
+     * @returns {ResultSet}
      */
     sortByScoring(ascending = false) {
         if (this._scoring === null) {
             throw new Error("No scoring available");
         }
         if (ascending) {
-            this.filteredrows.sort((a, b) => this._scoring[a] - this._scoring[b]);
+            this._filteredRows.sort((a, b) => this._scoring[a].score - this._scoring[b].score);
         }
         else {
-            this.filteredrows.sort((a, b) => this._scoring[b] - this._scoring[a]);
+            this._filteredRows.sort((a, b) => this._scoring[b].score - this._scoring[a].score);
         }
         return this;
     }
@@ -2630,59 +2459,55 @@ class Resultset {
         return this._scoring;
     }
     /**
-     * findOr() - oversee the operation of OR'ed query expressions.
+     * Oversee the operation of OR'ed query expressions.
      *    OR'ed expression evaluation runs each expression individually against the full collection,
      *    and finally does a set OR on each expression's results.
      *    Each evaluation can utilize a binary index to prevent multiple linear array scans.
      *
      * @param {array} expressionArray - array of expressions
-     * @returns {Resultset} this resultset for further chain ops.
+     * @returns {ResultSet} this ResultSet for further chain ops.
      */
     findOr(expressionArray) {
-        let fr = null;
-        let fri = 0;
-        let frlen = 0;
         const docset = [];
         const idxset = [];
-        let idx = 0;
         const origCount = this.count();
         // If filter is already initialized, then we query against only those items already in filter.
-        // This means no index utilization for fields, so hopefully its filtered to a smallish filteredrows.
+        // This means no index utilization for fields, so hopefully its filtered to a smallish filteredRows.
         for (let ei = 0, elen = expressionArray.length; ei < elen; ei++) {
             // we need to branch existing query to run each filter separately and combine results
-            fr = this.branch().find(expressionArray[ei]).filteredrows;
-            frlen = fr.length;
+            const fr = this.branch().find(expressionArray[ei])._filteredRows;
+            const frlen = fr.length;
             // if the find operation did not reduce the initial set, then the initial set is the actual result
             if (frlen === origCount) {
                 return this;
             }
             // add any document 'hits'
-            for (fri = 0; fri < frlen; fri++) {
-                idx = fr[fri];
+            for (let fri = 0; fri < frlen; fri++) {
+                const idx = fr[fri];
                 if (idxset[idx] === undefined) {
                     idxset[idx] = true;
                     docset.push(idx);
                 }
             }
         }
-        this.filteredrows = docset;
-        this.filterInitialized = true;
+        this._filteredRows = docset;
+        this._filterInitialized = true;
         return this;
     }
     $or(expressionArray) {
         return this.findOr(expressionArray);
     }
     /**
-     * findAnd() - oversee the operation of AND'ed query expressions.
+     * Oversee the operation of AND'ed query expressions.
      *    AND'ed expression evaluation runs each expression progressively against the full collection,
-     *    internally utilizing existing chained resultset functionality.
+     *    internally utilizing existing chained ResultSet functionality.
      *    Only the first filter can utilize a binary index.
      *
      * @param {array} expressionArray - array of expressions
-     * @returns {Resultset} this resultset for further chain ops.
+     * @returns {ResultSet} this ResultSet for further chain ops.
      */
     findAnd(expressionArray) {
-        // we have already implementing method chaining in this (our Resultset class)
+        // we have already implementing method chaining in this (our ResultSet class)
         // so lets just progressively apply user supplied and filters
         for (let i = 0, len = expressionArray.length; i < len; i++) {
             if (this.count() === 0) {
@@ -2700,12 +2525,12 @@ class Resultset {
      *
      * @param {object} query - A mongo-style query object used for filtering current results.
      * @param {boolean} firstOnly - (Optional) Used by collection.findOne() - flag if this was invoked via findOne()
-     * @returns {Resultset} this resultset for further chain ops.
+     * @returns {ResultSet} this ResultSet for further chain ops.
      */
     find(query, firstOnly = false) {
-        if (this.collection.data.length === 0) {
-            this.filteredrows = [];
-            this.filterInitialized = true;
+        if (this._collection._data.length === 0) {
+            this._filteredRows = [];
+            this._filterInitialized = true;
             return this;
         }
         const queryObject = query || "getAll";
@@ -2732,17 +2557,17 @@ class Resultset {
         // apply no filters if they want all
         if (!property || queryObject === "getAll") {
             if (firstOnly) {
-                this.filteredrows = (this.collection.data.length > 0) ? [0] : [];
-                this.filterInitialized = true;
+                this._filteredRows = (this._collection._data.length > 0) ? [0] : [];
+                this._filterInitialized = true;
             }
             return this;
         }
         // injecting $and and $or expression tree evaluation here.
         if (property === "$and" || property === "$or") {
             this[property](queryObjectOp);
-            // for chained find with firstonly,
-            if (firstOnly && this.filteredrows.length > 1) {
-                this.filteredrows = this.filteredrows.slice(0, 1);
+            // for chained find with firstOnly,
+            if (firstOnly && this._filteredRows.length > 1) {
+                this._filteredRows = this._filteredRows.slice(0, 1);
             }
             return this;
         }
@@ -2777,31 +2602,31 @@ class Resultset {
         const usingDotNotation = (property.indexOf(".") !== -1);
         // if an index exists for the property being queried against, use it
         // for now only enabling where it is the first filter applied and prop is indexed
-        const doIndexCheck = !usingDotNotation && !this.filterInitialized;
+        const doIndexCheck = !usingDotNotation && !this._filterInitialized;
         let searchByIndex = false;
-        if (doIndexCheck && this.collection.binaryIndices[property] && indexedOps[operator]) {
+        if (doIndexCheck && this._collection.binaryIndices[property] && indexedOps[operator]) {
             // this is where our lazy index rebuilding will take place
             // basically we will leave all indexes dirty until we need them
             // so here we will rebuild only the index tied to this property
             // ensureIndex() will only rebuild if flagged as dirty since we are not passing force=true param
-            if (this.collection.adaptiveBinaryIndices !== true) {
-                this.collection.ensureIndex(property);
+            if (this._collection.adaptiveBinaryIndices !== true) {
+                this._collection.ensureIndex(property);
             }
             searchByIndex = true;
         }
         // the comparison function
         const fun = LokiOps[operator];
         // "shortcut" for collection data
-        const data = this.collection.data;
+        const data = this._collection._data;
         // Query executed differently depending on :
         //    - whether the property being queried has an index defined
-        //    - if chained, we handle first pass differently for initial filteredrows[] population
+        //    - if chained, we handle first pass differently for initial filteredRows[] population
         //
         // For performance reasons, each case has its own if block to minimize in-loop calculations
         let result = [];
-        // If the filteredrows[] is already initialized, use it
-        if (this.filterInitialized) {
-            let filter = this.filteredrows;
+        // If the filteredRows[] is already initialized, use it
+        if (this._filterInitialized) {
+            let filter = this._filteredRows;
             // currently supporting dot notation for non-indexed conditions only
             if (usingDotNotation) {
                 property = property.split(".");
@@ -2813,18 +2638,18 @@ class Resultset {
                 }
             }
             else if (property === "$fts") {
-                this._scoring = this.collection._fullTextSearch.search(query["$fts"]);
+                this._scoring = this._collection._fullTextSearch.search(query.$fts);
                 let keys = Object.keys(this._scoring);
                 for (let i = 0; i < keys.length; i++) {
-                    if (filter.includes(+keys[i])) {
+                    if (filter.indexOf(+keys[i]) !== -1) {
                         result.push(+keys[i]);
                     }
                 }
             }
-            else if (this.collection.constraints.unique[property] !== undefined && operator === "$eq") {
+            else if (this._collection.constraints.unique[property] !== undefined && operator === "$eq") {
                 // Use unique constraint for search.
-                let row = this.collection.constraints.unique[property].get(value);
-                if (filter.includes(row)) {
+                let row = this._collection.constraints.unique[property].get(value);
+                if (filter.indexOf(row) !== -1) {
                     result.push(row);
                 }
             }
@@ -2836,14 +2661,14 @@ class Resultset {
                     }
                 }
             }
-            this.filteredrows = result;
-            this.filterInitialized = true; // next time work against filteredrows[]
+            this._filteredRows = result;
+            this._filterInitialized = true; // next time work against filteredRows[]
             return this;
         }
-        this.filteredrows = result;
-        this.filterInitialized = true; // next time work against filteredrows[]
+        this._filteredRows = result;
+        this._filterInitialized = true; // next time work against filteredRows[]
         if (property === "$fts") {
-            this._scoring = this.collection._fullTextSearch.search(query["$fts"]);
+            this._scoring = this._collection._fullTextSearch.search(query.$fts);
             let keys = Object.keys(this._scoring);
             for (let i = 0; i < keys.length; i++) {
                 result.push(+keys[i]);
@@ -2851,11 +2676,11 @@ class Resultset {
             return this;
         }
         // Use unique constraint for search.
-        if (this.collection.constraints.unique[property] !== undefined && operator === "$eq") {
-            result.push(this.collection.constraints.unique[property].get(value));
+        if (this._collection.constraints.unique[property] !== undefined && operator === "$eq") {
+            result.push(this._collection.constraints.unique[property].get(value));
             return this;
         }
-        // first chained query so work against data[] but put results in filteredrows
+        // first chained query so work against data[] but put results in filteredRows
         // if not searching by index
         if (!searchByIndex) {
             if (usingDotNotation) {
@@ -2881,10 +2706,10 @@ class Resultset {
             }
             return this;
         }
-        let index = this.collection.binaryIndices[property];
+        let index = this._collection.binaryIndices[property];
         if (operator !== "$in") {
             // search by index
-            const segm = this.collection.calculateRange(operator, property, value);
+            const segm = this._collection.calculateRange(operator, property, value);
             for (let i = segm[0]; i <= segm[1]; i++) {
                 if (indexedOps[operator] !== true) {
                     // must be a function, implying 2nd phase filtering of results from calculateRange
@@ -2907,7 +2732,7 @@ class Resultset {
             const idxset = [];
             // query each value '$eq' operator and merge the segment results.
             for (let j = 0, len = value.length; j < len; j++) {
-                const segm = this.collection.calculateRange("$eq", property, value[j]);
+                const segm = this._collection.calculateRange("$eq", property, value[j]);
                 for (let i = segm[0]; i <= segm[1]; i++) {
                     if (idxset[i] === undefined) {
                         idxset[i] = true;
@@ -2925,7 +2750,7 @@ class Resultset {
      * Used for filtering via a javascript filter function.
      *
      * @param {function} fun - A javascript function used for filtering current results by.
-     * @returns {Resultset} this resultset for further chain ops.
+     * @returns {ResultSet} this ResultSet for further chain ops.
      */
     where(fun) {
         let viewFunction;
@@ -2937,26 +2762,26 @@ class Resultset {
             throw new TypeError("Argument is not a stored view or a function");
         }
         try {
-            // If the filteredrows[] is already initialized, use it
-            if (this.filterInitialized) {
-                let j = this.filteredrows.length;
+            // If the filteredRows[] is already initialized, use it
+            if (this._filterInitialized) {
+                let j = this._filteredRows.length;
                 while (j--) {
-                    if (viewFunction(this.collection.data[this.filteredrows[j]]) === true) {
-                        result.push(this.filteredrows[j]);
+                    if (viewFunction(this._collection._data[this._filteredRows[j]]) === true) {
+                        result.push(this._filteredRows[j]);
                     }
                 }
-                this.filteredrows = result;
+                this._filteredRows = result;
                 return this;
             }
             else {
-                let k = this.collection.data.length;
+                let k = this._collection._data.length;
                 while (k--) {
-                    if (viewFunction(this.collection.data[k]) === true) {
+                    if (viewFunction(this._collection._data[k]) === true) {
                         result.push(k);
                     }
                 }
-                this.filteredrows = result;
-                this.filterInitialized = true;
+                this._filteredRows = result;
+                this._filterInitialized = true;
                 return this;
             }
         }
@@ -2965,25 +2790,25 @@ class Resultset {
         }
     }
     /**
-     * Returns the number of documents in the resultset.
-     * @returns {number} The number of documents in the resultset.
+     * Returns the number of documents in the ResultSet.
+     * @returns {number} The number of documents in the ResultSet.
      */
     count() {
-        if (this.filterInitialized) {
-            return this.filteredrows.length;
+        if (this._filterInitialized) {
+            return this._filteredRows.length;
         }
-        return this.collection.count();
+        return this._collection.count();
     }
     /**
      * Terminates the chain and returns array of filtered documents
      * @param {object} options
-     * @param {boolean} options.forceClones - Allows forcing the return of cloned objects even when
+     * @param {boolean} [options.forceClones] - Allows forcing the return of cloned objects even when
      *        the collection is not configured for clone object.
-     * @param {string} options.forceCloneMethod - Allows overriding the default or collection specified cloning method.
-     *        Possible values include 'parse-stringify', 'jquery-extend-deep', and 'shallow'
-     * @param {boolean} options.removeMeta - Will force clones and strip $loki and meta properties from documents
+     * @param {string} [options.forceCloneMethod] - Allows overriding the default or collection specified cloning method.
+     *        Possible values 'parse-stringify', 'deep', and 'shallow' and
+     * @param {boolean} [options.removeMeta] - will force clones and strip $loki and meta properties from documents
      *
-     * @returns {Array} Array of documents in the resultset
+     * @returns {Array} Array of documents in the ResultSet
      */
     data(options = {}) {
         let forceClones;
@@ -2991,11 +2816,11 @@ class Resultset {
         let removeMeta;
         ({
             forceClones,
-            forceCloneMethod = this.collection.cloneMethod,
+            forceCloneMethod = this._collection.cloneMethod,
             removeMeta = false
         } = options);
         let result = [];
-        let data = this.collection.data;
+        let data = this._collection._data;
         let obj;
         let len;
         let i;
@@ -3003,22 +2828,22 @@ class Resultset {
         // if user opts to strip meta, then force clones and use 'shallow' if 'force' options are not present
         if (removeMeta && !forceClones) {
             forceClones = true;
-            forceCloneMethod = __WEBPACK_IMPORTED_MODULE_1__clone__["a" /* CloneMethod */].SHALLOW;
+            forceCloneMethod = "shallow";
         }
         // if collection has delta changes active, then force clones and use CloneMethod.DEEP for effective change tracking of nested objects
-        if (!this.collection.disableDeltaChangesApi) {
+        if (!this._collection.disableDeltaChangesApi) {
             forceClones = true;
-            forceCloneMethod = __WEBPACK_IMPORTED_MODULE_1__clone__["a" /* CloneMethod */].DEEP;
+            forceCloneMethod = "deep";
         }
         // if this has no filters applied, just return collection.data
-        if (!this.filterInitialized) {
-            if (this.filteredrows.length === 0) {
+        if (!this._filterInitialized) {
+            if (this._filteredRows.length === 0) {
                 // determine whether we need to clone objects or not
-                if (this.collection.cloneObjects || forceClones) {
+                if (this._collection.cloneObjects || forceClones) {
                     len = data.length;
                     method = forceCloneMethod;
                     for (i = 0; i < len; i++) {
-                        obj = Object(__WEBPACK_IMPORTED_MODULE_1__clone__["b" /* clone */])(data[i], method);
+                        obj = Object(__WEBPACK_IMPORTED_MODULE_1__clone__["a" /* clone */])(data[i], method);
                         if (removeMeta) {
                             delete obj.$loki;
                             delete obj.meta;
@@ -3032,16 +2857,16 @@ class Resultset {
                 }
             }
             else {
-                // filteredrows must have been set manually, so use it
-                this.filterInitialized = true;
+                // filteredRows must have been set manually, so use it
+                this._filterInitialized = true;
             }
         }
-        const fr = this.filteredrows;
+        const fr = this._filteredRows;
         len = fr.length;
-        if (this.collection.cloneObjects || forceClones) {
+        if (this._collection.cloneObjects || forceClones) {
             method = forceCloneMethod;
             for (i = 0; i < len; i++) {
-                obj = Object(__WEBPACK_IMPORTED_MODULE_1__clone__["b" /* clone */])(data[fr[i]], method);
+                obj = Object(__WEBPACK_IMPORTED_MODULE_1__clone__["a" /* clone */])(data[fr[i]], method);
                 if (removeMeta) {
                     delete obj.$loki;
                     delete obj.meta;
@@ -3057,38 +2882,38 @@ class Resultset {
         return result;
     }
     /**
-     * Used to run an update operation on all documents currently in the resultset.
+     * Used to run an update operation on all documents currently in the ResultSet.
      *
      * @param {function} updateFunction - User supplied updateFunction(obj) will be executed for each document object.
-     * @returns {Resultset} this resultset for further chain ops.
+     * @returns {ResultSet} this ResultSet for further chain ops.
      */
     update(updateFunction) {
-        // if this has no filters applied, we need to populate filteredrows first
-        if (!this.filterInitialized && this.filteredrows.length === 0) {
-            this.filteredrows = this.collection.prepareFullDocIndex();
+        // if this has no filters applied, we need to populate filteredRows first
+        if (!this._filterInitialized && this._filteredRows.length === 0) {
+            this._filteredRows = this._collection._prepareFullDocIndex();
         }
-        const len = this.filteredrows.length;
-        const rcd = this.collection.data;
+        const len = this._filteredRows.length;
+        const rcd = this._collection._data;
         for (let idx = 0; idx < len; idx++) {
-            // pass in each document object currently in resultset to user supplied updateFunction
-            updateFunction(rcd[this.filteredrows[idx]]);
+            // pass in each document object currently in ResultSet to user supplied updateFunction
+            updateFunction(rcd[this._filteredRows[idx]]);
             // notify collection we have changed this object so it can update meta and allow DynamicViews to re-evaluate
-            this.collection.update(rcd[this.filteredrows[idx]]);
+            this._collection.update(rcd[this._filteredRows[idx]]);
         }
         return this;
     }
     /**
-     * Removes all document objects which are currently in resultset from collection (as well as resultset)
+     * Removes all document objects which are currently in ResultSet from collection (as well as ResultSet)
      *
-     * @returns {Resultset} this (empty) resultset for further chain ops.
+     * @returns {ResultSet} this (empty) ResultSet for further chain ops.
      */
     remove() {
-        // if this has no filters applied, we need to populate filteredrows first
-        if (!this.filterInitialized && this.filteredrows.length === 0) {
-            this.filteredrows = this.collection.prepareFullDocIndex();
+        // if this has no filters applied, we need to populate filteredRows first
+        if (!this._filterInitialized && this._filteredRows.length === 0) {
+            this._filteredRows = this._collection._prepareFullDocIndex();
         }
-        this.collection.remove(this.data());
-        this.filteredrows = [];
+        this._collection.remove(this.data());
+        this._filteredRows = [];
         return this;
     }
     /**
@@ -3109,22 +2934,17 @@ class Resultset {
     /**
      * Left joining two sets of data. Join keys can be defined or calculated properties
      * eqJoin expects the right join key values to be unique.  Otherwise left data will be joined on the last joinData object with that key
-     * @param {Array|Resultset|Collection} joinData - Data array to join to.
+     * @param {Array|ResultSet|Collection} joinData - Data array to join to.
      * @param {(string|function)} leftJoinKey - Property name in this result set to join on or a function to produce a value to join on
      * @param {(string|function)} rightJoinKey - Property name in the joinData to join on or a function to produce a value to join on
      * @param {function} [mapFun=] - a function that receives each matching pair and maps them into output objects - function(left,right){return joinedObject}
      * @param {object} [dataOptions=] - optional options to apply to data() calls for left and right sides
      * @param {boolean} dataOptions.removeMeta - allows removing meta before calling mapFun
      * @param {boolean} dataOptions.forceClones - forcing the return of cloned objects to your map object
-     * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method.
-     * @returns {Resultset} A resultset with data in the format [{left: leftObj, right: rightObj}]
+     * @param {string} dataOptions.forceCloneMethod - allows overriding the default or collection specified cloning method
+     * @returns {ResultSet} A ResultSet with data in the format [{left: leftObj, right: rightObj}]
      */
-    //eqJoin<T extends object>(joinData: T[] | Resultset<T>, leftJoinKey: string | ((obj: E) => string), rightJoinKey: string | ((obj: T) => string)): Resultset<{ left: E; right: T; }>;
-    // eqJoin<T extends object, U extends object>(joinData: T[] | Resultset<T>, leftJoinKey: string | ((obj: E) => string), rightJoinKey: string | ((obj: T) => string), mapFun?: (a: E, b: T) => U, dataOptions?: Resultset.DataOptions): Resultset<U> {
     eqJoin(joinData, leftJoinKey, rightJoinKey, mapFun, dataOptions) {
-        // eqJoin<T extends object, U extends object>(joinData: T[] | Resultset<T>, leftJoinKey: string | ((obj: E) => string), rightJoinKey: string | ((obj: T) => string), mapFun?: (a: E, b: T) => U, dataOptions?: Resultset.DataOptions): Resultset<U> {
-        let leftData = [];
-        let leftDataLength;
         let rightData = [];
         let rightDataLength;
         let key;
@@ -3133,13 +2953,13 @@ class Resultset {
         let rightKeyisFunction = typeof rightJoinKey === "function";
         let joinMap = {};
         //get the left data
-        leftData = this.data(dataOptions);
-        leftDataLength = leftData.length;
+        let leftData = this.data(dataOptions);
+        let leftDataLength = leftData.length;
         //get the right data
         if (joinData instanceof __WEBPACK_IMPORTED_MODULE_0__collection__["a" /* Collection */]) {
             rightData = joinData.chain().data(dataOptions);
         }
-        else if (joinData instanceof Resultset) {
+        else if (joinData instanceof ResultSet) {
             rightData = joinData.data(dataOptions);
         }
         else if (Array.isArray(joinData)) {
@@ -3151,7 +2971,9 @@ class Resultset {
         rightDataLength = rightData.length;
         //construct a lookup table
         for (let i = 0; i < rightDataLength; i++) {
-            key = rightKeyisFunction ? rightJoinKey(rightData[i]) : rightData[i][rightJoinKey];
+            key = rightKeyisFunction
+                ? rightJoinKey(rightData[i])
+                : rightData[i][rightJoinKey];
             joinMap[key] = rightData[i];
         }
         if (!mapFun) {
@@ -3160,16 +2982,18 @@ class Resultset {
                 right
             });
         }
-        //Run map function over each object in the resultset
+        //Run map function over each object in the ResultSet
         for (let j = 0; j < leftDataLength; j++) {
-            key = leftKeyisFunction ? leftJoinKey(leftData[j]) : leftData[j][leftJoinKey];
+            key = leftKeyisFunction
+                ? leftJoinKey(leftData[j])
+                : leftData[j][leftJoinKey];
             result.push(mapFun(leftData[j], joinMap[key] || {}));
         }
-        //return a new resultset with no filters
-        this.collection = new __WEBPACK_IMPORTED_MODULE_0__collection__["a" /* Collection */]("joinData");
-        this.collection.insert(result);
-        this.filteredrows = [];
-        this.filterInitialized = false;
+        //return a new ResultSet with no filters
+        this._collection = new __WEBPACK_IMPORTED_MODULE_0__collection__["a" /* Collection */]("joinData");
+        this._collection.insert(result);
+        this._filteredRows = [];
+        this._filterInitialized = false;
         return this;
     }
     /**
@@ -3178,20 +3002,118 @@ class Resultset {
      * @param {object} [dataOptions=] - options to data() before input to your map function
      * @param {boolean} dataOptions.removeMeta - allows removing meta before calling mapFun
      * @param {boolean} dataOptions.forceClones - forcing the return of cloned objects to your map object
-     * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method.
+     * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method
+     * @return {ResultSet}
      */
     map(mapFun, dataOptions) {
-        let data = this.data(dataOptions).map(mapFun);
-        //return return a new resultset with no filters
-        this.collection = new __WEBPACK_IMPORTED_MODULE_0__collection__["a" /* Collection */]("mappedData");
-        this.collection.insert(data);
-        this.filteredrows = [];
-        this.filterInitialized = false;
+        const data = this.data(dataOptions).map(mapFun);
+        //return return a new ResultSet with no filters
+        this._collection = new __WEBPACK_IMPORTED_MODULE_0__collection__["a" /* Collection */]("mappedData");
+        this._collection.insert(data);
+        this._filteredRows = [];
+        this._filterInitialized = false;
         return this;
     }
 }
-/* harmony export (immutable) */ __webpack_exports__["a"] = Resultset;
+/* harmony export (immutable) */ __webpack_exports__["a"] = ResultSet;
 
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = clone;
+function add(copy, key, value) {
+    if (copy instanceof Array) {
+        copy.push(value);
+        return copy[copy.length - 1];
+    }
+    else if (copy instanceof Object) {
+        copy[key] = value;
+        return copy[key];
+    }
+}
+function walk(target, copy) {
+    for (let key in target) {
+        let obj = target[key];
+        if (obj instanceof Date) {
+            let value = new Date(obj.getTime());
+            add(copy, key, value);
+        }
+        else if (obj instanceof Function) {
+            let value = obj;
+            add(copy, key, value);
+        }
+        else if (obj instanceof Array) {
+            let value = [];
+            let last = add(copy, key, value);
+            walk(obj, last);
+        }
+        else if (obj instanceof Object) {
+            let value = {};
+            let last = add(copy, key, value);
+            walk(obj, last);
+        }
+        else {
+            let value = obj;
+            add(copy, key, value);
+        }
+    }
+}
+// Deep copy from Simeon Velichkov.
+/**
+ * @param target
+ * @returns {any}
+ */
+function deepCopy(target) {
+    if (/number|string|boolean/.test(typeof target)) {
+        return target;
+    }
+    if (target instanceof Date) {
+        return new Date(target.getTime());
+    }
+    const copy = (target instanceof Array) ? [] : {};
+    walk(target, copy);
+    return copy;
+}
+/**
+ * @hidden
+ */
+function clone(data, method = "parse-stringify") {
+    if (data === null || data === undefined) {
+        return null;
+    }
+    let cloned;
+    switch (method) {
+        case "parse-stringify":
+            cloned = JSON.parse(JSON.stringify(data));
+            break;
+        case "deep":
+            cloned = deepCopy(data);
+            break;
+        case "shallow":
+            cloned = Object.create(data.constructor.prototype);
+            Object.assign(cloned, data);
+            break;
+        case "shallow-recurse-objects":
+            // shallow clone top level properties
+            cloned = clone(data, "shallow");
+            const keys = Object.keys(data);
+            // for each of the top level properties which are object literals, recursively shallow copy
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i];
+                if (typeof data[key] === "object" && data[key].constructor.name === "Object") {
+                    cloned[key] = clone(data[key], "shallow-recurse-objects");
+                }
+            }
+            break;
+        default:
+            break;
+    }
+    return cloned;
+}
 
 
 /***/ }),
@@ -3203,7 +3125,8 @@ class Resultset {
 /* harmony export (immutable) */ __webpack_exports__["c"] = ltHelper;
 /* harmony export (immutable) */ __webpack_exports__["b"] = gtHelper;
 /* harmony export (immutable) */ __webpack_exports__["d"] = sortHelper;
-/** Helper function for determining 'loki' abstract equality which is a little more abstract than ==
+/**
+ * Helper function for determining 'loki' abstract equality which is a little more abstract than ==
  *     aeqHelper(5, '5') === true
  *     aeqHelper(5.0, '5') === true
  *     aeqHelper(new Date("1/1/2011"), new Date("1/1/2011")) === true
@@ -3211,22 +3134,18 @@ class Resultset {
  *     aeqHelper([1, 2, 3], [1, 3]) === false
  *     aeqHelper([1, 2, 3], [1, 2, 3]) === true
  *     aeqHelper(undefined, null) === true
- */
-/**
- * @hidden
- * @param {ANY} prop1
- * @param {ANY} prop2
+ * @param {any} prop1
+ * @param {any} prop2
  * @returns {boolean}
+ * @hidden
  */
 function aeqHelper(prop1, prop2) {
-    let cv1;
-    let cv2;
-    let t1;
-    let t2;
     if (prop1 === prop2)
         return true;
     // 'falsy' and Boolean handling
     if (!prop1 || !prop2 || prop1 === true || prop2 === true || prop1 !== prop1 || prop2 !== prop2) {
+        let t1;
+        let t2;
         // dates and NaN conditions (typed dates before serialization)
         switch (prop1) {
             case undefined:
@@ -3274,8 +3193,8 @@ function aeqHelper(prop1, prop2) {
         }
     }
     // Handle 'Number-like' comparisons
-    cv1 = Number(prop1);
-    cv2 = Number(prop2);
+    let cv1 = Number(prop1);
+    let cv2 = Number(prop2);
     // if one or both are 'number-like'...
     if (cv1 === cv1 || cv2 === cv2) {
         return (cv1 === cv2);
@@ -3285,20 +3204,19 @@ function aeqHelper(prop1, prop2) {
     cv2 = prop2.toString();
     return (cv1 == cv2);
 }
-/** Helper function for determining 'less-than' conditions for ops, sorting, and binary indices.
+/**
+ * Helper function for determining 'less-than' conditions for ops, sorting, and binary indices.
  *     In the future we might want $lt and $gt ops to use their own functionality/helper.
  *     Since binary indices on a property might need to index [12, NaN, new Date(), Infinity], we
  *     need this function (as well as gtHelper) to always ensure one value is LT, GT, or EQ to another.
  * @hidden
  */
 function ltHelper(prop1, prop2, equal) {
-    let cv1;
-    let cv2;
-    let t1;
-    let t2;
     // if one of the params is falsy or strictly true or not equal to itself
     // 0, 0.0, "", NaN, null, undefined, not defined, false, true
     if (!prop1 || !prop2 || prop1 === true || prop2 === true || prop1 !== prop1 || prop2 !== prop2) {
+        let t1;
+        let t2;
         switch (prop1) {
             case undefined:
                 t1 = 1;
@@ -3346,8 +3264,8 @@ function ltHelper(prop1, prop2, equal) {
         }
     }
     // if both are numbers (string encoded or not), compare as numbers
-    cv1 = Number(prop1);
-    cv2 = Number(prop2);
+    let cv1 = Number(prop1);
+    let cv2 = Number(prop2);
     if (cv1 === cv1 && cv2 === cv2) {
         if (cv1 < cv2)
             return true;
@@ -3380,18 +3298,16 @@ function ltHelper(prop1, prop2, equal) {
 }
 /**
  * @hidden
- * @param {ANY} prop1
- * @param {ANY} prop2
+ * @param {any} prop1
+ * @param {any} prop2
  * @param {boolean} equal
  * @returns {boolean}
  */
 function gtHelper(prop1, prop2, equal) {
-    let cv1;
-    let cv2;
-    let t1;
-    let t2;
     // 'falsy' and Boolean handling
     if (!prop1 || !prop2 || prop1 === true || prop2 === true || prop1 !== prop1 || prop2 !== prop2) {
+        let t1;
+        let t2;
         switch (prop1) {
             case undefined:
                 t1 = 1;
@@ -3439,8 +3355,8 @@ function gtHelper(prop1, prop2, equal) {
         }
     }
     // if both are numbers (string encoded or not), compare as numbers
-    cv1 = Number(prop1);
-    cv2 = Number(prop2);
+    let cv1 = Number(prop1);
+    let cv2 = Number(prop2);
     if (cv1 === cv1 && cv2 === cv2) {
         if (cv1 > cv2)
             return true;
@@ -3473,20 +3389,21 @@ function gtHelper(prop1, prop2, equal) {
     return false;
 }
 /**
- * @hidden
- * @param {ANY} prop1
- * @param {ANY} prop2
- * @param {ANY} desc
+ * @param {any} prop1
+ * @param {any} prop2
+ * @param {boolean} descending
  * @returns {number}
+ * @hidden
  */
-function sortHelper(prop1, prop2, desc) {
-    if (aeqHelper(prop1, prop2))
+function sortHelper(prop1, prop2, descending) {
+    if (aeqHelper(prop1, prop2)) {
         return 0;
+    }
     if (ltHelper(prop1, prop2, false)) {
-        return (desc) ? (1) : (-1);
+        return descending ? 1 : -1;
     }
     if (gtHelper(prop1, prop2, false)) {
-        return (desc) ? (-1) : (1);
+        return descending ? -1 : 1;
     }
     // not lt, not gt so implied equality-- date compatible
     return 0;
@@ -3520,7 +3437,7 @@ const PLUGINS = create();
 /* harmony export (immutable) */ __webpack_exports__["a"] = PLUGINS;
 
 
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(2)))
 
 /***/ }),
 /* 7 */
@@ -3534,8 +3451,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Collection", function() { return __WEBPACK_IMPORTED_MODULE_1__collection__["a"]; });
 
 
+__WEBPACK_IMPORTED_MODULE_0__loki__["a" /* Loki */]["Collection"] = __WEBPACK_IMPORTED_MODULE_1__collection__["a" /* Collection */];
 
-/* harmony default export */ __webpack_exports__["default"] = ({ Loki: __WEBPACK_IMPORTED_MODULE_0__loki__["a" /* Loki */] });
+/* harmony default export */ __webpack_exports__["default"] = (__WEBPACK_IMPORTED_MODULE_0__loki__["a" /* Loki */]);
 
 
 /***/ }),
@@ -3546,28 +3464,29 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__event_emitter__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__collection__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__common_plugin__ = __webpack_require__(6);
+/* global global */
 
 
 
 function getENV() {
     if (global !== undefined && (global["android"] || global["NSObject"])) {
-        return Loki.Environment.NATIVE_SCRIPT;
+        return "NATIVESCRIPT";
     }
     const isNode = global !== undefined && ({}).toString.call(global) === "[object global]";
     if (isNode) {
         if (global["window"]) {
-            return Loki.Environment.NODE_JS; //node-webkit
+            return "NODEJS"; //node-webkit
         }
         else {
-            return Loki.Environment.NODE_JS;
+            return "NODEJS";
         }
     }
     const isBrowser = window !== undefined && ({}).toString.call(window) === "[object Window]";
     if (document !== undefined) {
         if (document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) {
-            return Loki.Environment.CORDOVA;
+            return "CORDOVA";
         }
-        return Loki.Environment.BROWSER;
+        return "BROWSER";
     }
     if (!isBrowser) {
         throw SyntaxError("Unknown environment...");
@@ -3578,7 +3497,7 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
      * Constructs the main database class.
      * @param {string} filename - name of the file to be saved to
      * @param {object} [options={}] - options
-     * @param {Loki.Environment} [options.env=auto] - overrides environment detection
+     * @param {Loki.Environment} [options.env] - the javascript environment
      * @param {Loki.SerializationMethod} [options.serializationMethod=NORMAL] - the serialization method
      * @param {string} [options.destructureDelimiter="$<\n"] - string delimiter used for destructured serialization
      * @param {boolean} [options.verbose=false] - enable console output
@@ -3588,7 +3507,7 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
         this.filename = filename;
         this._collections = [];
         ({
-            serializationMethod: this._serializationMethod = Loki.SerializationMethod.NORMAL,
+            serializationMethod: this._serializationMethod = "normal",
             destructureDelimiter: this._destructureDelimiter = "$<\n",
             verbose: this._verbose = false,
             env: this._env = getENV()
@@ -3645,19 +3564,19 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
             persistenceMethod: this._persistenceMethod,
             // TODO
             //inflate: this.options.inflate,
-            throttledSaves: this._throttledSaves = true,
+            throttledSaves: this._throttledSaves = true
         } = options);
         const DEFAULT_PERSISTENCE = {
-            [Loki.Environment.NODE_JS]: [Loki.PersistenceMethod.FS_STORAGE],
-            [Loki.Environment.BROWSER]: [Loki.PersistenceMethod.LOCAL_STORAGE, Loki.PersistenceMethod.INDEXED_STORAGE],
-            [Loki.Environment.CORDOVA]: [Loki.PersistenceMethod.LOCAL_STORAGE, Loki.PersistenceMethod.INDEXED_STORAGE],
-            [Loki.Environment.MEMORY]: [Loki.PersistenceMethod.MEMORY_STORAGE]
+            "NODEJS": ["fs-storage"],
+            "BROWSER": ["local-storage", "indexed-storage"],
+            "CORDOVA": ["local-storage", "indexed-storage"],
+            "MEMORY": ["memory-storage"]
         };
         const PERSISTENCE_METHODS = {
-            [Loki.PersistenceMethod.FS_STORAGE]: __WEBPACK_IMPORTED_MODULE_2__common_plugin__["a" /* PLUGINS */]["LokiFSStorage"],
-            [Loki.PersistenceMethod.LOCAL_STORAGE]: __WEBPACK_IMPORTED_MODULE_2__common_plugin__["a" /* PLUGINS */]["LokiLocalStorage"],
-            [Loki.PersistenceMethod.INDEXED_STORAGE]: __WEBPACK_IMPORTED_MODULE_2__common_plugin__["a" /* PLUGINS */]["LokiIndexedStorage"],
-            [Loki.PersistenceMethod.MEMORY_STORAGE]: __WEBPACK_IMPORTED_MODULE_2__common_plugin__["a" /* PLUGINS */]["LokiMemoryStorage"]
+            "fs-storage": __WEBPACK_IMPORTED_MODULE_2__common_plugin__["a" /* PLUGINS */]["FSStorage"],
+            "local-storage": __WEBPACK_IMPORTED_MODULE_2__common_plugin__["a" /* PLUGINS */]["LocalStorage"],
+            "indexed-storage": __WEBPACK_IMPORTED_MODULE_2__common_plugin__["a" /* PLUGINS */]["IndexedStorage"],
+            "memory-storage": __WEBPACK_IMPORTED_MODULE_2__common_plugin__["a" /* PLUGINS */]["MemoryStorage"]
         };
         // process the options
         if (this._persistenceMethod !== undefined) {
@@ -3671,7 +3590,7 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
         }
         // if user passes adapter, set persistence mode to adapter and retain persistence adapter instance
         if (options.adapter !== undefined) {
-            this._persistenceMethod = Loki.PersistenceMethod.ADAPTER;
+            this._persistenceMethod = "adapter";
             this._persistenceAdapter = options.adapter;
         }
         // if by now there is no adapter specified by user nor derived from persistenceMethod: use sensible defaults
@@ -3688,7 +3607,8 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
             }
         }
         this.autosaveDisable();
-        // if they want to load database on loki instantiation, now is a good time to load... after adapter set and before possible autosave initiation
+        // if they want to load database on loki instantiation, now is a good time to load... after adapter set and before
+        // possible autosave initiation
         let loaded;
         if (options.autoload) {
             loaded = this.loadDatabase(options.inflate);
@@ -3760,7 +3680,7 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
     getCollection(collectionName) {
         let i;
         const len = this._collections.length;
-        for (i = 0; i < len; i += 1) {
+        for (i = 0; i < len; i++) {
             if (this._collections[i].name === collectionName) {
                 return this._collections[i];
             }
@@ -3787,7 +3707,7 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
         for (let i = 0; i < this._collections.length; i++) {
             colls.push({
                 name: this._collections[i].name,
-                count: this._collections[i].data.length
+                count: this._collections[i].count()
             });
         }
         return colls;
@@ -3797,7 +3717,7 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
      * @param {string} collectionName - name of collection to remove
      */
     removeCollection(collectionName) {
-        for (let i = 0; i < this._collections.length; i += 1) {
+        for (let i = 0; i < this._collections.length; i++) {
             if (this._collections[i].name === collectionName) {
                 const tmpcol = new __WEBPACK_IMPORTED_MODULE_1__collection__["a" /* Collection */](collectionName, {});
                 const curcol = this._collections[i];
@@ -3824,11 +3744,11 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
             options.serializationMethod = this._serializationMethod;
         }
         switch (options.serializationMethod) {
-            case Loki.SerializationMethod.NORMAL:
+            case "normal":
                 return JSON.stringify(this);
-            case Loki.SerializationMethod.PRETTY:
+            case "pretty":
                 return JSON.stringify(this, null, 2);
-            case Loki.SerializationMethod.DESTRUCTURED:
+            case "destructured":
                 return this.serializeDestructured(); // use default options
             default:
                 return JSON.stringify(this);
@@ -3848,7 +3768,7 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
             _persistenceAdapter: this._persistenceAdapter,
             _persistenceMethod: this._persistenceMethod,
             _throttledSaves: this._throttledSaves,
-            _verbose: this._verbose,
+            _verbose: this._verbose
         };
     }
     /**
@@ -3887,20 +3807,20 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
         let dbcopy = new Loki(this.filename);
         dbcopy.loadJSONObject(this);
         for (let idx = 0; idx < dbcopy._collections.length; idx++) {
-            dbcopy._collections[idx].data = [];
+            dbcopy._collections[idx]._data = [];
         }
         // if we -only- wanted the db container portion, return it now
         if (options.partitioned === true && options.partition === -1) {
             // since we are deconstructing, override serializationMethod to normal for here
             return dbcopy.serialize({
-                serializationMethod: Loki.SerializationMethod.NORMAL
+                serializationMethod: "normal"
             });
         }
         // at this point we must be deconstructing the entire database
         // start by pushing db serialization into first array element
         const reconstruct = [];
         reconstruct.push(dbcopy.serialize({
-            serializationMethod: Loki.SerializationMethod.NORMAL
+            serializationMethod: "normal"
         }));
         dbcopy = null;
         // push collection data into subsequent elements
@@ -3966,19 +3886,16 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
      * @returns {string|array} A custom, restructured aggregation of independent serializations for a single collection.
      */
     serializeCollection(options = {}) {
-        let doccount;
-        let docidx;
-        let resultlines = [];
         if (options.delimited === undefined) {
             options.delimited = true;
         }
         if (options.collectionIndex === undefined) {
             throw new Error("serializeCollection called without 'collectionIndex' option");
         }
-        doccount = this._collections[options.collectionIndex].data.length;
-        resultlines = [];
-        for (docidx = 0; docidx < doccount; docidx++) {
-            resultlines.push(JSON.stringify(this._collections[options.collectionIndex].data[docidx]));
+        const doccount = this._collections[options.collectionIndex].count();
+        let resultlines = [];
+        for (let docidx = 0; docidx < doccount; docidx++) {
+            resultlines.push(JSON.stringify(this._collections[options.collectionIndex]._data[docidx]));
         }
         // D and DA
         if (options.delimited) {
@@ -4007,14 +3924,6 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
      * @returns {object|array} An object representation of the deserialized database, not yet applied to 'this' db or document array
      */
     deserializeDestructured(destructuredSource, options = {}) {
-        let workarray = [];
-        let len;
-        let cdb;
-        let collIndex = 0;
-        let collCount;
-        let lineIndex = 1;
-        let done = false;
-        let currObject;
         if (options.partitioned === undefined) {
             options.partitioned = false;
         }
@@ -4033,30 +3942,29 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
             if (options.partition !== undefined) {
                 // db only
                 if (options.partition === -1) {
-                    cdb = JSON.parse(destructuredSource[0]);
-                    return cdb;
+                    return JSON.parse(destructuredSource[0]);
                 }
                 // single collection, return doc array
                 return this.deserializeCollection(destructuredSource[options.partition + 1], options);
             }
             // Otherwise we are restoring an entire partitioned db
-            cdb = JSON.parse(destructuredSource[0]);
-            collCount = cdb._collections.length;
-            for (collIndex = 0; collIndex < collCount; collIndex++) {
+            const cdb = JSON.parse(destructuredSource[0]);
+            const collCount = cdb._collections.length;
+            for (let collIndex = 0; collIndex < collCount; collIndex++) {
                 // attach each collection docarray to container collection data, add 1 to collection array index since db is at 0
-                cdb._collections[collIndex].data = this.deserializeCollection(destructuredSource[collIndex + 1], options);
+                cdb._collections[collIndex]._data = this.deserializeCollection(destructuredSource[collIndex + 1], options);
             }
             return cdb;
         }
         // Non-Partitioned
         // D : one big Delimited string { partitioned: false, delimited : true }
         // NDA : Non-Delimited Array : one iterable array with empty string collection partitions { partitioned: false, delimited: false }
+        let workarray = [];
         // D
         if (options.delimited) {
             workarray = destructuredSource.split(options.delimiter);
             destructuredSource = null; // lower memory pressure
-            len = workarray.length;
-            if (len === 0) {
+            if (workarray.length === 0) {
                 return null;
             }
         }
@@ -4064,9 +3972,12 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
             workarray = destructuredSource;
         }
         // first line is database and collection shells
-        cdb = JSON.parse(workarray[0]);
-        collCount = cdb._collections.length;
+        const cdb = JSON.parse(workarray[0]);
+        const collCount = cdb._collections.length;
         workarray[0] = null;
+        let collIndex = 0;
+        let lineIndex = 1;
+        let done = false;
         while (!done) {
             // empty string indicates either end of collection or end of file
             if (workarray[lineIndex] === "") {
@@ -4076,8 +3987,7 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
                 }
             }
             else {
-                currObject = JSON.parse(workarray[lineIndex]);
-                cdb._collections[collIndex].data.push(currObject);
+                cdb._collections[collIndex]._data.push(JSON.parse(workarray[lineIndex]));
             }
             // lower memory pressure and advance iterator
             workarray[lineIndex++] = null;
@@ -4132,11 +4042,11 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
         else {
             // using option defined in instantiated db not what was in serialized db
             switch (this._serializationMethod) {
-                case Loki.SerializationMethod.NORMAL:
-                case Loki.SerializationMethod.PRETTY:
+                case "normal":
+                case "pretty":
                     dbObject = JSON.parse(serializedDb);
                     break;
-                case Loki.SerializationMethod.DESTRUCTURED:
+                case "destructured":
                     dbObject = this.deserializeDestructured(serializedDb);
                     break;
                 default:
@@ -4146,13 +4056,6 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
         }
         this.loadJSONObject(dbObject, options);
     }
-    /**
-     * Inflates a loki database from a JS object
-     *
-     * @param {object} dbObject - a serialized loki database string
-     * @param {object} options - apply or override collection level settings
-     * @param {boolean} options.retainDirtyFlags - whether collection dirty flags will be preserved
-     */
     loadJSONObject(dbObject, options = {}) {
         const len = dbObject._collections ? dbObject._collections.length : 0;
         this.filename = dbObject.filename;
@@ -4441,32 +4344,8 @@ class Loki extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEvent
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Loki;
 
-(function (Loki) {
-    let SerializationMethod;
-    (function (SerializationMethod) {
-        SerializationMethod[SerializationMethod["NORMAL"] = 0] = "NORMAL";
-        SerializationMethod[SerializationMethod["PRETTY"] = 1] = "PRETTY";
-        SerializationMethod[SerializationMethod["DESTRUCTURED"] = 2] = "DESTRUCTURED";
-    })(SerializationMethod = Loki.SerializationMethod || (Loki.SerializationMethod = {}));
-    let PersistenceMethod;
-    (function (PersistenceMethod) {
-        PersistenceMethod[PersistenceMethod["FS_STORAGE"] = 0] = "FS_STORAGE";
-        PersistenceMethod[PersistenceMethod["LOCAL_STORAGE"] = 1] = "LOCAL_STORAGE";
-        PersistenceMethod[PersistenceMethod["INDEXED_STORAGE"] = 2] = "INDEXED_STORAGE";
-        PersistenceMethod[PersistenceMethod["MEMORY_STORAGE"] = 3] = "MEMORY_STORAGE";
-        PersistenceMethod[PersistenceMethod["ADAPTER"] = 4] = "ADAPTER";
-    })(PersistenceMethod = Loki.PersistenceMethod || (Loki.PersistenceMethod = {}));
-    let Environment;
-    (function (Environment) {
-        Environment[Environment["NODE_JS"] = 0] = "NODE_JS";
-        Environment[Environment["NATIVE_SCRIPT"] = 1] = "NATIVE_SCRIPT";
-        Environment[Environment["BROWSER"] = 2] = "BROWSER";
-        Environment[Environment["CORDOVA"] = 3] = "CORDOVA";
-        Environment[Environment["MEMORY"] = 4] = "MEMORY";
-    })(Environment = Loki.Environment || (Loki.Environment = {}));
-})(Loki || (Loki = {}));
 
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(2)))
 
 /***/ }),
 /* 9 */
@@ -4551,7 +4430,7 @@ class UniqueIndex {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__event_emitter__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__resultset__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__result_set__ = __webpack_require__(3);
 
 
 /**
@@ -4568,6 +4447,9 @@ class UniqueIndex {
  * @extends LokiEventEmitter
 
  * @see {@link Collection#addDynamicView} to construct instances of DynamicView
+ *
+ * @param <TData> - the data type
+ * @param <TNested> - nested properties of data type
  */
 class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* LokiEventEmitter */] {
     /**
@@ -4576,14 +4458,14 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
      * @param {string} name - the name of this dynamic view
      * @param {object} options - the options
      * @param {boolean} [options.persistent=false] - indicates if view is to main internal results array in 'resultdata'
-     * @param {string} [options.sortPriority=SortPriority.PASSIVE] - the sort priority
+     * @param {string} [options.sortPriority="passive"] - the sort priority
      * @param {number} [options.minRebuildInterval=1] - minimum rebuild interval (need clarification to docs here)
      */
     constructor(collection, name, options = {}) {
         super();
         ({
             persistent: this._persistent = false,
-            sortPriority: this._sortPriority = DynamicView.SortPriority.PASSIVE,
+            sortPriority: this._sortPriority = "passive",
             minRebuildInterval: this._minRebuildInterval = 1
         } = options);
         this._collection = collection;
@@ -4591,11 +4473,10 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
         this._rebuildPending = false;
         // 'passive' will defer the sort phase until they call data(). (most efficient overall)
         // 'active' will sort async whenever next idle. (prioritizes read speeds)
-        // sortPriority: this._sortPriority = DynamicView.SortPriority.PASSIVE,
-        this._resultset = new __WEBPACK_IMPORTED_MODULE_1__resultset__["a" /* Resultset */](collection);
-        this._resultdata = [];
-        this._resultsdirty = false;
-        this._cachedresultset = null;
+        this._resultSet = new __WEBPACK_IMPORTED_MODULE_1__result_set__["a" /* ResultSet */](collection);
+        this._resultData = [];
+        this._resultDirty = false;
+        this._cachedResultSet = null;
         // keep ordered filter pipeline
         this._filterPipeline = [];
         // sorting member variables
@@ -4621,20 +4502,16 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
      * @fires DynamicView.rebuild
      */
     _rematerialize({ removeWhereFilters = false }) {
-        let fpl;
-        let fpi;
-        let idx;
-        this._resultdata = [];
-        this._resultsdirty = true;
-        this._resultset = new __WEBPACK_IMPORTED_MODULE_1__resultset__["a" /* Resultset */](this._collection);
+        this._resultData = [];
+        this._resultDirty = true;
+        this._resultSet = new __WEBPACK_IMPORTED_MODULE_1__result_set__["a" /* ResultSet */](this._collection);
         if (this._sortFunction || this._sortCriteria || this._sortByScoring !== null) {
             this._sortDirty = true;
         }
         if (removeWhereFilters) {
             // for each view see if it had any where filters applied... since they don't
             // serialize those functions lets remove those invalid filters
-            fpl = this._filterPipeline.length;
-            fpi = fpl;
+            let fpi = this._filterPipeline.length;
             while (fpi--) {
                 if (this._filterPipeline[fpi].type === "where") {
                     if (fpi !== this._filterPipeline.length - 1) {
@@ -4648,8 +4525,7 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
         const ofp = this._filterPipeline;
         this._filterPipeline = [];
         // now re-apply 'find' filterPipeline ops
-        fpl = ofp.length;
-        for (idx = 0; idx < fpl; idx++) {
+        for (let idx = 0; idx < ofp.length; idx++) {
             this.applyFind(ofp[idx].val);
         }
         // during creation of unit tests, i will remove this forced refresh and leave lazy
@@ -4659,24 +4535,23 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
         return this;
     }
     /**
-     * Makes a copy of the internal resultset for branched queries.
-     * Unlike this dynamic view, the branched resultset will not be 'live' updated,
+     * Makes a copy of the internal ResultSet for branched queries.
+     * Unlike this dynamic view, the branched ResultSet will not be 'live' updated,
      * so your branched query should be immediately resolved and not held for future evaluation.
      *
      * @param {(string|array=)} transform - Optional name of collection transform, or an array of transform steps
      * @param {object} parameters - optional parameters (if optional transform requires them)
-     * @returns {Resultset} A copy of the internal resultset for branched queries.
+     * @returns {ResultSet} A copy of the internal ResultSet for branched queries.
      */
-    branchResultset(transform, parameters) {
-        const rs = this._resultset.branch();
+    branchResultSet(transform, parameters) {
+        const rs = this._resultSet.branch();
         if (transform === undefined) {
             return rs;
         }
         return rs.transform(transform, parameters);
     }
     /**
-     * toJSON() - Override of toJSON to avoid circular references
-     *
+     * Override of toJSON to avoid circular references.
      */
     toJSON() {
         return {
@@ -4684,8 +4559,7 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
             _persistent: this._persistent,
             _sortPriority: this._sortPriority,
             _minRebuildInterval: this._minRebuildInterval,
-            _resultset: this._resultset,
-            _resultsdirty: true,
+            _resultSet: this._resultSet,
             _filterPipeline: this._filterPipeline,
             _sortCriteria: this._sortCriteria,
             _sortByScoring: this._sortByScoring,
@@ -4693,15 +4567,15 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
         };
     }
     static fromJSONObject(collection, obj) {
-        let dv = new DynamicView(collection, obj.name, obj.options);
-        dv._resultsdirty = obj._resultsdirty;
+        let dv = new DynamicView(collection, obj.name);
+        dv._resultDirty = true;
         dv._filterPipeline = obj._filterPipeline;
-        dv._resultdata = [];
+        dv._resultData = [];
         dv._sortCriteria = obj._sortCriteria;
         dv._sortByScoring = obj._sortByScoring;
         dv._sortDirty = obj._sortDirty;
-        dv._resultset.filteredrows = obj._resultset.filteredrows;
-        dv._resultset.filterInitialized = obj._resultset.filterInitialized;
+        dv._resultSet._filteredRows = obj._resultSet._filteredRows;
+        dv._resultSet._filterInitialized = obj._resultSet._filterInitialized;
         dv._rematerialize({
             removeWhereFilters: true
         });
@@ -4714,10 +4588,10 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
      */
     removeFilters({ queueSortPhase = false } = {}) {
         this._rebuildPending = false;
-        this._resultset.reset();
-        this._resultdata = [];
-        this._resultsdirty = true;
-        this._cachedresultset = null;
+        this._resultSet.reset();
+        this._resultData = [];
+        this._resultDirty = true;
+        this._cachedResultSet = null;
         // keep ordered filter pipeline
         this._filterPipeline = [];
         // sorting member variables
@@ -4768,7 +4642,7 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
         return this;
     }
     /**
-     * Allows sorting a resultset based on multiple columns.
+     * Allows sorting a ResultSet based on multiple columns.
      * @example
      * // to sort by age and then name (both ascending)
      * dv.applySortCriteria(['age', 'name']);
@@ -4803,14 +4677,14 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
      * @returns {ScoreResult}
      */
     getScoring() {
-        return this._resultset.getScoring();
+        return this._resultSet.getScoring();
     }
     /**
      * Marks the beginning of a transaction.
      * @returns {DynamicView} this DynamicView object, for further chain ops.
      */
     startTransaction() {
-        this._cachedresultset = this._resultset.copy();
+        this._cachedResultSet = this._resultSet.copy();
         return this;
     }
     /**
@@ -4818,7 +4692,7 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
      * @returns {DynamicView} this DynamicView object, for further chain ops.
      */
     commit() {
-        this._cachedresultset = null;
+        this._cachedResultSet = null;
         return this;
     }
     /**
@@ -4826,11 +4700,11 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
      * @returns {DynamicView} this DynamicView object, for further chain ops.
      */
     rollback() {
-        this._resultset = this._cachedresultset;
+        this._resultSet = this._cachedResultSet;
         if (this._persistent) {
             // for now just rebuild the persistent dynamic view data in this worst case scenario
             // (a persistent view utilizing transactions which get rolled back), we already know the filter so not too bad.
-            this._resultdata = this._resultset.data();
+            this._resultData = this._resultSet.data();
             this.emit("rebuild", this);
         }
         return this;
@@ -4843,7 +4717,7 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
      */
     _indexOfFilterWithId(uid) {
         if (typeof uid === "string" || typeof uid === "number") {
-            for (let idx = 0, len = this._filterPipeline.length; idx < len; idx += 1) {
+            for (let idx = 0, len = this._filterPipeline.length; idx < len; idx++) {
                 if (uid === this._filterPipeline[idx].uid) {
                     return idx;
                 }
@@ -4852,13 +4726,13 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
         return -1;
     }
     /**
-     * Add the filter object to the end of view's filter pipeline and apply the filter to the resultset.
+     * Add the filter object to the end of view's filter pipeline and apply the filter to the ResultSet.
      *
      * @param {object} filter - The filter object. Refer to applyFilter() for extra details.
      */
     _addFilter(filter) {
         this._filterPipeline.push(filter);
-        this._resultset[filter.type](filter.val);
+        this._resultSet[filter.type](filter.val);
     }
     /**
      * Reapply all the filters in the current pipeline.
@@ -4866,15 +4740,15 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
      * @returns {DynamicView} this DynamicView object, for further chain ops.
      */
     reapplyFilters() {
-        this._resultset.reset();
-        this._cachedresultset = null;
+        this._resultSet.reset();
+        this._cachedResultSet = null;
         if (this._persistent) {
-            this._resultdata = [];
-            this._resultsdirty = true;
+            this._resultData = [];
+            this._resultDirty = true;
         }
         const filters = this._filterPipeline;
         this._filterPipeline = [];
-        for (let idx = 0, len = filters.length; idx < len; idx += 1) {
+        for (let idx = 0, len = filters.length; idx < len; idx++) {
             this._addFilter(filters[idx]);
         }
         if (this._sortFunction || this._sortCriteria || this._sortByScoring !== null) {
@@ -4898,10 +4772,10 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
             this._filterPipeline[idx] = filter;
             return this.reapplyFilters();
         }
-        this._cachedresultset = null;
+        this._cachedResultSet = null;
         if (this._persistent) {
-            this._resultdata = [];
-            this._resultsdirty = true;
+            this._resultData = [];
+            this._resultDirty = true;
         }
         this._addFilter(filter);
         if (this._sortFunction || this._sortCriteria || this._sortByScoring !== null) {
@@ -4963,33 +4837,33 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
      */
     count() {
         // in order to be accurate we will pay the minimum cost (and not alter dv state management)
-        // recurring resultset data resolutions should know internally its already up to date.
+        // recurring ResultSet data resolutions should know internally its already up to date.
         // for persistent data this will not update resultdata nor fire rebuild event.
-        if (this._resultsdirty) {
-            this._resultdata = this._resultset.data();
+        if (this._resultDirty) {
+            this._resultData = this._resultSet.data();
         }
-        return this._resultset.count();
+        return this._resultSet.count();
     }
     /**
      * Resolves and pending filtering and sorting, then returns document array as result.
      *
-     * @param {object} options - optional parameters to pass to resultset.data() if non-persistent
-     * @param {boolean} options.forceClones - Allows forcing the return of cloned objects even when
+     * @param {object} options - optional parameters to pass to ResultSet.data() if non-persistent
+     * @param {boolean} [options.forceClones] - Allows forcing the return of cloned objects even when
      *        the collection is not configured for clone object.
-     * @param {string} options.forceCloneMethod - Allows overriding the default or collection specified cloning method.
+     * @param {string} [options.forceCloneMethod] - Allows overriding the default or collection specified cloning method.
      *        Possible values include 'parse-stringify', 'jquery-extend-deep', 'shallow', 'shallow-assign'
-     * @param {boolean} options.removeMeta - Will force clones and strip $loki and meta properties from documents
+     * @param {boolean} [options.removeMeta] - will force clones and strip $loki and meta properties from documents
      *
      * @returns {Array} An array of documents representing the current DynamicView contents.
      */
     data(options = {}) {
         // using final sort phase as 'catch all' for a few use cases which require full rebuild
-        if (this._sortDirty || this._resultsdirty) {
+        if (this._sortDirty || this._resultDirty) {
             this._performSortPhase({
                 suppressRebuildEvent: true
             });
         }
-        return (this._persistent) ? (this._resultdata) : (this._resultset.data(options));
+        return (this._persistent) ? (this._resultData) : (this._resultSet.data(options));
     }
     /**
      * When the view is not sorted we may still wish to be notified of rebuild events.
@@ -5018,7 +4892,7 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
             return;
         }
         this._sortDirty = true;
-        if (this._sortPriority === DynamicView.SortPriority.ACTIVE) {
+        if (this._sortPriority === "active") {
             // active sorting... once they are done and yield js thread, run async performSortPhase()
             setTimeout(() => {
                 this._performSortPhase();
@@ -5035,25 +4909,25 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
      */
     _performSortPhase(options = {}) {
         // async call to this may have been pre-empted by synchronous call to data before async could fire
-        if (!this._sortDirty && !this._resultsdirty) {
+        if (!this._sortDirty && !this._resultDirty) {
             return;
         }
         if (this._sortDirty) {
             if (this._sortFunction) {
-                this._resultset.sort(this._sortFunction);
+                this._resultSet.sort(this._sortFunction);
             }
             else if (this._sortCriteria) {
-                this._resultset.compoundsort(this._sortCriteria);
+                this._resultSet.compoundsort(this._sortCriteria);
             }
             else if (this._sortByScoring !== null) {
-                this._resultset.sortByScoring(this._sortByScoring);
+                this._resultSet.sortByScoring(this._sortByScoring);
             }
             this._sortDirty = false;
         }
         if (this._persistent) {
             // persistent view, rebuild local resultdata array
-            this._resultdata = this._resultset.data();
-            this._resultsdirty = false;
+            this._resultData = this._resultSet.data();
+            this._resultDirty = false;
         }
         if (!options.suppressRebuildEvent) {
             this.emit("rebuild", this);
@@ -5068,9 +4942,9 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
      */
     _evaluateDocument(objIndex, isNew) {
         // if no filter applied yet, the result 'set' should remain 'everything'
-        if (!this._resultset.filterInitialized) {
+        if (!this._resultSet._filterInitialized) {
             if (this._persistent) {
-                this._resultdata = this._resultset.data();
+                this._resultData = this._resultSet.data();
             }
             // need to re-sort to sort new document
             if (this._sortFunction || this._sortCriteria) {
@@ -5081,29 +4955,29 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
             }
             return;
         }
-        const ofr = this._resultset.filteredrows;
+        const ofr = this._resultSet._filteredRows;
         const oldPos = (isNew) ? (-1) : (ofr.indexOf(+objIndex));
         const oldlen = ofr.length;
-        // creating a 1-element resultset to run filter chain ops on to see if that doc passes filters;
+        // creating a 1-element ResultSet to run filter chain ops on to see if that doc passes filters;
         // mostly efficient algorithm, slight stack overhead price (this function is called on inserts and updates)
-        const evalResultset = new __WEBPACK_IMPORTED_MODULE_1__resultset__["a" /* Resultset */](this._collection);
-        evalResultset.filteredrows = [objIndex];
-        evalResultset.filterInitialized = true;
+        const evalResultSet = new __WEBPACK_IMPORTED_MODULE_1__result_set__["a" /* ResultSet */](this._collection);
+        evalResultSet._filteredRows = [objIndex];
+        evalResultSet._filterInitialized = true;
         let filter;
         for (let idx = 0, len = this._filterPipeline.length; idx < len; idx++) {
             filter = this._filterPipeline[idx];
-            evalResultset[filter.type](filter.val);
+            evalResultSet[filter.type](filter.val);
         }
         // not a true position, but -1 if not pass our filter(s), 0 if passed filter(s)
-        const newPos = (evalResultset.filteredrows.length === 0) ? -1 : 0;
+        const newPos = (evalResultSet._filteredRows.length === 0) ? -1 : 0;
         // wasn't in old, shouldn't be now... do nothing
         if (oldPos === -1 && newPos === -1)
             return;
-        // wasn't in resultset, should be now... add
+        // wasn't in ResultSet, should be now... add
         if (oldPos === -1 && newPos !== -1) {
             ofr.push(objIndex);
             if (this._persistent) {
-                this._resultdata.push(this._collection.data[objIndex]);
+                this._resultData.push(this._collection._data[objIndex]);
             }
             // need to re-sort to sort new document
             if (this._sortFunction || this._sortCriteria) {
@@ -5114,18 +4988,18 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
             }
             return;
         }
-        // was in resultset, shouldn't be now... delete
+        // was in ResultSet, shouldn't be now... delete
         if (oldPos !== -1 && newPos === -1) {
             if (oldPos < oldlen - 1) {
                 ofr.splice(oldPos, 1);
                 if (this._persistent) {
-                    this._resultdata.splice(oldPos, 1);
+                    this._resultData.splice(oldPos, 1);
                 }
             }
             else {
                 ofr.length = oldlen - 1;
                 if (this._persistent) {
-                    this._resultdata.length = oldlen - 1;
+                    this._resultData.length = oldlen - 1;
                 }
             }
             // in case changes to data altered a sort column
@@ -5137,11 +5011,11 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
             }
             return;
         }
-        // was in resultset, should still be now... (update persistent only?)
+        // was in ResultSet, should still be now... (update persistent only?)
         if (oldPos !== -1 && newPos !== -1) {
             if (this._persistent) {
-                // in case document changed, replace persistent view data with the latest collection.data document
-                this._resultdata[oldPos] = this._collection.data[objIndex];
+                // in case document changed, replace persistent view data with the latest collection._data document
+                this._resultData[oldPos] = this._collection._data[objIndex];
             }
             // in case changes to data altered a sort column
             if (this._sortFunction || this._sortCriteria) {
@@ -5157,9 +5031,9 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
      */
     _removeDocument(objIndex) {
         // if no filter applied yet, the result 'set' should remain 'everything'
-        if (!this._resultset.filterInitialized) {
+        if (!this._resultSet._filterInitialized) {
             if (this._persistent) {
-                this._resultdata = this._resultset.data();
+                this._resultData = this._resultSet.data();
             }
             // in case changes to data altered a sort column
             if (this._sortFunction || this._sortCriteria) {
@@ -5170,24 +5044,23 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
             }
             return;
         }
-        const ofr = this._resultset.filteredrows;
+        const ofr = this._resultSet._filteredRows;
         const oldPos = ofr.indexOf(+objIndex);
         let oldlen = ofr.length;
-        let idx;
         if (oldPos !== -1) {
             // if not last row in resultdata, swap last to hole and truncate last row
             if (oldPos < oldlen - 1) {
                 ofr[oldPos] = ofr[oldlen - 1];
                 ofr.length = oldlen - 1;
                 if (this._persistent) {
-                    this._resultdata[oldPos] = this._resultdata[oldlen - 1];
-                    this._resultdata.length = oldlen - 1;
+                    this._resultData[oldPos] = this._resultData[oldlen - 1];
+                    this._resultData.length = oldlen - 1;
                 }
             }
             else {
                 ofr.length = oldlen - 1;
                 if (this._persistent) {
-                    this._resultdata.length = oldlen - 1;
+                    this._resultData.length = oldlen - 1;
                 }
             }
             // in case changes to data altered a sort column
@@ -5198,11 +5071,11 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
                 this._queueRebuildEvent();
             }
         }
-        // since we are using filteredrows to store data array positions
+        // since we are using filteredRows to store data array positions
         // if they remove a document (whether in our view or not),
         // we need to adjust array positions -1 for all document array references after that position
         oldlen = ofr.length;
-        for (idx = 0; idx < oldlen; idx++) {
+        for (let idx = 0; idx < oldlen; idx++) {
             if (ofr[idx] > objIndex) {
                 ofr[idx]--;
             }
@@ -5226,13 +5099,6 @@ class DynamicView extends __WEBPACK_IMPORTED_MODULE_0__event_emitter__["a" /* Lo
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = DynamicView;
 
-(function (DynamicView) {
-    let SortPriority;
-    (function (SortPriority) {
-        SortPriority[SortPriority["PASSIVE"] = 0] = "PASSIVE";
-        SortPriority[SortPriority["ACTIVE"] = 1] = "ACTIVE";
-    })(SortPriority = DynamicView.SortPriority || (DynamicView.SortPriority = {}));
-})(DynamicView || (DynamicView = {}));
 
 
 /***/ })

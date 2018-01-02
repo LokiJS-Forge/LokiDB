@@ -1,7 +1,6 @@
 import { InvertedIndex } from "./inverted_index";
 import { Dict } from "../../common/types";
 import { Query } from "./query_builder";
-export declare type ScoreResult = Dict<number>;
 /**
  * @hidden
  */
@@ -10,9 +9,9 @@ export declare class Scorer {
     private _cache;
     constructor(invIdxs: Dict<InvertedIndex>);
     setDirty(): void;
-    score(fieldName: string, boost: number, termIdx: InvertedIndex.Index, doScoring: boolean, docResults: Scorer.DocResults, term: number[]): void;
-    scoreConstant(boost: number, docId: number, docResults: Scorer.DocResults): Map<number, Scorer.DocResult[]>;
-    finalScore(query: Query, docResults: Scorer.DocResults): ScoreResult;
+    score(fieldName: string, boost: number, termIdx: InvertedIndex.Index, doScoring: boolean, queryResults: Scorer.QueryResults, term: number[]): void;
+    scoreConstant(boost: number, docId: number, queryResults: Scorer.QueryResults): Map<number, Scorer.QueryResult[]>;
+    finalScore(query: Query, queryResults: Scorer.QueryResults): Scorer.ScoreResult;
     private static _calculateFieldLength(fieldLength);
     private _getCache(fieldName);
     /**
@@ -30,12 +29,33 @@ export declare namespace Scorer {
         idfs: Dict<number>;
         avgFieldLength: number;
     }
-    interface DocResult {
+    interface QueryResult {
         tf?: number;
         idf?: number;
         boost: number;
         fieldName?: string;
         term?: number[];
     }
-    type DocResults = Map<number, DocResult[]>;
+    type QueryResults = Map<number, QueryResult[]>;
+    interface BM25Explanation {
+        boost: number;
+        score: number;
+        docID: number;
+        fieldName: string;
+        index: string;
+        idf: number;
+        tfNorm: number;
+        tf: number;
+        fieldLength: number;
+        avgFieldLength: number;
+    }
+    interface ConstantExplanation {
+        boost: number;
+        score: number;
+    }
+    type ScoreExplanation = BM25Explanation | ConstantExplanation;
+    type ScoreResult = Dict<{
+        score: number;
+        explanation?: ScoreExplanation[];
+    }>;
 }

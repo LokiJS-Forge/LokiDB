@@ -1,7 +1,6 @@
 import { LokiEventEmitter } from "./event_emitter";
 import { Collection } from "./collection";
 import { Doc, StorageAdapter } from "../../common/types";
-export declare type ANY = any;
 export declare class Loki extends LokiEventEmitter {
     private filename;
     private databaseVersion;
@@ -23,7 +22,7 @@ export declare class Loki extends LokiEventEmitter {
      * Constructs the main database class.
      * @param {string} filename - name of the file to be saved to
      * @param {object} [options={}] - options
-     * @param {Loki.Environment} [options.env=auto] - overrides environment detection
+     * @param {Loki.Environment} [options.env] - the javascript environment
      * @param {Loki.SerializationMethod} [options.serializationMethod=NORMAL] - the serialization method
      * @param {string} [options.destructureDelimiter="$<\n"] - string delimiter used for destructured serialization
      * @param {boolean} [options.verbose=false] - enable console output
@@ -64,21 +63,21 @@ export declare class Loki extends LokiEventEmitter {
      * @param {int} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
      * @returns {Collection} a reference to the collection which was just added
      */
-    addCollection<T extends object>(name: string, options?: Collection.Options): Collection<T>;
+    addCollection<T extends object = object, U extends object = object>(name: string, options?: Collection.Options<T>): Collection<T, U>;
     loadCollection(collection: Collection): void;
     /**
      * Retrieves reference to a collection by name.
      * @param {string} collectionName - name of collection to look up
      * @returns {Collection} Reference to collection in database by that name, or null if not found
      */
-    getCollection<T extends object>(collectionName: string): Collection<T>;
+    getCollection<T extends object = object>(collectionName: string): Collection<T>;
     /**
      * Renames an existing loki collection
      * @param {string} oldName - name of collection to rename
      * @param {string} newName - new name of collection
      * @returns {Collection} reference to the newly renamed collection
      */
-    renameCollection(oldName: string, newName: string): Collection<{}>;
+    renameCollection<T extends object = object>(oldName: string, newName: string): Collection<T>;
     listCollections(): {
         name: string;
         count: number;
@@ -95,20 +94,7 @@ export declare class Loki extends LokiEventEmitter {
      * @returns {string} Stringified representation of the loki database.
      */
     serialize(options?: Loki.SerializeOptions): string | string[];
-    toJSON(): {
-        _env: Loki.Environment;
-        _serializationMethod: Loki.SerializationMethod;
-        _autosave: boolean;
-        _autosaveInterval: number;
-        _collections: Collection<object>[];
-        databaseVersion: number;
-        engineVersion: number;
-        filename: string;
-        _persistenceAdapter: StorageAdapter;
-        _persistenceMethod: Loki.PersistenceMethod;
-        _throttledSaves: boolean;
-        _verbose: boolean;
-    };
+    toJSON(): Loki.Serialized;
     /**
      * Database level destructured JSON serialization routine to allow alternate serialization methods.
      * Internally, Loki supports destructuring via loki "serializationMethod' option and
@@ -134,7 +120,11 @@ export declare class Loki extends LokiEventEmitter {
      *
      * @returns {string|array} A custom, restructured aggregation of independent serializations for a single collection.
      */
-    serializeCollection(options?: ANY): string | string[];
+    serializeCollection(options?: {
+        delimited?: boolean;
+        collectionIndex?: number;
+        delimiter?: string;
+    }): string | string[];
     /**
      * Database level destructured JSON deserialization routine to minimize memory overhead.
      * Internally, Loki supports destructuring via loki "serializationMethod' option and
@@ -150,7 +140,7 @@ export declare class Loki extends LokiEventEmitter {
      *
      * @returns {object|array} An object representation of the deserialized database, not yet applied to 'this' db or document array
      */
-    deserializeDestructured(destructuredSource: ANY, options?: Loki.SerializeDestructuredOptions): any;
+    deserializeDestructured(destructuredSource: string | string[], options?: Loki.SerializeDestructuredOptions): any;
     /**
      * Collection level utility function to deserializes a destructured collection.
      *
@@ -161,7 +151,7 @@ export declare class Loki extends LokiEventEmitter {
      *
      * @returns {Array} an array of documents to attach to collection.data.
      */
-    deserializeCollection<T extends object>(destructuredSource: string | string[], options?: Loki.DeserializeCollectionOptions): Doc<T>;
+    deserializeCollection<T extends object = object>(destructuredSource: string | string[], options?: Loki.DeserializeCollectionOptions): Doc<T>[];
     /**
      * Inflates a loki database from a serialized JSON string
      *
@@ -169,15 +159,16 @@ export declare class Loki extends LokiEventEmitter {
      * @param {object} options - apply or override collection level settings
      * @param {boolean} options.retainDirtyFlags - whether collection dirty flags will be preserved
      */
-    loadJSON(serializedDb: string | string[], options?: ANY): void;
+    loadJSON(serializedDb: string | string[], options?: Collection.DeserializeOptions): void;
     /**
      * Inflates a loki database from a JS object
      *
-     * @param {object} dbObject - a serialized loki database string
+     * @param {object} dbObject - a serialized loki database object
      * @param {object} options - apply or override collection level settings
      * @param {boolean} options.retainDirtyFlags - whether collection dirty flags will be preserved
      */
-    loadJSONObject(dbObject: ANY, options?: Collection.DeserializeOptions): void;
+    loadJSONObject(dbObject: Loki, options?: Collection.DeserializeOptions): void;
+    loadJSONObject(dbObject: Loki.Serialized, options?: Collection.DeserializeOptions): void;
     /**
      * Emits the close event. In autosave scenarios, if the database is dirty, this will save and disable timer.
      * Does not actually destroy the db.
@@ -201,7 +192,7 @@ export declare class Loki extends LokiEventEmitter {
      * @returns {Array} array of changes
      * @see private method _createChange() in Collection
      */
-    generateChangesNotification(arrayOfCollectionNames?: string[]): any[];
+    generateChangesNotification(arrayOfCollectionNames?: string[]): Collection.Change[];
     /**
      * (Changes API) - stringify changes for network transmission
      * @returns {string} string representation of the changes
@@ -310,24 +301,22 @@ export declare namespace Loki {
         recursiveWaitLimitDuration?: number;
         started?: Date;
     }
+    interface Serialized {
+        _env: Environment;
+        _serializationMethod: SerializationMethod;
+        _autosave: boolean;
+        _autosaveInterval: number;
+        _collections: Collection[];
+        databaseVersion: number;
+        engineVersion: number;
+        filename: string;
+        _persistenceAdapter: StorageAdapter;
+        _persistenceMethod: PersistenceMethod;
+        _throttledSaves: boolean;
+        _verbose: boolean;
+    }
     type LoadDatabaseOptions = Collection.DeserializeOptions & ThrottledDrainOptions;
-    enum SerializationMethod {
-        NORMAL = 0,
-        PRETTY = 1,
-        DESTRUCTURED = 2,
-    }
-    enum PersistenceMethod {
-        FS_STORAGE = 0,
-        LOCAL_STORAGE = 1,
-        INDEXED_STORAGE = 2,
-        MEMORY_STORAGE = 3,
-        ADAPTER = 4,
-    }
-    enum Environment {
-        NODE_JS = 0,
-        NATIVE_SCRIPT = 1,
-        BROWSER = 2,
-        CORDOVA = 3,
-        MEMORY = 4,
-    }
+    type SerializationMethod = "normal" | "pretty" | "destructured";
+    type PersistenceMethod = "fs-storage" | "local-storage" | "indexed-storage" | "memory-storage" | "adapter";
+    type Environment = "NATIVESCRIPT" | "NODEJS" | "CORDOVA" | "BROWSER" | "MEMORY";
 }

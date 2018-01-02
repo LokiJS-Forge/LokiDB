@@ -79,8 +79,21 @@ return /******/ (function(modules) { // webpackBootstrap
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony export (immutable) */ __webpack_exports__["generateTrimmer"] = generateTrimmer;
-/* harmony export (immutable) */ __webpack_exports__["generateStopWordFilter"] = generateStopWordFilter;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__language__ = __webpack_require__(1);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "generateStopWordFilter", function() { return __WEBPACK_IMPORTED_MODULE_0__language__["c"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "generateTrimmer", function() { return __WEBPACK_IMPORTED_MODULE_0__language__["d"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Among", function() { return __WEBPACK_IMPORTED_MODULE_0__language__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "SnowballProgram", function() { return __WEBPACK_IMPORTED_MODULE_0__language__["b"]; });
+
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["d"] = generateTrimmer;
+/* harmony export (immutable) */ __webpack_exports__["c"] = generateStopWordFilter;
 /*
  * From MihaiValentin/lunr-languages.
  * Last update from 2017/04/16 - 19af41fb9bd644d9081ad274f96f700b21464290
@@ -109,7 +122,7 @@ class Among {
         }
     }
 }
-/* harmony export (immutable) */ __webpack_exports__["Among"] = Among;
+/* harmony export (immutable) */ __webpack_exports__["a"] = Among;
 
 class SnowballProgram {
     constructor() {
@@ -367,7 +380,7 @@ class SnowballProgram {
         return this.eq_s_b(s.length, s);
     }
 }
-/* harmony export (immutable) */ __webpack_exports__["SnowballProgram"] = SnowballProgram;
+/* harmony export (immutable) */ __webpack_exports__["b"] = SnowballProgram;
 
 
 

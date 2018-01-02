@@ -99,6 +99,10 @@
 							<td style="text-align:left">A persistence adapter which persists to web browser&#39;s local storage.</td>
 						</tr>
 						<tr>
+							<td style="text-align:left"><a href="https://www.npmjs.com/package/@lokijs/memory-storage">@loki/memory-storage</a></td>
+							<td style="text-align:left">A persistence adapter which persists to memory.</td>
+						</tr>
+						<tr>
 							<td style="text-align:left"><a href="https://www.npmjs.com/package/@lokijs/partitioning-adapter">@loki/partitioning-adapter</a></td>
 							<td style="text-align:left">An adapter for adapters. Converts a non reference mode adapter into a reference mode adapter which can perform destructuring and partitioning.</td>
 						</tr>
@@ -143,9 +147,6 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-enum">
-						<a href="enums/clonemethod.html" class="tsd-kind-icon">Clone<wbr>Method</a>
-					</li>
 					<li class=" tsd-kind-class">
 						<a href="classes/among.html" class="tsd-kind-icon">Among</a>
 					</li>
@@ -171,10 +172,19 @@
 						<a href="classes/existsquerybuilder.html" class="tsd-kind-icon">Exists<wbr>Query<wbr>Builder</a>
 					</li>
 					<li class=" tsd-kind-class">
+						<a href="classes/fsstorage.html" class="tsd-kind-icon">FSStorage</a>
+					</li>
+					<li class=" tsd-kind-class">
 						<a href="classes/fulltextsearch.html" class="tsd-kind-icon">Full<wbr>Text<wbr>Search</a>
 					</li>
 					<li class=" tsd-kind-class">
 						<a href="classes/fuzzyquerybuilder.html" class="tsd-kind-icon">Fuzzy<wbr>Query<wbr>Builder</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/indexedstorage.html" class="tsd-kind-icon">Indexed<wbr>Storage</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/localstorage.html" class="tsd-kind-icon">Local<wbr>Storage</a>
 					</li>
 					<li class=" tsd-kind-class">
 						<a href="classes/loki.html" class="tsd-kind-icon">Loki</a>
@@ -183,25 +193,16 @@
 						<a href="classes/lokieventemitter.html" class="tsd-kind-icon">Loki<wbr>Event<wbr>Emitter</a>
 					</li>
 					<li class=" tsd-kind-class">
-						<a href="classes/lokifsstorage.html" class="tsd-kind-icon">LokiFSStorage</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/lokiindexedstorage.html" class="tsd-kind-icon">Loki<wbr>Indexed<wbr>Storage</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/lokilocalstorage.html" class="tsd-kind-icon">Loki<wbr>Local<wbr>Storage</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/lokimemoryadapter.html" class="tsd-kind-icon">Loki<wbr>Memory<wbr>Adapter</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/lokipartitioningadapter.html" class="tsd-kind-icon">Loki<wbr>Partitioning<wbr>Adapter</a>
-					</li>
-					<li class=" tsd-kind-class">
 						<a href="classes/matchallquerybuilder.html" class="tsd-kind-icon">Match<wbr>All<wbr>Query<wbr>Builder</a>
 					</li>
 					<li class=" tsd-kind-class">
 						<a href="classes/matchquerybuilder.html" class="tsd-kind-icon">Match<wbr>Query<wbr>Builder</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/memorystorage.html" class="tsd-kind-icon">Memory<wbr>Storage</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/partitioningadapter.html" class="tsd-kind-icon">Partitioning<wbr>Adapter</a>
 					</li>
 					<li class=" tsd-kind-class">
 						<a href="classes/prefixquerybuilder.html" class="tsd-kind-icon">Prefix<wbr>Query<wbr>Builder</a>
@@ -210,7 +211,7 @@
 						<a href="classes/querybuilder.html" class="tsd-kind-icon">Query<wbr>Builder</a>
 					</li>
 					<li class=" tsd-kind-class tsd-has-type-parameter">
-						<a href="classes/resultset.html" class="tsd-kind-icon">Resultset</a>
+						<a href="classes/resultset.html" class="tsd-kind-icon">Result<wbr>Set</a>
 					</li>
 					<li class=" tsd-kind-class">
 						<a href="classes/snowballprogram.html" class="tsd-kind-icon">Snowball<wbr>Program</a>
@@ -224,7 +225,7 @@
 					<li class=" tsd-kind-class">
 						<a href="classes/tokenizer.html" class="tsd-kind-icon">Tokenizer</a>
 					</li>
-					<li class=" tsd-kind-class">
+					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="classes/uniqueindex.html" class="tsd-kind-icon">Unique<wbr>Index</a>
 					</li>
 					<li class=" tsd-kind-class">
@@ -233,7 +234,7 @@
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/arrayquery.html" class="tsd-kind-icon">Array<wbr>Query</a>
 					</li>
-					<li class=" tsd-kind-interface">
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
 						<a href="interfaces/basequery.html" class="tsd-kind-icon">Base<wbr>Query</a>
 					</li>
 					<li class=" tsd-kind-interface">
@@ -250,9 +251,6 @@
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/existsquery.html" class="tsd-kind-icon">Exists<wbr>Query</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="interfaces/filter.html" class="tsd-kind-icon">Filter</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/fuzzyquery.html" class="tsd-kind-icon">Fuzzy<wbr>Query</a>
@@ -282,10 +280,13 @@
 						<a href="interfaces/wildcardquery.html" class="tsd-kind-icon">Wildcard<wbr>Query</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#clonemethod" class="tsd-kind-icon">Clone<wbr>Method</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
 						<a href="globals.html#doc" class="tsd-kind-icon">Doc</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
-						<a href="globals.html#scoreresult" class="tsd-kind-icon">Score<wbr>Result</a>
+						<a href="globals.html#querytypes" class="tsd-kind-icon">Query<wbr>Types</a>
 					</li>
 					<li class=" tsd-kind-variable">
 						<a href="globals.html#de" class="tsd-kind-icon">DE</a>

@@ -79,7 +79,19 @@ return /******/ (function(modules) { // webpackBootstrap
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__common_plugin__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__indexed_storage__ = __webpack_require__(1);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "IndexedStorage", function() { return __WEBPACK_IMPORTED_MODULE_0__indexed_storage__["a"]; });
+
+
+/* harmony default export */ __webpack_exports__["default"] = (__WEBPACK_IMPORTED_MODULE_0__indexed_storage__["a" /* IndexedStorage */]);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__common_plugin__ = __webpack_require__(2);
 
 /**
  * Loki persistence adapter class for indexedDb.
@@ -88,18 +100,18 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
  *     IndexedDb storage is provided per-domain, so we implement app/key/value database to
  *     allow separate contexts for separate apps within a domain.
  */
-class LokiIndexedStorage {
+class IndexedStorage {
     /**
      * Registers the indexed storage as plugin.
      */
     static register() {
-        __WEBPACK_IMPORTED_MODULE_0__common_plugin__["a" /* PLUGINS */]["LokiIndexedStorage"] = LokiIndexedStorage;
+        __WEBPACK_IMPORTED_MODULE_0__common_plugin__["a" /* PLUGINS */]["IndexedStorage"] = IndexedStorage;
     }
     /**
      * Deregisters the indexed storage as plugin.
      */
     static deregister() {
-        delete __WEBPACK_IMPORTED_MODULE_0__common_plugin__["a" /* PLUGINS */]["LokiIndexedStorage"];
+        delete __WEBPACK_IMPORTED_MODULE_0__common_plugin__["a" /* PLUGINS */]["IndexedStorage"];
     }
     /**
      * @param {string} [appname=loki] - Application name context can be used to distinguish subdomains, "loki" by default
@@ -330,7 +342,7 @@ class LokiIndexedStorage {
         });
     }
 }
-/* harmony export (immutable) */ __webpack_exports__["LokiIndexedStorage"] = LokiIndexedStorage;
+/* harmony export (immutable) */ __webpack_exports__["a"] = IndexedStorage;
 
 /**
  * LokiCatalog - underlying App/Key/Value catalog persistence
@@ -564,11 +576,11 @@ class LokiCatalog {
         }))(callback);
     }
 }
-/* harmony default export */ __webpack_exports__["default"] = (LokiIndexedStorage);
+/* unused harmony default export */ var _unused_webpack_default_export = (IndexedStorage);
 
 
 /***/ }),
-/* 1 */
+/* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -594,10 +606,10 @@ const PLUGINS = create();
 /* harmony export (immutable) */ __webpack_exports__["a"] = PLUGINS;
 
 
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(3)))
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports) {
 
 var g;

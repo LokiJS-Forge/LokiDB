@@ -24,8 +24,8 @@ export declare class BaseQueryBuilder {
      */
     build(): any;
 }
-export interface BaseQuery {
-    type: string;
+export interface BaseQuery<Type> {
+    type: Type;
     boost?: number;
 }
 /**
@@ -51,7 +51,7 @@ export declare class TermQueryBuilder extends BaseQueryBuilder {
      */
     constructor(field: string, term: string, data?: any);
 }
-export interface TermQuery extends BaseQuery {
+export interface TermQuery extends BaseQuery<"term"> {
     field: string;
     value: string;
 }
@@ -78,7 +78,7 @@ export declare class TermsQueryBuilder extends BaseQueryBuilder {
      */
     constructor(field: string, terms: Array<string>, data?: any);
 }
-export interface TermsQuery extends BaseQuery {
+export interface TermsQuery extends BaseQuery<"terms"> {
     field: string;
     value: string[];
 }
@@ -119,7 +119,7 @@ export declare class WildcardQueryBuilder extends BaseQueryBuilder {
      */
     enableScoring(enable: boolean): this;
 }
-export interface WildcardQuery extends BaseQuery {
+export interface WildcardQuery extends BaseQuery<"wildcard"> {
     field: string;
     value: string;
     enable_scoring?: boolean;
@@ -169,7 +169,7 @@ export declare class FuzzyQueryBuilder extends BaseQueryBuilder {
      *
      * @return {FuzzyQueryBuilder} - object itself for cascading
      */
-    fuzziness(fuzziness: number | "AUTO"): this;
+    fuzziness(fuzziness: 0 | 1 | 2 | "AUTO"): this;
     /**
      * Sets the initial word length.
      * @param {number} prefixLength - the positive prefix length
@@ -183,10 +183,10 @@ export declare class FuzzyQueryBuilder extends BaseQueryBuilder {
      */
     extended(extended: boolean): this;
 }
-export interface FuzzyQuery extends BaseQuery {
+export interface FuzzyQuery extends BaseQuery<"fuzzy"> {
     field: string;
     value: string;
-    fuzziness?: number | "AUTO";
+    fuzziness?: 0 | 1 | 2 | "AUTO";
     prefix_length?: number;
     extended?: boolean;
 }
@@ -221,7 +221,7 @@ export declare class PrefixQueryBuilder extends BaseQueryBuilder {
      */
     enableScoring(enable: boolean): this;
 }
-export interface PrefixQuery extends BaseQuery {
+export interface PrefixQuery extends BaseQuery<"prefix"> {
     field: string;
     value: string;
     enable_scoring?: boolean;
@@ -247,7 +247,7 @@ export declare class ExistsQueryBuilder extends BaseQueryBuilder {
      */
     constructor(field: string, data?: any);
 }
-export interface ExistsQuery extends BaseQuery {
+export interface ExistsQuery extends BaseQuery<"exists"> {
     field: string;
 }
 /**
@@ -315,7 +315,7 @@ export declare class MatchQueryBuilder extends BaseQueryBuilder {
      *
      * @return {MatchQueryBuilder} - object itself for cascading
      */
-    fuzziness(fuzziness: number | "AUTO"): this;
+    fuzziness(fuzziness: 0 | 1 | 2 | "AUTO"): this;
     /**
      * Sets the starting word length which should not be considered for fuzziness.
      * @param {number} prefixLength - the positive prefix length
@@ -329,12 +329,12 @@ export declare class MatchQueryBuilder extends BaseQueryBuilder {
      */
     extended(extended: boolean): this;
 }
-export interface MatchQuery extends BaseQuery {
+export interface MatchQuery extends BaseQuery<"match"> {
     field: string;
     value: string;
     minimum_should_match?: number;
     operator?: "and" | "or";
-    fuzziness?: number | "AUTO";
+    fuzziness?: 0 | 1 | 2 | "AUTO";
     prefix_length?: number;
     extended?: boolean;
 }
@@ -360,7 +360,7 @@ export interface MatchQuery extends BaseQuery {
 export declare class MatchAllQueryBuilder extends BaseQueryBuilder {
     constructor(data?: any);
 }
-export interface MatchQueryAll extends BaseQuery {
+export interface MatchQueryAll extends BaseQuery<"match_all"> {
 }
 /**
  * A query that wraps sub queries and returns a constant score equal to the query boost for every document in the filter.
@@ -388,9 +388,11 @@ export declare class ConstantScoreQueryBuilder extends BaseQueryBuilder {
      * Starts an array of queries. Use endFilter() to finish the array.
      * @return {ArrayQueryBuilder} array query for holding sub queries
      */
-    beginFilter(): ArrayQueryBuilder;
+    beginFilter(): ArrayQueryBuilder & {
+        endFilter(): ConstantScoreQueryBuilder;
+    };
 }
-export interface ConstantScoreQuery extends BaseQuery {
+export interface ConstantScoreQuery extends BaseQuery<"constant_score"> {
     filter: ArrayQuery;
 }
 /**
@@ -442,22 +444,30 @@ export declare class BoolQueryBuilder extends BaseQueryBuilder {
      * Starts an array of queries for must clause. Use endMust() to finish the array.
      * @return {ArrayQueryBuilder} array query for holding sub queries
      */
-    beginMust(): ArrayQueryBuilder;
+    beginMust(): ArrayQueryBuilder & {
+        endMust(): BoolQueryBuilder;
+    };
     /**
      * Starts an array of queries for filter clause. Use endFilter() to finish the array.
      * @return {ArrayQueryBuilder} array query for holding sub queries
      */
-    beginFilter(): ArrayQueryBuilder;
+    beginFilter(): ArrayQueryBuilder & {
+        endFilter(): BoolQueryBuilder;
+    };
     /**
      * Starts an array of queries for should clause. Use endShould() to finish the array.
      * @return {ArrayQueryBuilder} array query for holding sub queries
      */
-    beginShould(): ArrayQueryBuilder;
+    beginShould(): ArrayQueryBuilder & {
+        endShould(): BoolQueryBuilder;
+    };
     /**
      * Starts an array of queries for not clause. Use endNot() to finish the array.
      * @return {ArrayQueryBuilder} array query for holding sub queries
      */
-    beginNot(): ArrayQueryBuilder;
+    beginNot(): ArrayQueryBuilder & {
+        endNot(): BoolQueryBuilder;
+    };
     /**
      * Controls the amount of minimum matching sub queries before a document will be considered.
      * @param {number} minShouldMatch - number of minimum matching sub queries
@@ -472,7 +482,7 @@ export declare class BoolQueryBuilder extends BaseQueryBuilder {
      */
     minimumShouldMatch(minShouldMatch: number): this;
 }
-export interface BoolQuery extends BaseQuery {
+export interface BoolQuery extends BaseQuery<"bool"> {
     must?: ArrayQuery;
     filter?: ArrayQuery;
     should?: ArrayQuery;
@@ -497,8 +507,8 @@ export declare class ArrayQueryBuilder extends BaseQueryBuilder {
     prefix(field: string, prefix: string): any;
     exists(field: string): any;
 }
-export interface ArrayQuery {
-    values: any[];
+export interface ArrayQuery extends BaseQuery<"array"> {
+    values: QueryTypes[];
 }
 /**
  * This query builder is the root of each query search.
@@ -525,9 +535,15 @@ export declare class QueryBuilder {
     /**
      * The query performs a final scoring over all scored sub queries.
      * @param {boolean} enable - flag to enable or disable final scoring
-     * @return {QueryBuilder}
+     * @return {this}
      */
     enableFinalScoring(enable: boolean): this;
+    /**
+     * Adds an explanation of the scoring of each document for all matched terms.
+     * @param {boolean} enable -flag to enable or disable explanation
+     * @returns {this}
+     */
+    explain(enable: boolean): this;
     /**
      * Configures the [Okapi BM25]{@link https://en.wikipedia.org/wiki/Okapi_BM25} as scoring model.
      *
@@ -535,10 +551,10 @@ export declare class QueryBuilder {
      * and [Elasticsearch#BM25]{@link https://www.elastic.co/guide/en/elasticsearch/guide/current/pluggable-similarites.html#bm25}.
      *
      * @param {number} [k1=1.2] - controls how quickly an increase in term frequency results in term-frequency saturation.
-     *                            Lower values result in quicker saturation, and higher values in slower saturation.
+     *                            Lower values result in quicker saturation, and higher values in slower saturation
      * @param {number} [b=0.75] - controls how much effect field-length normalization should have.
-     *                            A value of 0.0 disables normalization completely, and a value of 1.0 normalizes fully.
-     * @return {QueryBuilder}
+     *                            A value of 0.0 disables normalization completely, and a value of 1.0 normalizes fully
+     * @return {this}
      */
     BM25Similarity(k1?: number, b?: number): this;
     bool(): BoolQueryBuilder;
@@ -553,9 +569,11 @@ export declare class QueryBuilder {
     exists(field: string): ExistsQueryBuilder;
     private _prepare<T>(queryType, ...args);
 }
+export declare type QueryTypes = BoolQuery | ConstantScoreQuery | TermQuery | TermsQuery | WildcardQuery | FuzzyQuery | MatchQuery | MatchQueryAll | PrefixQuery | ExistsQuery;
 export interface Query {
-    query: any;
+    query: QueryTypes;
     final_scoring?: boolean;
+    explain?: boolean;
     bm25?: {
         k1: number;
         b: number;

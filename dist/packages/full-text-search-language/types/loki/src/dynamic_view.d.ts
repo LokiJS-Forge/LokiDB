@@ -1,9 +1,8 @@
 import { LokiEventEmitter } from "./event_emitter";
-import { Resultset } from "./resultset";
+import { ResultSet } from "./result_set";
 import { Collection } from "./collection";
-import { Doc, Filter } from "../../common/types";
-import { ScoreResult } from "../../full-text-search/src/scorer";
-export declare type ANY = any;
+import { Doc } from "../../common/types";
+import { Scorer } from "../../full-text-search/src/scorer";
 /**
  * DynamicView class is a versatile 'live' view class which can have filters and sorts applied.
  *    Collection.addDynamicView(name) instantiates this DynamicView object and notifies it
@@ -18,18 +17,21 @@ export declare type ANY = any;
  * @extends LokiEventEmitter
 
  * @see {@link Collection#addDynamicView} to construct instances of DynamicView
+ *
+ * @param <TData> - the data type
+ * @param <TNested> - nested properties of data type
  */
-export declare class DynamicView<E extends object = object> extends LokiEventEmitter {
+export declare class DynamicView<TData extends object = object, TNested extends object = object> extends LokiEventEmitter {
     private _collection;
     private _persistent;
     private _sortPriority;
     private _minRebuildInterval;
     name: string;
     private _rebuildPending;
-    private _resultset;
-    private _resultdata;
-    private _resultsdirty;
-    private _cachedresultset;
+    private _resultSet;
+    private _resultData;
+    private _resultDirty;
+    private _cachedResultSet;
     private _filterPipeline;
     private _sortFunction;
     private _sortCriteria;
@@ -41,10 +43,10 @@ export declare class DynamicView<E extends object = object> extends LokiEventEmi
      * @param {string} name - the name of this dynamic view
      * @param {object} options - the options
      * @param {boolean} [options.persistent=false] - indicates if view is to main internal results array in 'resultdata'
-     * @param {string} [options.sortPriority=SortPriority.PASSIVE] - the sort priority
+     * @param {string} [options.sortPriority="passive"] - the sort priority
      * @param {number} [options.minRebuildInterval=1] - minimum rebuild interval (need clarification to docs here)
      */
-    constructor(collection: Collection<E>, name: string, options?: DynamicView.Options);
+    constructor(collection: Collection<TData, TNested>, name: string, options?: DynamicView.Options);
     /**
      * Internally used immediately after deserialization (loading)
      *    This will clear out and reapply filterPipeline ops, recreating the view.
@@ -57,34 +59,22 @@ export declare class DynamicView<E extends object = object> extends LokiEventEmi
      */
     _rematerialize({removeWhereFilters}: {
         removeWhereFilters?: boolean;
-    }): DynamicView<E>;
+    }): this;
     /**
-     * Makes a copy of the internal resultset for branched queries.
-     * Unlike this dynamic view, the branched resultset will not be 'live' updated,
+     * Makes a copy of the internal ResultSet for branched queries.
+     * Unlike this dynamic view, the branched ResultSet will not be 'live' updated,
      * so your branched query should be immediately resolved and not held for future evaluation.
      *
      * @param {(string|array=)} transform - Optional name of collection transform, or an array of transform steps
      * @param {object} parameters - optional parameters (if optional transform requires them)
-     * @returns {Resultset} A copy of the internal resultset for branched queries.
+     * @returns {ResultSet} A copy of the internal ResultSet for branched queries.
      */
-    branchResultset(transform: string | any[], parameters?: object): Resultset<E>;
+    branchResultSet(transform?: string | Collection.Transform<TData, TNested>[], parameters?: object): ResultSet<TData, TNested>;
     /**
-     * toJSON() - Override of toJSON to avoid circular references
-     *
+     * Override of toJSON to avoid circular references.
      */
-    toJSON(): {
-        name: string;
-        _persistent: boolean;
-        _sortPriority: DynamicView.SortPriority;
-        _minRebuildInterval: number;
-        _resultset: Resultset<E>;
-        _resultsdirty: boolean;
-        _filterPipeline: Filter<E>[];
-        _sortCriteria: (string | [string, boolean])[];
-        _sortByScoring: boolean;
-        _sortDirty: boolean;
-    };
-    static fromJSONObject(collection: ANY, obj: ANY): DynamicView;
+    toJSON(): DynamicView.Serialized;
+    static fromJSONObject(collection: Collection, obj: DynamicView.Serialized): DynamicView;
     /**
      * Used to clear pipeline and reset dynamic view to initial state.
      *     Existing options should be retained.
@@ -105,7 +95,7 @@ export declare class DynamicView<E extends object = object> extends LokiEventEmi
      * @param {function} comparefun - a javascript compare function used for sorting
      * @returns {DynamicView} this DynamicView object, for further chain ops.
      */
-    applySort(comparefun: (lhs: E, rhs: E) => number): DynamicView<E>;
+    applySort(comparefun: (lhs: Doc<TData>, rhs: Doc<TData>) => number): this;
     /**
      * Used to specify a property used for view translation.
      * @example
@@ -115,9 +105,9 @@ export declare class DynamicView<E extends object = object> extends LokiEventEmi
      * @param {boolean} isdesc - (Optional) If true, the sort will be in descending order.
      * @returns {DynamicView} this DynamicView object, for further chain ops.
      */
-    applySimpleSort(propname: string, isdesc?: boolean): DynamicView<E>;
+    applySimpleSort(propname: keyof (TData & TNested), isdesc?: boolean): this;
     /**
-     * Allows sorting a resultset based on multiple columns.
+     * Allows sorting a ResultSet based on multiple columns.
      * @example
      * // to sort by age and then name (both ascending)
      * dv.applySortCriteria(['age', 'name']);
@@ -129,32 +119,32 @@ export declare class DynamicView<E extends object = object> extends LokiEventEmi
      * @param {Array} criteria - array of property names or subarray of [propertyname, isdesc] used evaluate sort order
      * @returns {DynamicView} Reference to this DynamicView, sorted, for future chain operations.
      */
-    applySortCriteria(criteria: (string | [string, boolean])[]): DynamicView<E>;
+    applySortCriteria(criteria: (keyof (TData & TNested) | [keyof (TData & TNested), boolean])[]): this;
     /**
      * Used to apply a sort by the latest full-text-search scoring.
      * @param {boolean} [ascending=false] - sort ascending
      */
-    applySortByScoring(ascending?: boolean): DynamicView<E>;
+    applySortByScoring(ascending?: boolean): this;
     /**
      * Returns the scoring of the last full-text-search.
      * @returns {ScoreResult}
      */
-    getScoring(): ScoreResult;
+    getScoring(): Scorer.ScoreResult;
     /**
      * Marks the beginning of a transaction.
      * @returns {DynamicView} this DynamicView object, for further chain ops.
      */
-    startTransaction(): DynamicView<E>;
+    startTransaction(): this;
     /**
      * Commits a transaction.
      * @returns {DynamicView} this DynamicView object, for further chain ops.
      */
-    commit(): DynamicView<E>;
+    commit(): this;
     /**
      * Rolls back a transaction.
      * @returns {DynamicView} this DynamicView object, for further chain ops.
      */
-    rollback(): DynamicView<E>;
+    rollback(): this;
     /**
      * Find the index of a filter in the pipeline, by that filter's ID.
      *
@@ -163,7 +153,7 @@ export declare class DynamicView<E extends object = object> extends LokiEventEmi
      */
     private _indexOfFilterWithId(uid);
     /**
-     * Add the filter object to the end of view's filter pipeline and apply the filter to the resultset.
+     * Add the filter object to the end of view's filter pipeline and apply the filter to the ResultSet.
      *
      * @param {object} filter - The filter object. Refer to applyFilter() for extra details.
      */
@@ -173,7 +163,7 @@ export declare class DynamicView<E extends object = object> extends LokiEventEmi
      *
      * @returns {DynamicView} this DynamicView object, for further chain ops.
      */
-    reapplyFilters(): DynamicView<E>;
+    reapplyFilters(): this;
     /**
      * Adds or updates a filter in the DynamicView filter pipeline
      *
@@ -181,7 +171,7 @@ export declare class DynamicView<E extends object = object> extends LokiEventEmi
      *    The object is in the format { 'type': filter_type, 'val', filter_param, 'uid', optional_filter_id }
      * @returns {DynamicView} this DynamicView object, for further chain ops.
      */
-    applyFilter(filter: Filter<E>): DynamicView<E>;
+    applyFilter(filter: DynamicView.Filter<TData, TNested>): this;
     /**
      * applyFind() - Adds or updates a mongo-style query option in the DynamicView filter pipeline
      *
@@ -189,7 +179,7 @@ export declare class DynamicView<E extends object = object> extends LokiEventEmi
      * @param {(string|number)} uid - Optional: The unique ID of this filter, to reference it in the future.
      * @returns {DynamicView} this DynamicView object, for further chain ops.
      */
-    applyFind(query: object, uid?: string | number): DynamicView<E>;
+    applyFind(query: object, uid?: string | number): this;
     /**
      * applyWhere() - Adds or updates a javascript filter function in the DynamicView filter pipeline
      *
@@ -197,14 +187,14 @@ export declare class DynamicView<E extends object = object> extends LokiEventEmi
      * @param {(string|number)} uid - Optional: The unique ID of this filter, to reference it in the future.
      * @returns {DynamicView} this DynamicView object, for further chain ops.
      */
-    applyWhere(fun: (obj: E) => boolean, uid?: string | number): DynamicView<E>;
+    applyWhere(fun: (obj: Doc<TData>) => boolean, uid?: string | number): this;
     /**
      * removeFilter() - Remove the specified filter from the DynamicView filter pipeline
      *
      * @param {(string|number)} uid - The unique ID of the filter to be removed.
      * @returns {DynamicView} this DynamicView object, for further chain ops.
      */
-    removeFilter(uid: string | number): DynamicView<E>;
+    removeFilter(uid: string | number): this;
     /**
      * Returns the number of documents representing the current DynamicView contents.
      * @returns {number} The number of documents representing the current DynamicView contents.
@@ -213,16 +203,16 @@ export declare class DynamicView<E extends object = object> extends LokiEventEmi
     /**
      * Resolves and pending filtering and sorting, then returns document array as result.
      *
-     * @param {object} options - optional parameters to pass to resultset.data() if non-persistent
-     * @param {boolean} options.forceClones - Allows forcing the return of cloned objects even when
+     * @param {object} options - optional parameters to pass to ResultSet.data() if non-persistent
+     * @param {boolean} [options.forceClones] - Allows forcing the return of cloned objects even when
      *        the collection is not configured for clone object.
-     * @param {string} options.forceCloneMethod - Allows overriding the default or collection specified cloning method.
+     * @param {string} [options.forceCloneMethod] - Allows overriding the default or collection specified cloning method.
      *        Possible values include 'parse-stringify', 'jquery-extend-deep', 'shallow', 'shallow-assign'
-     * @param {boolean} options.removeMeta - Will force clones and strip $loki and meta properties from documents
+     * @param {boolean} [options.removeMeta] - will force clones and strip $loki and meta properties from documents
      *
      * @returns {Array} An array of documents representing the current DynamicView contents.
      */
-    data(options?: object): Doc<E>[];
+    data(options?: ResultSet.DataOptions): Doc<TData>[];
     /**
      * When the view is not sorted we may still wish to be notified of rebuild events.
      * This event will throttle and queue a single rebuild event when batches of updates affect the view.
@@ -257,7 +247,7 @@ export declare class DynamicView<E extends object = object> extends LokiEventEmi
      * @param {function} reduceFunction - this function accepts many (array of map outputs) and returns single value
      * @returns The output of your reduceFunction
      */
-    mapReduce<T, U>(mapFunction: (item: E, index: number, array: E[]) => T, reduceFunction: (array: T[]) => U): U;
+    mapReduce<T, U>(mapFunction: (item: TData, index: number, array: TData[]) => T, reduceFunction: (array: T[]) => U): U;
 }
 export declare namespace DynamicView {
     interface Options {
@@ -265,8 +255,25 @@ export declare namespace DynamicView {
         sortPriority?: SortPriority;
         minRebuildInterval?: number;
     }
-    enum SortPriority {
-        PASSIVE = 0,
-        ACTIVE = 1,
+    type SortPriority = "passive" | "active";
+    interface Serialized {
+        name: string;
+        _persistent: boolean;
+        _sortPriority: SortPriority;
+        _minRebuildInterval: number;
+        _resultSet: ResultSet<any>;
+        _filterPipeline: Filter<any>[];
+        _sortCriteria: (string | [string, boolean])[];
+        _sortByScoring: boolean;
+        _sortDirty: boolean;
     }
+    type Filter<TData extends object = object, TNested extends object = object> = {
+        type: "find";
+        val: ResultSet.Query<Doc<TData> & TNested>;
+        uid: number | string;
+    } | {
+        type: "where";
+        val: (obj: Doc<TData>) => boolean;
+        uid: number | string;
+    };
 }
