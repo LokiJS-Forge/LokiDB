@@ -752,10 +752,20 @@ export class QueryBuilder {
   /**
    * The query performs a final scoring over all scored sub queries.
    * @param {boolean} enable - flag to enable or disable final scoring
-   * @return {QueryBuilder}
+   * @return {this}
    */
   enableFinalScoring(enable: boolean) {
     this._data.final_scoring = enable;
+    return this;
+  }
+
+  /**
+   * Adds an explanation of the scoring of each document for all matched terms.
+   * @param {boolean} enable -flag to enable or disable explanation
+   * @returns {this}
+   */
+  explain(enable: boolean) {
+    this._data.explain = enable;
     return this;
   }
 
@@ -766,10 +776,10 @@ export class QueryBuilder {
    * and [Elasticsearch#BM25]{@link https://www.elastic.co/guide/en/elasticsearch/guide/current/pluggable-similarites.html#bm25}.
    *
    * @param {number} [k1=1.2] - controls how quickly an increase in term frequency results in term-frequency saturation.
-   *                            Lower values result in quicker saturation, and higher values in slower saturation.
+   *                            Lower values result in quicker saturation, and higher values in slower saturation
    * @param {number} [b=0.75] - controls how much effect field-length normalization should have.
-   *                            A value of 0.0 disables normalization completely, and a value of 1.0 normalizes fully.
-   * @return {QueryBuilder}
+   *                            A value of 0.0 disables normalization completely, and a value of 1.0 normalizes fully
+   * @return {this}
    */
   BM25Similarity(k1: number = 1.2, b: number = 0.75) {
     if (k1 < 0) {
@@ -841,6 +851,7 @@ export type QueryTypes = BoolQuery | ConstantScoreQuery | TermQuery | TermsQuery
 export interface Query {
   query: QueryTypes;
   final_scoring?: boolean;
+  explain?: boolean;
   bm25?: {
     k1: number;
     b: number;

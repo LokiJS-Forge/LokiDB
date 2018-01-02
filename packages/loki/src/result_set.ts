@@ -2,7 +2,7 @@ import {Collection} from "./collection";
 import {clone, CloneMethod} from "./clone";
 import {ltHelper, gtHelper, aeqHelper, sortHelper} from "./helper";
 import {Doc} from "../../common/types";
-import {ScoreResult} from "../../full-text-search/src/scorer";
+import {Scorer} from "../../full-text-search/src/scorer";
 import {Query as FullTextSearchQuery} from "../../full-text-search/src/query_builder";
 
 // used to recursively scan hierarchical transform step object for param substitution
@@ -290,7 +290,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
   public _filteredRows: number[];
   public _filterInitialized: boolean;
   // Holds the scoring result of the last full-text search.
-  private _scoring: ScoreResult;
+  private _scoring: Scorer.ScoreResult;
 
   /**
    * Constructor.
@@ -622,9 +622,9 @@ export class ResultSet<E extends object = object, D extends object = object> {
     }
 
     if (ascending) {
-      this._filteredRows.sort((a: number, b: number) => this._scoring[a] - this._scoring[b]);
+      this._filteredRows.sort((a: number, b: number) => this._scoring[a].score - this._scoring[b].score);
     } else {
-      this._filteredRows.sort((a: number, b: number) => this._scoring[b] - this._scoring[a]);
+      this._filteredRows.sort((a: number, b: number) => this._scoring[b].score - this._scoring[a].score);
     }
 
     return this;
@@ -634,7 +634,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * Returns the scoring of the last full-text-search.
    * @returns {ScoreResult}
    */
-  public getScoring(): ScoreResult {
+  public getScoring(): Scorer.ScoreResult {
     if (this._scoring === null) {
       throw new Error("No scoring available");
     }

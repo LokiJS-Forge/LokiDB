@@ -2,8 +2,6 @@ import {InvertedIndex} from "./inverted_index";
 import {Dict} from "../../common/types";
 import {Query} from "./query_builder";
 
-export type ScoreResult = Dict<number>;
-
 /**
  * @hidden
  */
@@ -20,73 +18,93 @@ export class Scorer {
     this._cache = {};
   }
 
-  public score(fieldName: string, boost: number, termIdx: InvertedIndex.Index, doScoring: boolean, docResults: Scorer.DocResults, term: number[]): void {
+  public score(fieldName: string, boost: number, termIdx: InvertedIndex.Index, doScoring: boolean,
+               queryResults: Scorer.QueryResults, term: number[]): void {
     if (termIdx === null || termIdx.dc === undefined) {
       return;
     }
 
     const idf = this._idf(fieldName, termIdx.df);
     for (const [docId, tf] of termIdx.dc) {
-      if (!docResults.has(docId)) {
-        docResults.set(docId, []);
+      if (!queryResults.has(docId)) {
+        queryResults.set(docId, []);
       }
 
       if (doScoring) {
         // BM25 scoring.
-        docResults.get(docId).push({tf, idf, boost, fieldName, term});
+        queryResults.get(docId).push({tf, idf, boost, fieldName, term});
       } else {
         // Constant scoring.
-        docResults.set(docId, [{boost}]);
+        queryResults.set(docId, [{boost}]);
       }
     }
   }
 
-  public scoreConstant(boost: number, docId: number, docResults: Scorer.DocResults) {
-    if (!docResults.has(docId)) {
-      docResults.set(docId, []);
+  public scoreConstant(boost: number, docId: number, queryResults: Scorer.QueryResults) {
+    if (!queryResults.has(docId)) {
+      queryResults.set(docId, []);
     }
-    docResults.get(docId).push({boost});
-    return docResults;
+    queryResults.get(docId).push({boost});
+    return queryResults;
   }
 
-  public finalScore(query: Query, docResults: Scorer.DocResults): ScoreResult {
-    const result: ScoreResult = {};
+  public finalScore(query: Query, queryResults: Scorer.QueryResults): Scorer.ScoreResult {
+    const result: Scorer.ScoreResult = {};
     const k1 = query.bm25 !== undefined ? query.bm25.k1 : 1.2;
     const b = query.bm25 !== undefined ? query.bm25.b : 0.75;
+    const explain = query.explain !== undefined ? query.explain : false;
 
-    for (const [docId, result1] of docResults) {
+    for (const [docId, result1] of queryResults) {
       let docScore = 0;
+      let docExplanation: Scorer.ScoreExplanation[] = [];
       for (let j = 0; j < result1.length; j++) {
-        const docResult = result1[j];
-        let res = 0;
-        if (docResult.tf !== undefined) {
+        const queryResult = result1[j];
+        let score = 0;
+        if (queryResult.tf !== undefined) {
           // BM25 scoring.
-          const tf = docResult.tf;
-          const fieldLength = Scorer._calculateFieldLength(this._invIdxs[docResult.fieldName].documentStore.get(+docId)
+          const tf = queryResult.tf;
+          const fieldLength = Scorer._calculateFieldLength(this._invIdxs[queryResult.fieldName].documentStore.get(+docId)
             .fieldLength);
-          const avgFieldLength = this._avgFieldLength(docResult.fieldName);
+          const avgFieldLength = this._avgFieldLength(queryResult.fieldName);
           const tfNorm = (tf * (k1 + 1)) / (tf + k1 * (1 - b + b * (fieldLength / avgFieldLength)));
-          res = docResult.idf * tfNorm * docResult.boost;
-          // console.log(
-          // 	docId + ":" + docResult.fieldName + ":" + String.fromCharCode(...docResult.term) + " = " + res,
-          // 	"\n\ttype: BM25",
-          // 	"\n\tboost: " + docResult.boost,
-          // 	"\n\tidf : " + docResult.idf,
-          // 	"\n\ttfNorm : " + tfNorm,
-          // 	"\n\ttf : " + tf,
-          // 	"\n\tavg : " + avgFieldLength,
-          // 	"\n\tfl : " + fieldLength);
+          score = queryResult.idf * tfNorm * queryResult.boost;
+          if (explain) {
+            docExplanation.push({
+              boost: queryResult.boost,
+              score: score,
+              docID: docId,
+              fieldName: queryResult.fieldName,
+              index: String.fromCharCode(...queryResult.term),
+              idf: queryResult.idf,
+              tfNorm: tfNorm,
+              tf: tf,
+              fieldLength: fieldLength,
+              avgFieldLength: avgFieldLength,
+            });
+          }
         } else {
           // Constant scoring.
-          res = docResult.boost;
-          // console.log(
-          //  "Constant: " + res,
-          //  "\n\tboost: " + docResult.boost);
+          score = queryResult.boost;
+
+          if (explain) {
+            docExplanation.push({
+              boost: queryResult.boost,
+              score: score
+            });
+          }
         }
-        docScore += res;
+        docScore += score;
       }
-      //console.log(docId, " === ", docScore);
-      result[docId] = docScore;
+      if (explain) {
+        result[docId] = {
+          score: docScore,
+          explanation: docExplanation
+        };
+      } else {
+        result[docId] = {
+          score: docScore
+        };
+      }
     }
     return result;
   }
@@ -130,7 +148,7 @@ export namespace Scorer {
     avgFieldLength: number;
   }
 
-  export interface DocResult {
+  export interface QueryResult {
     tf?: number; // Term frequency.
     idf?: number; // Inverse document frequency
     boost: number;
@@ -138,5 +156,27 @@ export namespace Scorer {
     term?: number[];
   }
 
-  export type DocResults = Map<number, DocResult[]>;
+  export type QueryResults = Map<number, QueryResult[]>;
+
+  export interface BM25Explanation {
+    boost: number;
+    score: number;
+    docID: number;
+    fieldName: string;
+    index: string;
+    idf: number;
+    tfNorm: number;
+    tf: number;
+    fieldLength: number;
+    avgFieldLength: number;
+  }
+
+  export interface ConstantExplanation {
+    boost: number;
+    score: number;
+  }
+
+  export type ScoreExplanation = BM25Explanation | ConstantExplanation;
+
+  export type ScoreResult = Dict<{ score: number, explanation?: ScoreExplanation[] }>;
 }
