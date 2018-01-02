@@ -2,7 +2,7 @@ import {LokiEventEmitter} from "./event_emitter";
 import {ResultSet} from "./result_set";
 import {Collection} from "./collection";
 import {Doc} from "../../common/types";
-import {ScoreResult} from "../../full-text-search/src/scorer";
+import {Scorer} from "../../full-text-search/src/scorer";
 
 /**
  * DynamicView class is a versatile 'live' view class which can have filters and sorts applied.
@@ -296,7 +296,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    * Returns the scoring of the last full-text-search.
    * @returns {ScoreResult}
    */
-  public getScoring(): ScoreResult {
+  public getScoring(): Scorer.ScoreResult {
     return this._resultSet.getScoring();
   }
 

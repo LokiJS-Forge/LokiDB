@@ -4,7 +4,7 @@ import {Tokenizer} from "./tokenizer";
 import {Dict} from "../../common/types";
 import {PLUGINS} from "../../common/plugin";
 import {Query} from "./query_builder";
-import {ScoreResult} from "./scorer";
+import {Scorer} from "./scorer";
 
 export class FullTextSearch {
   private _id: string;
@@ -72,7 +72,7 @@ export class FullTextSearch {
     }
   }
 
-  public search(query: Query): ScoreResult {
+  public search(query: Query): Scorer.ScoreResult {
     return this._idxSearcher.search(query);
   }
 

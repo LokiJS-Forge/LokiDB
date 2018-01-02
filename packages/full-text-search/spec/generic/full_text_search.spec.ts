@@ -136,6 +136,13 @@ describe("full-text search", () => {
     expect(dv.applySortByScoring(true).data()).toEqual(sorted_asc);
   });
 
+  it("explain", () => {
+    let query = new QueryBuilder().explain(true).fuzzy("name", "quak").fuzziness(2).build();
+    let res = coll.chain().find({"$fts": query});
+    expect(res.data().length).toBe(4);
+    expect(res.getScoring()[0].explanation).toBeArrayOfObjects();
+  });
+
   it("from/to json", () => {
     const fts = coll["_fullTextSearch"];
     const fts2 = FullTextSearch.fromJSONObject(JSON.parse(JSON.stringify(fts)));
