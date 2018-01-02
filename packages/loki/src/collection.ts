@@ -50,22 +50,24 @@ function deepProperty(obj: object, property: string, isDeep: boolean): any {
 /**
  * Collection class that handles documents of same type
  * @extends LokiEventEmitter
+ * @param <TData> - the data type
+ * @param <TNested> - nested properties of data type
  */
-export class Collection<E extends object = object, D extends object = object> extends LokiEventEmitter {
+export class Collection<TData extends object = object, TNested extends object = object> extends LokiEventEmitter {
 
   public name: string;
   // the data held by the collection
-  public _data: Doc<E>[];
+  public _data: Doc<TData>[];
   private idIndex: number[]; // index of id
-  public binaryIndices: { [P in keyof E]?: Collection.BinaryIndex }; // user defined indexes
+  public binaryIndices: { [P in keyof TData]?: Collection.BinaryIndex }; // user defined indexes
 
   /**
-   * Unique contraints contain duplicate object references, so they are not persisted.
-   * We will keep track of properties which have unique contraint applied here, and regenerate on load.
+   * Unique constraints contain duplicate object references, so they are not persisted.
+   * We will keep track of properties which have unique constraints applied here, and regenerate on load.
    */
   public constraints: {
     unique: {
-      [P in keyof E]?: UniqueIndex<E>;
+      [P in keyof TData]?: UniqueIndex<TData>;
       }
   };
 
@@ -73,7 +75,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * Transforms will be used to store frequently used query chains as a series of steps which itself can be stored along
    * with the database.
    */
-  public transforms: Dict<Collection.Transform<E, D>[]>;
+  public transforms: Dict<Collection.Transform<TData, TNested>[]>;
 
   /**
    * In autosave scenarios we will use collection level dirty flags to determine whether save is needed.
@@ -83,8 +85,8 @@ export class Collection<E extends object = object, D extends object = object> ex
   public dirty: boolean;
 
   private cachedIndex: number[];
-  private cachedBinaryIndex: { [P in keyof E]?: Collection.BinaryIndex };
-  private cachedData: Doc<E>[];
+  private cachedBinaryIndex: { [P in keyof TData]?: Collection.BinaryIndex };
+  private cachedData: Doc<TData>[];
 
   /**
    * If set to true we will optimally keep indices 'fresh' during insert/update/remove ops (never dirty/never needs rebuild).
@@ -132,7 +134,7 @@ export class Collection<E extends object = object, D extends object = object> ex
   public ttl: Collection.TTL;
 
   private maxId: number;
-  private _dynamicViews: DynamicView<E, D>[];
+  private _dynamicViews: DynamicView<TData, TNested>[];
 
   /**
    * Changes are tracked by collection and aggregated by the db.
@@ -140,8 +142,8 @@ export class Collection<E extends object = object, D extends object = object> ex
   private changes: Collection.Change[];
 
   /* assign correct handler based on ChangesAPI flag */
-  private insertHandler: (obj: Doc<E>) => void;
-  private updateHandler: (obj: Doc<E>, old: Doc<E>) => void;
+  private insertHandler: (obj: Doc<TData>) => void;
+  private updateHandler: (obj: Doc<TData>, old: Doc<TData>) => void;
 
   public console: {
     log(...args: any[]): void;
@@ -176,7 +178,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {number} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
    * @see {@link Loki#addCollection} for normal creation of collections
    */
-  constructor(name: string, options: Collection.Options<E> = {}) {
+  constructor(name: string, options: Collection.Options<TData> = {}) {
     super();
     // the name of the collection
     this.name = name;
@@ -205,8 +207,8 @@ export class Collection<E extends object = object, D extends object = object> ex
       if (!Array.isArray(options.unique)) {
         options.unique = [options.unique];
       }
-      options.unique.forEach((prop: keyof E) => {
-        this.constraints.unique[prop] = new UniqueIndex<E>(prop);
+      options.unique.forEach((prop: keyof TData) => {
+        this.constraints.unique[prop] = new UniqueIndex<TData>(prop);
       });
     }
 
@@ -284,15 +286,15 @@ export class Collection<E extends object = object, D extends object = object> ex
     this.setChangesApi(this.disableChangesApi, this.disableDeltaChangesApi);
 
     // Add change api to event callback.
-    this.on("insert", (obj: Doc<E>) => {
+    this.on("insert", (obj: Doc<TData>) => {
       this.insertHandler(obj);
     });
 
-    this.on("update", (obj: Doc<E>, old: Doc<E>) => {
+    this.on("update", (obj: Doc<TData>, old: Doc<TData>) => {
       this.updateHandler(obj, old);
     });
 
-    this.on("delete", (obj: Doc<E>) => {
+    this.on("delete", (obj: Doc<TData>) => {
       if (!this.disableChangesApi) {
         this._createChange(this.name, "R", obj);
       }
@@ -433,7 +435,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {string} name - name to associate with transform
    * @param {array} transform - an array of transformation 'step' objects to save into the collection
    */
-  public addTransform(name: string, transform: Collection.Transform<E, D>[]): void {
+  public addTransform(name: string, transform: Collection.Transform<TData, TNested>[]): void {
     if (this.transforms[name] !== undefined) {
       throw new Error("a transform by that name already exists");
     }
@@ -444,7 +446,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * Retrieves a named transform from the collection.
    * @param {string} name - name of the transform to lookup.
    */
-  public getTransform(name: string): Collection.Transform<E, D>[] {
+  public getTransform(name: string): Collection.Transform<TData, TNested>[] {
     return this.transforms[name];
   }
 
@@ -453,7 +455,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {string} name - name to associate with transform
    * @param {object} transform - a transformation object to save into collection
    */
-  public setTransform(name: string, transform: Collection.Transform<E, D>[]): void {
+  public setTransform(name: string, transform: Collection.Transform<TData, TNested>[]): void {
     this.transforms[name] = transform;
   }
 
@@ -476,7 +478,7 @@ export class Collection<E extends object = object, D extends object = object> ex
       this.ttl.ttlInterval = interval;
       this.ttl.daemon = setInterval(() => {
         const now = Date.now();
-        const toRemove = this.chain().where((member: Doc<E>) => {
+        const toRemove = this.chain().where((member: Doc<TData>) => {
           const timestamp = member.meta.updated || member.meta.created;
           const diff = now - timestamp;
           return this.ttl.age < diff;
@@ -506,7 +508,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {string} property - name of property to create binary index on
    * @param {boolean} [force=false] - flag indicating whether to construct index immediately
    */
-  ensureIndex(property: keyof E, force = false) {
+  ensureIndex(property: keyof TData, force = false) {
     // optional parameter to force rebuild whether flagged as dirty or not
     if (property === null || property === undefined) {
       throw new Error("Attempting to set index without an associated property");
@@ -557,7 +559,7 @@ export class Collection<E extends object = object, D extends object = object> ex
     this.dirty = true; // for autosave scenarios
   }
 
-  getSequencedIndexValues(property: keyof E) {
+  getSequencedIndexValues(property: keyof TData) {
     let idx;
     const idxvals = this.binaryIndices[property].values;
     let result = "";
@@ -569,8 +571,8 @@ export class Collection<E extends object = object, D extends object = object> ex
     return result;
   }
 
-  ensureUniqueIndex(field: keyof E) {
-    let index = new UniqueIndex<E>(field);
+  ensureUniqueIndex(field: keyof TData) {
+    let index = new UniqueIndex<TData>(field);
 
     // if index already existed, (re)loading it will likely cause collisions, rebuild always
     this.constraints.unique[field] = index;
@@ -612,7 +614,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {object} query - (optional) query object to count results of
    * @returns {number} number of documents in the collection
    */
-  public count(query?: ResultSet.Query<Doc<E> & D>): number {
+  public count(query?: ResultSet.Query<Doc<TData> & TNested>): number {
     if (!query) {
       return this._data.length;
     }
@@ -638,8 +640,8 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {number} options.minRebuildInterval - minimum rebuild interval (need clarification to docs here)
    * @returns {DynamicView} reference to the dynamic view added
    **/
-  public addDynamicView(name: string, options?: DynamicView.Options): DynamicView<E, D> {
-    const dv = new DynamicView<E, D>(this, name, options);
+  public addDynamicView(name: string, options?: DynamicView.Options): DynamicView<TData, TNested> {
+    const dv = new DynamicView<TData, TNested>(this, name, options);
     this._dynamicViews.push(dv);
 
     return dv;
@@ -662,7 +664,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {string} name - name of dynamic view to retrieve reference of
    * @returns {DynamicView} A reference to the dynamic view with that name
    **/
-  public getDynamicView(name: string): DynamicView<E, D> {
+  public getDynamicView(name: string): DynamicView<TData, TNested> {
     for (let idx = 0; idx < this._dynamicViews.length; idx++) {
       if (this._dynamicViews[idx].name === name) {
         return this._dynamicViews[idx];
@@ -680,7 +682,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {object|function} filterObject - 'mongo-like' query object (or deprecated filterFunction mode)
    * @param {function} updateFunction - update function to run against filtered documents
    */
-  findAndUpdate(filterObject: ResultSet.Query<Doc<E> & D> | ((obj: Doc<E>) => boolean), updateFunction: (obj: Doc<E>) => any) {
+  findAndUpdate(filterObject: ResultSet.Query<Doc<TData> & TNested> | ((obj: Doc<TData>) => boolean), updateFunction: (obj: Doc<TData>) => any) {
     if (typeof(filterObject) === "function") {
       this.updateWhere(filterObject, updateFunction);
     } else {
@@ -693,7 +695,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    *
    * @param {object} filterObject - 'mongo-like' query object
    */
-  findAndRemove(filterObject: ResultSet.Query<Doc<E> & D>) {
+  findAndRemove(filterObject: ResultSet.Query<Doc<TData> & TNested>) {
     this.chain().find(filterObject).remove();
   }
 
@@ -702,9 +704,9 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {(object|array)} doc - the document (or array of documents) to be inserted
    * @returns {(object|array)} document or documents inserted
    */
-  insert(doc: E): Doc<E>;
-  insert(doc: E[]): Doc<E>[];
-  insert(doc: E | E[]): Doc<E> | Doc<E>[] {
+  insert(doc: TData): Doc<TData>;
+  insert(doc: TData[]): Doc<TData>[];
+  insert(doc: TData | TData[]): Doc<TData> | Doc<TData>[] {
     if (!Array.isArray(doc)) {
       return this.insertOne(doc);
     }
@@ -736,7 +738,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {boolean} bulkInsert - quiet pre-insert and insert event emits
    * @returns {object} document or 'undefined' if there was a problem inserting it
    */
-  insertOne(doc: E, bulkInsert = false): Doc<E> {
+  insertOne(doc: TData, bulkInsert = false): Doc<TData> {
     let err = null;
     let returnObj;
 
@@ -776,7 +778,7 @@ export class Collection<E extends object = object, D extends object = object> ex
       returnObj = this.cloneObjects ? clone(obj, this.cloneMethod) : obj;
     }
 
-    return returnObj as Doc<E>;
+    return returnObj as Doc<TData>;
   }
 
   /**
@@ -826,7 +828,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * Updates an object and notifies collection that the document has changed.
    * @param {object} doc - document to update within the collection
    */
-  public update(doc: Doc<E> | Doc<E>[]): void {
+  public update(doc: Doc<TData> | Doc<TData>[]): void {
     if (Array.isArray(doc)) {
       let k = 0;
       const len = doc.length;
@@ -903,7 +905,7 @@ export class Collection<E extends object = object, D extends object = object> ex
   /**
    * Add object to collection
    */
-  private add(obj: E) {
+  private add(obj: TData) {
     // if parameter isn't object exit with throw
     if ("object" !== typeof obj) {
       throw new TypeError("Object being added needs to be an object");
@@ -926,7 +928,7 @@ export class Collection<E extends object = object, D extends object = object> ex
         this.maxId = (this._data[this._data.length - 1].$loki + 1);
       }
 
-      const newDoc = obj as Doc<E>;
+      const newDoc = obj as Doc<TData>;
       newDoc.$loki = this.maxId;
       newDoc.meta.version = 0;
 
@@ -984,7 +986,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {function} filterFunction - filter function whose results will execute update
    * @param {function} updateFunction - update function to run against filtered documents
    */
-  updateWhere(filterFunction: (obj: Doc<E>) => boolean, updateFunction: (obj: Doc<E>) => any) {
+  updateWhere(filterFunction: (obj: Doc<TData>) => boolean, updateFunction: (obj: Doc<TData>) => any) {
     const results = this.where(filterFunction);
     try {
       for (let i = 0; i < results.length; i++) {
@@ -1001,7 +1003,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * For 'mongo-like' querying you should migrate to [findAndRemove()]{@link Collection#findAndRemove}.
    * @param {function|object} query - query object to filter on
    */
-  removeWhere(query: ResultSet.Query<Doc<E> & D> | ((obj: Doc<E>) => boolean)) {
+  removeWhere(query: ResultSet.Query<Doc<TData> & TNested> | ((obj: Doc<TData>) => boolean)) {
     if (typeof query === "function") {
       this.remove(this._data.filter(query));
     } else {
@@ -1017,7 +1019,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * Remove a document from the collection
    * @param {number|object} doc - document to remove from collection
    */
-  remove(doc: number | Doc<E> | Doc<E>[]): void {
+  remove(doc: number | Doc<TData> | Doc<TData>[]): void {
     if (typeof doc === "number") {
       doc = this.get(doc);
     }
@@ -1118,7 +1120,7 @@ export class Collection<E extends object = object, D extends object = object> ex
     this.changes = [];
   }
 
-  private _getObjectDelta(oldObject: Doc<E>, newObject: Doc<E>) {
+  private _getObjectDelta(oldObject: Doc<TData>, newObject: Doc<TData>) {
     const propertyNames = newObject !== null && typeof newObject === "object" ? Object.keys(newObject) : null;
     if (propertyNames && propertyNames.length && ["string", "boolean", "number"].indexOf(typeof(newObject)) < 0) {
       const delta = {};
@@ -1146,7 +1148,7 @@ export class Collection<E extends object = object, D extends object = object> ex
   /**
    * Compare changed object (which is a forced clone) with existing object and return the delta
    */
-  private _getChangeDelta(obj: Doc<E>, old: Doc<E>) {
+  private _getChangeDelta(obj: Doc<TData>, old: Doc<TData>) {
     if (old) {
       return this._getObjectDelta(old, obj);
     }
@@ -1159,7 +1161,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * This method creates a clone of the current status of an object and associates operation and collection name,
    * so the parent db can aggregate and generate a changes object for the entire db
    */
-  private _createChange(name: string, op: string, obj: Doc<E>, old?: Doc<E>) {
+  private _createChange(name: string, op: string, obj: Doc<TData>, old?: Doc<TData>) {
     this.changes.push({
       name,
       operation: op,
@@ -1167,14 +1169,14 @@ export class Collection<E extends object = object, D extends object = object> ex
     });
   }
 
-  private _createInsertChange(obj: Doc<E>) {
+  private _createInsertChange(obj: Doc<TData>) {
     this._createChange(this.name, "I", obj);
   }
 
   /**
    * If the changes API is disabled make sure only metadata is added without re-evaluating everytime if the changesApi is enabled
    */
-  private _insertMeta(obj: Doc<E>) {
+  private _insertMeta(obj: Doc<TData>) {
     let len;
     let idx;
 
@@ -1207,7 +1209,7 @@ export class Collection<E extends object = object, D extends object = object> ex
     obj.meta.revision = 0;
   }
 
-  private _updateMeta(obj: Doc<E>) {
+  private _updateMeta(obj: Doc<TData>) {
     if (!obj) {
       return;
     }
@@ -1216,16 +1218,16 @@ export class Collection<E extends object = object, D extends object = object> ex
   }
 
 
-  private _createUpdateChange(obj: Doc<E>, old: Doc<E>) {
+  private _createUpdateChange(obj: Doc<TData>, old: Doc<TData>) {
     this._createChange(this.name, "U", obj, old);
   }
 
-  private _insertMetaWithChange(obj: Doc<E>) {
+  private _insertMetaWithChange(obj: Doc<TData>) {
     this._insertMeta(obj);
     this._createInsertChange(obj);
   }
 
-  private _updateMetaWithChange(obj: Doc<E>, old: Doc<E>) {
+  private _updateMetaWithChange(obj: Doc<TData>, old: Doc<TData>) {
     this._updateMeta(obj);
     this._createUpdateChange(obj, old);
   }
@@ -1241,8 +1243,8 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @returns {(object|array|null)} Object reference if document was found, null if not,
    *     or an array if 'returnPosition' was passed.
    */
-  public get(id: number): Doc<E>;
-  public get(id: number, returnPosition: boolean): Doc<E> | [Doc<E>, number];
+  public get(id: number): Doc<TData>;
+  public get(id: number, returnPosition: boolean): Doc<TData> | [Doc<TData>, number];
   public get(id: number, returnPosition = false) {
     const data = this.idIndex;
     let max = data.length - 1;
@@ -1281,7 +1283,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {int} dataPosition : data array index/position
    * @param {string} binaryIndexName : index to search for dataPosition in
    */
-  public getBinaryIndexPosition(dataPosition: number, binaryIndexName: keyof E) {
+  public getBinaryIndexPosition(dataPosition: number, binaryIndexName: keyof TData) {
     const val = this._data[dataPosition][binaryIndexName];
     const index = this.binaryIndices[binaryIndexName].values;
 
@@ -1314,7 +1316,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {int} dataPosition : coll.data array index/position
    * @param {string} binaryIndexName : index to search for dataPosition in
    */
-  public adaptiveBinaryIndexInsert(dataPosition: number, binaryIndexName: keyof E) {
+  public adaptiveBinaryIndexInsert(dataPosition: number, binaryIndexName: keyof TData) {
     const index = this.binaryIndices[binaryIndexName].values;
     let val: any = this._data[dataPosition][binaryIndexName];
 
@@ -1336,7 +1338,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {int} dataPosition : coll.data array index/position
    * @param {string} binaryIndexName : index to search for dataPosition in
    */
-  public adaptiveBinaryIndexUpdate(dataPosition: number, binaryIndexName: keyof E) {
+  public adaptiveBinaryIndexUpdate(dataPosition: number, binaryIndexName: keyof TData) {
     // linear scan needed to find old position within index unless we optimize for clone scenarios later
     // within (my) node 5.6.0, the following for() loop with strict compare is -much- faster than indexOf()
     let idxPos;
@@ -1361,7 +1363,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {string} binaryIndexName : index to search for dataPosition in
    * @param {boolean} removedFromIndexOnly - remove from index only
    */
-  public adaptiveBinaryIndexRemove(dataPosition: number, binaryIndexName: keyof E, removedFromIndexOnly = false): void {
+  public adaptiveBinaryIndexRemove(dataPosition: number, binaryIndexName: keyof TData, removedFromIndexOnly = false): void {
     const idxPos = this.getBinaryIndexPosition(dataPosition, binaryIndexName);
     if (idxPos === null) {
       return;
@@ -1400,7 +1402,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {any} val - value to find within index
    * @param {bool?} adaptive - if true, we will return insert position
    */
-  private _calculateRangeStart(prop: keyof E, val: any, adaptive = false): number {
+  private _calculateRangeStart(prop: keyof TData, val: any, adaptive = false): number {
     const rcd = this._data;
     const index = this.binaryIndices[prop].values;
     let min = 0;
@@ -1442,7 +1444,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * Internal method used for indexed $between.  Given a prop (index name), and a value
    * (which may or may not yet exist) this will find the final position of that upper range value.
    */
-  private _calculateRangeEnd(prop: keyof E, val: any) {
+  private _calculateRangeEnd(prop: keyof TData, val: any) {
     const rcd = this._data;
     const index = this.binaryIndices[prop].values;
     let min = 0;
@@ -1495,7 +1497,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {object} val - value to use for range calculation.
    * @returns {array} [start, end] index array positions
    */
-  public calculateRange(op: string, prop: keyof E, val: any): [number, number] {
+  public calculateRange(op: string, prop: keyof TData, val: any): [number, number] {
     const rcd = this._data;
     const index = this.binaryIndices[prop].values;
     const min = 0;
@@ -1674,7 +1676,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {any} value - unique value to search for
    * @returns {object} document matching the value passed
    */
-  public by(field: string, value: any): Doc<E> {
+  public by(field: string, value: any): Doc<TData> {
     return this.findOne({[field]: value} as any);
   }
 
@@ -1683,7 +1685,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {object} query - query object used to perform search with
    * @returns {(object|null)} First matching document, or null if none
    */
-  public findOne(query: ResultSet.Query<Doc<E> & D>): Doc<E> {
+  public findOne(query: ResultSet.Query<Doc<TData> & TNested>): Doc<TData> {
     query = query || {};
 
     // Instantiate ResultSet and exec find op passing firstOnly = true param
@@ -1693,9 +1695,9 @@ export class Collection<E extends object = object, D extends object = object> ex
       return null;
     } else {
       if (!this.cloneObjects) {
-        return result[0] as any as Doc<E>;
+        return result[0] as any as Doc<TData>;
       } else {
-        return clone(result[0], this.cloneMethod) as any as Doc<E>;
+        return clone(result[0], this.cloneMethod) as any as Doc<TData>;
       }
     }
   }
@@ -1708,8 +1710,8 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {object} parameters - Object containing properties representing parameters to substitute
    * @returns {ResultSet} (this) ResultSet, or data array if any map or join functions where called
    */
-  public chain(transform?: string | Collection.Transform<E, D>[], parameters?: object): ResultSet<E, D> {
-    const rs = new ResultSet<E, D>(this);
+  public chain(transform?: string | Collection.Transform<TData, TNested>[], parameters?: object): ResultSet<TData, TNested> {
+    const rs = new ResultSet<TData, TNested>(this);
     if (transform === undefined) {
       return rs;
     }
@@ -1723,7 +1725,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {object} query - 'mongo-like' query object
    * @returns {array} Array of matching documents
    */
-  public find(query?: ResultSet.Query<Doc<E> & D>): Doc<E>[] {
+  public find(query?: ResultSet.Query<Doc<TData> & TNested>): Doc<TData>[] {
     return this.chain().find(query).data();
   }
 
@@ -1807,7 +1809,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {function} fun - filter function to run against all collection docs
    * @returns {array} all documents which pass your filter function
    */
-  public where(fun: (obj: Doc<E>) => boolean): Doc<E>[] {
+  public where(fun: (obj: Doc<TData>) => boolean): Doc<TData>[] {
     return this.chain().where(fun).data();
   }
 
@@ -1817,7 +1819,7 @@ export class Collection<E extends object = object, D extends object = object> ex
    * @param {function} reduceFunction - function to use as reduce function
    * @returns {data} The result of your mapReduce operation
    */
-  public mapReduce<T, U>(mapFunction: (value: E, index: number, array: E[]) => T, reduceFunction: (array: T[]) => U): U {
+  public mapReduce<T, U>(mapFunction: (value: TData, index: number, array: TData[]) => T, reduceFunction: (array: T[]) => U): U {
     return reduceFunction(this._data.map(mapFunction));
   }
 
@@ -1859,7 +1861,7 @@ export class Collection<E extends object = object, D extends object = object> ex
   /**
    * (Staging API) create a copy of an object and insert it into a stage
    */
-  public stage<F extends E>(stageName: string, obj: Doc<F>): F {
+  public stage<F extends TData>(stageName: string, obj: Doc<F>): F {
     const copy = JSON.parse(JSON.stringify(obj));
     this.getStage(stageName)[obj.$loki] = copy;
     return copy;
@@ -2032,9 +2034,9 @@ export class Collection<E extends object = object, D extends object = object> ex
 }
 
 export namespace Collection {
-  export interface Options<E> {
-    unique?: (keyof E)[];
-    indices?: (keyof E)[];
+  export interface Options<TData> {
+    unique?: (keyof TData)[];
+    indices?: (keyof TData)[];
     adaptiveBinaryIndices?: boolean;
     asyncListeners?: boolean;
     disableChangesApi?: boolean;
@@ -2087,22 +2089,22 @@ export namespace Collection {
     _fullTextSearch: FullTextSearch;
   }
 
-  export type Transform<E extends object = object, D extends object = object> = {
+  export type Transform<TData extends object = object, TNested extends object = object> = {
     type: "find";
-    value: ResultSet.Query<Doc<E> & D> | string;
+    value: ResultSet.Query<Doc<TData> & TNested> | string;
   } | {
     type: "where";
-    value: ((obj: Doc<E>) => boolean) | string;
+    value: ((obj: Doc<TData>) => boolean) | string;
   } | {
     type: "simplesort";
-    property: keyof (E & D);
+    property: keyof (TData & TNested);
     desc?: boolean;
   } | {
     type: "compoundsort";
-    value: (keyof (E & D) | [keyof (E & D), boolean])[];
+    value: (keyof (TData & TNested) | [keyof (TData & TNested), boolean])[];
   } | {
     type: "sort";
-    value: (a: Doc<E>, b: Doc<E>) => number;
+    value: (a: Doc<TData>, b: Doc<TData>) => number;
   } | {
     type: "sortByScoring";
     desc?: boolean;
@@ -2114,22 +2116,22 @@ export namespace Collection {
     value: number;
   } | {
     type: "map";
-    value: (obj: E, index: number, array: E[]) => any;
+    value: (obj: TData, index: number, array: TData[]) => any;
     dataOptions?: ResultSet.DataOptions;
   } | {
     type: "eqJoin";
     joinData: Collection<any> | ResultSet<any>;
     leftJoinKey: string | ((obj: any) => string);
-    rightJoinKey:  string | ((obj: any) => string);
+    rightJoinKey: string | ((obj: any) => string);
     mapFun?: (left: any, right: any) => any;
     dataOptions?: ResultSet.DataOptions;
   } | {
     type: "mapReduce";
-    mapFunction: (item: E, index: number, array: E[]) => any;
+    mapFunction: (item: TData, index: number, array: TData[]) => any;
     reduceFunction: (array: any[]) => any;
   } | {
     type: "update";
-    value: (obj: Doc<E>) => any;
+    value: (obj: Doc<TData>) => any;
   } | {
     type: "remove";
   };

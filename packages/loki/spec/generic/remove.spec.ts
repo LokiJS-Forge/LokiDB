@@ -72,7 +72,7 @@ describe("remove", () => {
 
   it("removes with unique index", () => {
     const db = new Loki();
-    const users1 = db.addCollection("userswithunique", {
+    const users1 = db.addCollection<User & {username: string}>("userswithunique", {
       unique: ["username"]
     });
 

@@ -18,26 +18,29 @@ import {Scorer} from "../../full-text-search/src/scorer";
  * @extends LokiEventEmitter
 
  * @see {@link Collection#addDynamicView} to construct instances of DynamicView
+ *
+ * @param <TData> - the data type
+ * @param <TNested> - nested properties of data type
  */
-export class DynamicView<E extends object = object, D extends object = object> extends LokiEventEmitter {
+export class DynamicView<TData extends object = object, TNested extends object = object> extends LokiEventEmitter {
 
-  private _collection: Collection<E, D>;
+  private _collection: Collection<TData, TNested>;
   private _persistent: boolean;
   private _sortPriority: DynamicView.SortPriority;
   private _minRebuildInterval: number;
   public name: string;
   private _rebuildPending: boolean;
 
-  private _resultSet: ResultSet<E, D>;
-  private _resultData: Doc<E>[];
+  private _resultSet: ResultSet<TData, TNested>;
+  private _resultData: Doc<TData>[];
   private _resultDirty: boolean;
 
-  private _cachedResultSet: ResultSet<E, D>;
+  private _cachedResultSet: ResultSet<TData, TNested>;
 
-  private _filterPipeline: DynamicView.Filter<E, D>[];
+  private _filterPipeline: DynamicView.Filter<TData, TNested>[];
 
-  private _sortFunction: (lhs: Doc<E>, rhs: Doc<E>) => number;
-  private _sortCriteria: (keyof (E & D) | [keyof (E & D), boolean])[];
+  private _sortFunction: (lhs: Doc<TData>, rhs: Doc<TData>) => number;
+  private _sortCriteria: (keyof (TData & TNested) | [keyof (TData & TNested), boolean])[];
   private _sortByScoring: boolean;
   private _sortDirty: boolean;
 
@@ -50,7 +53,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    * @param {string} [options.sortPriority="passive"] - the sort priority
    * @param {number} [options.minRebuildInterval=1] - minimum rebuild interval (need clarification to docs here)
    */
-  constructor(collection: Collection<E, D>, name: string, options: DynamicView.Options = {}) {
+  constructor(collection: Collection<TData, TNested>, name: string, options: DynamicView.Options = {}) {
     super();
     (
       {
@@ -151,7 +154,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    * @param {object} parameters - optional parameters (if optional transform requires them)
    * @returns {ResultSet} A copy of the internal ResultSet for branched queries.
    */
-  public branchResultSet(transform?: string | Collection.Transform<E, D>[], parameters?: object): ResultSet<E, D> {
+  public branchResultSet(transform?: string | Collection.Transform<TData, TNested>[], parameters?: object): ResultSet<TData, TNested> {
     const rs = this._resultSet.branch();
     if (transform === undefined) {
       return rs;
@@ -232,7 +235,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    * @param {function} comparefun - a javascript compare function used for sorting
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public applySort(comparefun: (lhs: Doc<E>, rhs: Doc<E>) => number): this {
+  public applySort(comparefun: (lhs: Doc<TData>, rhs: Doc<TData>) => number): this {
     this._sortFunction = comparefun;
     this._sortCriteria = null;
     this._sortByScoring = null;
@@ -249,7 +252,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    * @param {boolean} isdesc - (Optional) If true, the sort will be in descending order.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public applySimpleSort(propname: keyof (E & D), isdesc?: boolean): this {
+  public applySimpleSort(propname: keyof (TData & TNested), isdesc?: boolean): this {
     this._sortCriteria = [
       [propname, isdesc || false]
     ];
@@ -272,7 +275,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    * @param {Array} criteria - array of property names or subarray of [propertyname, isdesc] used evaluate sort order
    * @returns {DynamicView} Reference to this DynamicView, sorted, for future chain operations.
    */
-  public applySortCriteria(criteria: (keyof (E & D) | [keyof (E & D), boolean])[]): this {
+  public applySortCriteria(criteria: (keyof (TData & TNested) | [keyof (TData & TNested), boolean])[]): this {
     this._sortCriteria = criteria;
     this._sortFunction = null;
     this._sortByScoring = null;
@@ -357,7 +360,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    *
    * @param {object} filter - The filter object. Refer to applyFilter() for extra details.
    */
-  private _addFilter(filter: DynamicView.Filter<E, D>): void {
+  private _addFilter(filter: DynamicView.Filter<TData, TNested>): void {
     this._filterPipeline.push(filter);
     this._resultSet[filter.type as string](filter.val);
   }
@@ -399,7 +402,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    *    The object is in the format { 'type': filter_type, 'val', filter_param, 'uid', optional_filter_id }
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public applyFilter(filter: DynamicView.Filter<E, D>): this {
+  public applyFilter(filter: DynamicView.Filter<TData, TNested>): this {
     const idx = this._indexOfFilterWithId(filter.uid);
     if (idx >= 0) {
       this._filterPipeline[idx] = filter;
@@ -445,7 +448,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    * @param {(string|number)} uid - Optional: The unique ID of this filter, to reference it in the future.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public applyWhere(fun: (obj: Doc<E>) => boolean, uid?: string | number): this {
+  public applyWhere(fun: (obj: Doc<TData>) => boolean, uid?: string | number): this {
     this.applyFilter({
       type: "where",
       val: fun,
@@ -498,7 +501,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    *
    * @returns {Array} An array of documents representing the current DynamicView contents.
    */
-  public data(options: ResultSet.DataOptions = {}): Doc<E>[] {
+  public data(options: ResultSet.DataOptions = {}): Doc<TData>[] {
     // using final sort phase as 'catch all' for a few use cases which require full rebuild
     if (this._sortDirty || this._resultDirty) {
       this._performSortPhase({
@@ -751,7 +754,7 @@ export class DynamicView<E extends object = object, D extends object = object> e
    * @param {function} reduceFunction - this function accepts many (array of map outputs) and returns single value
    * @returns The output of your reduceFunction
    */
-  public mapReduce<T, U>(mapFunction: (item: E, index: number, array: E[]) => T, reduceFunction: (array: T[]) => U): U {
+  public mapReduce<T, U>(mapFunction: (item: TData, index: number, array: TData[]) => T, reduceFunction: (array: T[]) => U): U {
     try {
       return reduceFunction(this.data().map(mapFunction));
     } catch (err) {
@@ -781,13 +784,13 @@ export namespace DynamicView {
     _sortDirty: boolean;
   }
 
-  export type Filter<E extends object = object, D extends object = object> = {
+  export type Filter<TData extends object = object, TNested extends object = object> = {
     type: "find";
-    val: ResultSet.Query<Doc<E> & D>;
+    val: ResultSet.Query<Doc<TData> & TNested>;
     uid: number | string;
   } | {
     type: "where";
-    val: (obj: Doc<E>) => boolean;
+    val: (obj: Doc<TData>) => boolean;
     uid: number | string;
   };
 }

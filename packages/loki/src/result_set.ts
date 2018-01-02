@@ -6,7 +6,7 @@ import {Scorer} from "../../full-text-search/src/scorer";
 import {Query as FullTextSearchQuery} from "../../full-text-search/src/query_builder";
 
 // used to recursively scan hierarchical transform step object for param substitution
-function resolveTransformObject<E extends object, D extends object>(subObj: Collection.Transform<E, D>, params: object, depth: number = 0): Collection.Transform<E, D> {
+function resolveTransformObject<TData extends object, TNested extends object>(subObj: Collection.Transform<TData, TNested>, params: object, depth: number = 0): Collection.Transform<TData, TNested> {
   if (++depth >= 10) {
     return subObj;
   }
@@ -25,17 +25,17 @@ function resolveTransformObject<E extends object, D extends object>(subObj: Coll
 }
 
 // top level utility to resolve an entire (single) transform (array of steps) for parameter substitution
-function resolveTransformParams<E extends object, D extends object>(transform: Collection.Transform<E, D>[], params: object): Collection.Transform<E, D>[] {
+function resolveTransformParams<TData extends object, TNested extends object>(transform: Collection.Transform<TData, TNested>[], params: object): Collection.Transform<TData, TNested>[] {
   if (params === undefined) {
     return transform;
   }
 
   // iterate all steps in the transform array
-  const resolvedTransform: Collection.Transform<E, D>[] = [];
+  const resolvedTransform: Collection.Transform<TData, TNested>[] = [];
   for (let idx = 0; idx < transform.length; idx++) {
     // clone transform so our scan/replace can operate directly on cloned transform
     const clonedStep = clone(transform[idx], "shallow-recurse-objects");
-    resolvedTransform.push(resolveTransformObject<E, D>(clonedStep, params));
+    resolvedTransform.push(resolveTransformObject<TData, TNested>(clonedStep, params));
   }
 
   return resolvedTransform;
@@ -283,10 +283,13 @@ function dotSubScan(root: object, paths: string[], fun: (a: any, b: any) => bool
  *      .find({ 'doors' : 4 })
  *      .where(function(obj) { return obj.name === 'Toyota' })
  *      .data();
+ *
+ * @param <TData> - the data type
+ * @param <TNested> - nested properties of data type
  */
-export class ResultSet<E extends object = object, D extends object = object> {
+export class ResultSet<TData extends object = object, TNested extends object = object> {
 
-  public _collection: Collection<E, D>;
+  public _collection: Collection<TData, TNested>;
   public _filteredRows: number[];
   public _filterInitialized: boolean;
   // Holds the scoring result of the last full-text search.
@@ -296,7 +299,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * Constructor.
    * @param {Collection} collection - the collection which this ResultSet will query against
    */
-  constructor(collection: Collection<E, D>) {
+  constructor(collection: Collection<TData, TNested>) {
     // retain reference to collection we are querying against
     this._collection = collection;
     this._filteredRows = [];
@@ -321,7 +324,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * Override of toJSON to avoid circular references
    *
    */
-  public toJSON(): ResultSet<E, D> {
+  public toJSON(): ResultSet<TData, TNested> {
     const copy = this.copy();
     copy._collection = <never>null;
     return copy;
@@ -367,8 +370,8 @@ export class ResultSet<E extends object = object, D extends object = object> {
    *
    * @returns {ResultSet} Returns a copy of the ResultSet (set) but the underlying document references will be the same.
    */
-  public copy(): ResultSet<E, D> {
-    const result = new ResultSet<E, D>(this._collection);
+  public copy(): ResultSet<TData, TNested> {
+    const result = new ResultSet<TData, TNested>(this._collection);
     result._filteredRows = this._filteredRows.slice();
     result._filterInitialized = this._filterInitialized;
     return result;
@@ -377,7 +380,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
   /**
    * Alias of copy()
    */
-  public branch(): ResultSet<E, D> {
+  public branch(): ResultSet<TData, TNested> {
     return this.copy();
   }
 
@@ -388,7 +391,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {object} [parameters=] - object property hash of parameters, if the transform requires them.
    * @returns {ResultSet} either (this) ResultSet or a clone of of this ResultSet (depending on steps)
    */
-  public transform(transform: string | Collection.Transform<E, D>[], parameters?: object): this {
+  public transform(transform: string | Collection.Transform<TData, TNested>[], parameters?: object): this {
     // if transform is name, then do lookup first
     if (typeof transform === "string") {
       transform = this._collection.transforms[transform];
@@ -404,10 +407,10 @@ export class ResultSet<E extends object = object, D extends object = object> {
 
       switch (step.type) {
         case "find":
-          rs.find(step.value as ResultSet.Query<Doc<E> & D>);
+          rs.find(step.value as ResultSet.Query<Doc<TData> & TNested>);
           break;
         case "where":
-          rs.where(step.value as (obj: Doc<E>) => boolean);
+          rs.where(step.value as (obj: Doc<TData>) => boolean);
           break;
         case "simplesort":
           rs.simplesort(step.property, step.desc);
@@ -463,7 +466,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {function} comparefun - A javascript compare function used for sorting.
    * @returns {ResultSet} Reference to this ResultSet, sorted, for future chain operations.
    */
-  public sort(comparefun: (a: Doc<E>, b: Doc<E>) => number): this {
+  public sort(comparefun: (a: Doc<TData>, b: Doc<TData>) => number): this {
     // if this has no filters applied, just we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       this._filteredRows = this._collection._prepareFullDocIndex();
@@ -485,16 +488,16 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {boolean} [descending=false] - if true, the property will be sorted in descending order
    * @returns {ResultSet} Reference to this ResultSet, sorted, for future chain operations.
    */
-  public simplesort(propname: keyof (E & D), descending: boolean = false): this {
+  public simplesort(propname: keyof (TData & TNested), descending: boolean = false): this {
     // if this has no filters applied, just we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       //TODO:
       // if we have a binary index and no other filters applied, we can use that instead of sorting (again)
-      if (this._collection.binaryIndices[propname as keyof E] !== undefined) {
+      if (this._collection.binaryIndices[propname as keyof TData] !== undefined) {
         // make sure index is up-to-date
-        this._collection.ensureIndex(propname as keyof E);
+        this._collection.ensureIndex(propname as keyof TData);
         // copy index values into filteredRows
-        this._filteredRows = this._collection.binaryIndices[propname as keyof E].values.slice(0);
+        this._filteredRows = this._collection.binaryIndices[propname as keyof TData].values.slice(0);
 
         if (descending) {
           this._filteredRows.reverse();
@@ -521,8 +524,8 @@ export class ResultSet<E extends object = object, D extends object = object> {
           return obj && obj[i] || undefined;
         }, data[b]);
       } else {
-        val1 = data[a][propname as keyof E];
-        val2 = data[b][propname as keyof E];
+        val1 = data[a][propname as keyof TData];
+        val2 = data[b][propname as keyof TData];
       }
       return sortHelper(val1, val2, descending);
     };
@@ -543,7 +546,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {array} properties - array of property names or subarray of [propertyname, isdesc] used evaluate sort order
    * @returns {ResultSet} Reference to this ResultSet, sorted, for future chain operations.
    */
-  public compoundsort(properties: (keyof (E & D) | [keyof (E & D), boolean])[]): this {
+  public compoundsort(properties: (keyof (TData & TNested) | [keyof (TData & TNested), boolean])[]): this {
     if (properties.length === 0) {
       throw new Error("Invalid call to compoundsort, need at least one property");
     }
@@ -553,7 +556,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
       if (typeof prop === "string") {
         return this.simplesort(prop, false);
       } else {
-        return this.simplesort(prop[0] as keyof (E & D), prop[1] as boolean);
+        return this.simplesort(prop[0] as keyof (TData & TNested), prop[1] as boolean);
       }
     }
 
@@ -586,7 +589,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {object} obj2 - second object to compare
    * @returns {number} 0, -1, or 1 to designate if identical (sortwise) or which should be first
    */
-  private _compoundeval(properties: [string, boolean][], obj1: E, obj2: E): number {
+  private _compoundeval(properties: [string, boolean][], obj1: TData, obj2: TData): number {
     for (let i = 0, len = properties.length; i < len; i++) {
       const prop = properties[i];
       const field = prop[0];
@@ -614,7 +617,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
   /**
    * Sorts the ResultSet based on the last full-text-search scoring.
    * @param {boolean} [ascending=false] - sort ascending
-   * @returns {ResultSet<E extends Object>}
+   * @returns {ResultSet}
    */
   public sortByScoring(ascending = false): this {
     if (this._scoring === null) {
@@ -650,7 +653,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {array} expressionArray - array of expressions
    * @returns {ResultSet} this ResultSet for further chain ops.
    */
-  public findOr(expressionArray: ResultSet.Query<Doc<E> & D>[]): this {
+  public findOr(expressionArray: ResultSet.Query<Doc<TData> & TNested>[]): this {
     const docset = [];
     const idxset = [];
     const origCount = this.count();
@@ -682,7 +685,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
     return this;
   }
 
-  public $or(expressionArray: ResultSet.Query<Doc<E> & D>[]): this {
+  public $or(expressionArray: ResultSet.Query<Doc<TData> & TNested>[]): this {
     return this.findOr(expressionArray);
   }
 
@@ -695,7 +698,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {array} expressionArray - array of expressions
    * @returns {ResultSet} this ResultSet for further chain ops.
    */
-  public findAnd(expressionArray: ResultSet.Query<Doc<E> & D>[]): this {
+  public findAnd(expressionArray: ResultSet.Query<Doc<TData> & TNested>[]): this {
     // we have already implementing method chaining in this (our ResultSet class)
     // so lets just progressively apply user supplied and filters
     for (let i = 0, len = expressionArray.length; i < len; i++) {
@@ -707,7 +710,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
     return this;
   }
 
-  public $and(expressionArray: ResultSet.Query<Doc<E> & D>[]): this {
+  public $and(expressionArray: ResultSet.Query<Doc<TData> & TNested>[]): this {
     return this.findAnd(expressionArray);
   }
 
@@ -718,7 +721,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {boolean} firstOnly - (Optional) Used by collection.findOne() - flag if this was invoked via findOne()
    * @returns {ResultSet} this ResultSet for further chain ops.
    */
-  public find(query?: ResultSet.Query<Doc<E> & D>, firstOnly = false): this {
+  public find(query?: ResultSet.Query<Doc<TData> & TNested>, firstOnly = false): this {
     if (this._collection._data.length === 0) {
       this._filteredRows = [];
       this._filterInitialized = true;
@@ -959,7 +962,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {function} fun - A javascript function used for filtering current results by.
    * @returns {ResultSet} this ResultSet for further chain ops.
    */
-  public where(fun: (obj: Doc<E>) => boolean): this {
+  public where(fun: (obj: Doc<TData>) => boolean): this {
     let viewFunction;
     let result = [];
 
@@ -1025,7 +1028,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    *
    * @returns {Array} Array of documents in the ResultSet
    */
-  public data(options: ResultSet.DataOptions = {}): Doc<E>[] {
+  public data(options: ResultSet.DataOptions = {}): Doc<TData>[] {
     let forceClones: boolean;
     let forceCloneMethod: CloneMethod;
     let removeMeta: boolean;
@@ -1111,7 +1114,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {function} updateFunction - User supplied updateFunction(obj) will be executed for each document object.
    * @returns {ResultSet} this ResultSet for further chain ops.
    */
-  update(updateFunction: (obj: Doc<E>) => E): this {
+  update(updateFunction: (obj: Doc<TData>) => TData): this {
     // if this has no filters applied, we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       this._filteredRows = this._collection._prepareFullDocIndex();
@@ -1153,7 +1156,7 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {function} reduceFunction - this function accepts many (array of map outputs) and returns single value
    * @returns {value} The output of your reduceFunction
    */
-  public mapReduce<T, U>(mapFunction: (item: E, index: number, array: E[]) => T, reduceFunction: (array: T[]) => U): U {
+  public mapReduce<T, U>(mapFunction: (item: TData, index: number, array: TData[]) => T, reduceFunction: (array: T[]) => U): U {
     try {
       return reduceFunction(this.data().map(mapFunction));
     } catch (err) {
@@ -1242,11 +1245,11 @@ export class ResultSet<E extends object = object, D extends object = object> {
    * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method
    * @return {ResultSet}
    */
-  map<U extends object>(mapFun: (obj: E, index: number, array: E[]) => U, dataOptions?: ResultSet.DataOptions): ResultSet<U> {
+  map<U extends object>(mapFun: (obj: TData, index: number, array: TData[]) => U, dataOptions?: ResultSet.DataOptions): ResultSet<U> {
     const data = this.data(dataOptions).map(mapFun);
     //return return a new ResultSet with no filters
     this._collection = new Collection("mappedData");
-    this._collection.insert(data as any as E);
+    this._collection.insert(data as any as TData);
     this._filteredRows = [];
     this._filterInitialized = false;
     return this as any as ResultSet<U>;
@@ -1288,9 +1291,9 @@ export namespace ResultSet {
     $where?: (val?: R) => boolean;
   };
 
-  export type Query<E> =
-    { [P in keyof E]?: LokiOps<E[P]> | E[P] }
-    & { $and?: Query<E>[] }
-    & { $or?: Query<E>[] }
+  export type Query<TData> =
+    { [P in keyof TData]?: LokiOps<TData[P]> | TData[P] }
+    & { $and?: Query<TData>[] }
+    & { $or?: Query<TData>[] }
     & { $fts?: FullTextSearchQuery };
 }

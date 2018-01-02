@@ -490,7 +490,7 @@ describe("loki", () => {
 
   describe("calculateRange", () => {
     it("works", () => {
-      const eic = db.addCollection("eic");
+      const eic = db.addCollection<any>("eic");
       eic.ensureIndex("testid");
 
       eic.insert({
@@ -619,7 +619,7 @@ describe("loki", () => {
 
   describe("lazy indexLifecycle", () => {
     it("works", () => {
-      const ilc = db.addCollection("ilc", {
+      const ilc = db.addCollection<any>("ilc", {
         adaptiveBinaryIndices: false
       });
 
