@@ -57,13 +57,21 @@
 					<a href="uniqueindex.html">UniqueIndex</a>
 				</li>
 			</ul>
-			<h1>Class UniqueIndex</h1>
+			<h1>Class UniqueIndex&lt;E&gt;</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-type-parameters">
+				<h3>Type parameters</h3>
+				<ul class="tsd-type-parameters">
+					<li>
+						<h4>E<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></h4>
+					</li>
+				</ul>
+			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
@@ -101,13 +109,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Unique<wbr>Index<span class="tsd-signature-symbol">(</span>propertyField<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="uniqueindex.html" class="tsd-signature-type">UniqueIndex</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Unique<wbr>Index<span class="tsd-signature-symbol">(</span>propertyField<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">keyof E</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="uniqueindex.html" class="tsd-signature-type">UniqueIndex</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/unique_index.ts#L7">loki/src/unique_index.ts:7</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/unique_index.ts#L7">loki/src/unique_index.ts:7</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -118,7 +126,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>propertyField: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+									<h5>propertyField: <span class="tsd-signature-type">keyof E</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<div class="lead">
 											<p>the property field to index</p>
@@ -143,7 +151,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/unique_index.ts#L75">loki/src/unique_index.ts:75</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/unique_index.ts#L75">loki/src/unique_index.ts:75</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -159,13 +167,13 @@
 					<a name="get" class="tsd-anchor"></a>
 					<h3>get</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">get<span class="tsd-signature-symbol">(</span>index<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<span class="tsd-signature-symbol">(</span>index<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">keyof E</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/unique_index.ts#L39">loki/src/unique_index.ts:39</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/unique_index.ts#L39">loki/src/unique_index.ts:39</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -176,7 +184,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>index: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+									<h5>index: <span class="tsd-signature-type">keyof E</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>the index</p>
 									</div>
@@ -199,7 +207,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/unique_index.ts#L64">loki/src/unique_index.ts:64</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/unique_index.ts#L64">loki/src/unique_index.ts:64</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -224,13 +232,13 @@
 					<a name="set" class="tsd-anchor"></a>
 					<h3>set</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">set<span class="tsd-signature-symbol">(</span>doc<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a>, row<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">set<span class="tsd-signature-symbol">(</span>doc<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">E</span><span class="tsd-signature-symbol">&gt;</span>, row<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/unique_index.ts#L23">loki/src/unique_index.ts:23</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/unique_index.ts#L23">loki/src/unique_index.ts:23</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -241,7 +249,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>doc: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a></h5>
+									<h5>doc: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">E</span><span class="tsd-signature-symbol">&gt;</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>the document</p>
 									</div>
@@ -261,13 +269,13 @@
 					<a name="update" class="tsd-anchor"></a>
 					<h3>update</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">update<span class="tsd-signature-symbol">(</span>doc<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a>, row<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">update<span class="tsd-signature-symbol">(</span>doc<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">E</span><span class="tsd-signature-symbol">&gt;</span>, row<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/unique_index.ts#L48">loki/src/unique_index.ts:48</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/unique_index.ts#L48">loki/src/unique_index.ts:48</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -278,7 +286,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>doc: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a></h5>
+									<h5>doc: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">E</span><span class="tsd-signature-symbol">&gt;</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>the document</p>
 									</div>
@@ -308,7 +316,7 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-class">
+					<li class="current tsd-kind-class tsd-has-type-parameter">
 						<a href="uniqueindex.html" class="tsd-kind-icon">Unique<wbr>Index</a>
 						<ul>
 							<li class=" tsd-kind-constructor tsd-parent-kind-class">

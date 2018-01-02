@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Filter | @lokijs/lokijs-src</title>
+	<title>TTL | @lokijs/lokijs-src</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,29 +54,24 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="filter.html">Filter</a>
+					<a href="../classes/collection.html">Collection</a>
+				</li>
+				<li>
+					<a href="collection.ttl.html">TTL</a>
 				</li>
 			</ul>
-			<h1>Interface Filter&lt;E&gt;</h1>
+			<h1>Interface TTL</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-type-parameters">
-				<h3>Type parameters</h3>
-				<ul class="tsd-type-parameters">
-					<li>
-						<h4>E</h4>
-					</li>
-				</ul>
-			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">Filter</span>
+						<span class="target">TTL</span>
 					</li>
 				</ul>
 			</section>
@@ -87,9 +82,9 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="filter.html#type" class="tsd-kind-icon">type</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="filter.html#uid" class="tsd-kind-icon">uid</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="filter.html#val" class="tsd-kind-icon">val</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.ttl.html#age" class="tsd-kind-icon">age</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.ttl.html#daemon" class="tsd-kind-icon">daemon</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.ttl.html#ttlinterval" class="tsd-kind-icon">ttl<wbr>Interval</a></li>
 							</ul>
 						</section>
 					</div>
@@ -98,32 +93,32 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="type" class="tsd-anchor"></a>
-					<h3>type</h3>
-					<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<a name="age" class="tsd-anchor"></a>
+					<h3>age</h3>
+					<div class="tsd-signature tsd-kind-icon">age<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/common/types.ts#L31">common/types.ts:31</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/collection.ts#L2140">loki/src/collection.ts:2140</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="uid" class="tsd-anchor"></a>
-					<h3>uid</h3>
-					<div class="tsd-signature tsd-kind-icon">uid<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
+					<a name="daemon" class="tsd-anchor"></a>
+					<h3>daemon</h3>
+					<div class="tsd-signature tsd-kind-icon">daemon<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/common/types.ts#L34">common/types.ts:34</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/collection.ts#L2142">loki/src/collection.ts:2142</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="val" class="tsd-anchor"></a>
-					<h3>val</h3>
-					<div class="tsd-signature tsd-kind-icon">val<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Query</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span></div>
+					<a name="ttlinterval" class="tsd-anchor"></a>
+					<h3>ttl<wbr>Interval</h3>
+					<div class="tsd-signature tsd-kind-icon">ttl<wbr>Interval<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/common/types.ts#L33">common/types.ts:33</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/collection.ts#L2141">loki/src/collection.ts:2141</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -141,17 +136,22 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-interface tsd-has-type-parameter">
-						<a href="filter.html" class="tsd-kind-icon">Filter</a>
+					<li class="current tsd-kind-class tsd-has-type-parameter">
+						<a href="../classes/collection.html" class="tsd-kind-icon">Collection</a>
 						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="filter.html#type" class="tsd-kind-icon">type</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="filter.html#uid" class="tsd-kind-icon">uid</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="filter.html#val" class="tsd-kind-icon">val</a>
+							<li class="current tsd-kind-interface tsd-parent-kind-class">
+								<a href="collection.ttl.html" class="tsd-kind-icon">TTL</a>
+								<ul>
+									<li class=" tsd-kind-property tsd-parent-kind-interface">
+										<a href="collection.ttl.html#age" class="tsd-kind-icon">age</a>
+									</li>
+									<li class=" tsd-kind-property tsd-parent-kind-interface">
+										<a href="collection.ttl.html#daemon" class="tsd-kind-icon">daemon</a>
+									</li>
+									<li class=" tsd-kind-property tsd-parent-kind-interface">
+										<a href="collection.ttl.html#ttlinterval" class="tsd-kind-icon">ttl<wbr>Interval</a>
+									</li>
+								</ul>
 							</li>
 						</ul>
 					</li>

@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>LokiFSStorage | @lokijs/lokijs-src</title>
+	<title>LocalStorage | @lokijs/lokijs-src</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="lokifsstorage.html">LokiFSStorage</a>
+					<a href="localstorage.html">LocalStorage</a>
 				</li>
 			</ul>
-			<h1>Class LokiFSStorage</h1>
+			<h1>Class LocalStorage</h1>
 		</div>
 	</div>
 </header>
@@ -67,15 +67,20 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>A loki persistence adapter which persists using node fs module.</p>
+						<p>A loki persistence adapter which persists to web browser&#39;s local storage object</p>
 					</div>
+					<dl class="tsd-comment-tags">
+						<dt>constructor</dt>
+						<dd><p>LocalStorageAdapter</p>
+						</dd>
+					</dl>
 				</div>
 			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">LokiFSStorage</span>
+						<span class="target">LocalStorage</span>
 					</li>
 				</ul>
 			</section>
@@ -92,11 +97,11 @@
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="lokifsstorage.html#deletedatabase" class="tsd-kind-icon">delete<wbr>Database</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="lokifsstorage.html#loaddatabase" class="tsd-kind-icon">load<wbr>Database</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="lokifsstorage.html#savedatabase" class="tsd-kind-icon">save<wbr>Database</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="lokifsstorage.html#deregister" class="tsd-kind-icon">deregister</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="lokifsstorage.html#register" class="tsd-kind-icon">register</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="localstorage.html#deletedatabase" class="tsd-kind-icon">delete<wbr>Database</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="localstorage.html#loaddatabase" class="tsd-kind-icon">load<wbr>Database</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="localstorage.html#savedatabase" class="tsd-kind-icon">save<wbr>Database</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="localstorage.html#deregister" class="tsd-kind-icon">deregister</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="localstorage.html#register" class="tsd-kind-icon">register</a></li>
 							</ul>
 						</section>
 					</div>
@@ -115,13 +120,13 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/storageadapter.html">StorageAdapter</a>.<a href="../interfaces/storageadapter.html#deletedatabase">deleteDatabase</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/fs-storage/src/fs_storage.ts#L79">fs-storage/src/fs_storage.ts:79</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/local-storage/src/local_storage.ts#L48">local-storage/src/local_storage.ts:48</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Delete the database file, will throw an error if the
-									file can&#39;t be deleted</p>
+									<p>deleteDatabase() - delete the database from localstorage, will throw an error if it
+									can&#39;t be deleted</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -142,19 +147,19 @@
 					<a name="loaddatabase" class="tsd-anchor"></a>
 					<h3>load<wbr>Database</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">load<wbr>Database<span class="tsd-signature-symbol">(</span>dbname<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">load<wbr>Database<span class="tsd-signature-symbol">(</span>dbname<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/storageadapter.html">StorageAdapter</a>.<a href="../interfaces/storageadapter.html#loaddatabase">loadDatabase</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/fs-storage/src/fs_storage.ts#L28">fs-storage/src/fs_storage.ts:28</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/local-storage/src/local_storage.ts#L28">local-storage/src/local_storage.ts:28</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Load data from file, will throw an error if the file does not exist</p>
+									<p>loadDatabase() - Load data from localstorage</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -162,11 +167,11 @@
 								<li>
 									<h5>dbname: <span class="tsd-signature-type">string</span></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>the filename of the database to load</p>
+										<p>the name of the database to load</p>
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
 							<p>a Promise that resolves after the database was loaded</p>
 						</li>
 					</ul>
@@ -182,12 +187,12 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/storageadapter.html">StorageAdapter</a>.<a href="../interfaces/storageadapter.html#savedatabase">saveDatabase</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/fs-storage/src/fs_storage.ts#L54">fs-storage/src/fs_storage.ts:54</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/local-storage/src/local_storage.ts#L38">local-storage/src/local_storage.ts:38</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Save data to file, will throw an error if the file can&#39;t be saved
+									<p>saveDatabase() - save data to localstorage, will throw an error if the file can&#39;t be saved
 									might want to expand this to avoid dataloss on partial save</p>
 								</div>
 							</div>
@@ -204,7 +209,7 @@
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
-							<p>a Promise that resolves after the database was persisted</p>
+							<p>a Promise that resolves after the database was saved</p>
 						</li>
 					</ul>
 				</section>
@@ -218,12 +223,12 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/fs-storage/src/fs_storage.ts#L19">fs-storage/src/fs_storage.ts:19</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/local-storage/src/local_storage.ts#L19">local-storage/src/local_storage.ts:19</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Deregisters the fs storage as plugin.</p>
+									<p>Deregisters the local storage as plugin.</p>
 								</div>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -240,12 +245,12 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/fs-storage/src/fs_storage.ts#L12">fs-storage/src/fs_storage.ts:12</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/local-storage/src/local_storage.ts#L12">local-storage/src/local_storage.ts:12</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Registers the fs storage as plugin.</p>
+									<p>Registers the local storage as plugin.</p>
 								</div>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -267,22 +272,22 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class">
-						<a href="lokifsstorage.html" class="tsd-kind-icon">LokiFSStorage</a>
+						<a href="localstorage.html" class="tsd-kind-icon">Local<wbr>Storage</a>
 						<ul>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="lokifsstorage.html#deletedatabase" class="tsd-kind-icon">delete<wbr>Database</a>
+								<a href="localstorage.html#deletedatabase" class="tsd-kind-icon">delete<wbr>Database</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="lokifsstorage.html#loaddatabase" class="tsd-kind-icon">load<wbr>Database</a>
+								<a href="localstorage.html#loaddatabase" class="tsd-kind-icon">load<wbr>Database</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="lokifsstorage.html#savedatabase" class="tsd-kind-icon">save<wbr>Database</a>
+								<a href="localstorage.html#savedatabase" class="tsd-kind-icon">save<wbr>Database</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
-								<a href="lokifsstorage.html#deregister" class="tsd-kind-icon">deregister</a>
+								<a href="localstorage.html#deregister" class="tsd-kind-icon">deregister</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
-								<a href="lokifsstorage.html#register" class="tsd-kind-icon">register</a>
+								<a href="localstorage.html#register" class="tsd-kind-icon">register</a>
 							</li>
 						</ul>
 					</li>

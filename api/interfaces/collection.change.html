@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>PersistenceMethod | @lokijs/lokijs-src</title>
+	<title>Change | @lokijs/lokijs-src</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,85 +54,71 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../classes/loki.html">Loki</a>
+					<a href="../classes/collection.html">Collection</a>
 				</li>
 				<li>
-					<a href="loki.persistencemethod.html">PersistenceMethod</a>
+					<a href="collection.change.html">Change</a>
 				</li>
 			</ul>
-			<h1>Enumeration PersistenceMethod</h1>
+			<h1>Interface Change</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="target">Change</span>
+					</li>
+				</ul>
+			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Enumeration members</h3>
+							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="loki.persistencemethod.html#adapter" class="tsd-kind-icon">ADAPTER</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="loki.persistencemethod.html#fs_storage" class="tsd-kind-icon">FS_<wbr>STORAGE</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="loki.persistencemethod.html#indexed_storage" class="tsd-kind-icon">INDEXED_<wbr>STORAGE</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="loki.persistencemethod.html#local_storage" class="tsd-kind-icon">LOCAL_<wbr>STORAGE</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="loki.persistencemethod.html#memory_storage" class="tsd-kind-icon">MEMORY_<wbr>STORAGE</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.change.html#name" class="tsd-kind-icon">name</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.change.html#obj" class="tsd-kind-icon">obj</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.change.html#operation" class="tsd-kind-icon">operation</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Enumeration members</h2>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="adapter" class="tsd-anchor"></a>
-					<h3>ADAPTER</h3>
-					<div class="tsd-signature tsd-kind-icon">ADAPTER<span class="tsd-signature-symbol">:</span> </div>
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="name" class="tsd-anchor"></a>
+					<h3>name</h3>
+					<div class="tsd-signature tsd-kind-icon">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L1107">loki/src/loki.ts:1107</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/collection.ts#L2066">loki/src/collection.ts:2066</a></li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="fs_storage" class="tsd-anchor"></a>
-					<h3>FS_<wbr>STORAGE</h3>
-					<div class="tsd-signature tsd-kind-icon">FS_<wbr>STORAGE<span class="tsd-signature-symbol">:</span> </div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="obj" class="tsd-anchor"></a>
+					<h3>obj</h3>
+					<div class="tsd-signature tsd-kind-icon">obj<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L1103">loki/src/loki.ts:1103</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/collection.ts#L2068">loki/src/collection.ts:2068</a></li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="indexed_storage" class="tsd-anchor"></a>
-					<h3>INDEXED_<wbr>STORAGE</h3>
-					<div class="tsd-signature tsd-kind-icon">INDEXED_<wbr>STORAGE<span class="tsd-signature-symbol">:</span> </div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="operation" class="tsd-anchor"></a>
+					<h3>operation</h3>
+					<div class="tsd-signature tsd-kind-icon">operation<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L1105">loki/src/loki.ts:1105</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="local_storage" class="tsd-anchor"></a>
-					<h3>LOCAL_<wbr>STORAGE</h3>
-					<div class="tsd-signature tsd-kind-icon">LOCAL_<wbr>STORAGE<span class="tsd-signature-symbol">:</span> </div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L1104">loki/src/loki.ts:1104</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="memory_storage" class="tsd-anchor"></a>
-					<h3>MEMORY_<wbr>STORAGE</h3>
-					<div class="tsd-signature tsd-kind-icon">MEMORY_<wbr>STORAGE<span class="tsd-signature-symbol">:</span> </div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L1106">loki/src/loki.ts:1106</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/collection.ts#L2067">loki/src/collection.ts:2067</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -150,26 +136,20 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-class">
-						<a href="../classes/loki.html" class="tsd-kind-icon">Loki</a>
+					<li class="current tsd-kind-class tsd-has-type-parameter">
+						<a href="../classes/collection.html" class="tsd-kind-icon">Collection</a>
 						<ul>
-							<li class="current tsd-kind-enum tsd-parent-kind-class tsd-is-static">
-								<a href="loki.persistencemethod.html" class="tsd-kind-icon">Persistence<wbr>Method</a>
+							<li class="current tsd-kind-interface tsd-parent-kind-class">
+								<a href="collection.change.html" class="tsd-kind-icon">Change</a>
 								<ul>
-									<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-										<a href="loki.persistencemethod.html#adapter" class="tsd-kind-icon">ADAPTER</a>
+									<li class=" tsd-kind-property tsd-parent-kind-interface">
+										<a href="collection.change.html#name" class="tsd-kind-icon">name</a>
 									</li>
-									<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-										<a href="loki.persistencemethod.html#fs_storage" class="tsd-kind-icon">FS_<wbr>STORAGE</a>
+									<li class=" tsd-kind-property tsd-parent-kind-interface">
+										<a href="collection.change.html#obj" class="tsd-kind-icon">obj</a>
 									</li>
-									<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-										<a href="loki.persistencemethod.html#indexed_storage" class="tsd-kind-icon">INDEXED_<wbr>STORAGE</a>
-									</li>
-									<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-										<a href="loki.persistencemethod.html#local_storage" class="tsd-kind-icon">LOCAL_<wbr>STORAGE</a>
-									</li>
-									<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-										<a href="loki.persistencemethod.html#memory_storage" class="tsd-kind-icon">MEMORY_<wbr>STORAGE</a>
+									<li class=" tsd-kind-property tsd-parent-kind-interface">
+										<a href="collection.change.html#operation" class="tsd-kind-icon">operation</a>
 									</li>
 								</ul>
 							</li>

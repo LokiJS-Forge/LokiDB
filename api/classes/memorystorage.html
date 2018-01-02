@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>LokiPartitioningAdapter | @lokijs/lokijs-src</title>
+	<title>MemoryStorage | @lokijs/lokijs-src</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="lokipartitioningadapter.html">LokiPartitioningAdapter</a>
+					<a href="memorystorage.html">MemoryStorage</a>
 				</li>
 			</ul>
-			<h1>Class LokiPartitioningAdapter</h1>
+			<h1>Class MemoryStorage</h1>
 		</div>
 	</div>
 </header>
@@ -67,14 +67,8 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>An adapter for adapters. Converts a non reference mode adapter into a reference mode adapter
-							which can perform destructuring and partitioning. Each collection will be stored in its own key/save and
-							only dirty collections will be saved. If you  turn on paging with default page size of 25megs and save
-							a 75 meg collection it should use up roughly 3 save slots (key/value pairs sent to inner adapter).
-							A dirty collection that spans three pages will save all three pages again
-							Paging mode was added mainly because Chrome has issues saving &#39;too large&#39; of a string within a
-							single IndexedDB row. If a single document update causes the collection to be flagged as dirty, all
-						of that collection&#39;s pages will be written on next save.</p>
+						<p>An in-memory persistence adapter for an in-memory database.
+						This simple &#39;key/value&#39; adapter is intended for unit testing and diagnostics.</p>
 					</div>
 				</div>
 			</section>
@@ -82,7 +76,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">LokiPartitioningAdapter</span>
+						<span class="target">MemoryStorage</span>
 					</li>
 				</ul>
 			</section>
@@ -97,24 +91,32 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
+							<h3>Interfaces</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-interface tsd-parent-kind-class"><a href="../interfaces/memorystorage.options.html" class="tsd-kind-icon">Options</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
 							<h3>Constructors</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="lokipartitioningadapter.html#constructor" class="tsd-kind-icon">constructor</a></li>
+								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="memorystorage.html#constructor" class="tsd-kind-icon">constructor</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lokipartitioningadapter.html#mode" class="tsd-kind-icon">mode</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="memorystorage.html#hashstore" class="tsd-kind-icon">hash<wbr>Store</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="memorystorage.html#options-1" class="tsd-kind-icon">options</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="lokipartitioningadapter.html#exportdatabase" class="tsd-kind-icon">export<wbr>Database</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="lokipartitioningadapter.html#loaddatabase" class="tsd-kind-icon">load<wbr>Database</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="lokipartitioningadapter.html#deregister" class="tsd-kind-icon">deregister</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="lokipartitioningadapter.html#register" class="tsd-kind-icon">register</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="memorystorage.html#deletedatabase" class="tsd-kind-icon">delete<wbr>Database</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="memorystorage.html#loaddatabase" class="tsd-kind-icon">load<wbr>Database</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="memorystorage.html#savedatabase" class="tsd-kind-icon">save<wbr>Database</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="memorystorage.html#deregister" class="tsd-kind-icon">deregister</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="memorystorage.html#register" class="tsd-kind-icon">register</a></li>
 							</ul>
 						</section>
 					</div>
@@ -126,13 +128,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Loki<wbr>Partitioning<wbr>Adapter<span class="tsd-signature-symbol">(</span>adapter<span class="tsd-signature-symbol">: </span><a href="../interfaces/storageadapter.html" class="tsd-signature-type">StorageAdapter</a>, __namedParameters<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="lokipartitioningadapter.html" class="tsd-signature-type">LokiPartitioningAdapter</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Memory<wbr>Storage<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/memorystorage.options.html" class="tsd-signature-type">Options</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="memorystorage.html" class="tsd-signature-type">MemoryStorage</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/partitioning-adapter/src/partitioning_adapter.ts#L39">partitioning-adapter/src/partitioning_adapter.ts:39</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/memory-storage/src/memory_storage.ts#L29">memory-storage/src/memory_storage.ts:29</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -140,20 +142,15 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>adapter: <a href="../interfaces/storageadapter.html" class="tsd-signature-type">StorageAdapter</a></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <a href="../interfaces/memorystorage.options.html" class="tsd-signature-type">Options</a></h5>
 									<div class="tsd-comment tsd-typography">
 										<div class="lead">
-											<p>reference to a &#39;non-reference&#39; mode loki adapter instance.</p>
+											<p>memory storage options</p>
 										</div>
 									</div>
 								</li>
-								<li>
-									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> __namedParameters: <span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
-									<ul class="tsd-parameters">
-									</ul>
-								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="lokipartitioningadapter.html" class="tsd-signature-type">LokiPartitioningAdapter</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="memorystorage.html" class="tsd-signature-type">MemoryStorage</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -161,13 +158,22 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="mode" class="tsd-anchor"></a>
-					<h3>mode</h3>
-					<div class="tsd-signature tsd-kind-icon">mode<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<a name="hashstore" class="tsd-anchor"></a>
+					<h3>hash<wbr>Store</h3>
+					<div class="tsd-signature tsd-kind-icon">hash<wbr>Store<span class="tsd-signature-symbol">:</span> <a href="../interfaces/dict.html" class="tsd-signature-type">Dict</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/storageadapter.html">StorageAdapter</a>.<a href="../interfaces/storageadapter.html#mode">mode</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/partitioning-adapter/src/partitioning_adapter.ts#L17">partitioning-adapter/src/partitioning_adapter.ts:17</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/memory-storage/src/memory_storage.ts#L10">memory-storage/src/memory_storage.ts:10</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="options-1" class="tsd-anchor"></a>
+					<h3>options</h3>
+					<div class="tsd-signature tsd-kind-icon">options<span class="tsd-signature-symbol">:</span> <a href="../interfaces/memorystorage.options.html" class="tsd-signature-type">Options</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/memory-storage/src/memory_storage.ts#L15">memory-storage/src/memory_storage.ts:15</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -175,23 +181,22 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="exportdatabase" class="tsd-anchor"></a>
-					<h3>export<wbr>Database</h3>
+					<a name="deletedatabase" class="tsd-anchor"></a>
+					<h3>delete<wbr>Database</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">export<wbr>Database<span class="tsd-signature-symbol">(</span>dbname<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, dbref<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ANY</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">delete<wbr>Database<span class="tsd-signature-symbol">(</span>dbname<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Implementation of <a href="../interfaces/storageadapter.html">StorageAdapter</a>.<a href="../interfaces/storageadapter.html#exportdatabase">exportDatabase</a></p>
+								<p>Implementation of <a href="../interfaces/storageadapter.html">StorageAdapter</a>.<a href="../interfaces/storageadapter.html#deletedatabase">deleteDatabase</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/partitioning-adapter/src/partitioning_adapter.ts#L189">partitioning-adapter/src/partitioning_adapter.ts:189</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/memory-storage/src/memory_storage.ts#L122">memory-storage/src/memory_storage.ts:122</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Saves a database by partioning into separate key/value saves.
-									(Loki &#39;reference mode&#39; persistence adapter interface function)</p>
+									<p>Deletes a database from its in-memory store.</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -200,12 +205,6 @@
 									<h5>dbname: <span class="tsd-signature-type">string</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>name of the database (filename/keyname)</p>
-									</div>
-								</li>
-								<li>
-									<h5>dbref: <span class="tsd-signature-type">ANY</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>reference to database which we will partition and save.</p>
 									</div>
 								</li>
 							</ul>
@@ -218,19 +217,19 @@
 					<a name="loaddatabase" class="tsd-anchor"></a>
 					<h3>load<wbr>Database</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">load<wbr>Database<span class="tsd-signature-symbol">(</span>dbname<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">load<wbr>Database<span class="tsd-signature-symbol">(</span>dbname<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/storageadapter.html">StorageAdapter</a>.<a href="../interfaces/storageadapter.html#loaddatabase">loadDatabase</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/partitioning-adapter/src/partitioning_adapter.ts#L77">partitioning-adapter/src/partitioning_adapter.ts:77</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/memory-storage/src/memory_storage.ts#L56">memory-storage/src/memory_storage.ts:56</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Loads a database which was partitioned into several key/value saves.
+									<p>Loads a serialized database from its in-memory store.
 									(Loki persistence adapter interface function)</p>
 								</div>
 							</div>
@@ -243,8 +242,48 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
 							<p>a Promise that resolves after the database was loaded</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="savedatabase" class="tsd-anchor"></a>
+					<h3>save<wbr>Database</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">save<wbr>Database<span class="tsd-signature-symbol">(</span>dbname<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, dbstring<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/storageadapter.html">StorageAdapter</a>.<a href="../interfaces/storageadapter.html#savedatabase">saveDatabase</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/memory-storage/src/memory_storage.ts#L87">memory-storage/src/memory_storage.ts:87</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Saves a serialized database to its in-memory store.
+									(Loki persistence adapter interface function)</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>dbname: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>name of the database (filename/keyname)</p>
+									</div>
+								</li>
+								<li>
+									<h5>dbstring: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>the database content</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>a Promise that resolves after the database was persisted</p>
 						</li>
 					</ul>
 				</section>
@@ -258,12 +297,12 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/partitioning-adapter/src/partitioning_adapter.ts#L37">partitioning-adapter/src/partitioning_adapter.ts:37</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/memory-storage/src/memory_storage.ts#L27">memory-storage/src/memory_storage.ts:27</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Deregisters the partitioning storage as plugin.</p>
+									<p>Deregisters the local storage as plugin.</p>
 								</div>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -280,12 +319,12 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/partitioning-adapter/src/partitioning_adapter.ts#L30">partitioning-adapter/src/partitioning_adapter.ts:30</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/memory-storage/src/memory_storage.ts#L20">memory-storage/src/memory_storage.ts:20</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Registers the partitioning adapter as plugin.</p>
+									<p>Registers the local storage as plugin.</p>
 								</div>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -307,25 +346,34 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class">
-						<a href="lokipartitioningadapter.html" class="tsd-kind-icon">Loki<wbr>Partitioning<wbr>Adapter</a>
+						<a href="memorystorage.html" class="tsd-kind-icon">Memory<wbr>Storage</a>
 						<ul>
+							<li class=" tsd-kind-interface tsd-parent-kind-class">
+								<a href="../interfaces/memorystorage.options.html" class="tsd-kind-icon">Options</a>
+							</li>
 							<li class=" tsd-kind-constructor tsd-parent-kind-class">
-								<a href="lokipartitioningadapter.html#constructor" class="tsd-kind-icon">constructor</a>
+								<a href="memorystorage.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="lokipartitioningadapter.html#mode" class="tsd-kind-icon">mode</a>
+								<a href="memorystorage.html#hashstore" class="tsd-kind-icon">hash<wbr>Store</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="memorystorage.html#options-1" class="tsd-kind-icon">options</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="lokipartitioningadapter.html#exportdatabase" class="tsd-kind-icon">export<wbr>Database</a>
+								<a href="memorystorage.html#deletedatabase" class="tsd-kind-icon">delete<wbr>Database</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="lokipartitioningadapter.html#loaddatabase" class="tsd-kind-icon">load<wbr>Database</a>
+								<a href="memorystorage.html#loaddatabase" class="tsd-kind-icon">load<wbr>Database</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="memorystorage.html#savedatabase" class="tsd-kind-icon">save<wbr>Database</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
-								<a href="lokipartitioningadapter.html#deregister" class="tsd-kind-icon">deregister</a>
+								<a href="memorystorage.html#deregister" class="tsd-kind-icon">deregister</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
-								<a href="lokipartitioningadapter.html#register" class="tsd-kind-icon">register</a>
+								<a href="memorystorage.html#register" class="tsd-kind-icon">register</a>
 							</li>
 						</ul>
 					</li>

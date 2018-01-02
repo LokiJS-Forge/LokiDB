@@ -82,14 +82,6 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Enumerations</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-enum tsd-parent-kind-class tsd-is-static"><a href="../enums/loki.environment.html" class="tsd-kind-icon">Environment</a></li>
-								<li class="tsd-kind-enum tsd-parent-kind-class tsd-is-static"><a href="../enums/loki.persistencemethod.html" class="tsd-kind-icon">Persistence<wbr>Method</a></li>
-								<li class="tsd-kind-enum tsd-parent-kind-class tsd-is-static"><a href="../enums/loki.serializationmethod.html" class="tsd-kind-icon">Serialization<wbr>Method</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section ">
 							<h3>Interfaces</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-interface tsd-parent-kind-class"><a href="../interfaces/loki.copyoptions.html" class="tsd-kind-icon">Copy<wbr>Options</a></li>
@@ -98,13 +90,17 @@
 								<li class="tsd-kind-interface tsd-parent-kind-class"><a href="../interfaces/loki.persistenceoptions.html" class="tsd-kind-icon">Persistence<wbr>Options</a></li>
 								<li class="tsd-kind-interface tsd-parent-kind-class"><a href="../interfaces/loki.serializedestructuredoptions.html" class="tsd-kind-icon">Serialize<wbr>Destructured<wbr>Options</a></li>
 								<li class="tsd-kind-interface tsd-parent-kind-class"><a href="../interfaces/loki.serializeoptions.html" class="tsd-kind-icon">Serialize<wbr>Options</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-class"><a href="../interfaces/loki.serialized.html" class="tsd-kind-icon">Serialized</a></li>
 								<li class="tsd-kind-interface tsd-parent-kind-class"><a href="../interfaces/loki.throttleddrainoptions.html" class="tsd-kind-icon">Throttled<wbr>Drain<wbr>Options</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Type aliases</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-type-alias tsd-parent-kind-class tsd-is-static"><a href="loki.html#environment" class="tsd-kind-icon">Environment</a></li>
 								<li class="tsd-kind-type-alias tsd-parent-kind-class tsd-is-static"><a href="loki.html#loaddatabaseoptions" class="tsd-kind-icon">Load<wbr>Database<wbr>Options</a></li>
+								<li class="tsd-kind-type-alias tsd-parent-kind-class tsd-is-static"><a href="loki.html#persistencemethod" class="tsd-kind-icon">Persistence<wbr>Method</a></li>
+								<li class="tsd-kind-type-alias tsd-parent-kind-class tsd-is-static"><a href="loki.html#serializationmethod" class="tsd-kind-icon">Serialization<wbr>Method</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
@@ -146,7 +142,7 @@
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="loki.html#on" class="tsd-kind-icon">on</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="loki.html#removecollection" class="tsd-kind-icon">remove<wbr>Collection</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="loki.html#removelistener" class="tsd-kind-icon">remove<wbr>Listener</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="loki.html#renamecollection" class="tsd-kind-icon">rename<wbr>Collection</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"><a href="loki.html#renamecollection" class="tsd-kind-icon">rename<wbr>Collection</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="loki.html#savedatabase" class="tsd-kind-icon">save<wbr>Database</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="loki.html#serialize" class="tsd-kind-icon">serialize</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="loki.html#serializechanges" class="tsd-kind-icon">serialize<wbr>Changes</a></li>
@@ -162,12 +158,42 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Type aliases</h2>
 				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-class tsd-is-static">
+					<a name="environment" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> Environment</h3>
+					<div class="tsd-signature tsd-kind-icon">Environment<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"NATIVESCRIPT"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"NODEJS"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"CORDOVA"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"BROWSER"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"MEMORY"</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L1099">loki/src/loki.ts:1099</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-class tsd-is-static">
 					<a name="loaddatabaseoptions" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> Load<wbr>Database<wbr>Options</h3>
 					<div class="tsd-signature tsd-kind-icon">Load<wbr>Database<wbr>Options<span class="tsd-signature-symbol">:</span> <a href="../interfaces/collection.deserializeoptions.html" class="tsd-signature-type">DeserializeOptions</a><span class="tsd-signature-symbol"> &amp; </span><a href="../interfaces/loki.throttleddrainoptions.html" class="tsd-signature-type">ThrottledDrainOptions</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L1094">loki/src/loki.ts:1094</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L1093">loki/src/loki.ts:1093</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-class tsd-is-static">
+					<a name="persistencemethod" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> Persistence<wbr>Method</h3>
+					<div class="tsd-signature tsd-kind-icon">Persistence<wbr>Method<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"fs-storage"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"local-storage"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"indexed-storage"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"memory-storage"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"adapter"</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L1097">loki/src/loki.ts:1097</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-class tsd-is-static">
+					<a name="serializationmethod" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> Serialization<wbr>Method</h3>
+					<div class="tsd-signature tsd-kind-icon">Serialization<wbr>Method<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"normal"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"pretty"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"destructured"</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L1095">loki/src/loki.ts:1095</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -185,7 +211,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides <a href="lokieventemitter.html">LokiEventEmitter</a>.<a href="lokieventemitter.html#constructor">constructor</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L59">loki/src/loki.ts:59</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L56">loki/src/loki.ts:56</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -221,7 +247,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="lokieventemitter.html">LokiEventEmitter</a>.<a href="lokieventemitter.html#asynclisteners">asyncListeners</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/event_emitter.ts#L20">loki/src/event_emitter.ts:20</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/event_emitter.ts#L18">loki/src/event_emitter.ts:18</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -238,7 +264,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="lokieventemitter.html">LokiEventEmitter</a>.<a href="lokieventemitter.html#events">events</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/event_emitter.ts#L14">loki/src/event_emitter.ts:14</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/event_emitter.ts#L12">loki/src/event_emitter.ts:12</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -254,13 +280,13 @@
 					<a name="addcollection" class="tsd-anchor"></a>
 					<h3>add<wbr>Collection</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">add<wbr>Collection&lt;T&gt;<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/collection.options.html" class="tsd-signature-type">Options</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="collection.html" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">add<wbr>Collection&lt;T, U&gt;<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/collection.options.html" class="tsd-signature-type">Options</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="collection.html" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">U</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L253">loki/src/loki.ts:253</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L251">loki/src/loki.ts:251</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -273,6 +299,9 @@
 								<li>
 									<h4>T<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></h4>
 								</li>
+								<li>
+									<h4>U<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></h4>
+								</li>
 							</ul>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -283,10 +312,10 @@
 									</div>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> options: <a href="../interfaces/collection.options.html" class="tsd-signature-type">Options</a><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> options: <a href="../interfaces/collection.options.html" class="tsd-signature-type">Options</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="collection.html" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="collection.html" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">U</span><span class="tsd-signature-symbol">&gt;</span></h4>
 							<p>a reference to the collection which was just added</p>
 						</li>
 					</ul>
@@ -302,7 +331,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="lokieventemitter.html">LokiEventEmitter</a>.<a href="lokieventemitter.html#addlistener">addListener</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/event_emitter.ts#L80">loki/src/event_emitter.ts:80</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/event_emitter.ts#L78">loki/src/event_emitter.ts:78</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -341,7 +370,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L1039">loki/src/loki.ts:1039</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L1023">loki/src/loki.ts:1023</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -363,7 +392,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L1016">loki/src/loki.ts:1016</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L1000">loki/src/loki.ts:1000</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -385,7 +414,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L806">loki/src/loki.ts:806</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L790">loki/src/loki.ts:790</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -407,7 +436,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L744">loki/src/loki.ts:744</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L728">loki/src/loki.ts:728</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -431,7 +460,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L217">loki/src/loki.ts:217</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L215">loki/src/loki.ts:215</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -462,7 +491,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L1004">loki/src/loki.ts:1004</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L988">loki/src/loki.ts:988</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -479,13 +508,13 @@
 					<a name="deserializecollection" class="tsd-anchor"></a>
 					<h3>deserialize<wbr>Collection</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">deserialize<wbr>Collection&lt;T&gt;<span class="tsd-signature-symbol">(</span>destructuredSource<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/loki.deserializecollectionoptions.html" class="tsd-signature-type">DeserializeCollectionOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">object</span></li>
+						<li class="tsd-signature tsd-kind-icon">deserialize<wbr>Collection&lt;T&gt;<span class="tsd-signature-symbol">(</span>destructuredSource<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/loki.deserializecollectionoptions.html" class="tsd-signature-type">DeserializeCollectionOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L664">loki/src/loki.ts:664</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L646">loki/src/loki.ts:646</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -514,10 +543,7 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">T</span>
-								<span class="tsd-signature-symbol"> &amp; </span>
-								<span class="tsd-signature-type">object</span>
-							</h4>
+							<h4 class="tsd-returns-title">Returns <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h4>
 							<p>an array of documents to attach to collection.data.</p>
 						</li>
 					</ul>
@@ -526,13 +552,13 @@
 					<a name="deserializedestructured" class="tsd-anchor"></a>
 					<h3>deserialize<wbr>Destructured</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">deserialize<wbr>Destructured<span class="tsd-signature-symbol">(</span>destructuredSource<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ANY</span>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/loki.serializedestructuredoptions.html" class="tsd-signature-type">SerializeDestructuredOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+						<li class="tsd-signature tsd-kind-icon">deserialize<wbr>Destructured<span class="tsd-signature-symbol">(</span>destructuredSource<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/loki.serializedestructuredoptions.html" class="tsd-signature-type">SerializeDestructuredOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L560">loki/src/loki.ts:560</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L551">loki/src/loki.ts:551</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -546,7 +572,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>destructuredSource: <span class="tsd-signature-type">ANY</span></h5>
+									<h5>destructuredSource: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>destructured json or array to deserialize from</p>
 									</div>
@@ -567,14 +593,14 @@
 					<a name="emit" class="tsd-anchor"></a>
 					<h3>emit</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">emit<span class="tsd-signature-symbol">(</span>eventName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, <span class="tsd-signature-symbol">...</span>data<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ANY</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">emit<span class="tsd-signature-symbol">(</span>eventName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, <span class="tsd-signature-symbol">...</span>data<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="lokieventemitter.html">LokiEventEmitter</a>.<a href="lokieventemitter.html#emit">emit</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/event_emitter.ts#L58">loki/src/event_emitter.ts:58</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/event_emitter.ts#L56">loki/src/event_emitter.ts:56</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -593,7 +619,7 @@
 									</div>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagRest">Rest</span> <span class="tsd-signature-symbol">...</span>data: <span class="tsd-signature-type">ANY</span><span class="tsd-signature-symbol">[]</span></h5>
+									<h5><span class="tsd-flag ts-flagRest">Rest</span> <span class="tsd-signature-symbol">...</span>data: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>optional object passed with the event</p>
 									</div>
@@ -607,13 +633,13 @@
 					<a name="generatechangesnotification" class="tsd-anchor"></a>
 					<h3>generate<wbr>Changes<wbr>Notification</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">generate<wbr>Changes<wbr>Notification<span class="tsd-signature-symbol">(</span>arrayOfCollectionNames<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></li>
+						<li class="tsd-signature tsd-kind-icon">generate<wbr>Changes<wbr>Notification<span class="tsd-signature-symbol">(</span>arrayOfCollectionNames<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/collection.change.html" class="tsd-signature-type">Change</a><span class="tsd-signature-symbol">[]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L782">loki/src/loki.ts:782</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L766">loki/src/loki.ts:766</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -634,7 +660,7 @@
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> arrayOfCollectionNames: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/collection.change.html" class="tsd-signature-type">Change</a><span class="tsd-signature-symbol">[]</span></h4>
 							<p>array of changes</p>
 						</li>
 					</ul>
@@ -649,7 +675,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L275">loki/src/loki.ts:275</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L273">loki/src/loki.ts:273</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -687,7 +713,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L336">loki/src/loki.ts:336</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L333">loki/src/loki.ts:333</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
@@ -704,7 +730,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L139">loki/src/loki.ts:139</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L136">loki/src/loki.ts:136</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -733,7 +759,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L305">loki/src/loki.ts:305</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L302">loki/src/loki.ts:302</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">[]</span></h4>
@@ -750,7 +776,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L263">loki/src/loki.ts:263</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L261">loki/src/loki.ts:261</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -773,7 +799,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L919">loki/src/loki.ts:919</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L903">loki/src/loki.ts:903</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -800,13 +826,13 @@
 					<a name="loadjson" class="tsd-anchor"></a>
 					<h3>loadJSON</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">loadJSON<span class="tsd-signature-symbol">(</span>serializedDb<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">ANY</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">loadJSON<span class="tsd-signature-symbol">(</span>serializedDb<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/collection.deserializeoptions.html" class="tsd-signature-type">DeserializeOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L698">loki/src/loki.ts:698</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L680">loki/src/loki.ts:680</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -823,7 +849,7 @@
 									</div>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">ANY</span></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <a href="../interfaces/collection.deserializeoptions.html" class="tsd-signature-type">DeserializeOptions</a></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>apply or override collection level settings</p>
 									</div>
@@ -837,13 +863,14 @@
 					<a name="loadjsonobject" class="tsd-anchor"></a>
 					<h3>loadJSONObject</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">loadJSONObject<span class="tsd-signature-symbol">(</span>dbObject<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ANY</span>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/collection.deserializeoptions.html" class="tsd-signature-type">DeserializeOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">loadJSONObject<span class="tsd-signature-symbol">(</span>dbObject<span class="tsd-signature-symbol">: </span><a href="loki.html" class="tsd-signature-type">Loki</a>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/collection.deserializeoptions.html" class="tsd-signature-type">DeserializeOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">loadJSONObject<span class="tsd-signature-symbol">(</span>dbObject<span class="tsd-signature-symbol">: </span><a href="../interfaces/loki.serialized.html" class="tsd-signature-type">Serialized</a>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/collection.deserializeoptions.html" class="tsd-signature-type">DeserializeOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L727">loki/src/loki.ts:727</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L709">loki/src/loki.ts:709</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -854,16 +881,33 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>dbObject: <span class="tsd-signature-type">ANY</span></h5>
+									<h5>dbObject: <a href="loki.html" class="tsd-signature-type">Loki</a></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>a serialized loki database string</p>
+										<p>a serialized loki database object</p>
 									</div>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> options: <a href="../interfaces/collection.deserializeoptions.html" class="tsd-signature-type">DeserializeOptions</a><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <a href="../interfaces/collection.deserializeoptions.html" class="tsd-signature-type">DeserializeOptions</a></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>apply or override collection level settings</p>
 									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L710">loki/src/loki.ts:710</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>dbObject: <a href="../interfaces/loki.serialized.html" class="tsd-signature-type">Serialized</a></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <a href="../interfaces/collection.deserializeoptions.html" class="tsd-signature-type">DeserializeOptions</a></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -881,7 +925,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="lokieventemitter.html">LokiEventEmitter</a>.<a href="lokieventemitter.html#on">on</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/event_emitter.ts#L33">loki/src/event_emitter.ts:33</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/event_emitter.ts#L31">loki/src/event_emitter.ts:31</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -919,7 +963,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L320">loki/src/loki.ts:320</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L317">loki/src/loki.ts:317</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -951,7 +995,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="lokieventemitter.html">LokiEventEmitter</a>.<a href="lokieventemitter.html#removelistener">removeListener</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/event_emitter.ts#L89">loki/src/event_emitter.ts:89</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/event_emitter.ts#L87">loki/src/event_emitter.ts:87</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -978,17 +1022,17 @@
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
 					<a name="renamecollection" class="tsd-anchor"></a>
 					<h3>rename<wbr>Collection</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">rename<wbr>Collection<span class="tsd-signature-symbol">(</span>oldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, newName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="collection.html" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">&gt;</span></li>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
+						<li class="tsd-signature tsd-kind-icon">rename<wbr>Collection&lt;T&gt;<span class="tsd-signature-symbol">(</span>oldName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, newName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="collection.html" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L296">loki/src/loki.ts:296</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L294">loki/src/loki.ts:294</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -996,6 +1040,12 @@
 									<p>Renames an existing loki collection</p>
 								</div>
 							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>T<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></h4>
+								</li>
+							</ul>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
@@ -1011,7 +1061,7 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="collection.html" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="collection.html" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h4>
 							<p>reference to the newly renamed collection</p>
 						</li>
 					</ul>
@@ -1026,7 +1076,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L974">loki/src/loki.ts:974</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L958">loki/src/loki.ts:958</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1052,7 +1102,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L345">loki/src/loki.ts:345</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L342">loki/src/loki.ts:342</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1084,7 +1134,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L799">loki/src/loki.ts:799</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L783">loki/src/loki.ts:783</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1107,13 +1157,13 @@
 					<a name="serializecollection" class="tsd-anchor"></a>
 					<h3>serialize<wbr>Collection</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">serialize<wbr>Collection<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">ANY</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></li>
+						<li class="tsd-signature tsd-kind-icon">serialize<wbr>Collection<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L512">loki/src/loki.ts:512</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L509">loki/src/loki.ts:509</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1124,10 +1174,12 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> options: <span class="tsd-signature-type">ANY</span><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> options: <span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>used to determine output of method</p>
 									</div>
+									<ul class="tsd-parameters">
+									</ul>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span>
@@ -1148,7 +1200,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L394">loki/src/loki.ts:394</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L391">loki/src/loki.ts:391</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1186,7 +1238,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L824">loki/src/loki.ts:824</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L808">loki/src/loki.ts:808</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1212,18 +1264,16 @@
 					<a name="tojson" class="tsd-anchor"></a>
 					<h3>toJSON</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">toJSON<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span></li>
+						<li class="tsd-signature tsd-kind-icon">toJSON<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/loki.serialized.html" class="tsd-signature-type">Serialized</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/aa719f4/packages/loki/src/loki.ts#L363">loki/src/loki.ts:363</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/loki/src/loki.ts#L360">loki/src/loki.ts:360</a></li>
 								</ul>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">object</span></h4>
-							<ul class="tsd-parameters">
-							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/loki.serialized.html" class="tsd-signature-type">Serialized</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -1244,15 +1294,6 @@
 					<li class="current tsd-kind-class">
 						<a href="loki.html" class="tsd-kind-icon">Loki</a>
 						<ul>
-							<li class=" tsd-kind-enum tsd-parent-kind-class tsd-is-static">
-								<a href="../enums/loki.environment.html" class="tsd-kind-icon">Environment</a>
-							</li>
-							<li class=" tsd-kind-enum tsd-parent-kind-class tsd-is-static">
-								<a href="../enums/loki.persistencemethod.html" class="tsd-kind-icon">Persistence<wbr>Method</a>
-							</li>
-							<li class=" tsd-kind-enum tsd-parent-kind-class tsd-is-static">
-								<a href="../enums/loki.serializationmethod.html" class="tsd-kind-icon">Serialization<wbr>Method</a>
-							</li>
 							<li class=" tsd-kind-interface tsd-parent-kind-class">
 								<a href="../interfaces/loki.copyoptions.html" class="tsd-kind-icon">Copy<wbr>Options</a>
 							</li>
@@ -1272,10 +1313,22 @@
 								<a href="../interfaces/loki.serializeoptions.html" class="tsd-kind-icon">Serialize<wbr>Options</a>
 							</li>
 							<li class=" tsd-kind-interface tsd-parent-kind-class">
+								<a href="../interfaces/loki.serialized.html" class="tsd-kind-icon">Serialized</a>
+							</li>
+							<li class=" tsd-kind-interface tsd-parent-kind-class">
 								<a href="../interfaces/loki.throttleddrainoptions.html" class="tsd-kind-icon">Throttled<wbr>Drain<wbr>Options</a>
 							</li>
 							<li class=" tsd-kind-type-alias tsd-parent-kind-class tsd-is-static">
+								<a href="loki.html#environment" class="tsd-kind-icon">Environment</a>
+							</li>
+							<li class=" tsd-kind-type-alias tsd-parent-kind-class tsd-is-static">
 								<a href="loki.html#loaddatabaseoptions" class="tsd-kind-icon">Load<wbr>Database<wbr>Options</a>
+							</li>
+							<li class=" tsd-kind-type-alias tsd-parent-kind-class tsd-is-static">
+								<a href="loki.html#persistencemethod" class="tsd-kind-icon">Persistence<wbr>Method</a>
+							</li>
+							<li class=" tsd-kind-type-alias tsd-parent-kind-class tsd-is-static">
+								<a href="loki.html#serializationmethod" class="tsd-kind-icon">Serialization<wbr>Method</a>
 							</li>
 							<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite">
 								<a href="loki.html#constructor" class="tsd-kind-icon">constructor</a>
@@ -1355,7 +1408,7 @@
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
 								<a href="loki.html#removelistener" class="tsd-kind-icon">remove<wbr>Listener</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
 								<a href="loki.html#renamecollection" class="tsd-kind-icon">rename<wbr>Collection</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
