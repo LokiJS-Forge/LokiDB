@@ -20,7 +20,7 @@ describe("full-text search", () => {
 
   beforeEach(() => {
     db = new Loki("MyDB");
-    coll = db.addCollection<User>("User", {fullTextSearch: [{name: "name"}]});
+    coll = db.addCollection<User>("User", {fullTextSearch: [{field: "name"}]});
 
     coll.insert([
       {name: "quark", id: 1},
@@ -179,7 +179,7 @@ describe("full-text search", () => {
     const tkz = new Tokenizer();
     tkz.setSplitter("abc", (a: string) => a.split(" "));
     tkz.add("def", (a: string) => a);
-    coll = db.addCollection<User>("User", {fullTextSearch: [{name: "name", tokenizer: tkz}]});
+    coll = db.addCollection<User>("User", {fullTextSearch: [{field: "name", tokenizer: tkz}]});
     coll.insert([
       {name: "quark", id: 1},
       {name: "quarrk", id: 2},

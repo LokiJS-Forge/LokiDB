@@ -266,7 +266,7 @@ describe("Compare scoring against elasticsearch", () => {
     tkz.add("stop-word", (token) => (token !== "habitasse" && token !== "morbi") ? token : "");
 
     let fts = new FullTextSearch([{
-      name: FIELD_NAME_1,
+      field: FIELD_NAME_1,
       tokenizer: tkz
     }], "$loki");
 
