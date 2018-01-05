@@ -37,7 +37,7 @@ describe("fuzzy query", () => {
 
   it("Fuzzy query (1).", () => {
     let docs = ["aaaaa", "aaaab", "aaabb", "aabbb", "abbbb", "bbbbb", "ddddd"];
-    let fts = new FullTextSearch([{name: "body"}], "$loki");
+    let fts = new FullTextSearch([{field: "body"}], "$loki");
     for (let i = 0; i < docs.length; i++) {
       fts.addDocument({
         $loki: i,
@@ -141,7 +141,7 @@ describe("fuzzy query", () => {
   it("Fuzzy query (2).", () => {
     let docs = ["lange", "lueth", "pirsing", "riegel", "trzecziak", "walker", "wbr", "we", "web", "webe", "weber",
       "webere", "webree", "weberei", "wbre", "wittkopf", "wojnarowski", "wricke"];
-    let fts = new FullTextSearch([{name: "body"}], "$loki");
+    let fts = new FullTextSearch([{field: "body"}], "$loki");
     for (let i = 0; i < docs.length; i++) {
       fts.addDocument({
         $loki: i,
@@ -164,7 +164,7 @@ describe("fuzzy query", () => {
       return tokens.split(" ");
     });
 
-    let fts = new FullTextSearch([{name: "body", tokenizer: tkz}], "$loki");
+    let fts = new FullTextSearch([{field: "body", tokenizer: tkz}], "$loki");
     for (let i = 0; i < docs.length; i++) {
       fts.addDocument({
         $loki: i,
@@ -178,7 +178,7 @@ describe("fuzzy query", () => {
   it("Fuzzy query extended.", () => {
     let docs = ["walker", "wbr", "we", "web", "webe", "weber", "webere", "webree", "weberei", "wbes", "wbert", "wbb",
       "xeb", "wrr", "wrr"];
-    let fts = new FullTextSearch([{name: "body"}], "$loki");
+    let fts = new FullTextSearch([{field: "body"}], "$loki");
     for (let i = 0; i < docs.length; i++) {
       fts.addDocument({
         $loki: i,
@@ -195,7 +195,7 @@ describe("fuzzy query", () => {
 
   it("Fuzzy query extended.", () => {
     let docs = ["abca", "abcd", "abcde"];
-    let fts = new FullTextSearch([{name: "body"}], "$loki");
+    let fts = new FullTextSearch([{field: "body"}], "$loki");
     for (let i = 0; i < docs.length; i++) {
       fts.addDocument({
         $loki: i,

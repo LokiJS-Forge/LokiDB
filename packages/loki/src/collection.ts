@@ -174,8 +174,9 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {boolean} [options.serializableIndices =true] - converts date values on binary indexed property values are serializable
    * @param {string} [options.cloneMethod="deep"] - the clone method
    * @param {number} [options.transactional=false] - ?
-   * @param {number} options.ttl - ?
-   * @param {number} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
+   * @param {number} [options.ttl=] - ?
+   * @param {number} [options.ttlInterval=] - time interval for clearing out 'aged' documents; not set by default.
+   * @param {FullTextSearch.FieldOptions} [options.fullTextSearch=] - the full-text search options
    * @see {@link Loki#addCollection} for normal creation of collections
    */
   constructor(name: string, options: Collection.Options<TData> = {}) {

@@ -29,7 +29,7 @@ export function createLanguageTest(language: string, data: LanguageTestData) {
   describe("language-" + language + ":", () => {
     // Setup full-text search.
     let fts = new FullTextSearch([{
-      name: "body",
+      field: "body",
       tokenizer: data.tokenizer
     }], "$loki");
 
