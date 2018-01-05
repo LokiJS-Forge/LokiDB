@@ -2,31 +2,44 @@
 
 "use strict";
 
+// Needed to use onclick function.
+const $$EDITORS = [];
+
+function switchToEditMode(pos) {
+  $$EDITORS[pos - 1].switchToEditMode();
+}
+
 class JavascriptEditor {
   constructor(source) {
+    const pos = $$EDITORS.push(this);
+
     this._view = source;
     this._parent = this._view.parent();
 
     // Buttons in view mode.
-    this._view_controll = $("<div />");
+    this._view_controll = $("<div />", {
+      style: "position: absolute;top:0;right:0;z-index:10;",
+    });
     let edit_btn = $("<input />", {
       type: "button",
-      class: "jse-button",
-      value: "Run this code",
-      on: {
-        click: () => {
-          this.switchToEditMode();
-        }
-      }
+      class: "btn btn-info jse-button",
+      value: "Run this code!",
+      onclick: "switchToEditMode(" + pos + ");"
     });
     this._view_controll.append(edit_btn);
-    this._parent.prepend(this._view_controll);
+    const wrapped_view = this._parent.children().first().wrap($("<div />", {
+      style: "position:relative;",
+    }));
+    wrapped_view.append(this._view_controll);
+
 
     // Buttons in edit mode.
-    this._edit_controll = $("<div />");
+    this._edit_controll = $("<div />", {
+      style: "position: absolute;top:0;right:0;z-index:10;",
+    });
     let run_btn = $("<input />", {
       type: "button",
-      class: "jse-button",
+      class: "btn btn-info jse-button",
       value: "Run",
       on: {
         click: () => {
@@ -36,7 +49,7 @@ class JavascriptEditor {
     });
     let exit_btn = $("<input />", {
       type: "button",
-      class: "jse-button",
+      class: "btn btn-neutral jse-button",
       value: "Exit",
       on: {
         click: () => {
@@ -46,7 +59,7 @@ class JavascriptEditor {
     });
     this._edit_controll.append(run_btn);
     this._edit_controll.append(exit_btn);
-    this._parent.prepend(this._edit_controll);
+    // this._parent.prepend(this._edit_controll);
 
     // Editor in edit mode.
     this._editor = $("<div />", {
@@ -60,7 +73,6 @@ class JavascriptEditor {
       lineNumbers: true,
       matchBrackets: true,
       tabSize: 2,
-      //readOnly: true,
       extraKeys: {
         "Tab": function (cm) {
           const spaces = new Array(cm.getOption("indentUnit") + 1).join(" ");
@@ -76,6 +88,7 @@ class JavascriptEditor {
       class: "jse-output",
     });
     this._editor.append(this._output);
+    this._editor.append(this._edit_controll);
 
     this.switchToViewMode();
   }
@@ -137,6 +150,10 @@ class JavascriptEditor {
       eval("(($__output$) => {" + hook + this._editor_window.getValue() + "})")(this._output);
     } catch (e) {
       console.error(e);
+      this._output.append($("<span />", {
+        class: "jse-output-error",
+        text: String(e)
+      }));
     }
 
     // Enable buttons.
@@ -158,7 +175,7 @@ class JavascriptEditor {
       return ret + "]";
     }
     if (type !== "[object Object]") {
-      return "" + value;
+      return String(value);
     }
     return "{" + Object.keys(value).map(key => `${key}: ${JavascriptEditor.stringify(value[key])}`).join(",") + "}";
   }
