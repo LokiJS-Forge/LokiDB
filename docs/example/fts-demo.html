@@ -1,0 +1,223 @@
+<div>
+  <style>
+    #fts-documents {
+      display: flex;
+    }
+
+    #fts-documents .fts-document {
+      margin-left: 5px;
+      margin-right: 5px;
+      text-align: center;
+    }
+
+    #fts-documents .fts-document textarea {
+      overflow: hidden;
+      resize: none;
+    }
+
+    #container {
+      margin: 0 auto;
+      width: 40%;
+      display: flex; /* establish flex container */
+      justify-content: space-between; /* switched from default (flex-start, see below) */
+    }
+
+    /* Tooltip container */
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+
+    /* Tooltip text */
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 200px;
+      background-color: #555;
+      color: #fff;
+      text-align: center;
+      padding: 5px 0;
+      border-radius: 6px;
+
+      /* Position the tooltip text */
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      margin-left: -100px;
+
+      /* Fade in tooltip */
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: smaller;
+    }
+
+    /* Tooltip arrow */
+    .tooltip .tooltiptext::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: #555 transparent transparent transparent;
+    }
+
+    /* Show the tooltip text when you mouse over the tooltip container */
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+
+  </style>
+  <div
+    style="border-top: 1px solid #eee;border-bottom:1px solid #eee;background:#fafafa;margin-bottom:20px;padding:20px 10px;text-align:center">
+    <div id="fts-documents">
+      <div class="fts-document">
+        <span>Document 1</span>
+        <textarea docId="1">Betty Botter bought some butter</textarea>
+      </div>
+      <div class="fts-document">
+        <span>Document 2</span>
+        <textarea docId="2">But she said the butter’s bitter</textarea>
+      </div>
+      <div class="fts-document">
+        <span>Document 3</span>
+        <textarea docId="3">If I put it in my batter, it will make my batter bitter</textarea>
+      </div>
+      <div class="fts-document">
+        <span>Document 4</span>
+        <textarea docId="4">But a bit of better butter will make my batter better</textarea>
+      </div>
+      <div class="fts-document">
+        <span>Document 5</span>
+        <textarea docId="5">So ‘twas better Betty Botter bought a bit of better butter</textarea>
+      </div>
+    </div>
+    <div style="line-height:150%">
+      <div>Query type:
+        <div id="container">
+          <div class="tooltip">
+            <input type="radio" name="queryType" value="term">Term
+            <span class="tooltiptext"></span>
+          </div>
+          <div class="tooltip">
+            <input type="radio" name="queryType" value="wildcard">Wildcard
+            <span class="tooltiptext"></span>
+          </div>
+          <div class="tooltip">
+            <input type="radio" name="queryType" value="fuzzy">Fuzzy
+            <span class="tooltiptext"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <input id="fts-demo-input" autofocus type="text" name="q" placeholder="Type..."
+           style="width:100%;max-width:80%;outline:0" disabled>
+
+    <script type="text/javascript">
+      $(document).ready(() => {
+        LokiFullTextSearch.register();
+
+        // Create database.
+        const loki = new Loki();
+        const tk = new LokiFullTextSearch.Tokenizer();
+        tk.setSplitter("whitespace", (str) => {
+          let tokens = str.split(/[^\S]+/);
+          for (let i = 0; i < tokens.length; i++) {
+            tokens[i] = tokens[i].toLowerCase();
+          }
+          return tokens;
+        });
+
+        // Fill collection with empty data.
+        const coll = loki.addCollection("test", {fullTextSearch: [{field: "txt", tokenizer: tk}]});
+        for (let i = 0; i < 5; i++) {
+          coll.insert({txt: ""});
+        }
+
+        // Read document content.
+        $(".fts-document").on('change keyup', 'textarea', function () {
+          // Align the size of the text areas.
+          let max_height = 0;
+          const textareas = $(".fts-document textarea");
+          textareas.each(function (textarea) {
+            $(this)[0].style.height = 0;
+            max_height = Math.max(max_height, $(this)[0].scrollHeight)
+          });
+          textareas.each(function (textarea) {
+            $(this).height(max_height);
+          });
+
+          // Get content of textarea and update associated loki document.
+          const docId = Number($(this).attr("docId"));
+          const doc = coll.find({"$loki": docId})[0];
+          doc.txt = $(this).val();
+          coll.update(doc);
+        }).find('textarea').change();
+
+        const queries = {
+          term: {
+            hint: "Type the exact word...",
+            query: {query: {type: "term", field: "txt", value: ""}},
+          },
+          wildcard: {
+            hint: "Type a word with ? or * as placeholders...",
+            query: {query: {type: "wildcard", field: "txt", value: "", enable_scoring: true}},
+          },
+          fuzzy: {
+            hint: "Type a word misspelled...",
+            query: {query: {type: "fuzzy", field: "txt", value: "", fuzziness: 2, prefix_length: 0}}
+          }
+        };
+        // Setting up tooltips.
+        for (const key of Object.keys(queries)) {
+          $("input[name=queryType][value=" + key + "]").next().text(queries[key].hint);
+        }
+
+        const fts_demo_input = $("#fts-demo-input");
+
+        // Set default selection.
+        fts_demo_input.attr("placeholder", queries.term.hint);
+        $("input[name=queryType][value='term']").prop("checked", true).change();
+
+        $("input:radio[name=queryType]").change(function () {
+          // Auto focus input
+          setTimeout(() => fts_demo_input.focus(), 500);
+          fts_demo_input.attr("placeholder", queries[$(this).val()].hint);
+        });
+
+        new autoComplete({
+          selector: '#fts-demo-input',
+          minChars: 0,
+          cache: false,
+          source: (term, suggest) => {
+            const query = queries[$("input[name=queryType]:checked").val()].query;
+            query.query.value = term.toLowerCase();
+            const rs = coll.chain().find({$fts: query}).sortByScoring();
+            const result = rs.data();
+            const scoring = rs.getScoring();
+            const suggestions = [];
+            for (let i = 0; i < result.length; i++) {
+              suggestions.push({txt: result[i].txt, score: scoring[i].score, docId: result[i].$loki});
+            }
+            suggest(suggestions);
+          },
+          renderItem: (item, search) => {
+            search = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            const re = new RegExp("(" + search.split(' ').join('|') + ")", "gi");
+            return '<div class="autocomplete-suggestion">'
+              + item.docId + ") "
+              + item.txt.replace(re, "<b>$1</b>")
+              + '<strong style="float:right;">[' + item.score.toFixed(2) + ']</strong></div>';
+          },
+        });
+        // Prevent auto focus.
+        setTimeout(() => {
+          $('#fts-demo-input').removeAttr("disabled");
+        }, 100);
+
+      });
+    </script>
+  </div>
+</div>

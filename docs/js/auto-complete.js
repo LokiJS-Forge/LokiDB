@@ -168,6 +168,11 @@ var autoComplete = (function(){
               clearTimeout(that.timer);
               if (o.cache) {
                 if (val in that.cache) { suggest(that.cache[val]); return; }
+                // no requests if previous suggestions were empty
+                for (var i=1; i<val.length-o.minChars; i++) {
+                  var part = val.slice(0, val.length-i);
+                  if (part in that.cache && !that.cache[part].length) { suggest([]); return; }
+                }
               }
               that.timer = setTimeout(function(){ o.source(val, suggest) }, o.delay);
             }
