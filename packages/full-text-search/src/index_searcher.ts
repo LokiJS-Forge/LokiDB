@@ -126,9 +126,9 @@ export class IndexSearcher {
         break;
       }
       case "fuzzy": {
-        const f = fuzzySearch(query, root);
+        const [f, idf] = fuzzySearch(query, root);
         for (let i = 0; i < f.length; i++) {
-          this._scorer.score(fieldName, boost * f[i].boost, f[i].index, doScoring, queryResults, f[i].term);
+          this._scorer.score(fieldName, boost * f[i].boost, f[i].index, doScoring, queryResults, f[i].term, idf);
         }
         break;
       }
@@ -261,12 +261,56 @@ export class IndexSearcher {
 type FuzzyResult = { index: Index, term: number[], boost: number };
 
 /**
+ * Calculates the levenshtein distance. Specialized version.
+ * Copyright Kigiri: https://github.com/kigiri
+ *           Milot Mirdita: https://github.com/milot-mirdita
+ *           Toni Neubert:  https://github.com/Viatorus/
+ * @param {string} a - a string
+ * @param {string} b - a string
+ */
+function levenshteinDistance(a: number[], b: number[]) {
+  let i;
+  let j;
+  let prev;
+  let val;
+
+  const row = Array(a.length + 1);
+  // init the row
+  for (i = 0; i <= a.length; i++) {
+    row[i] = i;
+  }
+
+  // fill in the rest
+  for (i = 1; i <= b.length; i++) {
+    prev = i;
+    for (j = 1; j <= a.length; j++) {
+      if (b[i - 1] === a[j - 1]) {	// match
+        val = row[j - 1];
+      } else {
+        val = Math.min(row[j - 1] + 1, // substitution
+          Math.min(prev + 1,         // insertion
+            row[j] + 1));          // deletion
+
+        // transposition
+        if (i > 1 && j > 1 && b[i - 2] === a[j - 1] && a[j - 2] === b[i - 1]) {
+          val = Math.min(val, row[j - 1] - (a[j - 1] === b[i - 1] ? 1 : 0));
+        }
+      }
+      row[j - 1] = prev;
+      prev = val;
+    }
+    row[a.length] = prev;
+  }
+  return row[a.length];
+}
+
+/**
  * Performs a fuzzy search.
  * @param {FuzzyQuery} query - the fuzzy query
  * @param {Index} root - the root index
- * @returns {FuzzyResult} - the results
+ * @returns {[FuzzyResult, number]} - the fuzzy results and the maximum df
  */
-function fuzzySearch(query: FuzzyQuery, root: Index): FuzzyResult[] {
+function fuzzySearch(query: FuzzyQuery, root: Index): [FuzzyResult[], number] {
   let value = toCodePoints(query.value);
   let fuzziness = query.fuzziness !== undefined ? query.fuzziness : "AUTO";
   if (fuzziness === "AUTO") {
@@ -278,7 +322,7 @@ function fuzzySearch(query: FuzzyQuery, root: Index): FuzzyResult[] {
       fuzziness = 2;
     }
   }
-  let prefixLength = query.prefix_length !== undefined ? query.prefix_length : 2;
+  let prefixLength = query.prefix_length !== undefined ? query.prefix_length : 0;
   let extended = query.extended !== undefined ? query.extended : false;
 
   // Do just a prefix search if zero fuzziness.
@@ -290,6 +334,7 @@ function fuzzySearch(query: FuzzyQuery, root: Index): FuzzyResult[] {
   let startIdx = root;
   let prefix = value.slice(0, prefixLength);
   let fuzzy = value;
+  let df = 0;
 
   // Perform a prefix search.
   if (prefixLength !== 0) {
@@ -299,7 +344,7 @@ function fuzzySearch(query: FuzzyQuery, root: Index): FuzzyResult[] {
 
   // No startIdx found.
   if (startIdx === null) {
-    return result;
+    return [result, df];
   }
 
   // Fuzzy is not necessary anymore, because prefix search includes the whole query value.
@@ -309,12 +354,14 @@ function fuzzySearch(query: FuzzyQuery, root: Index): FuzzyResult[] {
       const all = InvertedIndex.extendTermIndex(startIdx);
       for (let i = 0; i < all.length; i++) {
         result.push({index: all[i].index, term: all[i].term, boost: 1});
+        df = Math.max(df, all[i].index.df);
       }
     } else if (startIdx.dc !== undefined) {
       // Add prefix search result.
       result.push({index: startIdx, term: value, boost: 1});
+      df = startIdx.df;
     }
-    return result;
+    return [result, df];
   }
 
   // The matching term.
@@ -322,7 +369,7 @@ function fuzzySearch(query: FuzzyQuery, root: Index): FuzzyResult[] {
   // Create an automaton from the fuzzy.
   const automaton = new RunAutomaton(new LevenshteinAutomata(fuzzy, fuzziness).toAutomaton());
 
-  function determineEditDistance(state: number, termLength: number, fuzzyLength: number): number {
+  function determineEditDistance(state: number, term: number[], fuzzy: number[]): number {
     // Check how many edits this fuzzy can still do.
     let ed = 0;
     state = automaton.step(state, 0);
@@ -332,9 +379,15 @@ function fuzzySearch(query: FuzzyQuery, root: Index): FuzzyResult[] {
       if (state !== -1 && automaton.isAccept(state)) {
         ed++;
       }
+      // Special handling for smaller terms.
+      if (term.length < fuzzy.length) {
+        if (ed !== fuzziness) {
+          return levenshteinDistance(term, fuzzy);
+        }
+        // Include the term and fuzzy length.
+        ed -= fuzzy.length - term.length;
+      }
     }
-    // Include the term and fuzzy length.
-    ed -= Math.abs(termLength - fuzzyLength);
     return fuzziness as number - ed;
   }
 
@@ -350,16 +403,18 @@ function fuzzySearch(query: FuzzyQuery, root: Index): FuzzyResult[] {
     if (automaton.isAccept(state)) {
       if (extended) {
         // Add all terms down the index.
-        let all = InvertedIndex.extendTermIndex(idx);
+        const all = InvertedIndex.extendTermIndex(idx);
         for (let i = 0; i < all.length; i++) {
           result.push({index: all[i].index, term: all[i].term, boost: 1});
+          df = Math.max(df, all[i].index.df);
         }
         return;
       } else if (idx.df !== undefined) {
         // Calculate boost.
-        let distance = determineEditDistance(state, term.length, fuzzy.length);
-        let boost = 1 - distance / Math.min(prefix.length + term.length, value.length);
+        const distance = determineEditDistance(state, term, fuzzy);
+        const boost = Math.max(0, 1 - distance / Math.min(prefix.length + term.length, value.length));
         result.push({index: idx, term: [...prefix, ...term], boost});
+        df = Math.max(df, idx.df);
       }
     }
 
@@ -374,7 +429,7 @@ function fuzzySearch(query: FuzzyQuery, root: Index): FuzzyResult[] {
     recursive(0, child[0], child[1]);
   }
 
-  return result;
+  return [result, df];
 }
 
 type WildcardResult = { index: Index, term: number[] };

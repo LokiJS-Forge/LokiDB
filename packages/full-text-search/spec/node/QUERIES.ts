@@ -36,7 +36,10 @@ export const QUERIES = [
       .build(),
     es: {
       fuzzy: {
-        [FIELD_NAME_1]: "a"
+        [FIELD_NAME_1]: {
+          value: "a",
+          transpositions: true
+        }
       }
     }
   },
@@ -46,7 +49,10 @@ export const QUERIES = [
       .build(),
     es: {
       fuzzy: {
-        [FIELD_NAME_1]: "este"
+        [FIELD_NAME_1]: {
+          value: "este",
+          transpositions: true
+        }
       }
     }
   },
@@ -58,7 +64,8 @@ export const QUERIES = [
       fuzzy: {
         [FIELD_NAME_1]: {
           value: "est",
-          prefix_length: 3
+          prefix_length: 3,
+          transpositions: true
         }
       }
     }
@@ -72,7 +79,8 @@ export const QUERIES = [
         [FIELD_NAME_1]: {
           value: "ege",
           prefix_length: 3,
-          fuzziness: 2
+          fuzziness: 2,
+          transpositions: true
         }
       }
     },
@@ -86,7 +94,69 @@ export const QUERIES = [
       fuzzy: {
         [FIELD_NAME_1]: {
           value: "est",
-          fuzziness: 0
+          fuzziness: 0,
+          transpositions: true
+        }
+      }
+    }
+  },
+  {
+    fts: new QB()
+      .fuzzy(FIELD_NAME_1, "just").fuzziness(2)
+      .build(),
+    es: {
+      fuzzy: {
+        [FIELD_NAME_1]: {
+          value: "just",
+          fuzziness: 2,
+          transpositions: true
+        }
+      }
+    }
+  },
+  {
+    fts: new QB()
+      .explain(true)
+      .fuzzy(FIELD_NAME_1, "jus").fuzziness(1)
+      .build(),
+    es: {
+      fuzzy: {
+        [FIELD_NAME_1]: {
+          value: "jus",
+          fuzziness: 1,
+          transpositions: true
+        }
+      }
+    }
+  },
+  {
+    fts: new QB()
+      .explain(true)
+      .fuzzy(FIELD_NAME_1, "jus").fuzziness(2).prefixLength(1)
+      .build(),
+    es: {
+      fuzzy: {
+        [FIELD_NAME_1]: {
+          value: "jus",
+          fuzziness: 2,
+          prefix_length: 1,
+          transpositions: true
+        }
+      }
+    }
+  },
+  {
+    fts: new QB()
+      .explain(true)
+      .fuzzy(FIELD_NAME_1, "js").fuzziness(2)
+      .build(),
+    es: {
+      fuzzy: {
+        [FIELD_NAME_1]: {
+          value: "js",
+          fuzziness: 2,
+          prefix_length: 0,
+          transpositions: true
         }
       }
     }
@@ -206,6 +276,7 @@ export const QUERIES = [
   },
   {
     fts: new QB()
+      .explain(true)
       .bool()
       .beginMust().term(FIELD_NAME_1, "a").term(FIELD_NAME_1, "ac").endMust()
       .build(),
@@ -215,6 +286,65 @@ export const QUERIES = [
           {
             term: {
               [FIELD_NAME_1]: "a"
+            }
+          },
+          {
+            term: {
+              [FIELD_NAME_1]: "ac"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    fts: new QB()
+      .explain(true)
+      .bool()
+      .beginMust().term(FIELD_NAME_1, "a").fuzzy(FIELD_NAME_1, "just").term(FIELD_NAME_1, "ac").endMust()
+      .build(),
+    es: {
+      bool: {
+        must: [
+          {
+            term: {
+              [FIELD_NAME_1]: "a"
+            }
+          },
+          {
+            fuzzy: {
+              [FIELD_NAME_1]: "just"
+            }
+          },
+          {
+            term: {
+              [FIELD_NAME_1]: "ac"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    fts: new QB()
+      .explain(true)
+      .bool()
+      .beginMust().term(FIELD_NAME_1, "a").wildcard(FIELD_NAME_1, "j*").enableScoring(true).term(FIELD_NAME_1, "ac").endMust()
+      .build(),
+    es: {
+      bool: {
+        must: [
+          {
+            term: {
+              [FIELD_NAME_1]: "a"
+            }
+          },
+          {
+            wildcard: {
+              [FIELD_NAME_1]: {
+                value: "j*",
+                rewrite: "scoring_boolean"
+              }
             }
           },
           {

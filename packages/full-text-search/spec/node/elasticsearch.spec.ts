@@ -5,12 +5,11 @@ import {FullTextSearch} from "../../src/full_text_search";
 import {Tokenizer} from "../../src/tokenizer";
 import {Client} from "elasticsearch";
 import {Scorer} from "../../src/scorer";
-import * as util from "util";
 
 const INDEX_NAME = "test_index";
 const INDEX_TYPE = "MockUp";
 const FIELD_NAME_1 = "msg";
-const COMPARE_PRECISION = 1e4;
+const COMPARE_PRECISION = 1e3;
 
 function fieldLengthES5(fieldLength: number) {
   // Lucene 5 uses a SmallFloat (size of 1 byte) to store the field length in scoring.
@@ -178,7 +177,7 @@ describe("Compare scoring against elasticsearch", () => {
           }
 
           // Check if esHits should be empty.
-          if (query.hasOwnProperty("empty") && query.empty === true) {
+          if (query.empty === true) {
             expect(esHits.length).toEqual(0);
             done();
             return;
@@ -198,14 +197,14 @@ describe("Compare scoring against elasticsearch", () => {
               continue;
             }
 
-            let esScore = Math.round(esHits[j]._score * COMPARE_PRECISION) / COMPARE_PRECISION;
             let ftsScore = Math.round(ftsHits[esID].score * COMPARE_PRECISION) / COMPARE_PRECISION;
+            let esScore = Math.round(esHits[j]._score * COMPARE_PRECISION) / COMPARE_PRECISION;
 
-            expect(esScore).toEqual(ftsScore);
+            expect(ftsScore).toEqual(esScore);
           }
           done();
         })
-        .catch(() => {
+        .catch((e) => {
           expect(false).toBe(true);
           done();
         });
@@ -237,6 +236,8 @@ describe("Compare scoring against elasticsearch", () => {
             }
           },
           settings: {
+            number_of_shards: 1,
+            number_of_replicas: 1,
             analysis: {
               analyzer: {
                 my_analyzer: {
