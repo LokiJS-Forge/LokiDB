@@ -5,12 +5,15 @@ repo_url: https://github.com/LokiJS-Forge/LokiDB
 repo_name: GitHub
 
 extra_css:
+  - css/auto-complete.css
+  - css/javascript_editor.css
   - css/codemirror/codemirror.css
   - css/codemirror/foldgutter.css
-  - css/javascript_editor.css
 
 extra_javascript:
+  - js/auto-complete.js
   - js/gitter.js
+  - js/sidecar.js
   - js/javascript_editor.js
   - js/codemirror/lib/codemirror.js
   - js/codemirror/addon/fold/brace-fold.js
