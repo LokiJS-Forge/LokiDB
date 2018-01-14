@@ -19,12 +19,12 @@ export class Scorer {
   }
 
   public score(fieldName: string, boost: number, termIdx: InvertedIndex.Index, doScoring: boolean,
-               queryResults: Scorer.QueryResults, term: number[]): void {
+               queryResults: Scorer.QueryResults, term: number[], df: number = 0): void {
     if (termIdx === null || termIdx.dc === undefined) {
       return;
     }
 
-    const idf = this._idf(fieldName, termIdx.df);
+    const idf = this._idf(fieldName, df || termIdx.df);
     for (const [docId, tf] of termIdx.dc) {
       if (!queryResults.has(docId)) {
         queryResults.set(docId, []);

@@ -103,13 +103,13 @@ describe("fuzzy query", () => {
     query = new QB().fuzzy("body", "ddddx").prefixLength(5).fuzziness(2).build();
     assertMatches(fts, query);
 
-    // Without prefix length (default should be 2).
+    // Without prefix length (default should be 0).
     query = new QB().fuzzy("body", "aaaab").fuzziness(2).build();
     assertMatches(fts, query, [0, 1, 2, 3]);
     query = new QB().fuzzy("body", "aaabb").fuzziness(2).build();
-    assertMatches(fts, query, [0, 1, 2, 3]);
-    query = new QB().fuzzy("body", "aabbb").fuzziness(2).build();
-    assertMatches(fts, query, [1, 2, 3]);
+    assertMatches(fts, query, [0, 1, 2, 3, 4]);
+    query = new QB().fuzzy("body", "abbbb").fuzziness(2).build();
+    assertMatches(fts, query, [2, 3, 4, 5]);
 
     // Empty.
     query = new QB().fuzzy("body", "").build();
