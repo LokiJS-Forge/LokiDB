@@ -110,7 +110,7 @@ describe("full-text search", () => {
     const sorted_desc = res.sortByScoring().data();
     const sorted_asc = res.sortByScoring(true).data();
 
-    expect(Object.keys(res.getScoring())).toEqual(Object.keys(unsorted));
+    expect(res.getScoring()).toBeArrayOfSize(unsorted.length);
 
     expect(unsorted.length).toBe(sorted_desc.length);
     expect(sorted_desc.length).toBe(sorted_asc.length);
@@ -130,7 +130,7 @@ describe("full-text search", () => {
     expect(dv.applySortByScoring).toThrowAnyError();
     dv.applyFind({"$fts": query});
 
-    expect(Object.keys(dv.getScoring())).toEqual(Object.keys(unsorted));
+    expect(dv.getScoring()).toBeArrayOfSize(unsorted.length);
 
     expect(dv.applySortByScoring().data()).toEqual(sorted_desc);
     expect(dv.applySortByScoring(true).data()).toEqual(sorted_asc);

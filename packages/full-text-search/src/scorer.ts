@@ -48,8 +48,8 @@ export class Scorer {
     return queryResults;
   }
 
-  public finalScore(query: Query, queryResults: Scorer.QueryResults): Scorer.ScoreResult {
-    const result: Scorer.ScoreResult = {};
+  public finalScore(query: Query, queryResults: Scorer.QueryResults): Scorer.ScoreResults {
+    const result: Scorer.ScoreResults = {};
     const k1 = query.bm25 !== undefined ? query.bm25.k1 : 1.2;
     const b = query.bm25 !== undefined ? query.bm25.b : 0.75;
     const explain = query.explain !== undefined ? query.explain : false;
@@ -177,6 +177,6 @@ export namespace Scorer {
   }
 
   export type ScoreExplanation = BM25Explanation | ConstantExplanation;
-
-  export type ScoreResult = Dict<{ score: number, explanation?: ScoreExplanation[] }>;
+  export type ScoreResult = { score: number, explanation?: ScoreExplanation[] };
+  export type ScoreResults = Dict<ScoreResult>;
 }

@@ -297,9 +297,9 @@ export class DynamicView<TData extends object = object, TNested extends object =
 
   /**
    * Returns the scoring of the last full-text-search.
-   * @returns {ScoreResult}
+   * @returns {ScoreResult[]}
    */
-  public getScoring(): Scorer.ScoreResult {
+  public getScoring(): Scorer.ScoreResult[] {
     return this._resultSet.getScoring();
   }
 
