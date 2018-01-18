@@ -72,7 +72,7 @@ export class FullTextSearch {
     }
   }
 
-  public search(query: Query): Scorer.ScoreResult {
+  public search(query: Query): Scorer.ScoreResults {
     return this._idxSearcher.search(query);
   }
 

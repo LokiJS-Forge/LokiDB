@@ -293,7 +293,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
   public _filteredRows: number[];
   public _filterInitialized: boolean;
   // Holds the scoring result of the last full-text search.
-  private _scoring: Scorer.ScoreResult;
+  private _scoring: Scorer.ScoreResults;
 
   /**
    * Constructor.
@@ -635,13 +635,17 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
   /**
    * Returns the scoring of the last full-text-search.
-   * @returns {ScoreResult}
+   * @returns {ScoreResult[]}
    */
-  public getScoring(): Scorer.ScoreResult {
+  public getScoring(): Scorer.ScoreResult[] {
     if (this._scoring === null) {
       throw new Error("No scoring available");
     }
-    return this._scoring;
+    const scoring: Scorer.ScoreResult[] = [];
+    for (let i = 0; i < this._filteredRows.length; i++) {
+      scoring.push(this._scoring[this._filteredRows[i]]);
+    }
+    return scoring;
   }
 
   /**

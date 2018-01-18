@@ -25,7 +25,7 @@ export class IndexSearcher {
     this._scorer = new Scorer(this._invIdxs);
   }
 
-  public search(query: Query): Scorer.ScoreResult {
+  public search(query: Query): Scorer.ScoreResults {
     let queryResults = this._recursive(query.query, true);
 
     // Do final scoring.
@@ -33,7 +33,7 @@ export class IndexSearcher {
       return this._scorer.finalScore(query, queryResults);
     }
 
-    const result: Scorer.ScoreResult = {};
+    const result: Scorer.ScoreResults = {};
     for (const key of queryResults.keys()) {
       result[key] = {score: 1};
     }
