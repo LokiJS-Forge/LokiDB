@@ -30,20 +30,20 @@ Check out our interactive [documentation](https://lokijs-forge.github.io/LokiJS2
 
 |Name|Description|
 |:---|:----------|
-|[@loki/fs-storage][fs-storage-npm-url]                             |  A persistence adapter which persists to node fs module storage. |
-|[@loki/local-storage][local-storage-npm-url]                       |  A persistence adapter which persists to web browser's local storage. |
-|[@loki/indexed-storage][indexed-storage-npm-url]                   |  A persistence adapter which persists to web browser's indexed db storage. |
-|[@loki/memory-storage][memory-storage-npm-url]                     |  A persistence adapter which persists to memory. |
-|[@loki/partitioning-adapter][partitioning-adapter-npm-url]         |  An adapter for adapters. Converts a non reference mode adapter into a reference mode adapter which can perform destructuring and partitioning.|
+|[@lokijs/fs-storage][fs-storage-npm-url]                             |  A persistence adapter which persists to node fs module storage. |
+|[@lokijs/local-storage][local-storage-npm-url]                       |  A persistence adapter which persists to web browser's local storage. |
+|[@lokijs/indexed-storage][indexed-storage-npm-url]                   |  A persistence adapter which persists to web browser's indexed db storage. |
+|[@lokijs/memory-storage][memory-storage-npm-url]                     |  A persistence adapter which persists to memory. |
+|[@lokijs/partitioning-adapter][partitioning-adapter-npm-url]         |  An adapter for adapters. Converts a non reference mode adapter into a reference mode adapter which can perform destructuring and partitioning.|
 
 <h3>Full-Text Search</h3>
 
 |Name|Description|
 |:---|:----------|
-|[@loki/full-text-search][full-text-search]                         |  A full-text search engine. |
-|[@loki/full-text-search-language][full-text-search-language]       |  A language analyzer utility package. |
-|[@loki/full-text-search-language-de][full-text-search-language-de] |  ![flag][full-text-search-language-de-flag] A german language analyzer. |
-|[@loki/full-text-search-language-en][full-text-search-language-en] |  ![flag][full-text-search-language-en-flag] An english language analyzer. |
+|[@lokijs/full-text-search][full-text-search]                         |  A full-text search engine. |
+|[@lokijs/full-text-search-language][full-text-search-language]       |  A language analyzer utility package. |
+|[@lokijs/full-text-search-language-de][full-text-search-language-de] |  ![flag][full-text-search-language-de-flag] A german language analyzer. |
+|[@lokijs/full-text-search-language-en][full-text-search-language-en] |  ![flag][full-text-search-language-en-flag] An english language analyzer. |
 
 [build]: https://travis-ci.org/LokiJS-Forge/LokiJS2.svg?branch=master
 [build-url]: https://travis-ci.org/LokiJS-Forge/LokiJS2
