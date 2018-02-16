@@ -1,4 +1,5 @@
-import {FullTextSearch, Tokenizer, QueryBuilder} from "../../../full-text-search/src/index";
+import {FullTextSearch, Tokenizer} from "../../../full-text-search/src/index";
+import {Query} from "../../../full-text-search/src/query_types";
 
 export interface LanguageTestData {
   tokenizer: Tokenizer;
@@ -16,7 +17,7 @@ export interface LanguageTestData {
  * @param {LanguageTestData} data - the language data
  */
 export function createLanguageTest(language: string, data: LanguageTestData) {
-  let assertMatches = (searcher: any, query: any, docIds: number[] = []) => {
+  let assertMatches = (searcher: FullTextSearch, query: Query, docIds: number[] = []) => {
     let res = searcher.search(query);
     expect(Object.keys(res).length).toEqual(docIds.length);
     for (let i = 0; i < docIds.length; i++) {
@@ -45,8 +46,7 @@ export function createLanguageTest(language: string, data: LanguageTestData) {
     for (let i = 0; i < data.tests.length; i++) {
       let test = data.tests[i];
       it(test.what + " '" + test.search + "'", () => {
-        let query = new QueryBuilder().match("body", test.search).build();
-        assertMatches(fts, query, test.expected);
+        assertMatches(fts, {query: {type: "match", field: "body", value: test.search}}, test.expected);
       });
     }
   });

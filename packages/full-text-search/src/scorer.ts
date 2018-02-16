@@ -1,6 +1,6 @@
 import {InvertedIndex} from "./inverted_index";
 import {Dict} from "../../common/types";
-import {Query} from "./query_builder";
+import {Query} from "./query_types";
 
 /**
  * @hidden

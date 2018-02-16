@@ -1,11 +1,13 @@
 /* global describe, it, expect */
 import {FullTextSearch} from "../../../src/full_text_search";
-import {QueryBuilder as QB, FuzzyQueryBuilder, Query} from "../../../src/query_builder";
+import {FuzzyQuery, MatchQuery, Query, QueryTypes} from "../../../src/query_types";
 import {Tokenizer} from "../../../src/tokenizer";
 
 describe("fuzzy query", () => {
   // from lucene 6.4.0 core: TestFuzzyQuery
-  let assertMatches = (searcher: FullTextSearch, query: Query, docIds: number[] = []) => {
+  let assertMatches = (searcher: FullTextSearch, subQuery: QueryTypes, docIds: number[] = [], query: Query = {
+    query: subQuery
+  }) => {
     let res = searcher.search(query);
     expect(Object.keys(res).length).toEqual(docIds.length);
     for (let i = 0; i < docIds.length; i++) {
@@ -14,26 +16,6 @@ describe("fuzzy query", () => {
     }
     expect(res).toEqual({});
   };
-
-  it("Fuzzy query: QB", () => {
-    let q = new FuzzyQueryBuilder("user", "albrt").boost(5.5).fuzziness(2).prefixLength(3).extended(true).build();
-    expect(q).toEqual({
-      type: "fuzzy",
-      field: "user",
-      value: "albrt",
-      boost: 5.5,
-      fuzziness: 2,
-      prefix_length: 3,
-      extended: true
-    });
-
-    let fb = new QB().fuzzy("a", "abc");
-    expect(() => fb.fuzziness("AUTO")).not.toThrowErrorOfType("TypeError");
-    expect(() => fb.fuzziness(-3 as any)).toThrowErrorOfType("TypeError");
-    expect(() => fb.fuzziness("3" as any)).toThrowErrorOfType("TypeError");
-    expect(() => fb.prefixLength(-1)).toThrowErrorOfType("TypeError");
-    expect(() => fb.prefixLength("-1" as any)).toThrowErrorOfType("TypeError");
-  });
 
   it("Fuzzy query (1).", () => {
     let docs = ["aaaaa", "aaaab", "aaabb", "aabbb", "abbbb", "bbbbb", "ddddd"];
@@ -44,98 +26,102 @@ describe("fuzzy query", () => {
         body: docs[i]
       });
     }
-    let query;
+    let fuzzyQuery: FuzzyQuery = {type: "fuzzy", field: "body", value: "aaaaa", prefix_length: 0, fuzziness: 2};
     // With prefix.
-    query = new QB().fuzzy("body", "aaaaa").prefixLength(0).fuzziness(2).build();
-    assertMatches(fts, query, [0, 1, 2]);
-    query = new QB().fuzzy("body", "aaaaa").prefixLength(1).fuzziness(2).build();
-    assertMatches(fts, query, [0, 1, 2]);
-    query = new QB().fuzzy("body", "aaaaa").prefixLength(2).fuzziness(2).build();
-    assertMatches(fts, query, [0, 1, 2]);
-    query = new QB().fuzzy("body", "aaaaa").prefixLength(3).fuzziness(2).build();
-    assertMatches(fts, query, [0, 1, 2]);
-    query = new QB().fuzzy("body", "aaaaa").prefixLength(4).fuzziness(2).build();
-    assertMatches(fts, query, [0, 1]);
-    query = new QB().fuzzy("body", "aaaaa").prefixLength(5).fuzziness(2).build();
-    assertMatches(fts, query, [0]);
-    query = new QB().fuzzy("body", "aaaaa").prefixLength(6).fuzziness(2).build();
-    assertMatches(fts, query, [0]);
+    assertMatches(fts, fuzzyQuery, [0, 1, 2]);
+    fuzzyQuery.prefix_length = 1;
+    assertMatches(fts, fuzzyQuery, [0, 1, 2]);
+    fuzzyQuery.prefix_length = 2;
+    assertMatches(fts, fuzzyQuery, [0, 1, 2]);
+    fuzzyQuery.prefix_length = 3;
+    assertMatches(fts, fuzzyQuery, [0, 1, 2]);
+    fuzzyQuery.prefix_length = 4;
+    assertMatches(fts, fuzzyQuery, [0, 1]);
+    fuzzyQuery.prefix_length = 5;
+    assertMatches(fts, fuzzyQuery, [0]);
+    fuzzyQuery.prefix_length = 6;
+    assertMatches(fts, fuzzyQuery, [0]);
 
     // not similar enough:
-    query = new QB().fuzzy("body", "xxxxx").fuzziness(2).build();
-    assertMatches(fts, query);
-    query = new QB().fuzzy("body", "aaccc").fuzziness(2).build();
-    assertMatches(fts, query);
+    delete fuzzyQuery.prefix_length;
+    fuzzyQuery.value = "xxxxx";
+    assertMatches(fts, fuzzyQuery);
+    fuzzyQuery.value = "aaccc";
+    assertMatches(fts, fuzzyQuery);
 
     // query identical to a word in the index:
-    query = new QB().fuzzy("body", "aaaaa").fuzziness(2).build();
-    assertMatches(fts, query, [0, 1, 2]);
+    fuzzyQuery.value = "aaaaa";
+    assertMatches(fts, fuzzyQuery, [0, 1, 2]);
 
     // query similar to a word in the index:
-    query = new QB().fuzzy("body", "aaaac").fuzziness(2).build();
-    assertMatches(fts, query, [0, 1, 2]);
+    fuzzyQuery.value = "aaaac";
+    assertMatches(fts, fuzzyQuery, [0, 1, 2]);
 
     // With prefix.
-    query = new QB().fuzzy("body", "aaaac").prefixLength(1).fuzziness(2).build();
-    assertMatches(fts, query, [0, 1, 2]);
-    query = new QB().fuzzy("body", "aaaac").prefixLength(2).fuzziness(2).build();
-    assertMatches(fts, query, [0, 1, 2]);
-    query = new QB().fuzzy("body", "aaaac").prefixLength(3).fuzziness(2).build();
-    assertMatches(fts, query, [0, 1, 2]);
-    query = new QB().fuzzy("body", "aaaac").prefixLength(4).fuzziness(2).build();
-    assertMatches(fts, query, [0, 1]);
-    query = new QB().fuzzy("body", "aaaac").prefixLength(5).fuzziness(2).build();
-    assertMatches(fts, query);
+    fuzzyQuery.prefix_length = 1;
+    assertMatches(fts, fuzzyQuery, [0, 1, 2]);
+    fuzzyQuery.prefix_length = 2;
+    assertMatches(fts, fuzzyQuery, [0, 1, 2]);
+    fuzzyQuery.prefix_length = 3;
+    assertMatches(fts, fuzzyQuery, [0, 1, 2]);
+    fuzzyQuery.prefix_length = 4;
+    assertMatches(fts, fuzzyQuery, [0, 1]);
+    fuzzyQuery.prefix_length = 5;
+    assertMatches(fts, fuzzyQuery);
 
     // Something other.
-    query = new QB().fuzzy("body", "ddddx").build();
-    assertMatches(fts, query, [6]);
+    delete fuzzyQuery.prefix_length;
+    fuzzyQuery.value = "ddddx";
+    assertMatches(fts, fuzzyQuery, [6]);
 
     // With prefix
-    query = new QB().fuzzy("body", "ddddx").prefixLength(1).fuzziness(2).build();
-    assertMatches(fts, query, [6]);
-    query = new QB().fuzzy("body", "ddddx").prefixLength(2).fuzziness(2).build();
-    assertMatches(fts, query, [6]);
-    query = new QB().fuzzy("body", "ddddx").prefixLength(3).fuzziness(2).build();
-    assertMatches(fts, query, [6]);
-    query = new QB().fuzzy("body", "ddddx").prefixLength(4).fuzziness(2).build();
-    assertMatches(fts, query, [6]);
-    query = new QB().fuzzy("body", "ddddx").prefixLength(5).fuzziness(2).build();
-    assertMatches(fts, query);
+    fuzzyQuery.prefix_length = 1;
+    assertMatches(fts, fuzzyQuery, [6]);
+    fuzzyQuery.prefix_length = 2;
+    assertMatches(fts, fuzzyQuery, [6]);
+    fuzzyQuery.prefix_length = 3;
+    assertMatches(fts, fuzzyQuery, [6]);
+    fuzzyQuery.prefix_length = 4;
+    assertMatches(fts, fuzzyQuery, [6]);
+    fuzzyQuery.prefix_length = 5;
+    assertMatches(fts, fuzzyQuery);
 
     // Without prefix length (default should be 0).
-    query = new QB().fuzzy("body", "aaaab").fuzziness(2).build();
-    assertMatches(fts, query, [0, 1, 2, 3]);
-    query = new QB().fuzzy("body", "aaabb").fuzziness(2).build();
-    assertMatches(fts, query, [0, 1, 2, 3, 4]);
-    query = new QB().fuzzy("body", "abbbb").fuzziness(2).build();
-    assertMatches(fts, query, [2, 3, 4, 5]);
+    delete fuzzyQuery.prefix_length;
+    fuzzyQuery.value = "aaaab";
+    assertMatches(fts, fuzzyQuery, [0, 1, 2, 3]);
+    fuzzyQuery.value = "aaabb";
+    assertMatches(fts, fuzzyQuery, [0, 1, 2, 3, 4]);
+    fuzzyQuery.value = "abbbb";
+    assertMatches(fts, fuzzyQuery, [2, 3, 4, 5]);
 
     // Empty.
-    query = new QB().fuzzy("body", "").build();
-    assertMatches(fts, query);
+    fuzzyQuery.value = "";
+    assertMatches(fts, fuzzyQuery);
 
     // Other.
-    query = new QB().fuzzy("body", "aaaaa").prefixLength(0).fuzziness(1).build();
-    assertMatches(fts, query, [0, 1]);
+    fuzzyQuery.fuzziness = 1;
+    fuzzyQuery.value = "aaaaa";
+    fuzzyQuery.prefix_length = 0;
+    assertMatches(fts, fuzzyQuery, [0, 1]);
 
-    query = new QB().fuzzy("body", "aaaab").prefixLength(0).fuzziness(1).build();
-    assertMatches(fts, query, [0, 1, 2]);
+    fuzzyQuery.value = "aaaab";
+    fuzzyQuery.prefix_length = 0;
+    assertMatches(fts, fuzzyQuery, [0, 1, 2]);
 
-    query = new QB().fuzzy("body", "ababb").prefixLength(2).fuzziness(1).build();
-    assertMatches(fts, query, [4]);
+    fuzzyQuery.value = "ababb";
+    fuzzyQuery.prefix_length = 2;
+    assertMatches(fts, fuzzyQuery, [4]);
 
-    query = new QB().fuzzy("body", "aaaaa").prefixLength(5).fuzziness(1).build();
-    assertMatches(fts, query, [0]);
+    fuzzyQuery.value = "aaaaa";
+    fuzzyQuery.prefix_length = 5;
+    assertMatches(fts, fuzzyQuery, [0]);
 
-    query = new QB().fuzzy("body", "aaaaa").prefixLength(6).fuzziness(1).build();
-    assertMatches(fts, query, [0]);
+    fuzzyQuery.prefix_length = 6;
+    assertMatches(fts, fuzzyQuery, [0]);
 
-    query = new QB().fuzzy("body", "aaaaa").prefixLength(6).fuzziness(1).build();
-    assertMatches(fts, query, [0]);
-
-    query = new QB().fuzzy("body", "aaaaaa").prefixLength(6).fuzziness(1).build();
-    assertMatches(fts, query, []);
+    fuzzyQuery.value = "aaaaaa";
+    assertMatches(fts, fuzzyQuery, []);
   });
 
   it("Fuzzy query (2).", () => {
@@ -148,11 +134,12 @@ describe("fuzzy query", () => {
         body: docs[i]
       });
     }
-    let query = new QB().fuzzy("body", "weber").prefixLength(1).fuzziness(2).build();
-    assertMatches(fts, query, [6, 8, 9, 10, 11, 12, 13, 14]);
+    let fuzzyQuery: FuzzyQuery = {type: "fuzzy", field: "body", value: "weber", prefix_length: 1, fuzziness: 2};
+    assertMatches(fts, fuzzyQuery, [6, 8, 9, 10, 11, 12, 13, 14]);
 
-    query = new QB().fuzzy("body", "weber").fuzziness(0).build();
-    assertMatches(fts, query, [10]);
+    delete fuzzyQuery.prefix_length;
+    fuzzyQuery.fuzziness = 0;
+    assertMatches(fts, fuzzyQuery, [10]);
   });
 
   it("unicode", () => {
@@ -171,8 +158,11 @@ describe("fuzzy query", () => {
         body: docs[i]
       });
     }
-    let query = new QB().fuzzy("body", "\u{000169bb}\u{000969bb}").fuzziness(1).prefixLength(0).build();
-    assertMatches(fts, query, [0, 2, 3, 5]);
+    let fuzzyQuery: FuzzyQuery = {
+      type: "fuzzy", field: "body", value: "\u{000169bb}\u{000969bb}", prefix_length: 0,
+      fuzziness: 1
+    };
+    assertMatches(fts, fuzzyQuery, [0, 2, 3, 5]);
   });
 
   it("Fuzzy query extended.", () => {
@@ -186,14 +176,20 @@ describe("fuzzy query", () => {
       });
     }
 
-    let query = new QB().fuzzy("body", "web").prefixLength(1).fuzziness(1).extended(true).build();
-    assertMatches(fts, query, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+    let fuzzyQuery: FuzzyQuery = {
+      type: "fuzzy", field: "body", value: "web", prefix_length: 1, fuzziness: 1,
+      extended: true
+    };
+    assertMatches(fts, fuzzyQuery, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
 
-    let query2 = new QB().match("body", "web").prefixLength(1).fuzziness(1).extended(true).build();
-    assertMatches(fts, query2, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+    let matchQuery: MatchQuery = {
+      type: "match", field: "body", value: "web", prefix_length: 1, fuzziness: 1,
+      extended: true
+    };
+    assertMatches(fts, matchQuery, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
   });
 
-  it("Fuzzy query extended.", () => {
+  it("Fuzzy query extended 2.", () => {
     let docs = ["abca", "abcd", "abcde"];
     let fts = new FullTextSearch([{field: "body"}], "$loki");
     for (let i = 0; i < docs.length; i++) {
@@ -202,10 +198,12 @@ describe("fuzzy query", () => {
         body: docs[i]
       });
     }
-    let query = new QB().fuzzy("body", "abcd").prefixLength(1).fuzziness(0).extended(true).build();
-    assertMatches(fts, query, [1, 2]);
+    let fuzzyQuery: FuzzyQuery = {
+      type: "fuzzy", field: "body", value: "abcd", prefix_length: 1, fuzziness: 0,
+      extended: true
+    };
+    assertMatches(fts, fuzzyQuery, [1, 2]);
 
-    query = new QB().enableFinalScoring(false).fuzzy("body", "abcd").prefixLength(1).fuzziness(0).extended(true).build();
-    assertMatches(fts, query, [1, 2]);
+    assertMatches(fts, fuzzyQuery, [1, 2], {query: fuzzyQuery, calculate_scoring: false});
   });
 });

@@ -1,6 +1,6 @@
 /* global describe, ddescribe, it, expect */
 import {Loki} from "../../../loki/src/loki";
-import {QueryBuilder} from "../../src/query_builder";
+import {FuzzyQuery, Query} from "../../src/query_types";
 import {MemoryStorage} from "../../../memory-storage/src/memory_storage";
 import {Collection} from "../../../loki/src/collection";
 import {FullTextSearch} from "../../src/full_text_search";
@@ -31,13 +31,12 @@ describe("full-text search", () => {
   });
 
   it("usage", () => {
-    let query = new QueryBuilder().fuzzy("name", "quak").fuzziness(1).build();
+    let query: Query = {query: {type: "fuzzy", field: "name", value: "quak", fuzziness: 1}};
     expect(coll.find({"$fts": query}).length).toBe(3);
   });
 
   it("chained", () => {
-    let query = new QueryBuilder().fuzzy("name", "quak").fuzziness(1).build();
-
+    let query: Query = {query: {type: "fuzzy", field: "name", value: "quak", fuzziness: 1}};
     expect(
       coll.find({"$fts": query})).not.toEqual(
       coll.find({"id": {"$in": [1, 2, 3]}}));
@@ -67,7 +66,7 @@ describe("full-text search", () => {
       return user;
     });
 
-    let query = new QueryBuilder().fuzzy("name", "quak").fuzziness(1).build();
+    let query: Query = {query: {type: "fuzzy", field: "name", value: "quak", fuzziness: 1}};
     expect(coll.find({"$fts": query}).length).toBe(2);
   });
 
@@ -76,7 +75,7 @@ describe("full-text search", () => {
       return user.name === "quak";
     });
 
-    let query = new QueryBuilder().fuzzy("name", "quak").fuzziness(1).build();
+    let query: Query = {query: {type: "fuzzy", field: "name", value: "quak", fuzziness: 1}};
     expect(coll.find({"$fts": query}).length).toBe(2);
   });
 
@@ -90,15 +89,15 @@ describe("full-text search", () => {
       {name: "abcdefg", id: 4},
     ]);
 
-    let query = new QueryBuilder().fuzzy("name", "quak").fuzziness(1).build();
+    let query: Query = {query: {type: "fuzzy", field: "name", value: "quak", fuzziness: 1}};
     expect(coll.find({"$fts": query}).length).toBe(0);
 
-    query = new QueryBuilder().fuzzy("name", "abcde").fuzziness(1).build();
+    query = {query: {type: "fuzzy", field: "name", value: "abcde", fuzziness: 1}};
     expect(coll.find({"$fts": query}).length).toBe(3);
   });
 
   it("sort", () => {
-    let query = new QueryBuilder().fuzzy("name", "quak").fuzziness(2).build();
+    let query: Query = {query: {type: "fuzzy", field: "name", value: "quak", fuzziness: 2}};
 
     expect(coll.chain().sortByScoring).toThrowAnyError();
     expect(coll.chain().getScoring).toThrowAnyError();
@@ -137,7 +136,7 @@ describe("full-text search", () => {
   });
 
   it("explain", () => {
-    let query = new QueryBuilder().explain(true).fuzzy("name", "quak").fuzziness(2).build();
+    let query: Query = {query: {type: "fuzzy", field: "name", value: "quak", fuzziness: 2}, explain: true};
     let res = coll.chain().find({"$fts": query});
     expect(res.data().length).toBe(4);
     expect(res.getScoring()[0].explanation).toBeArrayOfObjects();
@@ -162,7 +161,7 @@ describe("full-text search", () => {
             return db2.loadDatabase();
           }).then(() => {
             const coll2 = db2.getCollection<User>("User");
-            let query = new QueryBuilder().fuzzy("name", "quak").fuzziness(1).build();
+            let query: Query = {query: {type: "fuzzy", field: "name", value: "quak", fuzziness: 1}};
             expect(coll2.find({"$fts": query}).length).toBe(3);
             done();
           });
@@ -198,7 +197,7 @@ describe("full-text search", () => {
             return db2.loadDatabase({fullTextSearch: {name: tkz}});
           }).then(() => {
             const coll2 = db2.getCollection<User>("User");
-            let query = new QueryBuilder().fuzzy("name", "quak").fuzziness(1).build();
+            let query: Query = {query: {type: "fuzzy", field: "name", value: "quak", fuzziness: 1}};
             expect(coll2.find({"$fts": query}).length).toBe(3);
             done();
           });

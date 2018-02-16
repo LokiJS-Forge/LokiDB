@@ -1,12 +1,14 @@
-import {QueryBuilder as QB} from "../../src/query_builder";
+import {QueryTypes} from "../../src/query_types";
 
 const FIELD_NAME_1 = "msg";
 
-export const QUERIES = [
+export const QUERIES: {fts: QueryTypes, es: any, empty?: boolean}[] = [
   {
-    fts: new QB()
-      .term(FIELD_NAME_1, "sollicitudin")
-      .build(),
+    fts: {
+      type: "term",
+      field: FIELD_NAME_1,
+      value: "sollicitudin"
+    },
     es: {
       term: {
         [FIELD_NAME_1]: "sollicitudin"
@@ -14,11 +16,20 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .constantScore().beginFilter()
-      .term(FIELD_NAME_1, "sollicitudin")
-      .endFilter().boost(2.45)
-      .build(),
+    fts: {
+      type: "constant_score",
+      boost: 2.45,
+      filter: {
+        type: "array",
+        values: [
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "sollicitudin",
+          }
+        ]
+      }
+    },
     es: {
       constant_score: {
         filter: {
@@ -31,9 +42,11 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .fuzzy(FIELD_NAME_1, "a")
-      .build(),
+    fts: {
+      type: "fuzzy",
+      field: FIELD_NAME_1,
+      value: "a"
+    },
     es: {
       fuzzy: {
         [FIELD_NAME_1]: {
@@ -44,9 +57,11 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .fuzzy(FIELD_NAME_1, "este")
-      .build(),
+    fts: {
+      type: "fuzzy",
+      field: FIELD_NAME_1,
+      value: "este"
+    },
     es: {
       fuzzy: {
         [FIELD_NAME_1]: {
@@ -57,9 +72,12 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .fuzzy(FIELD_NAME_1, "est").prefixLength(3)
-      .build(),
+    fts: {
+      type: "fuzzy",
+      field: FIELD_NAME_1,
+      value: "est",
+      prefix_length: 3
+    },
     es: {
       fuzzy: {
         [FIELD_NAME_1]: {
@@ -71,9 +89,13 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .fuzzy(FIELD_NAME_1, "ege").prefixLength(3).fuzziness(2)
-      .build(),
+    fts: {
+      type: "fuzzy",
+      field: FIELD_NAME_1,
+      value: "ege",
+      prefix_length: 3,
+      fuzziness: 2
+    },
     es: {
       fuzzy: {
         [FIELD_NAME_1]: {
@@ -87,9 +109,12 @@ export const QUERIES = [
     empty: true
   },
   {
-    fts: new QB()
-      .fuzzy(FIELD_NAME_1, "est").fuzziness(0)
-      .build(),
+    fts: {
+      type: "fuzzy",
+      field: FIELD_NAME_1,
+      value: "est",
+      fuzziness: 0
+    },
     es: {
       fuzzy: {
         [FIELD_NAME_1]: {
@@ -101,9 +126,12 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .fuzzy(FIELD_NAME_1, "just").fuzziness(2)
-      .build(),
+    fts: {
+      type: "fuzzy",
+      field: FIELD_NAME_1,
+      value: "just",
+      fuzziness: 2
+    },
     es: {
       fuzzy: {
         [FIELD_NAME_1]: {
@@ -115,10 +143,12 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .explain(true)
-      .fuzzy(FIELD_NAME_1, "jus").fuzziness(1)
-      .build(),
+    fts: {
+      type: "fuzzy",
+      field: FIELD_NAME_1,
+      value: "jus",
+      fuzziness: 1
+    },
     es: {
       fuzzy: {
         [FIELD_NAME_1]: {
@@ -130,10 +160,13 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .explain(true)
-      .fuzzy(FIELD_NAME_1, "jus").fuzziness(2).prefixLength(1)
-      .build(),
+    fts: {
+      type: "fuzzy",
+      field: FIELD_NAME_1,
+      value: "jus",
+      fuzziness: 2,
+      prefix_length: 1
+    },
     es: {
       fuzzy: {
         [FIELD_NAME_1]: {
@@ -146,10 +179,12 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .explain(true)
-      .fuzzy(FIELD_NAME_1, "js").fuzziness(2)
-      .build(),
+    fts: {
+      type: "fuzzy",
+      field: FIELD_NAME_1,
+      value: "js",
+      fuzziness: 2
+    },
     es: {
       fuzzy: {
         [FIELD_NAME_1]: {
@@ -162,8 +197,11 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .wildcard(FIELD_NAME_1, "a?").build(),
+    fts: {
+      type: "wildcard",
+      field: FIELD_NAME_1,
+      value: "a?"
+    },
     es: {
       wildcard: {
         [FIELD_NAME_1]: {
@@ -173,8 +211,12 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .wildcard(FIELD_NAME_1, "a?").enableScoring(true).build(),
+    fts: {
+      type: "wildcard",
+      field: FIELD_NAME_1,
+      value: "a?",
+      enable_scoring: true
+    },
     es: {
       wildcard: {
         [FIELD_NAME_1]: {
@@ -185,8 +227,11 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .wildcard(FIELD_NAME_1, "so*").build(),
+    fts: {
+      type: "wildcard",
+      field: FIELD_NAME_1,
+      value: "so*"
+    },
     es: {
       wildcard: {
         [FIELD_NAME_1]: {
@@ -196,8 +241,11 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .wildcard(FIELD_NAME_1, "so*n").build(),
+    fts: {
+      type: "wildcard",
+      field: FIELD_NAME_1,
+      value: "so*n"
+    },
     es: {
       wildcard: {
         [FIELD_NAME_1]: {
@@ -207,8 +255,11 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .wildcard(FIELD_NAME_1, "e*t").build(),
+    fts: {
+      type: "wildcard",
+      field: FIELD_NAME_1,
+      value: "e*t"
+    },
     es: {
       wildcard: {
         [FIELD_NAME_1]: {
@@ -218,9 +269,12 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .term(FIELD_NAME_1, "sollicitudin").boost(2)
-      .build(),
+    fts: {
+      type: "term",
+      boost: 2,
+      field: FIELD_NAME_1,
+      value: "sollicitudin"
+    },
     es: {
       term: {
         [FIELD_NAME_1]: {
@@ -231,17 +285,16 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .matchAll()
-      .build(),
+    fts: {type: "match_all"},
     es: {
       match_all: {}
     }
   },
   {
-    fts: new QB()
-      .exists(FIELD_NAME_1)
-      .build(),
+    fts: {
+      type: "exists",
+      field: FIELD_NAME_1
+    },
     es: {
       exists: {
         "field": FIELD_NAME_1
@@ -249,9 +302,12 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .prefix(FIELD_NAME_1, "es").boost(3.5)
-      .build(),
+    fts: {
+      type: "prefix",
+      boost: 3.5,
+      field: FIELD_NAME_1,
+      value: "es"
+    },
     es: {
       prefix: {
         [FIELD_NAME_1]: {
@@ -262,9 +318,12 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .prefix(FIELD_NAME_1, "es").enableScoring(true)
-      .build(),
+    fts: {
+      type: "prefix",
+      field: FIELD_NAME_1,
+      value: "es",
+      enable_scoring: true
+    },
     es: {
       prefix: {
         [FIELD_NAME_1]: {
@@ -275,11 +334,24 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .explain(true)
-      .bool()
-      .beginMust().term(FIELD_NAME_1, "a").term(FIELD_NAME_1, "ac").endMust()
-      .build(),
+    fts: {
+      type: "bool",
+      must: {
+        type: "array",
+        values: [
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "a"
+          },
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "ac"
+          }
+        ]
+      }
+    },
     es: {
       bool: {
         must: [
@@ -298,11 +370,29 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .explain(true)
-      .bool()
-      .beginMust().term(FIELD_NAME_1, "a").fuzzy(FIELD_NAME_1, "just").term(FIELD_NAME_1, "ac").endMust()
-      .build(),
+    fts: {
+      type: "bool",
+      must: {
+        type: "array",
+        values: [
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "a"
+          },
+          {
+            type: "fuzzy",
+            field: FIELD_NAME_1,
+            value: "just"
+          },
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "ac"
+          }
+        ]
+      }
+    },
     es: {
       bool: {
         must: [
@@ -326,11 +416,30 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .explain(true)
-      .bool()
-      .beginMust().term(FIELD_NAME_1, "a").wildcard(FIELD_NAME_1, "j*").enableScoring(true).term(FIELD_NAME_1, "ac").endMust()
-      .build(),
+    fts: {
+      type: "bool",
+      must: {
+        type: "array",
+        values: [
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "a"
+          },
+          {
+            type: "wildcard",
+            field: FIELD_NAME_1,
+            value: "j*",
+            enable_scoring: true
+          },
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "ac"
+          }
+        ]
+      }
+    },
     es: {
       bool: {
         must: [
@@ -357,11 +466,29 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .bool()
-      .beginMust().term(FIELD_NAME_1, "est").endMust()
-      .beginNot().term(FIELD_NAME_1, "ac").endNot()
-      .build(),
+    fts: {
+      type: "bool",
+      must: {
+        type: "array",
+        values: [
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "est"
+          }
+        ]
+      },
+      not: {
+        type: "array",
+        values: [
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "ac"
+          }
+        ]
+      }
+    },
     es: {
       bool: {
         must: [
@@ -371,22 +498,41 @@ export const QUERIES = [
             }
           }
         ],
-        must_not: [
-          {
-            term: {
-              [FIELD_NAME_1]: "ac"
+        must_not:
+          [
+            {
+              term: {
+                [FIELD_NAME_1]: "ac"
+              }
             }
-          }
-        ]
+          ]
       }
     }
   },
   {
-    fts: new QB()
-      .bool()
-      .beginMust().term(FIELD_NAME_1, "abc").endMust()
-      .beginNot().term(FIELD_NAME_1, "ac").endNot()
-      .build(),
+    fts: {
+      type: "bool",
+      must: {
+        type: "array",
+        values: [
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "abc"
+          }
+        ]
+      },
+      not: {
+        type: "array",
+        values: [
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "ac"
+          }
+        ]
+      }
+    },
     es: {
       bool: {
         must: [
@@ -396,23 +542,42 @@ export const QUERIES = [
             }
           }
         ],
-        must_not: [
-          {
-            term: {
-              [FIELD_NAME_1]: "ac"
+        must_not:
+          [
+            {
+              term: {
+                [FIELD_NAME_1]: "ac"
+              }
             }
-          }
-        ]
+          ]
       }
     },
     empty: true
   },
   {
-    fts: new QB()
-      .bool()
-      .beginMust().term(FIELD_NAME_1, "est").endMust()
-      .beginShould().term(FIELD_NAME_1, "ac").endShould()
-      .build(),
+    fts: {
+      type: "bool",
+      must: {
+        type: "array",
+        values: [
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "est"
+          }
+        ]
+      },
+      should: {
+        type: "array",
+        values: [
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "ac"
+          }
+        ]
+      }
+    },
     es: {
       bool: {
         must: [
@@ -422,26 +587,42 @@ export const QUERIES = [
             }
           }
         ],
-        should: [
-          {
-            term: {
-              [FIELD_NAME_1]: "ac"
+        should:
+          [
+            {
+              term: {
+                [FIELD_NAME_1]: "ac"
+              }
             }
+          ]
+      }
+    }
+  },
+  {
+    fts: {
+      type: "bool",
+      should: {
+        type: "array",
+        values: [
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "ac"
+          },
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "enim"
+          },
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "est"
           }
         ]
-      }
-    }
-  },
-  {
-    fts: new QB()
-      .bool()
-      .minimumShouldMatch(2)
-      .beginShould()
-      .term(FIELD_NAME_1, "ac")
-      .term(FIELD_NAME_1, "enim")
-      .term(FIELD_NAME_1, "est")
-      .endShould()
-      .build(),
+      },
+      minimum_should_match: 2
+    },
     es: {
       bool: {
         should: [
@@ -461,20 +642,36 @@ export const QUERIES = [
             }
           }
         ],
-        minimum_should_match: 2,
+        minimum_should_match:
+          2,
       }
     }
   },
   {
-    fts: new QB()
-      .bool()
-      .minimumShouldMatch(-2)
-      .beginShould()
-      .term(FIELD_NAME_1, "ac")
-      .term(FIELD_NAME_1, "enim")
-      .term(FIELD_NAME_1, "est")
-      .endShould()
-      .build(),
+    fts: {
+      type: "bool",
+      should: {
+        type: "array",
+        values: [
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "ac"
+          },
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "enim"
+          },
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "est"
+          }
+        ]
+      },
+      minimum_should_match: -2
+    },
     es: {
       bool: {
         should: [
@@ -494,22 +691,45 @@ export const QUERIES = [
             }
           }
         ],
-        minimum_should_match: -2,
+        minimum_should_match: -2
       }
     }
   },
   {
-    fts: new QB()
-      .bool()
-      .minimumShouldMatch(0.75)
-      .beginShould()
-      .term(FIELD_NAME_1, "ac")
-      .term(FIELD_NAME_1, "enim")
-      .term(FIELD_NAME_1, "est")
-      .term(FIELD_NAME_1, "at")
-      .term(FIELD_NAME_1, "sed")
-      .endShould()
-      .build(),
+    fts: {
+      type: "bool",
+      should: {
+        type: "array",
+        values: [
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "ac"
+          },
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "enim"
+          },
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "est"
+          },
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "at"
+          },
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "sed"
+          },
+        ]
+      },
+      minimum_should_match: 0.75
+    },
     es: {
       bool: {
         should: [
@@ -539,22 +759,46 @@ export const QUERIES = [
             }
           }
         ],
-        minimum_should_match: "75%",
+        minimum_should_match:
+          "75%",
       }
     }
   },
   {
-    fts: new QB()
-      .bool()
-      .minimumShouldMatch(-0.25)
-      .beginShould()
-      .term(FIELD_NAME_1, "ac")
-      .term(FIELD_NAME_1, "enim")
-      .term(FIELD_NAME_1, "est")
-      .term(FIELD_NAME_1, "at")
-      .term(FIELD_NAME_1, "sed")
-      .endShould()
-      .build(),
+    fts: {
+      type: "bool",
+      should: {
+        type: "array",
+        values: [
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "ac"
+          },
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "enim"
+          },
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "est"
+          },
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "at"
+          },
+          {
+            type: "term",
+            field: FIELD_NAME_1,
+            value: "sed"
+          },
+        ]
+      },
+      minimum_should_match: -0.25
+    },
     es: {
       bool: {
         should: [
@@ -584,16 +828,29 @@ export const QUERIES = [
             }
           }
         ],
-        minimum_should_match: "-25%",
+        minimum_should_match:
+          "-25%",
       }
     }
   },
   {
-    fts: new QB()
-      .bool()
-      .beginMust().matchAll().endMust()
-      .beginNot().term(FIELD_NAME_1, "ac").endNot()
-      .build(),
+    fts: {
+      type: "bool",
+      must: {
+        type: "array",
+        values: [{
+          type: "match_all"
+        }]
+      },
+      not: {
+        type: "array",
+        values: [{
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "ac"
+        }]
+      },
+    },
     es: {
       bool: {
         must: [
@@ -601,22 +858,43 @@ export const QUERIES = [
             match_all: {}
           }
         ],
-        must_not: [
-          {
-            term: {
-              [FIELD_NAME_1]: "ac"
+        must_not:
+          [
+            {
+              term: {
+                [FIELD_NAME_1]: "ac"
+              }
             }
-          }
-        ]
+          ]
       }
     }
   },
   {
-    fts: new QB()
-      .bool()
-      .beginMust().term(FIELD_NAME_1, "ac").endMust()
-      .beginShould().constantScore().beginFilter().wildcard(FIELD_NAME_1, "a?").endFilter().endShould()
-      .build(),
+    fts: {
+      type: "bool",
+      must: {
+        type: "array",
+        values: [{
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "ac"
+        }]
+      },
+      should: {
+        type: "array",
+        values: [{
+          type: "constant_score",
+          filter: {
+            type: "array",
+            values: [{
+              type: "wildcard",
+              field: FIELD_NAME_1,
+              value: "a?"
+            }]
+          }
+        }]
+      },
+    },
     es: {
       bool: {
         must: [
@@ -626,24 +904,27 @@ export const QUERIES = [
             }
           }
         ],
-        should: [
-          {
-            constant_score: {
-              filter: {
-                wildcard: {
-                  [FIELD_NAME_1]: "a?"
+        should:
+          [
+            {
+              constant_score: {
+                filter: {
+                  wildcard: {
+                    [FIELD_NAME_1]: "a?"
+                  }
                 }
               }
             }
-          }
-        ]
+          ]
       }
     }
   },
   {
-    fts: new QB()
-      .match(FIELD_NAME_1, "orci habitasse eget")
-      .build(),
+    fts: {
+      type: "match",
+      field: FIELD_NAME_1,
+      value: "orci habitasse eget"
+    },
     es: {
       match: {
         [FIELD_NAME_1]: "orci habitasse eget"
@@ -651,59 +932,72 @@ export const QUERIES = [
     }
   },
   {
-    fts: new QB()
-      .match(FIELD_NAME_1, "orci habitasse eget")
-      .operator("and")
-      .build(),
+    fts: {
+      type: "match",
+      field: FIELD_NAME_1,
+      value: "orci habitasse eget",
+      operator: "and"
+    },
     es: {
       match: {
-        [FIELD_NAME_1]: {
-          query: "orci habitasse eget",
-          operator: "and"
-        }
+        [FIELD_NAME_1]:
+          {
+            query: "orci habitasse eget",
+            operator: "and"
+          }
       }
     }
   },
   {
-    fts: new QB()
-      .match(FIELD_NAME_1, "orca este")
-      .fuzziness("AUTO")
-      .build(),
+    fts: {
+      type: "match",
+      field: FIELD_NAME_1,
+      value: "orca este",
+      fuzziness: "AUTO"
+    },
     es: {
       match: {
-        [FIELD_NAME_1]: {
-          query: "orca este",
-          fuzziness: "AUTO"
-        }
+        [FIELD_NAME_1]:
+          {
+            query: "orca este",
+            fuzziness: "AUTO"
+          }
       }
     }
   },
   {
-    fts: new QB()
-      .match(FIELD_NAME_1, "orci est")
-      .operator("and")
-      .build(),
+    fts: {
+      type: "match",
+      field: FIELD_NAME_1,
+      value: "orci est",
+      operator: "and"
+    },
     es: {
       match: {
-        [FIELD_NAME_1]: {
-          query: "orci est",
-          operator: "and"
-        }
+        [FIELD_NAME_1]:
+          {
+            query: "orci est",
+            operator:
+              "and"
+          }
       }
     }
   },
   {
-    fts: new QB()
-      .match(FIELD_NAME_1, "orci est in")
-      .minimumShouldMatch(0.33)
-      .build(),
+    fts: {
+      type: "match",
+      field: FIELD_NAME_1,
+      value: "orci est in",
+      minimum_should_match: 0.33
+    },
     es: {
       match: {
-        [FIELD_NAME_1]: {
-          query: "orci est in",
-          minimum_should_match: "33%"
-        }
+        [FIELD_NAME_1]:
+          {
+            query: "orci est in",
+            minimum_should_match: "33%"
+          }
       }
     }
-  },
+  }
 ];
