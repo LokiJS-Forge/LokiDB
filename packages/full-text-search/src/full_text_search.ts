@@ -3,7 +3,7 @@ import {IndexSearcher} from "./index_searcher";
 import {Tokenizer} from "./tokenizer";
 import {Dict} from "../../common/types";
 import {PLUGINS} from "../../common/plugin";
-import {Query} from "./query_builder";
+import {Query} from "./query_types";
 import {Scorer} from "./scorer";
 
 export class FullTextSearch {

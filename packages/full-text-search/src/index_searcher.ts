@@ -1,6 +1,6 @@
 import {Scorer} from "./scorer";
 import {InvertedIndex, toCodePoints} from "./inverted_index";
-import {FuzzyQuery, Query, QueryBuilder, WildcardQuery} from "./query_builder";
+import {ArrayQuery, BoolQuery, FuzzyQuery, Query, TermQuery, WildcardQuery} from "./query_types";
 import {Dict} from "../../common/types";
 import {RunAutomaton} from "./fuzzy/run_automaton";
 import {LevenshteinAutomata} from "./fuzzy/levenshtein_automata";
@@ -29,7 +29,7 @@ export class IndexSearcher {
     let queryResults = this._recursive(query.query, true);
 
     // Do final scoring.
-    if (query.final_scoring !== undefined ? query.final_scoring : true) {
+    if (query.calculate_scoring !== undefined ? query.calculate_scoring : true) {
       return this._scorer.finalScore(query, queryResults);
     }
 
@@ -178,38 +178,35 @@ export class IndexSearcher {
         let terms = tokenizer.tokenize(query.value);
         let operator = query.operator !== undefined ? query.operator : "or";
 
-        let tmpQuery: any = new QueryBuilder().bool();
+        let boolQuery: BoolQuery = {type: "bool"};
+        let arrayQuery: ArrayQuery = {type: "array", values: []};
         if (operator === "or") {
           if (query.minimum_should_match !== undefined) {
-            tmpQuery = tmpQuery.minimumShouldMatch(query.minimum_should_match);
+            boolQuery.minimum_should_match = query.minimum_should_match;
           }
-          // Build a should query.
-          tmpQuery = tmpQuery.beginShould();
+          // Create a should query.
+          boolQuery.should = arrayQuery;
         } else {
-          // Build a must query.
-          tmpQuery = tmpQuery.beginMust();
+          // Create a must query.
+          boolQuery.must = arrayQuery;
         }
-        tmpQuery = tmpQuery.boost(boost);
+        arrayQuery.boost = boost;
 
         if (query.fuzziness !== undefined) {
           let prefixLength = query.prefix_length !== undefined ? query.prefix_length : 2;
           let extended = query.extended !== undefined ? query.extended : false;
           // Add each fuzzy.
           for (let i = 0; i < terms.length; i++) {
-            tmpQuery = tmpQuery.fuzzy(fieldName, terms[i]).fuzziness(query.fuzziness).prefixLength(prefixLength).extended(extended);
+            arrayQuery.values.push({type: "fuzzy", field: fieldName, value: terms[i], fuzziness: query.fuzziness,
+              prefix_length: prefixLength, extended: extended} as FuzzyQuery);
           }
         } else {
           // Add each term.
           for (let i = 0; i < terms.length; i++) {
-            tmpQuery = tmpQuery.term(fieldName, terms[i]);
+            arrayQuery.values.push({type: "term", field: fieldName, value: terms[i]} as TermQuery);
           }
         }
-        if (operator === "or") {
-          tmpQuery = tmpQuery.endShould();
-        } else {
-          tmpQuery = tmpQuery.endMust();
-        }
-        queryResults = this._recursive(tmpQuery.build().query, doScoring);
+        queryResults = this._recursive(boolQuery, doScoring);
 
         break;
       }

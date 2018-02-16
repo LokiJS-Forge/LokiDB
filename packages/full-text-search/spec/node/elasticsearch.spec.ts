@@ -166,7 +166,7 @@ describe("Compare scoring against elasticsearch", () => {
         .then((body: any) => {
           // Compare results with loki.
           let esHits = body.hits.hits;
-          let ftsHits = fts.search(query.fts);
+          let ftsHits = fts.search({query: query.fts});
           let ftsHitDocs = Object.keys(ftsHits);
 
           // Compare hit length.
