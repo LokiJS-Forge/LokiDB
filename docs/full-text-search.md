@@ -98,7 +98,13 @@ Check out section [Tokenizer](#Tokenizer) to control which words should be token
 
 #### Naming
 
-Use `import {FullTextSearch} from "@lokijs/full-text-search`
+The library functionality can be imported with `import {<...>} from "@lokijs/full-text-search`.
+If the library is included directly with a script tag, the global variable `LokiFullTextSearch` is available.
+
+The following classes/functions/variables are available:
+
+* FullTextSearch (default)
+* Tokenizer
 
 ### Standalone
 
@@ -119,7 +125,7 @@ cout(result);
 ```
 
 
-### Within LokiJS database
+### With LokiJS
 
 ```javascript
 // Runnable code
