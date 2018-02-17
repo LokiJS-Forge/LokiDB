@@ -1323,7 +1323,7 @@ export class Collection<TData extends object = object, TNested extends object = 
 
     // If you are inserting a javascript Date value into a binary index, convert to epoch time
     if (this.serializableIndices === true && val instanceof Date) {
-      this._data[dataPosition][binaryIndexName] = val.getTime();
+      this._data[dataPosition][binaryIndexName] = val.getTime() as any;
       val = this._data[dataPosition][binaryIndexName];
     }
 

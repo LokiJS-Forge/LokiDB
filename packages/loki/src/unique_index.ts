@@ -21,7 +21,7 @@ export class UniqueIndex<E extends object = object> {
    * @param {number} row - the data row of the document
    */
   public set(doc: Doc<E>, row: number): void {
-    const fieldValue = doc[this._field];
+    const fieldValue = doc[this._field] as any as number;
     if (fieldValue !== null && fieldValue !== undefined) {
       if (this._keyMap[fieldValue] !== undefined) {
         throw new Error("Duplicate key for property " + this._field + ": " + fieldValue);

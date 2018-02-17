@@ -11,12 +11,17 @@
     "noImplicitAny": true,
     "suppressImplicitAnyIndexErrors": true,
     "target": "es6",
-    "typeRoots": [
-      "node_modules/@types"
-    ],
     "lib": [
       "es2017",
       "dom"
+    ],
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "types": [
+      "jasmine",
+      "jasmine-expect",
+      "node"
     ]
   },
   "typedocOptions": {
