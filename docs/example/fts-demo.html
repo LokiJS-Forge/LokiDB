@@ -109,6 +109,10 @@
             <input type="radio" name="queryType" value="fuzzy">Fuzzy
             <span class="tooltiptext"></span>
           </div>
+          <div class="tooltip">
+            <input type="radio" name="queryType" value="match">Match
+            <span class="tooltiptext"></span>
+          </div>
         </div>
       </div>
     </div>
@@ -167,7 +171,11 @@
           },
           fuzzy: {
             hint: "Type a word misspelled...",
-            query: {query: {type: "fuzzy", field: "txt", value: "", fuzziness: 2, prefix_length: 0}}
+            query: {query: {type: "fuzzy", field: "txt", value: "", fuzziness: 2, prefix_length: 0, extended: true}}
+          },
+          match: {
+            hint: "Type multiple words misspelled...",
+            query: {query: {type: "match", field: "txt", value: "", fuzziness: 2, prefix_length: 0, extended: true}}
           }
         };
         // Setting up tooltips.
@@ -192,6 +200,10 @@
           minChars: 0,
           cache: false,
           source: (term, suggest) => {
+            if (term === "") {
+              suggest([]);
+              return;
+            }
             const query = queries[$("input[name=queryType]:checked").val()].query;
             query.query.value = term.toLowerCase();
             const rs = coll.chain().find({$fts: query}).sortByScoring();
@@ -214,7 +226,7 @@
         });
         // Prevent auto focus.
         setTimeout(() => {
-          $('#fts-demo-input').removeAttr("disabled");
+          fts_demo_input.removeAttr("disabled");
         }, 100);
 
       });
