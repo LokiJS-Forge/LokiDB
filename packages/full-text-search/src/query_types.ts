@@ -108,7 +108,7 @@ export interface MatchQueryAll extends BaseQuery<"match_all"> {
  * A query that wraps sub queries and returns a constant score equal to the query boost for every document in the filter.
  */
 export interface ConstantScoreQuery extends BaseQuery<"constant_score"> {
-  filter: ArrayQuery;
+  filter: QueryTypes[];
 }
 
 /**
@@ -116,22 +116,15 @@ export interface ConstantScoreQuery extends BaseQuery<"constant_score"> {
  */
 export interface BoolQuery extends BaseQuery<"bool"> {
   // The array of must queries.
-  must?: ArrayQuery;
+  must?: QueryTypes[];
   // The array of filter queries.
-  filter?: ArrayQuery;
+  filter?: QueryTypes[];
   // The array of should queries.
-  should?: ArrayQuery;
+  should?: QueryTypes[];
   // The array of not queries.
-  not?: ArrayQuery;
+  not?: QueryTypes[];
   /// The amount of minimum matching sub queries.
   minimum_should_match?: number;
-}
-
-/**
- * A query which holds all sub queries inside an array.
- */
-export interface ArrayQuery extends BaseQuery<"array"> {
-  values: QueryTypes[];
 }
 
 /**
