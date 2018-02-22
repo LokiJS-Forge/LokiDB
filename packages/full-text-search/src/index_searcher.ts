@@ -1,6 +1,6 @@
 import {Scorer} from "./scorer";
 import {InvertedIndex, toCodePoints} from "./inverted_index";
-import {ArrayQuery, BoolQuery, FuzzyQuery, Query, TermQuery, WildcardQuery} from "./query_types";
+import {BoolQuery, FuzzyQuery, Query, QueryTypes, TermQuery, WildcardQuery} from "./query_types";
 import {Dict} from "../../common/types";
 import {RunAutomaton} from "./fuzzy/run_automaton";
 import {LevenshteinAutomata} from "./fuzzy/levenshtein_automata";
@@ -60,13 +60,13 @@ export class IndexSearcher {
       case "bool": {
         queryResults = null;
         if (query.must !== undefined) {
-          queryResults = this._getUnique(query.must.values, doScoring, queryResults);
+          queryResults = this._getUnique(query.must, doScoring, queryResults);
         }
         if (query.filter !== undefined) {
-          queryResults = this._getUnique(query.filter.values, false, queryResults);
+          queryResults = this._getUnique(query.filter, false, queryResults);
         }
         if (query.should !== undefined) {
-          let shouldDocs = this._getAll(query.should.values, doScoring);
+          let shouldDocs = this._getAll(query.should, doScoring);
 
           let empty = false;
           if (queryResults === null) {
@@ -78,7 +78,7 @@ export class IndexSearcher {
           // TODO: Enable percent and ranges.
           if (query.minimum_should_match !== undefined) {
             msm = query.minimum_should_match;
-            let shouldLength = query.should.values.length;
+            let shouldLength = query.should.length;
             if (msm <= -1) {
               msm = shouldLength + msm;
             } else if (msm < 0) {
@@ -101,7 +101,7 @@ export class IndexSearcher {
           }
         }
         if (query.not !== undefined) {
-          let notDocs = this._getAll(query.not.values, false);
+          let notDocs = this._getAll(query.not, false);
           // Remove all docs.
           for (const docId of notDocs.keys()) {
             if (queryResults.has(docId)) {
@@ -147,7 +147,7 @@ export class IndexSearcher {
         break;
       }
       case "constant_score": {
-        let tmpQueryResults = this._getAll(query.filter.values, false);
+        let tmpQueryResults = this._getAll(query.filter, false);
         // Add to each document a constant score.
         for (const docId of tmpQueryResults.keys()) {
           this._scorer.scoreConstant(boost, docId, queryResults);
@@ -179,31 +179,31 @@ export class IndexSearcher {
         let operator = query.operator !== undefined ? query.operator : "or";
 
         let boolQuery: BoolQuery = {type: "bool"};
-        let arrayQuery: ArrayQuery = {type: "array", values: []};
+        let subQueries: QueryTypes[] = [];
         if (operator === "or") {
           if (query.minimum_should_match !== undefined) {
             boolQuery.minimum_should_match = query.minimum_should_match;
           }
           // Create a should query.
-          boolQuery.should = arrayQuery;
+          boolQuery.should = subQueries;
         } else {
           // Create a must query.
-          boolQuery.must = arrayQuery;
+          boolQuery.must = subQueries;
         }
-        arrayQuery.boost = boost;
+        boolQuery.boost = boost;
 
         if (query.fuzziness !== undefined) {
           let prefixLength = query.prefix_length !== undefined ? query.prefix_length : 2;
           let extended = query.extended !== undefined ? query.extended : false;
           // Add each fuzzy.
           for (let i = 0; i < terms.length; i++) {
-            arrayQuery.values.push({type: "fuzzy", field: fieldName, value: terms[i], fuzziness: query.fuzziness,
+            subQueries.push({type: "fuzzy", field: fieldName, value: terms[i], fuzziness: query.fuzziness,
               prefix_length: prefixLength, extended: extended} as FuzzyQuery);
           }
         } else {
           // Add each term.
           for (let i = 0; i < terms.length; i++) {
-            arrayQuery.values.push({type: "term", field: fieldName, value: terms[i]} as TermQuery);
+            subQueries.push({type: "term", field: fieldName, value: terms[i]} as TermQuery);
           }
         }
         queryResults = this._recursive(boolQuery, doScoring);

@@ -2,7 +2,7 @@ import {QueryTypes} from "../../src/query_types";
 
 const FIELD_NAME_1 = "msg";
 
-export const QUERIES: {fts: QueryTypes, es: any, empty?: boolean}[] = [
+export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean }[] = [
   {
     fts: {
       type: "term",
@@ -19,16 +19,13 @@ export const QUERIES: {fts: QueryTypes, es: any, empty?: boolean}[] = [
     fts: {
       type: "constant_score",
       boost: 2.45,
-      filter: {
-        type: "array",
-        values: [
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "sollicitudin",
-          }
-        ]
-      }
+      filter: [
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "sollicitudin",
+        }
+      ]
     },
     es: {
       constant_score: {
@@ -336,21 +333,18 @@ export const QUERIES: {fts: QueryTypes, es: any, empty?: boolean}[] = [
   {
     fts: {
       type: "bool",
-      must: {
-        type: "array",
-        values: [
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "a"
-          },
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "ac"
-          }
-        ]
-      }
+      must: [
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "a"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "ac"
+        }
+      ]
     },
     es: {
       bool: {
@@ -372,26 +366,23 @@ export const QUERIES: {fts: QueryTypes, es: any, empty?: boolean}[] = [
   {
     fts: {
       type: "bool",
-      must: {
-        type: "array",
-        values: [
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "a"
-          },
-          {
-            type: "fuzzy",
-            field: FIELD_NAME_1,
-            value: "just"
-          },
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "ac"
-          }
-        ]
-      }
+      must: [
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "a"
+        },
+        {
+          type: "fuzzy",
+          field: FIELD_NAME_1,
+          value: "just"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "ac"
+        }
+      ]
     },
     es: {
       bool: {
@@ -418,27 +409,24 @@ export const QUERIES: {fts: QueryTypes, es: any, empty?: boolean}[] = [
   {
     fts: {
       type: "bool",
-      must: {
-        type: "array",
-        values: [
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "a"
-          },
-          {
-            type: "wildcard",
-            field: FIELD_NAME_1,
-            value: "j*",
-            enable_scoring: true
-          },
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "ac"
-          }
-        ]
-      }
+      must: [
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "a"
+        },
+        {
+          type: "wildcard",
+          field: FIELD_NAME_1,
+          value: "j*",
+          enable_scoring: true
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "ac"
+        }
+      ]
     },
     es: {
       bool: {
@@ -468,26 +456,20 @@ export const QUERIES: {fts: QueryTypes, es: any, empty?: boolean}[] = [
   {
     fts: {
       type: "bool",
-      must: {
-        type: "array",
-        values: [
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "est"
-          }
-        ]
-      },
-      not: {
-        type: "array",
-        values: [
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "ac"
-          }
-        ]
-      }
+      must: [
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "est"
+        }
+      ],
+      not: [
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "ac"
+        }
+      ]
     },
     es: {
       bool: {
@@ -512,26 +494,20 @@ export const QUERIES: {fts: QueryTypes, es: any, empty?: boolean}[] = [
   {
     fts: {
       type: "bool",
-      must: {
-        type: "array",
-        values: [
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "abc"
-          }
-        ]
-      },
-      not: {
-        type: "array",
-        values: [
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "ac"
-          }
-        ]
-      }
+      must: [
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "abc"
+        }
+      ],
+      not: [
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "ac"
+        }
+      ]
     },
     es: {
       bool: {
@@ -557,26 +533,20 @@ export const QUERIES: {fts: QueryTypes, es: any, empty?: boolean}[] = [
   {
     fts: {
       type: "bool",
-      must: {
-        type: "array",
-        values: [
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "est"
-          }
-        ]
-      },
-      should: {
-        type: "array",
-        values: [
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "ac"
-          }
-        ]
-      }
+      must: [
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "est"
+        }
+      ],
+      should: [
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "ac"
+        }
+      ]
     },
     es: {
       bool: {
@@ -601,26 +571,23 @@ export const QUERIES: {fts: QueryTypes, es: any, empty?: boolean}[] = [
   {
     fts: {
       type: "bool",
-      should: {
-        type: "array",
-        values: [
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "ac"
-          },
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "enim"
-          },
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "est"
-          }
-        ]
-      },
+      should: [
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "ac"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "enim"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "est"
+        }
+      ],
       minimum_should_match: 2
     },
     es: {
@@ -650,26 +617,23 @@ export const QUERIES: {fts: QueryTypes, es: any, empty?: boolean}[] = [
   {
     fts: {
       type: "bool",
-      should: {
-        type: "array",
-        values: [
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "ac"
-          },
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "enim"
-          },
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "est"
-          }
-        ]
-      },
+      should: [
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "ac"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "enim"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "est"
+        }
+      ],
       minimum_should_match: -2
     },
     es: {
@@ -698,36 +662,33 @@ export const QUERIES: {fts: QueryTypes, es: any, empty?: boolean}[] = [
   {
     fts: {
       type: "bool",
-      should: {
-        type: "array",
-        values: [
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "ac"
-          },
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "enim"
-          },
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "est"
-          },
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "at"
-          },
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "sed"
-          },
-        ]
-      },
+      should: [
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "ac"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "enim"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "est"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "at"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "sed"
+        },
+      ],
       minimum_should_match: 0.75
     },
     es: {
@@ -767,36 +728,33 @@ export const QUERIES: {fts: QueryTypes, es: any, empty?: boolean}[] = [
   {
     fts: {
       type: "bool",
-      should: {
-        type: "array",
-        values: [
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "ac"
-          },
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "enim"
-          },
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "est"
-          },
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "at"
-          },
-          {
-            type: "term",
-            field: FIELD_NAME_1,
-            value: "sed"
-          },
-        ]
-      },
+      should: [
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "ac"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "enim"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "est"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "at"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "sed"
+        },
+      ],
       minimum_should_match: -0.25
     },
     es: {
@@ -836,20 +794,14 @@ export const QUERIES: {fts: QueryTypes, es: any, empty?: boolean}[] = [
   {
     fts: {
       type: "bool",
-      must: {
-        type: "array",
-        values: [{
-          type: "match_all"
-        }]
-      },
-      not: {
-        type: "array",
-        values: [{
-          type: "term",
-          field: FIELD_NAME_1,
-          value: "ac"
-        }]
-      },
+      must: [{
+        type: "match_all"
+      }],
+      not: [{
+        type: "term",
+        field: FIELD_NAME_1,
+        value: "ac"
+      }],
     },
     es: {
       bool: {
@@ -872,28 +824,19 @@ export const QUERIES: {fts: QueryTypes, es: any, empty?: boolean}[] = [
   {
     fts: {
       type: "bool",
-      must: {
-        type: "array",
-        values: [{
-          type: "term",
+      must: [{
+        type: "term",
+        field: FIELD_NAME_1,
+        value: "ac"
+      }],
+      should: [{
+        type: "constant_score",
+        filter: [{
+          type: "wildcard",
           field: FIELD_NAME_1,
-          value: "ac"
+          value: "a?"
         }]
-      },
-      should: {
-        type: "array",
-        values: [{
-          type: "constant_score",
-          filter: {
-            type: "array",
-            values: [{
-              type: "wildcard",
-              field: FIELD_NAME_1,
-              value: "a?"
-            }]
-          }
-        }]
-      },
+      }],
     },
     es: {
       bool: {
