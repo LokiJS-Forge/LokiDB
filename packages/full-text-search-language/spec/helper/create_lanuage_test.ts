@@ -1,8 +1,9 @@
-import {FullTextSearch, Tokenizer} from "../../../full-text-search/src/index";
+import {FullTextSearch} from "../../../full-text-search/src/index";
 import {Query} from "../../../full-text-search/src/query_types";
+import {Analyzer} from "../../../full-text-search/src/analyzer/analyzer";
 
 export interface LanguageTestData {
-  tokenizer: Tokenizer;
+  analyzer: Analyzer;
   docs: string[];
   tests: {
     what: string;
@@ -31,7 +32,7 @@ export function createLanguageTest(language: string, data: LanguageTestData) {
     // Setup full-text search.
     let fts = new FullTextSearch([{
       field: "body",
-      tokenizer: data.tokenizer
+      analyzer: data.analyzer
     }], "$loki");
 
     // Add documents.

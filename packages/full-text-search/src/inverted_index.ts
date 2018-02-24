@@ -1,5 +1,5 @@
-import {Tokenizer} from "./tokenizer";
 import Index = InvertedIndex.Index;
+import {Analyzer, StandardAnalyzer, analyze} from "./analyzer/analyzer";
 
 /**
  * Converts a string into an array of code points.
@@ -30,23 +30,23 @@ export function toCodePoints(str: string): number[] {
 export class InvertedIndex {
   private _store: boolean;
   private _optimizeChanges: boolean;
-  private _tokenizer: Tokenizer;
+  private _analyzer: Analyzer;
   private _docCount: number = 0;
   private _docStore: Map<number, InvertedIndex.DocStore> = new Map();
   private _totalFieldLength: number = 0;
   private _root: Index = new Map();
 
   /**
-   * @param {boolean} [options.store=true] - inverted index will be stored at serialization rather than rebuilt on load.
-   * @param {boolean} optimizeChanges
-   * @param {Tokenizer} tokenizer
+   * @param {boolean} [options.store=true] - inverted index will be stored at serialization rather than rebuilt on load
+   * @param {boolean} [options.optimizeChanges=true] - flag to
+   * @param {Analyzer} [options.analyzer=] - the analyzer of this inverted index
    */
   constructor(options: InvertedIndex.FieldOptions = {}) {
     (
       {
         store: this._store = true,
         optimizeChanges: this._optimizeChanges = true,
-        tokenizer: this._tokenizer = new Tokenizer()
+        analyzer: this._analyzer = new StandardAnalyzer()
       } = options
     );
   }
@@ -59,8 +59,8 @@ export class InvertedIndex {
     this._store = val;
   }
 
-  get tokenizer() {
-    return this._tokenizer;
+  get analyzer() {
+    return this._analyzer;
   }
 
   get documentCount() {
@@ -90,7 +90,7 @@ export class InvertedIndex {
     }
 
     // Tokenize document field.
-    const fieldTokens = this._tokenizer.tokenize(field);
+    const fieldTokens = analyze(this._analyzer, field);
     this._totalFieldLength += fieldTokens.length;
     this._docCount += 1;
     this._docStore.set(docId, {fieldLength: fieldTokens.length});
@@ -105,9 +105,6 @@ export class InvertedIndex {
 
     // Iterate over all unique field terms.
     for (const token of new Set(fieldTokens)) {
-      if (token === "") {
-        continue;
-      }
       // Calculate term frequency.
       let tf = 0;
       for (let j = 0; j < fieldTokens.length; j++) {
@@ -254,7 +251,6 @@ export class InvertedIndex {
       return {
         _store: true,
         _optimizeChanges: this._optimizeChanges,
-        _tokenizer: this._tokenizer,
         _docCount: this._docCount,
         _docStore: [...this._docStore],
         _totalFieldLength: this._totalFieldLength,
@@ -264,21 +260,19 @@ export class InvertedIndex {
     return {
       _store: false,
       _optimizeChanges: this._optimizeChanges,
-      _tokenizer: this._tokenizer
     };
   }
 
   /**
    * Deserialize the inverted index.
    * @param {{docStore: *, _fields: *, index: *}} serialized - The serialized inverted index.
-   * @param {Object.<string, function>|Tokenizer} funcTok[undefined] - the depending functions with labels
-   *  or an equivalent tokenizer
+   * @param {Analyzer} analyzer[undefined] - an analyzer
    */
-  public static fromJSONObject(serialized: InvertedIndex.Serialization, funcTok?: Tokenizer.FunctionSerialization) {
+  public static fromJSONObject(serialized: InvertedIndex.Serialization, analyzer?: Analyzer) {
     const invIdx = new InvertedIndex({
       store: serialized._store,
       optimizeChanges: serialized._optimizeChanges,
-      tokenizer: Tokenizer.fromJSONObject(serialized._tokenizer, funcTok)
+      analyzer: analyzer
     });
     if (invIdx._store) {
       invIdx._docCount = serialized._docCount;
@@ -399,7 +393,7 @@ export namespace InvertedIndex {
   export interface FieldOptions {
     store?: boolean;
     optimizeChanges?: boolean;
-    tokenizer?: Tokenizer;
+    analyzer?: Analyzer;
   }
 
   export type Index = Map<number, any> & { dc?: Map<number, number>, df?: number, pa?: Index };
@@ -418,7 +412,6 @@ export namespace InvertedIndex {
   export interface Serialization {
     _store: boolean;
     _optimizeChanges: boolean;
-    _tokenizer: Tokenizer.Serialization;
     _docCount?: number;
     _docStore?: Map<number, DocStore>;
     _totalFieldLength?: number;

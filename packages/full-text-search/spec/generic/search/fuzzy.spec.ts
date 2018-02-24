@@ -1,7 +1,6 @@
 /* global describe, it, expect */
 import {FullTextSearch} from "../../../src/full_text_search";
 import {FuzzyQuery, MatchQuery, Query, QueryTypes} from "../../../src/query_types";
-import {Tokenizer} from "../../../src/tokenizer";
 
 describe("fuzzy query", () => {
   // from lucene 6.4.0 core: TestFuzzyQuery
@@ -146,12 +145,7 @@ describe("fuzzy query", () => {
     let docs = ["\u{000169bb}\u{000569bb}\u{000969bb}", "\u{000169bb}\u{000569bb}\u{000969be}",
       "\u{000169bb}\u{000969be}", "\u{000969bb}", "\u{000569bb}", "\u{000285ac}\u{000969bb}"];
 
-    let tkz = new Tokenizer();
-    tkz.setSplitter("split", (tokens: string) => {
-      return tokens.split(" ");
-    });
-
-    let fts = new FullTextSearch([{field: "body", tokenizer: tkz}], "$loki");
+    let fts = new FullTextSearch([{field: "body"}], "$loki");
     for (let i = 0; i < docs.length; i++) {
       fts.addDocument({
         $loki: i,

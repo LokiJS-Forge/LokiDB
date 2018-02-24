@@ -1,13 +1,15 @@
 import {InvertedIndex} from "./inverted_index";
 import {IndexSearcher} from "./index_searcher";
-import {Tokenizer} from "./tokenizer";
 import {Dict} from "../../common/types";
 import {PLUGINS} from "../../common/plugin";
 import {Query} from "./query_types";
 import {Scorer} from "./scorer";
+import {Analyzer} from "./analyzer/analyzer";
 
 export class FullTextSearch {
+  /// The id field of each document.
   private _id: string;
+  /// Set of ids of all indexed documents.
   private _docs: Set<number>;
   private _idxSearcher: IndexSearcher;
   private _invIdxs: Dict<InvertedIndex> = {};
@@ -25,9 +27,9 @@ export class FullTextSearch {
    * @param {string} fieldOptions.field - the name of the property field
    * @param {boolean=true} fieldOptions.store - flag to indicate if the full-text search should be stored on serialization or
    *  rebuild on deserialization
-   * @param {boolean=true} fieldOptions.optimizeChanges - flag to indicate if deleting/updating a document should be optimized
-   *  (requires more memory but performs better)
-   * @param {Tokenizer=Tokenizer} fieldOptions.tokenizer - the tokenizer of the field
+   * @param {boolean=true} fieldOptions.optimizeChanges - flag to optimize updating and deleting of documents
+   *    (requires more memory but performs faster)
+   * @param {Analyzer} fieldOptions.analyzer - an analyzer for the field
    * @param {string} [id] - the property name of the document index
    */
   constructor(fieldOptions: FullTextSearch.FieldOptions[] = [], id?: string) {
@@ -86,12 +88,12 @@ export class FullTextSearch {
     return serialized;
   }
 
-  public static fromJSONObject(serialized: FullTextSearch.Serialization, tokenizers: Dict<Tokenizer.FunctionSerialization> = {}): FullTextSearch {
+  public static fromJSONObject(serialized: FullTextSearch.Serialization, analyzers: Dict<Analyzer> = {}): FullTextSearch {
     let fts = new FullTextSearch([], serialized.id);
     let fieldNames = Object.keys(serialized.ii);
     for (let i = 0; i < fieldNames.length; i++) {
       const fieldName = fieldNames[i];
-      fts._invIdxs[fieldName] = InvertedIndex.fromJSONObject(serialized.ii[fieldName], tokenizers[fieldName]);
+      fts._invIdxs[fieldName] = InvertedIndex.fromJSONObject(serialized.ii[fieldName], analyzers[fieldName]);
     }
     return fts;
   }

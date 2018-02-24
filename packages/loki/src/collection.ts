@@ -8,7 +8,7 @@ import {clone, CloneMethod} from "./clone";
 import {Doc, Dict} from "../../common/types";
 import {FullTextSearch} from "../../full-text-search/src/full_text_search";
 import {PLUGINS} from "../../common/plugin";
-import {Tokenizer} from "../../full-text-search/src/tokenizer";
+import {Analyzer} from "../../full-text-search/src/analyzer/analyzer";
 
 export {CloneMethod} from "./clone";
 
@@ -2053,7 +2053,7 @@ export namespace Collection {
 
   export interface DeserializeOptions {
     retainDirtyFlags?: boolean;
-    fullTextSearch?: Dict<Tokenizer.FunctionSerialization>;
+    fullTextSearch?: Dict<Analyzer>;
 
     [collName: string]: any | { proto?: any; inflate?: (src: object, dest?: object) => void };
   }
