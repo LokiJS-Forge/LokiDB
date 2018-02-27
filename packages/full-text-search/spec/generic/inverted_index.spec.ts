@@ -14,7 +14,7 @@ describe("inverted index", () => {
     expect(ii.documentCount).toBeNumber();
     expect(ii.documentStore instanceof Map).toBeTrue();
     expect(ii.totalFieldLength).toBeNumber();
-    expect(ii.tokenizer).toBeObject();
+    expect(ii.analyzer).toBeObject();
     expect(ii.root instanceof Map).toBeTrue();
   });
 
@@ -23,10 +23,7 @@ describe("inverted index", () => {
     ii.insert(field1, 1);
     expect(() => ii.insert(field2, 1)).toThrowErrorOfType("Error");
     ii.insert(field3, 2);
-
-    ii.tokenizer.add("bad_tokenizer", () => "");
     ii.insert(field4, 3);
-    ii.tokenizer.remove("bad_tokenizer");
     ii.insert(field4, 4);
     ii.insert(field5, 5);
   });

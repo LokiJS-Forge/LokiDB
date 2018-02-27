@@ -1,11 +1,11 @@
 /* global describe, ddescribe, it, expect */
 import {Loki} from "../../../loki/src/loki";
-import {FuzzyQuery, Query} from "../../src/query_types";
+import {Query} from "../../src/query_types";
 import {MemoryStorage} from "../../../memory-storage/src/memory_storage";
 import {Collection} from "../../../loki/src/collection";
 import {FullTextSearch} from "../../src/full_text_search";
-import {Tokenizer} from "../../src/tokenizer";
 import {Doc} from "../../../common/types";
+import {Analyzer} from "../../src/analyzer/analyzer";
 
 describe("full-text search", () => {
   FullTextSearch.register();
@@ -172,18 +172,16 @@ describe("full-text search", () => {
       });
   });
 
-  it("save/load with tokenizer", (done) => {
+  it("save/load with analyzer", (done) => {
     const adapter = {adapter: new MemoryStorage()};
     db = new Loki("MyDB");
-    const tkz = new Tokenizer();
-    tkz.setSplitter("abc", (a: string) => a.split(" "));
-    tkz.add("def", (a: string) => a);
-    coll = db.addCollection<User>("User", {fullTextSearch: [{field: "name", tokenizer: tkz}]});
+    const myAnalyzer: Analyzer = {
+      tokenizer: str => (str.split("b"))
+    };
+    coll = db.addCollection<User>("User", {fullTextSearch: [{field: "name", analyzer: myAnalyzer}]});
     coll.insert([
-      {name: "quark", id: 1},
-      {name: "quarrk", id: 2},
-      {name: "quak", id: 3},
-      {name: "quask", id: 4}
+      {name: "abc", id: 1},
+      {name: "defba", id: 2},
     ]);
 
     db.initializePersistence(adapter)
@@ -194,10 +192,15 @@ describe("full-text search", () => {
         const db2 = new Loki("MyDB");
         return db2.initializePersistence(adapter)
           .then(() => {
-            return db2.loadDatabase({fullTextSearch: {name: tkz}});
+            return db2.loadDatabase({fullTextSearch: {name: myAnalyzer}});
           }).then(() => {
             const coll2 = db2.getCollection<User>("User");
-            let query: Query = {query: {type: "fuzzy", field: "name", value: "quak", fuzziness: 1}};
+
+            const query: Query = {query: {type: "term", field: "name", value: "a"}};
+            expect(coll2.find({"$fts": query}).length).toBe(2);
+
+            // Analyzer still works.
+            coll2.insert({name: "abxyz", id: 3});
             expect(coll2.find({"$fts": query}).length).toBe(3);
             done();
           });

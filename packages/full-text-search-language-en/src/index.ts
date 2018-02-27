@@ -1,3 +1,3 @@
-import {EN} from "./en";
-export {EN};
-export default EN;
+import {EnglishAnalyzer} from "./english_analyzer";
+export {EnglishAnalyzer};
+export default EnglishAnalyzer;

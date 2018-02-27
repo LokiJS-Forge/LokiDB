@@ -1,7 +1,7 @@
 /* global describe, it, expect */
 import {FullTextSearch} from "../../../src/full_text_search";
 import {Query, QueryTypes, WildcardQuery} from "../../../src/query_types";
-import {Tokenizer} from "../../../src/tokenizer";
+import {Analyzer} from "../../../src/analyzer/analyzer";
 
 describe("wildcard query", () => {
   // from lucene 6.4.0 core: TestWildCard
@@ -76,11 +76,12 @@ describe("wildcard query", () => {
   it("Tests if wildcard escaping works.", () => {
     let docs = ["foo*bar", "foo??bar", "fooCDbar", "fooSOMETHINGbar", "foo\\", "foo\\\\"];
 
-    let tkz = new Tokenizer();
-    // Don't split the text.
-    tkz.setSplitter("nosplit", (text) => [text]);
+    const analyzer: Analyzer = {
+      // Don't split the text.
+      tokenizer: (text) => [text]
+    };
 
-    let fts = new FullTextSearch([{field: "body", tokenizer: tkz}], "$loki");
+    let fts = new FullTextSearch([{field: "body", analyzer: analyzer}], "$loki");
     for (let i = 0; i < docs.length; i++) {
       fts.addDocument({
         $loki: i,

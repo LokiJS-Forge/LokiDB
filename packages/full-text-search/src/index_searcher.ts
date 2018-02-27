@@ -6,7 +6,7 @@ import {RunAutomaton} from "./fuzzy/run_automaton";
 import {LevenshteinAutomata} from "./fuzzy/levenshtein_automata";
 import QueryResults = Scorer.QueryResults;
 import Index = InvertedIndex.Index;
-
+import {analyze, Analyzer} from "./analyzer/analyzer";
 
 /**
  * @hidden
@@ -17,7 +17,9 @@ export class IndexSearcher {
   private _scorer: Scorer;
 
   /**
-   * @param {object} invIdxs
+   * Constructs an index searcher.
+   * @param {Dict<InvertedIndex>} invIdxs - the inverted indexes
+   * @param {Set<number>} docs - the ids of the documents
    */
   constructor(invIdxs: Dict<InvertedIndex>, docs: Set<number>) {
     this._invIdxs = invIdxs;
@@ -50,10 +52,10 @@ export class IndexSearcher {
     const fieldName = query.field !== undefined ? query.field : null;
 
     let root = null;
-    let tokenizer = null;
+    let analyzer: Analyzer = null;
     if (this._invIdxs[fieldName] !== undefined) {
       root = this._invIdxs[fieldName].root;
-      tokenizer = this._invIdxs[fieldName].tokenizer;
+      analyzer = this._invIdxs[fieldName].analyzer;
     }
 
     switch (query.type) {
@@ -175,11 +177,11 @@ export class IndexSearcher {
         break;
       }
       case "match": {
-        let terms = tokenizer.tokenize(query.value);
-        let operator = query.operator !== undefined ? query.operator : "or";
+        const terms = analyze(analyzer, query.value);
+        const operator = query.operator !== undefined ? query.operator : "or";
 
-        let boolQuery: BoolQuery = {type: "bool"};
-        let subQueries: QueryTypes[] = [];
+        const boolQuery: BoolQuery = {type: "bool"};
+        const subQueries: QueryTypes[] = [];
         if (operator === "or") {
           if (query.minimum_should_match !== undefined) {
             boolQuery.minimum_should_match = query.minimum_should_match;

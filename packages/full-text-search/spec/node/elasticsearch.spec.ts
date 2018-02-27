@@ -2,9 +2,11 @@
 import {DATA} from "./MOCK_DATA";
 import {QUERIES} from "./QUERIES";
 import {FullTextSearch} from "../../src/full_text_search";
-import {Tokenizer} from "../../src/tokenizer";
 import {Client} from "elasticsearch";
 import {Scorer} from "../../src/scorer";
+import {Analyzer} from "../../src/analyzer/analyzer";
+import {whitespaceTokenizer} from "../../src/analyzer/tokenizer";
+import {lowercaseTokenFilter} from "../../src/analyzer/token_filter";
 
 const INDEX_NAME = "test_index";
 const INDEX_TYPE = "MockUp";
@@ -166,7 +168,7 @@ describe("Compare scoring against elasticsearch", () => {
         .then((body: any) => {
           // Compare results with loki.
           let esHits = body.hits.hits;
-          let ftsHits = fts.search({query: query.fts});
+          let ftsHits = fts.search({query: query.fts, explain: true});
           let ftsHitDocs = Object.keys(ftsHits);
 
           // Compare hit length.
@@ -263,12 +265,14 @@ describe("Compare scoring against elasticsearch", () => {
   }
 
   function initFTS() {
-    let tkz = new Tokenizer();
-    tkz.add("stop-word", (token) => (token !== "habitasse" && token !== "morbi") ? token : "");
+    let myAnalyzer: Analyzer = {
+      tokenizer: whitespaceTokenizer,
+      token_filter: [lowercaseTokenFilter, (token) => (token !== "habitasse" && token !== "morbi") ? token : ""]
+    };
 
     let fts = new FullTextSearch([{
       field: FIELD_NAME_1,
-      tokenizer: tkz
+      analyzer: myAnalyzer
     }], "$loki");
 
     // Add documents.

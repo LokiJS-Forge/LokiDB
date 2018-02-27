@@ -1,7 +1,19 @@
 import {FullTextSearch} from "./full_text_search";
-import {Tokenizer} from "./tokenizer";
+import {StandardAnalyzer} from "./analyzer/analyzer";
+import {whitespaceTokenizer} from "./analyzer/tokenizer";
+import {lowercaseTokenFilter, uppercaseTokenFilter} from "./analyzer/token_filter";
 
-FullTextSearch["Tokenizer"] = Tokenizer;
+FullTextSearch["Analyzer"] = {};
+FullTextSearch["Analyzer"]["StandardAnalyzer"] = StandardAnalyzer;
+FullTextSearch["Tokenizer"] = {};
+FullTextSearch["Tokenizer"]["whitespaceTokenizer"] = whitespaceTokenizer;
+FullTextSearch["TokenFilter"] = {};
+FullTextSearch["TokenFilter"]["lowercaseTokenFilter"] = lowercaseTokenFilter;
+FullTextSearch["TokenFilter"]["uppercaseTokenFilter"] = uppercaseTokenFilter;
 
-export {FullTextSearch, Tokenizer};
+export {FullTextSearch,
+  StandardAnalyzer,
+  whitespaceTokenizer,
+  lowercaseTokenFilter, uppercaseTokenFilter
+};
 export default FullTextSearch;

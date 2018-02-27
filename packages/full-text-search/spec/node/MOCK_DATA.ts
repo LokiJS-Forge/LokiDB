@@ -5,9 +5,9 @@ export const DATA = [
   },
   {
     "id": 2,
-    "msg": "sit amet eros suspendisse accumsan tortor quis turpis sed ante vivamus tortor duis mattis egestas metus aenean fermentum donec ut mauris eget massa tempor convallis nulla neque libero convallis eget eleifend luctus ultricies eu nibh quisque id"
+    "msg": " sit amet eros suspendisse accumsan tortor quis turpis sed ante vivamus tortor duis mattis egestas metus aenean fermentum donec ut mauris eget massa tempor convallis nulla neque libero convallis eget eleifend luctus ultricies eu nibh quisque id "
   },
-  {"id": 3, "msg": "augue a suscipit nulla elit ac nulla sed vel enim sit amet nunc viverra"},
+  {"id": 3, "msg": " augue a suscipit nulla elit ac nulla sed vel enim sit amet nunc viverra"},
   {
     "id": 4,
     "msg": "non sodales sed tincidunt eu felis fusce posuere felis sed lacus morbi sem mauris laoreet ut rhoncus aliquet pulvinar sed nisl nunc rhoncus dui vel sem sed sagittis nam congue risus semper porta"
