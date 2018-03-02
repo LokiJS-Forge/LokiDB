@@ -59,6 +59,19 @@ describe("testing unique index serialization", () => {
   });
 });
 
+describe("testing disable meta serialization", function () {
+  it("should have meta disabled", function () {
+    const db = new Loki();
+    db.addCollection<User>("users", { disableMeta: true });
+
+    const ser = db.serialize();
+    const reloaded = new Loki();
+    reloaded.loadJSON(ser);
+    const coll = reloaded.getCollection("users");
+    expect(coll["disableMeta"]).toEqual(true);
+  });
+});
+
 describe("testing destructured serialization/deserialization", () => {
   it("verify default (D) destructuring works as expected", () => {
     const ddb = new Loki("test.db", {serializationMethod: "destructured"});
