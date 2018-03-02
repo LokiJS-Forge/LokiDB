@@ -831,14 +831,27 @@ export class Collection<TData extends object = object, TNested extends object = 
    */
   public update(doc: Doc<TData> | Doc<TData>[]): void {
     if (Array.isArray(doc)) {
-      let k = 0;
-      const len = doc.length;
-      for (k; k < len; k++) {
-        this.update(doc[k]);
+
+      // If not cloning, disable adaptive binary indices for the duration of the batch update,
+      // followed by lazy rebuild and re-enabling adaptive indices after batch update.
+      const adaptiveBatchOverride = !this.cloneObjects && this.adaptiveBinaryIndices
+        && Object.keys(this.binaryIndices).length > 0;
+      if (adaptiveBatchOverride) {
+        this.adaptiveBinaryIndices = false;
       }
+
+      for (let i = 0; i < doc.length; i++) {
+        this.update(doc[i]);
+      }
+
+      if (adaptiveBatchOverride) {
+        this.ensureAllIndexes();
+        this.adaptiveBinaryIndices = true;
+      }
+
       return;
     }
-    // verify object is a properly formed document
+    // Verify object is a properly formed document.
     if (doc.$loki === undefined) {
       throw new Error("Trying to update unsynced document. Please save the document first by using insert() or addMany()");
     }
