@@ -110,6 +110,10 @@ export class Collection<TData extends object = object, TNested extends object = 
    */
   public cloneMethod: CloneMethod;
 
+  /**
+   * If set to true we will not maintain a meta property for a document.
+   */
+  private disableMeta: boolean;
 
   /**
    * Disable track changes.
@@ -168,19 +172,34 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {string[]} [options.indices=[]] - array property names to define binary indexes for
    * @param {boolean} [options.adaptiveBinaryIndices=true] - collection indices will be actively rebuilt rather than lazily
    * @param {boolean} [options.asyncListeners=false] - whether listeners are invoked asynchronously
+   * @param {boolean} [options.disableMeta=false] - set to true to disable meta property on documents
    * @param {boolean} [options.disableChangesApi=true] - set to false to enable Changes API
    * @param {boolean} [options.disableDeltaChangesApi=true] - set to false to enable Delta Changes API (requires Changes API, forces cloning)
    * @param {boolean} [options.clone=false] - specify whether inserts and queries clone to/from user
    * @param {boolean} [options.serializableIndices =true] - converts date values on binary indexed property values are serializable
    * @param {string} [options.cloneMethod="deep"] - the clone method
    * @param {number} [options.transactional=false] - ?
-   * @param {number} [options.ttl=] - ?
-   * @param {number} [options.ttlInterval=] - time interval for clearing out 'aged' documents; not set by default.
+   * @param {number} [options.ttl=] - age of document (in ms.) before document is considered aged/stale.
+   * @param {number} [options.ttlInterval=] - time interval for clearing out 'aged' documents; not set by default
    * @param {FullTextSearch.FieldOptions} [options.fullTextSearch=] - the full-text search options
    * @see {@link Loki#addCollection} for normal creation of collections
    */
   constructor(name: string, options: Collection.Options<TData> = {}) {
     super();
+
+    // Consistency checks.
+    if (options && options.disableMeta === true) {
+      if (options.disableChangesApi === false) {
+        throw new Error("disableMeta option cannot be passed as true when disableChangesApi is passed as false");
+      }
+      if (options.disableDeltaChangesApi === false) {
+        throw new Error("disableMeta option cannot be passed as true when disableDeltaChangesApi is passed as false");
+      }
+      if (typeof options.ttl === "number" && options.ttl > 0) {
+        throw new Error("disableMeta option cannot be passed as true when ttl is enabled");
+      }
+    }
+
     // the name of the collection
     this.name = name;
     // the data held by the collection
@@ -232,6 +251,9 @@ export class Collection<TData extends object = object, TNested extends object = 
 
     // .
     this.asyncListeners = options.asyncListeners !== undefined ? options.asyncListeners : false;
+
+    // .
+    this.disableMeta = options.disableMeta !== undefined ? options.disableMeta : false;
 
     // .
     this.disableChangesApi = options.disableChangesApi !== undefined ? options.disableChangesApi : true;
@@ -340,6 +362,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       adaptiveBinaryIndices: this.adaptiveBinaryIndices,
       transactional: this.transactional,
       asyncListeners: this.asyncListeners,
+      disableMeta: this.disableMeta,
       disableChangesApi: this.disableChangesApi,
       disableDeltaChangesApi: this.disableDeltaChangesApi,
       cloneObjects: this.cloneObjects,
@@ -358,6 +381,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     coll.adaptiveBinaryIndices = obj.adaptiveBinaryIndices !== undefined ? (obj.adaptiveBinaryIndices === true) : false;
     coll.transactional = obj.transactional;
     coll.asyncListeners = obj.asyncListeners;
+    coll.disableMeta = obj.disableMeta;
     coll.disableChangesApi = obj.disableChangesApi;
     coll.cloneObjects = obj.cloneObjects;
     coll.cloneMethod = obj.cloneMethod || "deep";
@@ -757,8 +781,8 @@ export class Collection<TData extends object = object, TNested extends object = 
     // if configured to clone, do so now... otherwise just use same obj reference
     const obj = this.cloneObjects ? clone(doc, this.cloneMethod) : doc;
 
-    if ((<any>obj).meta === undefined) {
-      (<any>obj).meta = {
+    if (!this.disableMeta && (obj as Doc<TData>).meta === undefined) {
+      (obj as Doc<TData>).meta = {
         revision: 0,
         created: 0
       };
@@ -944,7 +968,9 @@ export class Collection<TData extends object = object, TNested extends object = 
 
       const newDoc = obj as Doc<TData>;
       newDoc.$loki = this.maxId;
-      newDoc.meta.version = 0;
+      if (!this.disableMeta) {
+        newDoc.meta.version = 0;
+      }
 
       const constrUnique = this.constraints.unique;
       for (const key in constrUnique) {
@@ -1194,7 +1220,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     let len;
     let idx;
 
-    if (!obj) {
+    if (this.disableMeta || !obj) {
       return;
     }
 
@@ -1224,7 +1250,7 @@ export class Collection<TData extends object = object, TNested extends object = 
   }
 
   private _updateMeta(obj: Doc<TData>) {
-    if (!obj) {
+    if (this.disableMeta || !obj) {
       return;
     }
     obj.meta.updated = (new Date()).getTime();
@@ -2053,6 +2079,7 @@ export namespace Collection {
     indices?: (keyof TData)[];
     adaptiveBinaryIndices?: boolean;
     asyncListeners?: boolean;
+    disableMeta?: boolean;
     disableChangesApi?: boolean;
     disableDeltaChangesApi?: boolean;
     clone?: boolean;
@@ -2095,6 +2122,7 @@ export namespace Collection {
     adaptiveBinaryIndices: boolean;
     transactional: boolean;
     asyncListeners: boolean;
+    disableMeta: boolean;
     disableChangesApi: boolean;
     disableDeltaChangesApi: boolean;
     cloneObjects: boolean;

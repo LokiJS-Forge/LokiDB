@@ -242,10 +242,13 @@ export class Loki extends LokiEventEmitter {
    * @param {array} [options.exact=[]] - array of property names to define exact constraints for
    * @param {array} [options.indices=[]] - array property names to define binary indexes for
    * @param {boolean} [options.asyncListeners=false] - whether listeners are called asynchronously
+   * @param {boolean} [options.disableMeta=false] - set to true to disable meta property on documents
    * @param {boolean} [options.disableChangesApi=true] - set to false to enable Changes Api
+   * @param {boolean} [options.disableDeltaChangesApi=true] - set to false to enable Delta Changes API (requires Changes API, forces cloning)
    * @param {boolean} [options.clone=false] - specify whether inserts and queries clone to/from user
    * @param {string} [options.cloneMethod=CloneMethod.DEEP] - the clone method
-   * @param {int} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
+   * @param {number} [options.ttl=] - age of document (in ms.) before document is considered aged/stale
+   * @param {number} [options.ttlInterval=] - time interval for clearing out 'aged' documents; not set by default
    * @returns {Collection} a reference to the collection which was just added
    */
   public addCollection<T extends object = object, U extends object = object>(name: string, options: Collection.Options<T> = {}): Collection<T, U> {

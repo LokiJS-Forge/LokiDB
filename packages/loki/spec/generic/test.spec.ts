@@ -202,6 +202,24 @@ describe("loki", () => {
       users.remove(testObject as any);
       expect(userCount1).toEqual(users.count());
     });
+
+    it("meta not set on returned objects", function() {
+      const tdb = new Loki("test.db");
+      const coll = tdb.addCollection<{a: number, b: number}>("tc", { disableMeta: true });
+
+      // verify single insert return objs do not have meta set
+      const obj = coll.insert({ a: 1, b: 2 });
+      expect(obj.hasOwnProperty("meta")).toEqual(false);
+      expect(obj.hasOwnProperty("$loki")).toEqual(true);
+
+      // verify batch insert return objs do not have meta set
+      const objs = coll.insert([{ a: 2, b: 3 }, { a: 3, b: 4 }]);
+      expect(Array.isArray(objs));
+      objs.forEach((o) => {
+        expect(o.hasOwnProperty("meta")).toEqual(false);
+        expect(o.hasOwnProperty("$loki")).toEqual(true);
+      });
+    });
   });
 
   describe("dot notation", () => {
