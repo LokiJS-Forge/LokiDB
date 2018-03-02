@@ -44,6 +44,13 @@ describe("collection", () => {
     expect(result.name).toEqual("coll2");
   });
 
+  it("add existing collection name works", function () {
+    const db = new Loki("test.db");
+    const coll1 = db.addCollection("coll1");
+    const coll2 = db.addCollection("coll1");
+    expect(coll1).toEqual(coll2);
+  });
+
   it("findAndUpdate works", () => {
     const db = new Loki("test.db");
     const coll = db.addCollection<CL>("testcoll");
