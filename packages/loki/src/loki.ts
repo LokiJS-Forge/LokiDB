@@ -249,6 +249,13 @@ export class Loki extends LokiEventEmitter {
    * @returns {Collection} a reference to the collection which was just added
    */
   public addCollection<T extends object = object, U extends object = object>(name: string, options: Collection.Options<T> = {}): Collection<T, U> {
+    // Return an existing collection if a collection with the same name already exists.
+    for (let i = 0; i < this._collections.length; i++) {
+      if (this._collections[i].name === name) {
+        return this._collections[i] as Collection<T, U>;
+      }
+    }
+    // Create a new collection otherwise.
     const collection = new Collection<T, U>(name, options);
     this._collections.push(collection);
 
@@ -267,21 +274,18 @@ export class Loki extends LokiEventEmitter {
 
   /**
    * Retrieves reference to a collection by name.
-   * @param {string} collectionName - name of collection to look up
+   * @param {string} name - name of collection to look up
    * @returns {Collection} Reference to collection in database by that name, or null if not found
    */
-  public getCollection<T extends object = object>(collectionName: string): Collection<T> {
-    let i;
-    const len = this._collections.length;
-
-    for (i = 0; i < len; i++) {
-      if (this._collections[i].name === collectionName) {
-        return this._collections[i] as Collection<T>;
+  public getCollection<T extends object = object, U extends object = object>(name: string): Collection<T, U> {
+    for (let i = 0; i < this._collections.length; i++) {
+      if (this._collections[i].name === name) {
+        return this._collections[i] as Collection<T, U>;
       }
     }
 
     // no such collection
-    this.emit("warning", "collection " + collectionName + " not found");
+    this.emit("warning", "collection " + name + " not found");
     return null;
   }
 
