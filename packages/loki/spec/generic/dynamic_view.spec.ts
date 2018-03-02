@@ -335,7 +335,7 @@ describe("dynamicviews", () => {
             public message = "TestErrorMessage";
           }
 
-          db.autosaveEnable();
+          db["_autosaveEnable"]();
           db.on("close", () => {
             throw new TestError();
           });
