@@ -189,7 +189,7 @@ export class Loki extends LokiEventEmitter {
       }
     }
 
-    this.autosaveDisable();
+    this._autosaveDisable();
 
     // if they want to load database on loki instantiation, now is a good time to load... after adapter set and before
     // possible autosave initiation
@@ -202,7 +202,7 @@ export class Loki extends LokiEventEmitter {
 
     return loaded.then(() => {
       if (this._autosave) {
-        this.autosaveEnable();
+        this._autosaveEnable();
       }
     });
   }
@@ -734,13 +734,9 @@ export class Loki extends LokiEventEmitter {
     // for autosave scenarios, we will let close perform final save (if dirty)
     // For web use, you might call from window.onbeforeunload to shutdown database, saving pending changes
     if (this._autosave) {
-      this.autosaveDisable();
-      // Check if collections are dirty.
-      for (let idx = 0; idx < this._collections.length; idx++) {
-        if (this._collections[idx].dirty) {
-          saved = this.saveDatabase();
-          break;
-        }
+      this._autosaveDisable();
+      if (this._autosaveDirty()) {
+        saved = this.saveDatabase();
       }
     }
 
@@ -929,25 +925,24 @@ export class Loki extends LokiEventEmitter {
       return Promise.reject(new Error("persistenceAdapter not configured"));
     }
 
-    let saved;
-
     // check if the adapter is requesting (and supports) a 'reference' mode export
     if (this._persistenceAdapter.mode === "reference" && typeof this._persistenceAdapter.exportDatabase === "function") {
       // filename may seem redundant but loadDatabase will need to expect this same filename
-      saved = this._persistenceAdapter.exportDatabase(this.filename, this.copy({removeNonSerializable: true}));
-    }
-    // otherwise just pass the serialized database to adapter
-    else {
-      saved = this._persistenceAdapter.saveDatabase(this.filename, this.serialize() as string);
+      return Promise.resolve(this._persistenceAdapter.exportDatabase(this.filename, this.copy({removeNonSerializable: true})))
+        .then(() => {
+          this._autosaveClearFlags();
+          this.emit("save");
+        });
     }
 
-    return Promise.resolve(saved).then(() => {
-      // Set all collection not dirty.
-      for (let idx = 0; idx < this._collections.length; idx++) {
-        this._collections[idx].dirty = false;
-      }
-      this.emit("save");
-    });
+    // otherwise just pass the serialized database to adapter
+    // persistenceAdapter might be asynchronous, so we must clear `dirty` immediately
+    // or autosave won't work if an update occurs between here and the callback
+    this._autosaveClearFlags();
+    return Promise.resolve(this._persistenceAdapter.saveDatabase(this.filename, this.serialize() as string))
+      .then(() => {
+        this.emit("save");
+      });
   }
 
   /**
@@ -959,7 +954,7 @@ export class Loki extends LokiEventEmitter {
    *
    * @returns {Promise} a Promise that resolves after the database is persisted
    */
-  saveDatabase() {
+  public saveDatabase() {
     if (!this._throttledSaves) {
       return this._saveDatabase();
     }
@@ -989,7 +984,7 @@ export class Loki extends LokiEventEmitter {
    *
    * @returns {Promise} a Promise that resolves after the database is deleted
    */
-  deleteDatabase() {
+  public deleteDatabase() {
     // the persistenceAdapter should be present if all is ok, but check to be sure.
     if (this._persistenceAdapter === null) {
       return Promise.reject(new Error("persistenceAdapter not configured"));
@@ -999,9 +994,31 @@ export class Loki extends LokiEventEmitter {
   }
 
   /**
+   * Check whether any collections are "dirty" meaning we need to save the (entire) database
+   * @returns {boolean} - true if database has changed since last autosave, otherwise false
+   */
+  private _autosaveDirty(): boolean {
+    for (let idx = 0; idx < this._collections.length; idx++) {
+      if (this._collections[idx].dirty) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Resets dirty flags on all collections.
+   */
+  private _autosaveClearFlags() {
+    for (let idx = 0; idx < this._collections.length; idx++) {
+      this._collections[idx].dirty = false;
+    }
+  }
+
+  /**
    * Starts periodically saves to the underlying storage adapter.
    */
-  autosaveEnable() {
+  private _autosaveEnable(): void {
     if (this._autosaveHandle) {
       return;
     }
@@ -1024,7 +1041,7 @@ export class Loki extends LokiEventEmitter {
   /**
    * Stops the autosave interval timer.
    */
-  autosaveDisable() {
+  private _autosaveDisable(): void {
     this._autosave = false;
 
     if (this._autosaveHandle) {

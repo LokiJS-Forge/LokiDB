@@ -544,7 +544,30 @@ describe("async adapter tests", () => {
     }, 200);
   });
 
-  it("verify loadDatabase in the middle of throttled saves will wait for queue to drain first", (done) => {
+  it("verify there is no race condition with dirty-checking", (done) => {
+    const mem = new MemoryStorage({ asyncResponses: true, asyncTimeout: 50 });
+    const db = new Loki("sandbox.db");
+
+    db.initializePersistence({adapter: mem});
+
+    const items = db.addCollection<User & {foo?: string}>("items");
+    items.insert({ name : "mjolnir", owner: "thor", maker: "dwarves" });
+    const gungnir = items.insert({ name : "gungnir", owner: "odin", maker: "elves" });
+
+    expect(db["_autosaveDirty"]()).toBe(true);
+
+    db.saveDatabase().then(() => {
+      // since an update happened after calling saveDatabase (but before save was commited), db should still be dirty
+      expect(db["_autosaveDirty"]()).toBe(true);
+      done();
+    });
+
+    // this happens immediately after saveDatabase is called
+    gungnir.foo = "bar";
+    items.update(gungnir);
+  });
+
+  it("verify loadDatabase in the middle of throttled saves will wait for  queue to drain first", (done) => {
     const mem = new MemoryStorage({asyncResponses: true, asyncTimeout: 75});
     const db = new Loki("sandbox.db");
     db.initializePersistence({adapter: mem});
