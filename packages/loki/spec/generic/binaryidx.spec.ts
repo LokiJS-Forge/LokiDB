@@ -324,21 +324,21 @@ describe("binary indices", () => {
   });
 
   describe("adaptiveBinaryIndex batch updates work", () => {
-    it("works", function() {
+    it("works", function () {
       const db = new Loki("idxtest");
-      const items = db.addCollection<{a: number, b:boolean}>("items", {
+      const items = db.addCollection<{ a: number, b: boolean }>("items", {
         adaptiveBinaryIndices: true,
         indices: ["b"]
       });
 
       // init 4 docs with bool 'b' all false
-      const docs = [{a:8000, b:false}, {a:6000, b:false}, {a:4000, b: false}, {a:2000, b:false}];
+      const docs = [{a: 8000, b: false}, {a: 6000, b: false}, {a: 4000, b: false}, {a: 2000, b: false}];
 
       items.insert(docs);
 
       // update two docs to have 'b' true
       let results = items.find({a: {$in: [8000, 6000]}});
-      results.forEach(function(obj) {
+      results.forEach(function (obj) {
         obj.b = true;
       });
       items.update(results);
@@ -349,7 +349,7 @@ describe("binary indices", () => {
 
       // reset all bool 'b' props to false
       results = items.find({b: true});
-      results.forEach(function(obj) {
+      results.forEach(function (obj) {
         obj.b = false;
       });
       items.update(results);
@@ -360,7 +360,7 @@ describe("binary indices", () => {
 
       // update different 2 to be true
       results = items.find({a: {$in: [8000, 2000]}});
-      results.forEach(function(obj) {
+      results.forEach(function (obj) {
         obj.b = true;
       });
       items.update(results);

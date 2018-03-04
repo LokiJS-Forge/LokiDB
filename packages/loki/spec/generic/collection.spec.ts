@@ -120,7 +120,7 @@ describe("collection", () => {
   // if more than one value 'ties' it will just pick one
   it("mode works", () => {
     const db = new Loki("test.db");
-    const coll = db.addCollection("testcoll");
+    const coll = db.addCollection<CL>("testcoll");
     coll.insert([{a: 3, b: 3}, {a: 6, b: 7}, {a: 1, b: 2}, {a: 7, b: 8}, {a: 6, b: 4}]);
 
     // seems mode returns string so loose equality

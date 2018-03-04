@@ -240,41 +240,6 @@ const indexedOps = {
 };
 
 /**
- * dotSubScan - helper function used for dot notation queries.
- *
- * @param {object} root - object to traverse
- * @param {array} paths - array of properties to drill into
- * @param {function} fun - evaluation function to test with
- * @param {any} value - comparative value to also pass to (compare) fun
- * @param {number} pathOffset - index of the item in 'paths' to start the sub-scan from
- */
-function dotSubScan(root: object, paths: string[], fun: (a: any, b: any) => boolean, value: any, pathOffset = 0) {
-  const path = paths[pathOffset];
-  if (root === undefined || root === null || root[path] === undefined) {
-    return false;
-  }
-
-  let valueFound = false;
-  const element = root[path];
-  if (pathOffset + 1 >= paths.length) {
-    // if we have already expanded out the dot notation,
-    // then just evaluate the test function and value on the element
-    valueFound = fun(element, value);
-  } else if (Array.isArray(element)) {
-    for (let index = 0, len = element.length; index < len; index++) {
-      valueFound = dotSubScan(element[index], paths, fun, value, pathOffset + 1);
-      if (valueFound === true) {
-        break;
-      }
-    }
-  } else {
-    valueFound = dotSubScan(element, paths, fun, value, pathOffset + 1);
-  }
-
-  return valueFound;
-}
-
-/**
  * ResultSet class allowing chainable queries.  Intended to be instanced internally.
  *    Collection.find(), Collection.where(), and Collection.chain() instantiate this.
  *
@@ -407,10 +372,10 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
       switch (step.type) {
         case "find":
-          rs.find(step.value as ResultSet.Query<Doc<TData> & TNested>);
+          rs.find(step.value as ResultSet.Query<Doc<TData & TNested>>);
           break;
         case "where":
-          rs.where(step.value as (obj: Doc<TData>) => boolean);
+          rs.where(step.value as (obj: Doc<TData & TNested>) => boolean);
           break;
         case "simplesort":
           rs.simplesort(step.property, step.desc);
@@ -466,7 +431,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    * @param {function} comparefun - A javascript compare function used for sorting.
    * @returns {ResultSet} Reference to this ResultSet, sorted, for future chain operations.
    */
-  public sort(comparefun: (a: Doc<TData>, b: Doc<TData>) => number): this {
+  public sort(comparefun: (a: Doc<TData & TNested>, b: Doc<TData & TNested>) => number): this {
     // if this has no filters applied, just we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       this._filteredRows = this._collection._prepareFullDocIndex();
@@ -514,20 +479,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
     const data = this._collection._data;
     const wrappedComparer = (a: number, b: number) => {
-      let val1, val2;
-      if (~propname.indexOf(".")) {
-        const arr = propname.split(".");
-        val1 = arr.reduce(function (obj, i) {
-          return obj && obj[i] || undefined;
-        }, data[a]);
-        val2 = arr.reduce(function (obj, i) {
-          return obj && obj[i] || undefined;
-        }, data[b]);
-      } else {
-        val1 = data[a][propname as keyof TData];
-        val2 = data[b][propname as keyof TData];
-      }
-      return sortHelper(val1, val2, descending);
+      return sortHelper(data[a][propname as keyof TData], data[b][propname as keyof TData], descending);
     };
 
     this._filteredRows.sort(wrappedComparer);
@@ -593,20 +545,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     for (let i = 0, len = properties.length; i < len; i++) {
       const prop = properties[i];
       const field = prop[0];
-      let val1, val2, arr;
-      if (~field.indexOf(".")) {
-        arr = field.split(".");
-        val1 = arr.reduce((obj: object, i: string) => {
-          return obj && obj[i] || undefined;
-        }, obj1);
-        val2 = arr.reduce((obj: object, i: string) => {
-          return obj && obj[i] || undefined;
-        }, obj2);
-      } else {
-        val1 = obj1[field];
-        val2 = obj2[field];
-      }
-      const res = sortHelper(val1, val2, prop[1]);
+      const res = sortHelper(obj1[field], obj2[field], prop[1]);
       if (res !== 0) {
         return res;
       }
@@ -657,7 +596,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    * @param {array} expressionArray - array of expressions
    * @returns {ResultSet} this ResultSet for further chain ops.
    */
-  public findOr(expressionArray: ResultSet.Query<Doc<TData> & TNested>[]): this {
+  public findOr(expressionArray: ResultSet.Query<Doc<TData & TNested>>[]): this {
     const docset = [];
     const idxset = [];
     const origCount = this.count();
@@ -689,7 +628,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     return this;
   }
 
-  public $or(expressionArray: ResultSet.Query<Doc<TData> & TNested>[]): this {
+  public $or(expressionArray: ResultSet.Query<Doc<TData & TNested>>[]): this {
     return this.findOr(expressionArray);
   }
 
@@ -702,7 +641,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    * @param {array} expressionArray - array of expressions
    * @returns {ResultSet} this ResultSet for further chain ops.
    */
-  public findAnd(expressionArray: ResultSet.Query<Doc<TData> & TNested>[]): this {
+  public findAnd(expressionArray: ResultSet.Query<Doc<TData & TNested>>[]): this {
     // we have already implementing method chaining in this (our ResultSet class)
     // so lets just progressively apply user supplied and filters
     for (let i = 0, len = expressionArray.length; i < len; i++) {
@@ -714,7 +653,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     return this;
   }
 
-  public $and(expressionArray: ResultSet.Query<Doc<TData> & TNested>[]): this {
+  public $and(expressionArray: ResultSet.Query<Doc<TData & TNested>>[]): this {
     return this.findAnd(expressionArray);
   }
 
@@ -725,7 +664,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    * @param {boolean} firstOnly - (Optional) Used by collection.findOne() - flag if this was invoked via findOne()
    * @returns {ResultSet} this ResultSet for further chain ops.
    */
-  public find(query?: ResultSet.Query<Doc<TData> & TNested>, firstOnly = false): this {
+  public find(query?: ResultSet.Query<Doc<TData & TNested>>, firstOnly = false): this {
     if (this._collection._data.length === 0) {
       this._filteredRows = [];
       this._filterInitialized = true;
@@ -803,12 +742,9 @@ export class ResultSet<TData extends object = object, TNested extends object = o
       }
     }
 
-    // if user is deep querying the object such as find('name.first': 'odin')
-    const usingDotNotation = (property.indexOf(".") !== -1);
-
     // if an index exists for the property being queried against, use it
     // for now only enabling where it is the first filter applied and prop is indexed
-    const doIndexCheck = !usingDotNotation && !this._filterInitialized;
+    const doIndexCheck = !this._filterInitialized;
 
     let searchByIndex = false;
     if (doIndexCheck && this._collection.binaryIndices[property] && indexedOps[operator]) {
@@ -839,16 +775,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     if (this._filterInitialized) {
       let filter = this._filteredRows;
 
-      // currently supporting dot notation for non-indexed conditions only
-      if (usingDotNotation) {
-        property = property.split(".");
-        for (let i = 0; i < filter.length; i++) {
-          let rowIdx = filter[i];
-          if (dotSubScan(data[rowIdx], property, fun, value)) {
-            result.push(rowIdx);
-          }
-        }
-      } else if (property === "$fts") {
+      if (property === "$fts") {
         this._scoring = this._collection._fullTextSearch.search(query.$fts as FullTextSearchQuery);
         let keys = Object.keys(this._scoring);
         for (let i = 0; i < keys.length; i++) {
@@ -897,23 +824,12 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     // first chained query so work against data[] but put results in filteredRows
     // if not searching by index
     if (!searchByIndex) {
-      if (usingDotNotation) {
-        property = property.split(".");
-        for (let i = 0; i < data.length; i++) {
-          if (dotSubScan(data[i], property, fun, value)) {
-            result.push(i);
-            if (firstOnly) {
-              return this;
-            }
-          }
-        }
-      } else {
-        for (let i = 0; i < data.length; i++) {
-          if (fun(data[i][property], value)) {
-            result.push(i);
-            if (firstOnly) {
-              return this;
-            }
+      console.log(data[0][property]);
+      for (let i = 0; i < data.length; i++) {
+        if (fun(data[i][property], value)) {
+          result.push(i);
+          if (firstOnly) {
+            return this;
           }
         }
       }
@@ -966,7 +882,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    * @param {function} fun - A javascript function used for filtering current results by.
    * @returns {ResultSet} this ResultSet for further chain ops.
    */
-  public where(fun: (obj: Doc<TData>) => boolean): this {
+  public where(fun: (obj: Doc<TData & TNested>) => boolean): this {
     let viewFunction;
     let result = [];
 
@@ -1032,7 +948,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    *
    * @returns {Array} Array of documents in the ResultSet
    */
-  public data(options: ResultSet.DataOptions = {}): Doc<TData>[] {
+  public data(options: ResultSet.DataOptions = {}): Doc<TData & TNested>[] {
     let forceClones: boolean;
     let forceCloneMethod: CloneMethod;
     let removeMeta: boolean;
@@ -1048,7 +964,6 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     let data = this._collection._data;
     let obj;
     let len;
-    let i;
     let method: CloneMethod;
 
     // if user opts to strip meta, then force clones and use 'shallow' if 'force' options are not present
@@ -1071,7 +986,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
           len = data.length;
           method = forceCloneMethod;
 
-          for (i = 0; i < len; i++) {
+          for (let i = 0; i < len; i++) {
             obj = clone(data[i], method);
             if (removeMeta) {
               delete obj.$loki;
@@ -1096,7 +1011,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
     if (this._collection.cloneObjects || forceClones) {
       method = forceCloneMethod;
-      for (i = 0; i < len; i++) {
+      for (let i = 0; i < len; i++) {
         obj = clone(data[fr[i]], method);
         if (removeMeta) {
           delete obj.$loki;
@@ -1105,7 +1020,8 @@ export class ResultSet<TData extends object = object, TNested extends object = o
         result.push(obj);
       }
     } else {
-      for (i = 0; i < len; i++) {
+      for (let i = 0; i < len; i++) {
+        /// TODO: defineNestedProperties?
         result.push(data[fr[i]]);
       }
     }
@@ -1118,7 +1034,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    * @param {function} updateFunction - User supplied updateFunction(obj) will be executed for each document object.
    * @returns {ResultSet} this ResultSet for further chain ops.
    */
-  update(updateFunction: (obj: Doc<TData>) => TData): this {
+  update(updateFunction: (obj: Doc<TData & TNested>) => Doc<TData & TNested>): this {
     // if this has no filters applied, we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       this._filteredRows = this._collection._prepareFullDocIndex();

@@ -251,15 +251,15 @@ export class Loki extends LokiEventEmitter {
    * @param {number} [options.ttlInterval=] - time interval for clearing out 'aged' documents; not set by default
    * @returns {Collection} a reference to the collection which was just added
    */
-  public addCollection<T extends object = object, U extends object = object>(name: string, options: Collection.Options<T> = {}): Collection<T, U> {
+  public addCollection<TData extends object = object, TNested extends object = object>(name: string, options: Collection.Options<TData, TNested> = {}): Collection<TData, TNested> {
     // Return an existing collection if a collection with the same name already exists.
     for (let i = 0; i < this._collections.length; i++) {
       if (this._collections[i].name === name) {
-        return this._collections[i] as Collection<T, U>;
+        return this._collections[i] as Collection<TData, TNested>;
       }
     }
     // Create a new collection otherwise.
-    const collection = new Collection<T, U>(name, options);
+    const collection = new Collection<TData, TNested>(name, options);
     this._collections.push(collection);
 
     if (this._verbose) {
@@ -280,10 +280,10 @@ export class Loki extends LokiEventEmitter {
    * @param {string} name - name of collection to look up
    * @returns {Collection} Reference to collection in database by that name, or null if not found
    */
-  public getCollection<T extends object = object, U extends object = object>(name: string): Collection<T, U> {
+  public getCollection<TData extends object = object, TNested extends object = object>(name: string): Collection<TData, TNested> {
     for (let i = 0; i < this._collections.length; i++) {
       if (this._collections[i].name === name) {
-        return this._collections[i] as Collection<T, U>;
+        return this._collections[i] as Collection<TData, TNested>;
       }
     }
 
@@ -298,8 +298,8 @@ export class Loki extends LokiEventEmitter {
    * @param {string} newName - new name of collection
    * @returns {Collection} reference to the newly renamed collection
    */
-  public renameCollection<T extends object = object>(oldName: string, newName: string): Collection<T> {
-    const c = this.getCollection<T>(oldName);
+  public renameCollection<TData extends object = object, TNested extends object = object>(oldName: string, newName: string): Collection<TData, TNested> {
+    const c = this.getCollection<TData, TNested>(oldName);
     if (c) {
       c.name = newName;
     }

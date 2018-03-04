@@ -32,14 +32,14 @@ export class DynamicView<TData extends object = object, TNested extends object =
   private _rebuildPending: boolean;
 
   private _resultSet: ResultSet<TData, TNested>;
-  private _resultData: Doc<TData>[];
+  private _resultData: Doc<TData & TNested>[];
   private _resultDirty: boolean;
 
   private _cachedResultSet: ResultSet<TData, TNested>;
 
   private _filterPipeline: DynamicView.Filter<TData, TNested>[];
 
-  private _sortFunction: (lhs: Doc<TData>, rhs: Doc<TData>) => number;
+  private _sortFunction: (lhs: Doc<TData & TNested>, rhs: Doc<TData & TNested>) => number;
   private _sortCriteria: (keyof (TData & TNested) | [keyof (TData & TNested), boolean])[];
   private _sortByScoring: boolean;
   private _sortDirty: boolean;
@@ -235,7 +235,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
    * @param {function} comparefun - a javascript compare function used for sorting
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public applySort(comparefun: (lhs: Doc<TData>, rhs: Doc<TData>) => number): this {
+  public applySort(comparefun: (lhs: Doc<TData & TNested>, rhs: Doc<TData & TNested>) => number): this {
     this._sortFunction = comparefun;
     this._sortCriteria = null;
     this._sortByScoring = null;
@@ -448,7 +448,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
    * @param {(string|number)} uid - Optional: The unique ID of this filter, to reference it in the future.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public applyWhere(fun: (obj: Doc<TData>) => boolean, uid?: string | number): this {
+  public applyWhere(fun: (obj: Doc<TData & TNested>) => boolean, uid?: string | number): this {
     this.applyFilter({
       type: "where",
       val: fun,
@@ -501,7 +501,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
    *
    * @returns {Array} An array of documents representing the current DynamicView contents.
    */
-  public data(options: ResultSet.DataOptions = {}): Doc<TData>[] {
+  public data(options: ResultSet.DataOptions = {}): Doc<TData & TNested>[] {
     // using final sort phase as 'catch all' for a few use cases which require full rebuild
     if (this._sortDirty || this._resultDirty) {
       this._performSortPhase({
@@ -786,11 +786,11 @@ export namespace DynamicView {
 
   export type Filter<TData extends object = object, TNested extends object = object> = {
     type: "find";
-    val: ResultSet.Query<Doc<TData> & TNested>;
+    val: ResultSet.Query<Doc<TData & TNested>>;
     uid: number | string;
   } | {
     type: "where";
-    val: (obj: Doc<TData>) => boolean;
+    val: (obj: Doc<TData & TNested>) => boolean;
     uid: number | string;
   };
 }
