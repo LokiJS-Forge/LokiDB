@@ -2,6 +2,7 @@
 import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
 import Transform = Collection.Transform;
+import {Doc} from "../../../common/types";
 
 describe("transforms", () => {
   interface User {
@@ -125,7 +126,7 @@ describe("transforms", () => {
       // that our parameter substitution method does not have problem with
       // non-serializable transforms.
 
-      let tx1: Transform[] = [
+      let tx1: Transform<Person>[] = [
         {
           type: "mapReduce",
           mapFunction: mapper,
@@ -390,7 +391,7 @@ describe("transforms", () => {
         return obj;
       }
 
-      const tx: Transform[] = [{
+      const tx: Transform<C1>[] = [{
         type: "map",
         value: graftMap,
         dataOptions: {removeMeta: true}

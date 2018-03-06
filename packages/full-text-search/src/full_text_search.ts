@@ -44,9 +44,9 @@ export class FullTextSearch {
   }
 
   public addDocument(doc: object, id: number = doc[this._id]): void {
-    let fieldNames = Object.keys(doc);
+    let fieldNames = Object.keys(this._invIdxs);
     for (let i = 0, fieldName; i < fieldNames.length, fieldName = fieldNames[i]; i++) {
-      if (this._invIdxs[fieldName] !== undefined) {
+      if (doc[fieldName] !== undefined) {
         this._invIdxs[fieldName].insert(doc[fieldName], id);
       }
     }

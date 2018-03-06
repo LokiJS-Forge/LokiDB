@@ -58,6 +58,39 @@ describe("full-text search", () => {
       .toBe(2);
   });
 
+  it("nested", () => {
+    const coll2 = db.addCollection<{ user: { name: string, id: number } }, { "user.name": string, "user.id": number }>("coll", {
+      nestedProperties: ["user.name", "user.id"],
+      fullTextSearch: [{field: "user.name"}]
+    });
+    for (let i of coll.find()) {
+      coll2.insert({user: i});
+    }
+
+    let query: Query = {query: {type: "fuzzy", field: "user.name", value: "quak", fuzziness: 1}};
+    expect(coll2.find({"$fts": query}).length).toBe(3);
+
+    expect(
+      coll2.find({"$fts": query})).not.toEqual(
+      coll2.find({"user.id": {"$in": [1, 2, 3]}}));
+
+    expect(
+      coll2
+        .chain()
+        .find({"user.id": {"$in": [1, 2, 3]}})
+        .find({"$fts": query})
+        .data().length)
+      .toBe(2);
+
+    expect(
+      coll2
+        .chain()
+        .find({"$fts": query})
+        .find({"user.id": {"$in": [1, 2, 3]}})
+        .data().length)
+      .toBe(2);
+  });
+
   it("update", () => {
     coll.updateWhere((user: User) => {
       return user.name === "quak";

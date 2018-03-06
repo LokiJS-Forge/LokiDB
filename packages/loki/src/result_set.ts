@@ -458,11 +458,11 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       //TODO:
       // if we have a binary index and no other filters applied, we can use that instead of sorting (again)
-      if (this._collection.binaryIndices[propname as keyof TData] !== undefined) {
+      if (this._collection.binaryIndices[propname] !== undefined) {
         // make sure index is up-to-date
         this._collection.ensureIndex(propname as keyof TData);
         // copy index values into filteredRows
-        this._filteredRows = this._collection.binaryIndices[propname as keyof TData].values.slice(0);
+        this._filteredRows = this._collection.binaryIndices[propname].values.slice(0);
 
         if (descending) {
           this._filteredRows.reverse();
@@ -479,7 +479,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
     const data = this._collection._data;
     const wrappedComparer = (a: number, b: number) => {
-      return sortHelper(data[a][propname as keyof TData], data[b][propname as keyof TData], descending);
+      return sortHelper(data[a][propname], data[b][propname], descending);
     };
 
     this._filteredRows.sort(wrappedComparer);
@@ -526,7 +526,8 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     }
 
     const data = this._collection._data;
-    const wrappedComparer = (a: number, b: number) => this._compoundeval(properties as [string, boolean][], data[a], data[b]);
+    const wrappedComparer = (a: number, b: number) =>
+      this._compoundeval(properties as [keyof (TData & TNested), boolean][], data[a], data[b]);
 
     this._filteredRows.sort(wrappedComparer);
 
@@ -541,7 +542,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    * @param {object} obj2 - second object to compare
    * @returns {number} 0, -1, or 1 to designate if identical (sortwise) or which should be first
    */
-  private _compoundeval(properties: [string, boolean][], obj1: TData, obj2: TData): number {
+  private _compoundeval(properties: [keyof (TData & TNested), boolean][], obj1: TData & TNested, obj2: TData & TNested): number {
     for (let i = 0, len = properties.length; i < len; i++) {
       const prop = properties[i];
       const field = prop[0];
@@ -824,7 +825,6 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     // first chained query so work against data[] but put results in filteredRows
     // if not searching by index
     if (!searchByIndex) {
-      console.log(data[0][property]);
       for (let i = 0; i < data.length; i++) {
         if (fun(data[i][property], value)) {
           result.push(i);
@@ -987,7 +987,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
           method = forceCloneMethod;
 
           for (let i = 0; i < len; i++) {
-            obj = clone(data[i], method);
+            obj = this._collection._defineNestedProperties(clone(data[i], method));
             if (removeMeta) {
               delete obj.$loki;
               delete obj.meta;
@@ -1012,7 +1012,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     if (this._collection.cloneObjects || forceClones) {
       method = forceCloneMethod;
       for (let i = 0; i < len; i++) {
-        obj = clone(data[fr[i]], method);
+        obj = this._collection._defineNestedProperties(clone(data[fr[i]], method));
         if (removeMeta) {
           delete obj.$loki;
           delete obj.meta;
@@ -1021,7 +1021,6 @@ export class ResultSet<TData extends object = object, TNested extends object = o
       }
     } else {
       for (let i = 0; i < len; i++) {
-        /// TODO: defineNestedProperties?
         result.push(data[fr[i]]);
       }
     }
@@ -1030,7 +1029,6 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
   /**
    * Used to run an update operation on all documents currently in the ResultSet.
-   *
    * @param {function} updateFunction - User supplied updateFunction(obj) will be executed for each document object.
    * @returns {ResultSet} this ResultSet for further chain ops.
    */
@@ -1076,7 +1074,8 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    * @param {function} reduceFunction - this function accepts many (array of map outputs) and returns single value
    * @returns {value} The output of your reduceFunction
    */
-  public mapReduce<T, U>(mapFunction: (item: TData, index: number, array: TData[]) => T, reduceFunction: (array: T[]) => U): U {
+  public mapReduce<T, U>(mapFunction: (item: Doc<TData & TNested>, index: number, array: Doc<TData & TNested>[]) => T,
+                         reduceFunction: (array: T[]) => U): U {
     try {
       return reduceFunction(this.data().map(mapFunction));
     } catch (err) {
@@ -1165,7 +1164,8 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method
    * @return {ResultSet}
    */
-  map<U extends object>(mapFun: (obj: TData, index: number, array: TData[]) => U, dataOptions?: ResultSet.DataOptions): ResultSet<U> {
+  map<U extends object>(mapFun: (obj: Doc<TData & TNested>, index: number, array: Doc<TData & TNested>[]) => U,
+                        dataOptions?: ResultSet.DataOptions): ResultSet<U> {
     const data = this.data(dataOptions).map(mapFun);
     //return return a new ResultSet with no filters
     this._collection = new Collection("mappedData");
@@ -1211,9 +1211,9 @@ export namespace ResultSet {
     $where?: (val?: R) => boolean;
   };
 
-  export type Query<TData> =
-    { [P in keyof TData]?: LokiOps<TData[P]> | TData[P] }
-    & { $and?: Query<TData>[] }
-    & { $or?: Query<TData>[] }
+  export type Query<T> =
+    { [P in keyof T]?: LokiOps<T[P]> | T[P] }
+    & { $and?: Query<T>[] }
+    & { $or?: Query<T>[] }
     & { $fts?: FullTextSearchQuery };
 }

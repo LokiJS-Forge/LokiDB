@@ -11,6 +11,7 @@ describe("typed", () => {
       public name?: string;
       public customInflater?: boolean;
       public onlyInflater?: boolean;
+
       constructor(name: string = "") {
         this.name = name;
       }
@@ -40,10 +41,10 @@ describe("typed", () => {
         "idIndex": [1, 2],
         "binaryIndices": {},
         "transactional": false,
-        "maxId": 2
+        "maxId": 2,
+        "_nestedProperties": [] as any[],
       }],
-      "events": {
-      },
+      "events": {},
       "ENV": "NODEJS",
       "fs": {}
     };

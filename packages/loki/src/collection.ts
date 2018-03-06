@@ -28,6 +28,36 @@ function standardDeviation(values: number[]): number {
 }
 
 /**
+ * Returns an array with the value of a nested property of an object.
+ * Returns an array of values if the nested property is across child arrays.
+ * @param {object} obj - the object
+ * @param {string[]} path - the path of the nested property
+ * @param {any[]} array - the result array
+ * @param {number} pathIdx - the current path idx
+ * @returns {boolean} true if nested property is across child arrays, otherwise false
+ */
+function getNestedPropertyValue(obj: object, path: string[], array: any[], pathIdx: number = 0): boolean {
+  if (obj === undefined) {
+    return false;
+  }
+
+  if (pathIdx + 1 === path.length) {
+    array.push(obj[path[pathIdx]]);
+    return false;
+  }
+
+  const curr = obj[path[pathIdx]];
+  if (Array.isArray(curr)) {
+    for (let i = 0; i < curr.length; i++) {
+      getNestedPropertyValue(curr[i], path, array, pathIdx + 1);
+    }
+    return true;
+  } else {
+    return getNestedPropertyValue(curr, path, array, pathIdx + 1);
+  }
+}
+
+/**
  * Collection class that handles documents of same type
  * @extends LokiEventEmitter
  * @param <TData> - the data type
@@ -114,7 +144,7 @@ export class Collection<TData extends object = object, TNested extends object = 
   /**
    * Name of path of used nested properties.
    */
-  private _nested_properties: { name: keyof TNested, path: string[] }[];
+  private _nestedProperties: { name: keyof TNested, path: string[] }[];
 
   /**
    * Option to activate a cleaner daemon - clears "aged" documents at set intervals.
@@ -255,14 +285,14 @@ export class Collection<TData extends object = object, TNested extends object = 
     this.serializableIndices = options.serializableIndices !== undefined ? options.serializableIndices : true;
 
     // .
-    this._nested_properties = [];
+    this._nestedProperties = [];
     if (options.nestedProperties != undefined) {
       for (let i = 0; i < options.nestedProperties.length; i++) {
         const nestedProperty = options.nestedProperties[i];
         if (typeof nestedProperty === "string") {
-          this._nested_properties.push({name: nestedProperty, path: nestedProperty.split(".")});
+          this._nestedProperties.push({name: nestedProperty, path: nestedProperty.split(".")});
         } else {
-          this._nested_properties.push(nestedProperty as { name: keyof TNested, path: string[] });
+          this._nestedProperties.push(nestedProperty as { name: keyof TNested, path: string[] });
         }
       }
     }
@@ -351,11 +381,12 @@ export class Collection<TData extends object = object, TNested extends object = 
       _dynamicViews: this._dynamicViews,
       uniqueNames: Object.keys(this.constraints.unique),
       transforms: this.transforms as any,
-      binaryIndices: this.binaryIndices  as any,
+      binaryIndices: this.binaryIndices as any,
       _data: this._data,
       idIndex: this.idIndex,
       maxId: this.maxId,
       dirty: this.dirty,
+      _nestedProperties: this._nestedProperties,
       adaptiveBinaryIndices: this.adaptiveBinaryIndices,
       transactional: this.transactional,
       asyncListeners: this.asyncListeners,
@@ -383,6 +414,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     coll.cloneObjects = obj.cloneObjects;
     coll.cloneMethod = obj.cloneMethod || "deep";
     coll.changes = obj.changes;
+    coll._nestedProperties = obj._nestedProperties as any[];
 
     coll.dirty = (options && options.retainDirtyFlags === true) ? obj.dirty : false;
 
@@ -411,11 +443,11 @@ export class Collection<TData extends object = object, TNested extends object = 
       let loader = makeLoader(obj);
 
       for (let j = 0; j < obj._data.length; j++) {
-        coll._data[j] = loader(obj._data[j]);
+        coll._data[j] = coll._defineNestedProperties(loader(obj._data[j]));
       }
     } else {
       for (let j = 0; j < obj._data.length; j++) {
-        coll._data[j] = obj._data[j];
+        coll._data[j] = coll._defineNestedProperties(obj._data[j]);
       }
     }
 
@@ -792,29 +824,24 @@ export class Collection<TData extends object = object, TNested extends object = 
     return returnObj as Doc<TData & TNested>;
   }
 
-  private _defineNestedProperties<T>(data: T): T & TNested {
-    for (let i = 0; i < this._nested_properties.length; i++) {
-      const name = this._nested_properties[i].name;
-      const path = this._nested_properties[i].path;
-      const setPath = path.slice(0, path.length - 1);
-      const lastProp = path[path.length - 1];
+  public _defineNestedProperties<T>(data: T): T & TNested {
+    for (let i = 0; i < this._nestedProperties.length; i++) {
+      const name = this._nestedProperties[i].name;
+      const path = this._nestedProperties[i].path;
       Object.defineProperty(data, name, {
         get() {
-          const g = setPath.reduce((obj: any, part: string) => (obj && obj[part]) ? obj[part] : null, this);
-          if (Array.isArray(g)) {
-            const arr = [];
-            for (let i = 0; i < g.length; i++) {
-              arr.push(g[i][lastProp]);
-            }
-            console.log(arr);
-            return arr;
+          // Get the value of the nested property.
+          const array: any[] = [];
+          if (getNestedPropertyValue(this, path, array)) {
+            return array;
           } else {
-            return g && g[lastProp] ? g[lastProp] : null;
+            return array[0];
           }
-          //return path.reduce((obj: any, part: string) => (obj && obj[part]) ? obj[part] : null, this);
         },
         set(val: any) {
-          setPath.reduce((obj: any, part: string) => (obj && obj[part]) ? obj[part] : null, this)[lastProp] = val;
+          // Set the value of the nested property.
+          path.slice(0, path.length - 1).reduce((obj: any, part: string) =>
+            (obj && obj[part]) ? obj[part] : null, this)[path[path.length - 1]] = val;
         },
         enumerable: false,
         configurable: true
@@ -1043,7 +1070,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {function} filterFunction - filter function whose results will execute update
    * @param {function} updateFunction - update function to run against filtered documents
    */
-  updateWhere(filterFunction: (obj: Doc<TData & TNested>) => boolean, updateFunction: (obj: Doc<TData & TNested>) => any) {
+  updateWhere(filterFunction: (obj: Doc<TData & TNested>) => boolean, updateFunction: (obj: Doc<TData & TNested>) => Doc<TData & TNested>) {
     const results = this.where(filterFunction);
     try {
       for (let i = 0; i < results.length; i++) {
@@ -1737,7 +1764,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {any} value - unique value to search for
    * @returns {object} document matching the value passed
    */
-  public by(field: string, value: any): Doc<TData & TNested> {
+  public by(field: keyof (TData & TNested), value: any): Doc<TData & TNested> {
     return this.findOne({[field]: value} as any);
   }
 
@@ -1848,7 +1875,7 @@ export class Collection<TData extends object = object, TNested extends object = 
   public rollback(): void {
     if (this.transactional) {
       if (this.cachedData !== null && this.cachedIndex !== null) {
-        this._data = this.cachedData;
+        this._data = this._defineNestedProperties(this.cachedData);
         this.idIndex = this.cachedIndex;
         this.binaryIndices = this.cachedBinaryIndex;
       }
@@ -1880,7 +1907,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {function} reduceFunction - function to use as reduce function
    * @returns {data} The result of your mapReduce operation
    */
-  public mapReduce<T, U>(mapFunction: (value: TData, index: number, array: TData[]) => T, reduceFunction: (array: T[]) => U): U {
+  public mapReduce<T, U>(mapFunction: (value: Doc<TData & TNested>, index: number, array: Doc<TData & TNested>[]) => T, reduceFunction: (array: T[]) => U): U {
     return reduceFunction(this._data.map(mapFunction));
   }
 
@@ -2129,6 +2156,7 @@ export namespace Collection {
   export interface Serialized {
     name: string;
     _dynamicViews: DynamicView[];
+    _nestedProperties: { name: string, path: string[] }[];
     uniqueNames: string[];
     transforms: Dict<Transform[]>;
     binaryIndices: Dict<Collection.BinaryIndex>;
@@ -2175,7 +2203,7 @@ export namespace Collection {
     value: number;
   } | {
     type: "map";
-    value: (obj: TData, index: number, array: TData[]) => any;
+    value: (obj: Doc<TData & TNested>, index: number, array: Doc<TData & TNested>[]) => any;
     dataOptions?: ResultSet.DataOptions;
   } | {
     type: "eqJoin";
@@ -2186,7 +2214,7 @@ export namespace Collection {
     dataOptions?: ResultSet.DataOptions;
   } | {
     type: "mapReduce";
-    mapFunction: (item: TData, index: number, array: TData[]) => any;
+    mapFunction: (item: Doc<TData & TNested>, index: number, array: Doc<TData & TNested>[]) => any;
     reduceFunction: (array: any[]) => any;
   } | {
     type: "update";

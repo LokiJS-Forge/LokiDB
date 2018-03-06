@@ -308,7 +308,7 @@ describe("loki", () => {
   // We only support dot notation involving array when
   // the leaf property is the array.  This verifies that functionality
   describe("dot notation across leaf object array", () => {
-    fit("works", () => {
+    it("works", () => {
 
       interface ABC {
         id: number;
@@ -497,22 +497,22 @@ describe("loki", () => {
         }]
       });
 
-      let results = dna.find({"children.someArray.someProperty": 333});
+      let results = dna.find({"children.someArray.someProperty": {"$contains": 333}});
       expect(results.length).toEqual(1);
 
-      results = dna.find({"children.someArray.someProperty": 111});
+      results = dna.find({"children.someArray.someProperty": {"$contains": 111}});
       expect(results.length).toEqual(2);
 
-      results = dna.find({"children.someArray.someProperty": 222});
+      results = dna.find({"children.someArray.someProperty": {"$contains": 222}});
       expect(results.length).toEqual(2);
 
-      results = dna.find({"$and": [{"id": 3}, {"children.someArray.someProperty": 222}]});
+      results = dna.find({"$and": [{"id": 3}, {"children.someArray.someProperty": {"$contains": 222}}]});
       expect(results.length).toEqual(1);
 
-      results = dna.find({"$and": [{"id": 1}, {"children.someArray.someProperty": 222}]});
+      results = dna.find({"$and": [{"id": 1}, {"children.someArray.someProperty": {"$contains": 222}}]});
       expect(results.length).toEqual(0);
 
-      results = dna.find({"$or": [{"id": 1}, {"children.someArray.someProperty": 222}]});
+      results = dna.find({"$or": [{"id": 1}, {"children.someArray.someProperty": {"$contains": 222}}]});
       expect(results.length).toEqual(3);
     });
   });
@@ -1044,6 +1044,33 @@ describe("loki", () => {
       expect(results[1].owner).toEqual("odin");
       expect(results[2].owner).toEqual("svafrlami");
       expect(results[3].owner).toEqual("thor");
+    });
+  });
+
+  describe("ResultSet data clone", () => {
+    it("nested works ", () => {
+      const idb = new Loki("sandbox.db");
+
+      interface AUser {
+        user: {
+          name: string;
+          owner: string;
+          maker: string;
+        };
+      }
+
+      // Add a collection to the database
+      const items = idb.addCollection<AUser, { "user.name": string }>("items", {nestedProperties: ["user.name"]});
+
+      // Add some documents to the collection
+      items.insert({user: {name: "mjolnir", owner: "thor", maker: "dwarves"}});
+      items.insert({user: {name: "gungnir", owner: "odin", maker: "elves"}});
+      items.insert({user: {name: "tyrfing", owner: "svafrlami", maker: "dwarves"}});
+      items.insert({user: {name: "draupnir", owner: "odin", maker: "elves"}});
+
+      const result = items.chain().data({forceClones: true});
+      expect(result[0]["user.name"]).toBeDefined();
+      expect(result[0]["user.owner"]).toBeUndefined();
     });
   });
 
