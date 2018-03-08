@@ -297,8 +297,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
   /**
    * Allows you to limit the number of documents passed to next chain operation.
-   *    A ResultSet copy() is made to avoid altering original ResultSet.
-   *
+   * A ResultSet copy() is made to avoid altering original ResultSet.
    * @param {int} qty - The number of documents to return.
    * @returns {ResultSet} Returns a copy of the ResultSet, limited by qty, for subsequent chain ops.
    */
@@ -315,7 +314,6 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
   /**
    * Used for skipping 'pos' number of documents in the ResultSet.
-   *
    * @param {int} pos - Number of documents to skip; all preceding documents are filtered out.
    * @returns {ResultSet} Returns a copy of the ResultSet, containing docs starting at 'pos' for subsequent chain ops.
    */
@@ -331,8 +329,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
   }
 
   /**
-   * copy() - To support reuse of ResultSet in branched query situations.
-   *
+   * To support reuse of ResultSet in branched query situations.
    * @returns {ResultSet} Returns a copy of the ResultSet (set) but the underlying document references will be the same.
    */
   public copy(): ResultSet<TData, TNested> {
@@ -343,15 +340,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
   }
 
   /**
-   * Alias of copy()
-   */
-  public branch(): ResultSet<TData, TNested> {
-    return this.copy();
-  }
-
-  /**
    * Executes a named collection transform or raw array of transform steps against the ResultSet.
-   *
    * @param {(string|array)} transform - name of collection transform or raw transform array
    * @param {object} [parameters=] - object property hash of parameters, if the transform requires them.
    * @returns {ResultSet} either (this) ResultSet or a clone of of this ResultSet (depending on steps)
@@ -427,7 +416,6 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 	 *      if (obj1.name > obj2.name) return 1;
 	 *      if (obj1.name < obj2.name) return -1;
 	 *    });
-   *
    * @param {function} comparefun - A javascript compare function used for sorting.
    * @returns {ResultSet} Reference to this ResultSet, sorted, for future chain operations.
    */
@@ -494,7 +482,6 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    * rs.compoundsort(['age', 'name']);
    * // to sort by age (ascending) and then by name (descending)
    * rs.compoundsort(['age', ['name', true]);
-   *
    * @param {array} properties - array of property names or subarray of [propertyname, isdesc] used evaluate sort order
    * @returns {ResultSet} Reference to this ResultSet, sorted, for future chain operations.
    */
@@ -536,7 +523,6 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
   /**
    * Helper function for compoundsort(), performing individual object comparisons
-   *
    * @param {Array} properties - array of property names, in order, by which to evaluate sort order
    * @param {object} obj1 - first object to compare
    * @param {object} obj2 - second object to compare
@@ -590,10 +576,9 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
   /**
    * Oversee the operation of OR'ed query expressions.
-   *    OR'ed expression evaluation runs each expression individually against the full collection,
-   *    and finally does a set OR on each expression's results.
-   *    Each evaluation can utilize a binary index to prevent multiple linear array scans.
-   *
+   * OR'ed expression evaluation runs each expression individually against the full collection,
+   * and finally does a set OR on each expression's results.
+   * Each evaluation can utilize a binary index to prevent multiple linear array scans.
    * @param {array} expressionArray - array of expressions
    * @returns {ResultSet} this ResultSet for further chain ops.
    */
@@ -606,7 +591,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     // This means no index utilization for fields, so hopefully its filtered to a smallish filteredRows.
     for (let ei = 0, elen = expressionArray.length; ei < elen; ei++) {
       // we need to branch existing query to run each filter separately and combine results
-      const fr = this.branch().find(expressionArray[ei])._filteredRows;
+      const fr = this.copy().find(expressionArray[ei])._filteredRows;
       const frlen = fr.length;
       // if the find operation did not reduce the initial set, then the initial set is the actual result
       if (frlen === origCount) {
@@ -635,10 +620,9 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
   /**
    * Oversee the operation of AND'ed query expressions.
-   *    AND'ed expression evaluation runs each expression progressively against the full collection,
-   *    internally utilizing existing chained ResultSet functionality.
-   *    Only the first filter can utilize a binary index.
-   *
+   * AND'ed expression evaluation runs each expression progressively against the full collection,
+   * internally utilizing existing chained ResultSet functionality.
+   * Only the first filter can utilize a binary index.
    * @param {array} expressionArray - array of expressions
    * @returns {ResultSet} this ResultSet for further chain ops.
    */
@@ -878,7 +862,6 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
   /**
    * Used for filtering via a javascript filter function.
-   *
    * @param {function} fun - A javascript function used for filtering current results by.
    * @returns {ResultSet} this ResultSet for further chain ops.
    */
@@ -963,7 +946,6 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     let result = [];
     let data = this._collection._data;
     let obj;
-    let len;
     let method: CloneMethod;
 
     // if user opts to strip meta, then force clones and use 'shallow' if 'force' options are not present
@@ -983,10 +965,9 @@ export class ResultSet<TData extends object = object, TNested extends object = o
       if (this._filteredRows.length === 0) {
         // determine whether we need to clone objects or not
         if (this._collection.cloneObjects || forceClones) {
-          len = data.length;
           method = forceCloneMethod;
 
-          for (let i = 0; i < len; i++) {
+          for (let i = 0; i < data.length; i++) {
             obj = this._collection._defineNestedProperties(clone(data[i], method));
             if (removeMeta) {
               delete obj.$loki;
@@ -1007,11 +988,9 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     }
 
     const fr = this._filteredRows;
-    len = fr.length;
-
     if (this._collection.cloneObjects || forceClones) {
       method = forceCloneMethod;
-      for (let i = 0; i < len; i++) {
+      for (let i = 0; i < fr.length; i++) {
         obj = this._collection._defineNestedProperties(clone(data[fr[i]], method));
         if (removeMeta) {
           delete obj.$loki;
@@ -1020,7 +999,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
         result.push(obj);
       }
     } else {
-      for (let i = 0; i < len; i++) {
+      for (let i = 0; i < fr.length; i++) {
         result.push(data[fr[i]]);
       }
     }
@@ -1054,7 +1033,6 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
   /**
    * Removes all document objects which are currently in ResultSet from collection (as well as ResultSet)
-   *
    * @returns {ResultSet} this (empty) ResultSet for further chain ops.
    */
   public remove(): this {
@@ -1185,29 +1163,53 @@ export namespace ResultSet {
 
   export type LokiOps<R> = {
     $eq?: R;
+  } | {
     $aeq?: R;
+  } | {
     $ne?: R;
+  } | {
     $dteq?: R;
+  } | {
     $gt?: R;
+  } | {
     $gte?: R;
+  } | {
     $lt?: R;
+  } | {
     $lte?: R;
+  } | {
     $between?: [R, R];
+  } | {
     $in?: R[];
+  } | {
     $nin?: R[];
+  } | {
     $keyin?: object;
+  } | {
     $nkeyin?: object;
+  } | {
     $definedin?: object;
+  } | {
     $undefinedin?: object;
+  } | {
     $regex?: RegExp | string | [string, string] // string and [string, string] are better for serialization
+  } | {
     $containsString?: string;
+  } | {
     $containsNone?: R[] | R; // Only R if string.
+  } | {
     $containsAny?: R[] | R; // Only R if string.
+  } | {
     $contains?: any; // ? R without array!
+  } | {
     $type?: string;
+  } | {
     $finite?: boolean;
+  } | {
     $size?: number;
+  } | {
     $len?: number;
+  } | {
     $where?: (val?: R) => boolean;
   };
 

@@ -94,9 +94,11 @@ export class Collection<TData extends object = object, TNested extends object = 
    */
   public dirty: boolean;
 
-  private cachedIndex: number[];
-  private cachedBinaryIndex: { [P in keyof (TData & TNested)]?: Collection.BinaryIndex };
-  private cachedData: Doc<TData & TNested>[];
+  private _cached: {
+    index: number[];
+    data: Doc<TData & TNested>[];
+    binaryIndex: { [P in keyof (TData & TNested)]?: Collection.BinaryIndex };
+  };
 
   /**
    * If set to true we will optimally keep indices 'fresh' during insert/update/remove ops (never dirty/never needs rebuild).
@@ -230,10 +232,8 @@ export class Collection<TData extends object = object, TNested extends object = 
     // .
     this.dirty = true;
 
-    // private holders for cached data
-    this.cachedIndex = null;
-    this.cachedBinaryIndex = null;
-    this.cachedData = null;
+    // private holder for cached data
+    this._cached = null;
 
     /* OPTIONS */
     // exact match and unique constraints
@@ -547,7 +547,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    +----------------------------*/
 
   /**
-   * create a row filter that covers all documents in the collection
+   * Create a row filter that covers all documents in the collection.
    */
   _prepareFullDocIndex(): number[] {
     const indexes = new Array(this._data.length);
@@ -558,36 +558,30 @@ export class Collection<TData extends object = object, TNested extends object = 
   }
 
   /**
-   * Ensure binary index on a certain field
-   * @param {string} property - name of property to create binary index on
+   * Ensure binary index on a certain field.
+   * @param {string} field - the field name
    * @param {boolean} [force=false] - flag indicating whether to construct index immediately
    */
-  ensureIndex(property: keyof (TData & TNested), force = false) {
-    // optional parameter to force rebuild whether flagged as dirty or not
-    if (property === null || property === undefined) {
-      throw new Error("Attempting to set index without an associated property");
-    }
-
-    if (this.binaryIndices[property] && !force) {
-      if (!this.binaryIndices[property].dirty) return;
+  public ensureIndex(field: keyof (TData & TNested), force = false) {
+    if (this.binaryIndices[field] && !force && !this.binaryIndices[field].dirty) {
+      return;
     }
 
     // if the index is already defined and we are using adaptiveBinaryIndices and we are not forcing a rebuild, return.
-    if (this.adaptiveBinaryIndices === true && this.binaryIndices[property] !== undefined && !force) {
+    if (this.adaptiveBinaryIndices === true && this.binaryIndices[field] !== undefined && !force) {
       return;
     }
 
     const index = {
-      "name": property,
-      "dirty": true,
-      "values": this._prepareFullDocIndex()
+      name: field,
+      dirty: true,
+      values: this._prepareFullDocIndex()
     };
-    this.binaryIndices[property] = index;
+    this.binaryIndices[field] = index;
 
-    const data = this._data;
     const wrappedComparer = (a: number, b: number) => {
-      const val1 = data[a][property];
-      const val2 = data[b][property];
+      const val1 = this._data[a][field];
+      const val2 = this._data[b][field];
       if (val1 !== val2) {
         if (ltHelper(val1, val2, false)) return -1;
         if (gtHelper(val1, val2, false)) return 1;
@@ -601,19 +595,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     this.dirty = true; // for autosave scenarios
   }
 
-  getSequencedIndexValues(property: keyof (TData & TNested)) {
-    let idx;
-    const idxvals = this.binaryIndices[property].values;
-    let result = "";
-
-    for (idx = 0; idx < idxvals.length; idx++) {
-      result += " [" + idx + "] " + this._data[idxvals[idx]][property];
-    }
-
-    return result;
-  }
-
-  ensureUniqueIndex(field: keyof (TData & TNested)) {
+  public ensureUniqueIndex(field: keyof (TData & TNested)) {
     let index = new UniqueIndex<TData & TNested>(field);
 
     // if index already existed, (re)loading it will likely cause collisions, rebuild always
@@ -625,30 +607,24 @@ export class Collection<TData extends object = object, TNested extends object = 
   }
 
   /**
-   * Ensure all binary indices
+   * Ensure all binary indices.
    */
-  ensureAllIndexes(force = false) {
-    const bIndices = this.binaryIndices;
-    for (const key in bIndices) {
-      if (bIndices[key] !== undefined) {
-        this.ensureIndex(key, force);
-      }
+  public ensureAllIndexes(force = false) {
+    const keys = Object.keys(this.binaryIndices) as (keyof (TData & TNested))[];
+    for (let i = 0; i < keys.length; i++) {
+      this.ensureIndex(keys[i], force);
     }
   }
 
-  flagBinaryIndexesDirty() {
-    let key;
-    const bIndices = this.binaryIndices;
-    for (key in bIndices) {
-      if (bIndices[key] !== undefined) {
-        bIndices[key].dirty = true;
-      }
+  public flagBinaryIndexesDirty() {
+    const keys = Object.keys(this.binaryIndices) as (keyof (TData & TNested))[];
+    for (let i = 0; i < keys.length; i++) {
+      this.flagBinaryIndexDirty(keys[i]);
     }
   }
 
-  flagBinaryIndexDirty(index: string) {
-    if (this.binaryIndices[index])
-      this.binaryIndices[index].dirty = true;
+  public flagBinaryIndexDirty(index: keyof (TData & TNested)) {
+    this.binaryIndices[index].dirty = true;
   }
 
   /**
@@ -718,26 +694,18 @@ export class Collection<TData extends object = object, TNested extends object = 
 
   /**
    * Applies a 'mongo-like' find query object and passes all results to an update function.
-   * For filter function querying you should migrate to [
-   * Where()]{@link Collection#updateWhere}.
-   *
-   * @param {object|function} filterObject - 'mongo-like' query object (or deprecated filterFunction mode)
-   * @param {function} updateFunction - update function to run against filtered documents
+   * @param {object} filterObject - the 'mongo-like' query object
+   * @param {function} updateFunction - the update function
    */
-  findAndUpdate(filterObject: ResultSet.Query<Doc<TData & TNested>> | ((obj: Doc<TData>) => boolean), updateFunction: (obj: Doc<TData>) => any) {
-    if (typeof(filterObject) === "function") {
-      this.updateWhere(filterObject, updateFunction);
-    } else {
-      this.chain().find(filterObject).update(updateFunction);
-    }
+  public findAndUpdate(filterObject: ResultSet.Query<Doc<TData & TNested>>, updateFunction: (obj: Doc<TData>) => any) {
+    this.chain().find(filterObject).update(updateFunction);
   }
 
   /**
    * Applies a 'mongo-like' find query object removes all documents which match that filter.
-   *
    * @param {object} filterObject - 'mongo-like' query object
    */
-  findAndRemove(filterObject: ResultSet.Query<Doc<TData & TNested>>) {
+  public findAndRemove(filterObject: ResultSet.Query<Doc<TData & TNested>>) {
     this.chain().find(filterObject).remove();
   }
 
@@ -824,7 +792,13 @@ export class Collection<TData extends object = object, TNested extends object = 
     return returnObj as Doc<TData & TNested>;
   }
 
-  public _defineNestedProperties<T>(data: T): T & TNested {
+  /**
+   * Refers nested properties of an object to the root of it.
+   * @param {T} data - the object
+   * @returns {T & TNested} the object with nested properties
+   * @hidden
+   */
+  _defineNestedProperties<T extends object>(data: T): T & TNested {
     for (let i = 0; i < this._nestedProperties.length; i++) {
       const name = this._nestedProperties[i].name;
       const path = this._nestedProperties[i].path;
@@ -854,12 +828,10 @@ export class Collection<TData extends object = object, TNested extends object = 
    * Empties the collection.
    * @param {boolean} [removeIndices=false] - remove indices
    */
-  clear({removeIndices: removeIndices = false} = {}) {
+  public clear({removeIndices: removeIndices = false} = {}) {
     this._data = [];
     this.idIndex = [];
-    this.cachedIndex = null;
-    this.cachedBinaryIndex = null;
-    this.cachedData = null;
+    this._cached = null;
     this.maxId = 0;
     this._dynamicViews = [];
     this.dirty = true;
@@ -1066,9 +1038,8 @@ export class Collection<TData extends object = object, TNested extends object = 
 
   /**
    * Applies a filter function and passes all results to an update function.
-   *
-   * @param {function} filterFunction - filter function whose results will execute update
-   * @param {function} updateFunction - update function to run against filtered documents
+   * @param {function} filterFunction - the filter function
+   * @param {function} updateFunction - the update function
    */
   updateWhere(filterFunction: (obj: Doc<TData & TNested>) => boolean, updateFunction: (obj: Doc<TData & TNested>) => Doc<TData & TNested>) {
     const results = this.where(filterFunction);
@@ -1084,18 +1055,13 @@ export class Collection<TData extends object = object, TNested extends object = 
 
   /**
    * Remove all documents matching supplied filter function.
-   * For 'mongo-like' querying you should migrate to [findAndRemove()]{@link Collection#findAndRemove}.
-   * @param {function|object} query - query object to filter on
+   * @param {function} filterFunction - the filter function
    */
-  removeWhere(query: ResultSet.Query<Doc<TData & TNested>> | ((obj: Doc<TData & TNested>) => boolean)) {
-    if (typeof query === "function") {
-      this.remove(this._data.filter(query));
-    } else {
-      this.chain().find(query).remove();
-    }
+  public removeWhere(filterFunction: (obj: Doc<TData & TNested>) => boolean) {
+    this.remove(this._data.filter(filterFunction));
   }
 
-  removeDataOnly() {
+  public removeDataOnly() {
     this.remove(this._data.slice());
   }
 
@@ -1842,9 +1808,11 @@ export class Collection<TData extends object = object, TNested extends object = 
    */
   public startTransaction(): void {
     if (this.transactional) {
-      this.cachedData = clone(this._data, this.cloneMethod);
-      this.cachedIndex = this.idIndex;
-      this.cachedBinaryIndex = this.binaryIndices;
+      this._cached = {
+        index: this.idIndex,
+        data: clone(this._data, this.cloneMethod),
+        binaryIndex: this.binaryIndices,
+      };
 
       // propagate startTransaction to dynamic views
       for (let idx = 0; idx < this._dynamicViews.length; idx++) {
@@ -1854,13 +1822,11 @@ export class Collection<TData extends object = object, TNested extends object = 
   }
 
   /**
-   * commit the transation
+   * Commit the transaction.
    */
   public commit(): void {
     if (this.transactional) {
-      this.cachedData = null;
-      this.cachedIndex = null;
-      this.cachedBinaryIndex = null;
+      this._cached = null;
 
       // propagate commit to dynamic views
       for (let idx = 0; idx < this._dynamicViews.length; idx++) {
@@ -1870,19 +1836,19 @@ export class Collection<TData extends object = object, TNested extends object = 
   }
 
   /**
-   * roll back the transation
+   * Rollback the transaction.
    */
   public rollback(): void {
     if (this.transactional) {
-      if (this.cachedData !== null && this.cachedIndex !== null) {
-        this._data = this._defineNestedProperties(this.cachedData);
-        this.idIndex = this.cachedIndex;
-        this.binaryIndices = this.cachedBinaryIndex;
-      }
+      if (this._cached !== null) {
+        this.idIndex = this._cached.index;
+        this._data = this._defineNestedProperties(this._cached.data);
+        this.binaryIndices = this._cached.binaryIndex;
 
-      // propagate rollback to dynamic views
-      for (let idx = 0; idx < this._dynamicViews.length; idx++) {
-        this._dynamicViews[idx].rollback();
+        // propagate rollback to dynamic views
+        for (let idx = 0; idx < this._dynamicViews.length; idx++) {
+          this._dynamicViews[idx].rollback();
+        }
       }
     }
   }
@@ -1893,7 +1859,6 @@ export class Collection<TData extends object = object, TNested extends object = 
    * let results = coll.where(function(obj) {
 	 *   return obj.legs === 8;
 	 * });
-   *
    * @param {function} fun - filter function to run against all collection docs
    * @returns {array} all documents which pass your filter function
    */
@@ -1913,7 +1878,6 @@ export class Collection<TData extends object = object, TNested extends object = 
 
   /**
    * Join two collections on specified properties
-   *
    * @param {array} joinData - array of documents to 'join' to this collection
    * @param {string} leftJoinProp - property name in collection
    * @param {string} rightJoinProp - property name in joinData
@@ -1977,6 +1941,9 @@ export class Collection<TData extends object = object, TNested extends object = 
   }
 
   /**
+   * Returns all values of a field.
+   * @param {string} field - the field name
+   * @return {any}: the array of values
    */
   public extract(field: keyof (TData & TNested)): any[] {
     const result = [];
@@ -1987,42 +1954,27 @@ export class Collection<TData extends object = object, TNested extends object = 
   }
 
   /**
-   */
-  public max(field: keyof (TData & TNested)): number {
-    return Math.max.apply(null, this.extract(field));
-  }
-
-  /**
+   * Finds the minimum value of a field.
+   * @param {string} field - the field name
+   * @return {number} the minimum value
    */
   public min(field: keyof (TData & TNested)): number {
-    return Math.min.apply(null, this.extract(field));
+    return Math.min.apply(null, this.extractNumerical(field));
   }
 
   /**
+   * Finds the maximum value of a field.
+   * @param {string} field - the field name
+   * @return {number} the maximum value
    */
-  public maxRecord(field: keyof (TData & TNested)) {
-    const result = {
-      index: 0,
-      value: 0
-    };
-
-    let max;
-    for (let i = 0; i < this._data.length; i++) {
-      if (max !== undefined) {
-        if (max < this._data[i][field]) {
-          max = this._data[i][field];
-          result.index = this._data[i].$loki;
-        }
-      } else {
-        max = this._data[i][field];
-        result.index = this._data[i].$loki;
-      }
-    }
-    result.value = max as any;
-    return result;
+  public max(field: keyof (TData & TNested)): number {
+    return Math.max.apply(null, this.extractNumerical(field));
   }
 
   /**
+   * Finds the minimum value and its index of a field.
+   * @param {string} field - the field name
+   * @return {object} - index and value
    */
   public minRecord(field: keyof (TData & TNested)) {
     const result = {
@@ -2030,77 +1982,110 @@ export class Collection<TData extends object = object, TNested extends object = 
       value: 0
     };
 
-    let min;
-    for (let i = 0; i < this._data.length; i++) {
-      if (min !== undefined) {
-        if (min > this._data[i][field]) {
-          min = this._data[i][field];
-          result.index = this._data[i].$loki;
-        }
-      } else {
-        min = this._data[i][field];
+    if (this._data.length === 0) {
+      result.index = null;
+      result.value = null;
+      return result;
+    }
+
+    result.index = this._data[0].$loki;
+    result.value = parseFloat(this._data[0][field] as any);
+    for (let i = 1; i < this._data.length; i++) {
+      const val = parseFloat(this._data[i][field] as any);
+      if (result.value > val) {
+        result.value = val;
         result.index = this._data[i].$loki;
       }
     }
-    result.value = min as any;
     return result;
   }
 
   /**
+   * Finds the maximum value and its index of a field.
+   * @param {string} field - the field name
+   * @return {object} - index and value
+   */
+  public maxRecord(field: keyof (TData & TNested)) {
+    const result = {
+      index: 0,
+      value: 0
+    };
+
+    if (this._data.length === 0) {
+      result.index = null;
+      result.value = null;
+      return result;
+    }
+
+    result.index = this._data[0].$loki;
+    result.value = parseFloat(this._data[0][field] as any);
+    for (let i = 1; i < this._data.length; i++) {
+      const val = parseFloat(this._data[i][field] as any);
+      if (result.value < val) {
+        result.value = val;
+        result.index = this._data[i].$loki;
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns all values of a field as numbers (if possible).
+   * @param {string} field - the field name
+   * @return {number[]} - the number array
    */
   public extractNumerical(field: keyof (TData & TNested)) {
     return this.extract(field).map(parseFloat).filter(Number).filter((n) => !(isNaN(n)));
   }
 
   /**
-   * Calculates the average numerical value of a property
-   *
-   * @param {string} field - name of property in docs to average
+   * Calculates the average numerical value of a field
+   * @param {string} field - the field name
    * @returns {number} average of property in all docs in the collection
    */
-  public avg(field: keyof (TData & TNested)) {
+  public avg(field: keyof (TData & TNested)): number {
     return average(this.extractNumerical(field));
   }
 
   /**
-   * Calculate standard deviation of a field
-   * @param {string} field
+   * Calculate the standard deviation of a field.
+   * @param {string} field - the field name
+   * @return {number} the standard deviation
    */
-  public stdDev(field: keyof (TData & TNested)) {
+  public stdDev(field: keyof (TData & TNested)): number {
     return standardDeviation(this.extractNumerical(field));
   }
 
   /**
-   * @param {string} field
+   * Calculates the mode of a field.
+   * @param {string} field - the field name
+   * @return {number} the mode
    */
-  public mode(field: keyof (TData & TNested)) {
+  public mode(field: keyof (TData & TNested)): number {
     const dict = {};
-    const data = this.extract(field);
-    data.forEach((obj) => {
-      if (dict[obj]) {
-        dict[obj] += 1;
+    const data = this.extractNumerical(field);
+
+    let mode = data[0];
+    let maxCount = -Infinity;
+    for (let i = 0; i < data.length; i++) {
+      const el = data[i];
+      if (dict[el]) {
+        dict[el]++;
       } else {
-        dict[obj] = 1;
+        dict[el] = 1;
       }
-    });
-    let max;
-    let prop;
-    let mode;
-    for (prop in dict) {
-      if (max) {
-        if (max < dict[prop]) {
-          mode = prop;
-        }
-      } else {
-        mode = prop;
-        max = dict[prop];
+      if (dict[el] > maxCount) {
+        mode = el;
+        maxCount = dict[el];
       }
     }
     return mode;
   }
 
   /**
-   * @param {string} field - property name
+   * Calculates the median of a field.
+   * @param {string} field - the field name
+   * @return {number} the median
    */
   public median(field: keyof (TData & TNested)) {
     const values = this.extractNumerical(field);
