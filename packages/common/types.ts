@@ -15,7 +15,14 @@ export interface StorageAdapter {
   exportDatabase?(dbname: string, dbref: Loki): Promise<void>;
 }
 
-export type Doc<T extends object = object> = T & { $loki: number; meta: any; };
+export type Doc<T extends object = object> = T & {
+  $loki: number; meta?: {
+    created: number;
+    revision: number;
+    version: number,
+    updated?: number;
+  };
+};
 
 export interface Dict<T> {
   [index: string]: T;

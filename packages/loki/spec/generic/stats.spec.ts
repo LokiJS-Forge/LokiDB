@@ -12,7 +12,10 @@ describe("stats", () => {
     };
   }
 
-  const users = db.addCollection<User>("users");
+  const users = db.addCollection<User, { "relatives.firstgrade": number }>("users", {
+    nestedProperties: ["relatives.firstgrade"]
+  });
+
   users.insert({
     name: "joe",
     age: 35,

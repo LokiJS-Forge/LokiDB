@@ -203,17 +203,17 @@ describe("loki", () => {
       expect(userCount1).toEqual(users.count());
     });
 
-    it("meta not set on returned objects", function() {
+    it("meta not set on returned objects", function () {
       const tdb = new Loki("test.db");
-      const coll = tdb.addCollection<{a: number, b: number}>("tc", { disableMeta: true });
+      const coll = tdb.addCollection<{ a: number, b: number }>("tc", {disableMeta: true});
 
       // verify single insert return objs do not have meta set
-      const obj = coll.insert({ a: 1, b: 2 });
+      const obj = coll.insert({a: 1, b: 2});
       expect(obj.hasOwnProperty("meta")).toEqual(false);
       expect(obj.hasOwnProperty("$loki")).toEqual(true);
 
       // verify batch insert return objs do not have meta set
-      const objs = coll.insert([{ a: 2, b: 3 }, { a: 3, b: 4 }]);
+      const objs = coll.insert([{a: 2, b: 3}, {a: 3, b: 4}]);
       expect(Array.isArray(objs));
       objs.forEach((o) => {
         expect(o.hasOwnProperty("meta")).toEqual(false);
@@ -235,7 +235,10 @@ describe("loki", () => {
         };
       }
 
-      const dnc = db.addCollection<DNC, { "addr.state": string, "addr.zip": number }>("dncoll");
+      const dnc = db.addCollection<DNC, { "addr.state": string, "addr.zip": number }>("dncoll",
+        {
+          nestedProperties: ["addr.state", "addr.zip"]
+        });
 
       dnc.insert({
         first: "aaa",
@@ -314,7 +317,9 @@ describe("loki", () => {
         }[];
       }
 
-      const dna = db.addCollection<ABC, { "children.someProperty": number }>("dnacoll");
+      const dna = db.addCollection<ABC, { "children.someProperty": number }>("dnacoll", {
+        nestedProperties: ["children.someProperty"]
+      });
 
       dna.insert({
         id: 1,
@@ -360,13 +365,13 @@ describe("loki", () => {
         }]
       });
 
-      let results = dna.find({"children.someProperty": 33});
+      let results = dna.find({"children.someProperty": {"$contains": 33}});
       expect(results.length).toEqual(1);
 
-      results = dna.find({"children.someProperty": 11});
+      results = dna.find({"children.someProperty": {"$contains": 22}});
       expect(results.length).toEqual(2);
 
-      results = dna.find({"children.someProperty": 22});
+      results = dna.find({"children.someProperty": {"$contains": 11}});
       expect(results.length).toEqual(2);
     });
   });
@@ -381,7 +386,10 @@ describe("loki", () => {
         };
       }
 
-      const dna = db.addCollection<ABC, { "relations.ids": number[] }>("dnacoll");
+      const dna = db.addCollection<ABC, { "relations.ids": number[] }>("dnacoll",
+        {
+          nestedProperties: ["relations.ids"]
+        });
 
       dna.insert({
         "relations": {
@@ -422,7 +430,10 @@ describe("loki", () => {
         }[];
       }
 
-      const dna = db.addCollection<ABC, { "children.someArray.someProperty": number }>("dnacoll");
+      const dna = db.addCollection<ABC, { "children.someArray.someProperty": number }>("dnacoll",
+        {
+          nestedProperties: ["children.someArray.someProperty"]
+        });
 
       dna.insert({
         id: 1,
@@ -486,22 +497,22 @@ describe("loki", () => {
         }]
       });
 
-      let results = dna.find({"children.someArray.someProperty": 333});
+      let results = dna.find({"children.someArray.someProperty": {"$contains": 333}});
       expect(results.length).toEqual(1);
 
-      results = dna.find({"children.someArray.someProperty": 111});
+      results = dna.find({"children.someArray.someProperty": {"$contains": 111}});
       expect(results.length).toEqual(2);
 
-      results = dna.find({"children.someArray.someProperty": 222});
+      results = dna.find({"children.someArray.someProperty": {"$contains": 222}});
       expect(results.length).toEqual(2);
 
-      results = dna.find({"$and": [{"id": 3}, {"children.someArray.someProperty": 222}]});
+      results = dna.find({"$and": [{"id": 3}, {"children.someArray.someProperty": {"$contains": 222}}]});
       expect(results.length).toEqual(1);
 
-      results = dna.find({"$and": [{"id": 1}, {"children.someArray.someProperty": 222}]});
+      results = dna.find({"$and": [{"id": 1}, {"children.someArray.someProperty": {"$contains": 222}}]});
       expect(results.length).toEqual(0);
 
-      results = dna.find({"$or": [{"id": 1}, {"children.someArray.someProperty": 222}]});
+      results = dna.find({"$or": [{"id": 1}, {"children.someArray.someProperty": {"$contains": 222}}]});
       expect(results.length).toEqual(3);
     });
   });
@@ -1033,6 +1044,33 @@ describe("loki", () => {
       expect(results[1].owner).toEqual("odin");
       expect(results[2].owner).toEqual("svafrlami");
       expect(results[3].owner).toEqual("thor");
+    });
+  });
+
+  describe("ResultSet data clone", () => {
+    it("nested works ", () => {
+      const idb = new Loki("sandbox.db");
+
+      interface AUser {
+        user: {
+          name: string;
+          owner: string;
+          maker: string;
+        };
+      }
+
+      // Add a collection to the database
+      const items = idb.addCollection<AUser, { "user.name": string }>("items", {nestedProperties: ["user.name"]});
+
+      // Add some documents to the collection
+      items.insert({user: {name: "mjolnir", owner: "thor", maker: "dwarves"}});
+      items.insert({user: {name: "gungnir", owner: "odin", maker: "elves"}});
+      items.insert({user: {name: "tyrfing", owner: "svafrlami", maker: "dwarves"}});
+      items.insert({user: {name: "draupnir", owner: "odin", maker: "elves"}});
+
+      const result = items.chain().data({forceClones: true});
+      expect(result[0]["user.name"]).toBeDefined();
+      expect(result[0]["user.owner"]).toBeUndefined();
     });
   });
 

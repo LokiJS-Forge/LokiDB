@@ -59,10 +59,66 @@ describe("testing unique index serialization", () => {
   });
 });
 
+describe("testing nested binary index serialization", () => {
+  let db: Loki;
+
+  interface AUser {
+    user: {
+      id: number;
+    };
+  }
+
+  interface Nested {
+    "user.id": number;
+  }
+
+  let users: Collection<AUser, Nested>;
+  beforeEach(() => {
+    db = new Loki();
+    users = db.addCollection<AUser, Nested>("users", {
+      nestedProperties: ["user.id"],
+      indices: ["user.id"],
+    });
+    users.insert([{
+      user: {
+        id: 1
+      }
+    }, {
+      user: {
+        id: 2
+      }
+    }, {
+      user: {
+        id: 3
+      }
+    }, {
+      user: {
+        id: 4
+      }
+    }]);
+    users.ensureIndex("user.id");
+  });
+
+  it("should have a binary index", () => {
+    const ser = db.serialize();
+    const reloaded = new Loki();
+    reloaded.loadJSON(ser);
+    const coll = reloaded.getCollection<AUser, Nested>("users");
+    expect(coll.count()).toEqual(4);
+    expect(coll.binaryIndices["user.id"].values.length).toBe(4);
+    const joe = coll.find({"user.id": 1})[0];
+    expect(joe).toBeDefined();
+    expect(joe.user.id).toEqual(1);
+
+    expect(reloaded["_serializationMethod"]).toBe("normal");
+    expect(reloaded["_destructureDelimiter"]).toBe("$<\n");
+  });
+});
+
 describe("testing disable meta serialization", function () {
   it("should have meta disabled", function () {
     const db = new Loki();
-    db.addCollection<User>("users", { disableMeta: true });
+    db.addCollection<User>("users", {disableMeta: true});
 
     const ser = db.serialize();
     const reloaded = new Loki();
@@ -558,14 +614,14 @@ describe("async adapter tests", () => {
   });
 
   it("verify there is no race condition with dirty-checking", (done) => {
-    const mem = new MemoryStorage({ asyncResponses: true, asyncTimeout: 50 });
+    const mem = new MemoryStorage({asyncResponses: true, asyncTimeout: 50});
     const db = new Loki("sandbox.db");
 
     db.initializePersistence({adapter: mem});
 
-    const items = db.addCollection<User & {foo?: string}>("items");
-    items.insert({ name : "mjolnir", owner: "thor", maker: "dwarves" });
-    const gungnir = items.insert({ name : "gungnir", owner: "odin", maker: "elves" });
+    const items = db.addCollection<User & { foo?: string }>("items");
+    items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
+    const gungnir = items.insert({name: "gungnir", owner: "odin", maker: "elves"});
 
     expect(db["_autosaveDirty"]()).toBe(true);
 
