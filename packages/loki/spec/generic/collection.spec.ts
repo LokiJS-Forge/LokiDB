@@ -122,11 +122,7 @@ describe("collection", () => {
     const db = new Loki("test.db");
     const coll = db.addCollection<CL>("testcoll");
     coll.insert([{a: 3, b: 3}, {a: 6, b: 7}, {a: 1, b: 2}, {a: 7, b: 8}, {a: 6, b: 4}]);
-
-    // seems mode returns string so loose equality
-    const result = coll.mode("a") === "6";
-
-    expect(result).toEqual(true);
+    expect(coll.mode("a")).toEqual(6);
   });
 
   it("single inserts emit with meta when async listeners false", () => {

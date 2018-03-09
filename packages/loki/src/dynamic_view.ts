@@ -155,7 +155,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
    * @returns {ResultSet} A copy of the internal ResultSet for branched queries.
    */
   public branchResultSet(transform?: string | Collection.Transform<TData, TNested>[], parameters?: object): ResultSet<TData, TNested> {
-    const rs = this._resultSet.branch();
+    const rs = this._resultSet.copy();
     if (transform === undefined) {
       return rs;
     }
@@ -197,7 +197,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
 
   /**
    * Used to clear pipeline and reset dynamic view to initial state.
-   *     Existing options should be retained.
+   * Existing options should be retained.
    * @param {boolean} queueSortPhase - (default: false) if true we will async rebuild view (maybe set default to true in future?)
    */
   public removeFilters({queueSortPhase = false} = {}): void {
@@ -231,7 +231,6 @@ export class DynamicView<TData extends object = object, TNested extends object =
 	 *   if (obj1.name > obj2.name) return 1;
 	 *   if (obj1.name < obj2.name) return -1;
 	 * });
-   *
    * @param {function} comparefun - a javascript compare function used for sorting
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
@@ -247,7 +246,6 @@ export class DynamicView<TData extends object = object, TNested extends object =
    * Used to specify a property used for view translation.
    * @example
    * dv.applySimpleSort("name");
-   *
    * @param {string} propname - Name of property by which to sort.
    * @param {boolean} isdesc - (Optional) If true, the sort will be in descending order.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
@@ -340,7 +338,6 @@ export class DynamicView<TData extends object = object, TNested extends object =
 
   /**
    * Find the index of a filter in the pipeline, by that filter's ID.
-   *
    * @param {(string|number)} uid - The unique ID of the filter.
    * @returns {number}: index of the referenced filter in the pipeline; -1 if not found.
    */
@@ -357,7 +354,6 @@ export class DynamicView<TData extends object = object, TNested extends object =
 
   /**
    * Add the filter object to the end of view's filter pipeline and apply the filter to the ResultSet.
-   *
    * @param {object} filter - The filter object. Refer to applyFilter() for extra details.
    */
   private _addFilter(filter: DynamicView.Filter<TData, TNested>): void {
@@ -397,7 +393,6 @@ export class DynamicView<TData extends object = object, TNested extends object =
 
   /**
    * Adds or updates a filter in the DynamicView filter pipeline
-   *
    * @param {object} filter - A filter object to add to the pipeline.
    *    The object is in the format { 'type': filter_type, 'val', filter_param, 'uid', optional_filter_id }
    * @returns {DynamicView} this DynamicView object, for further chain ops.
@@ -442,8 +437,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
   }
 
   /**
-   * applyWhere() - Adds or updates a javascript filter function in the DynamicView filter pipeline
-   *
+   * Adds or updates a javascript filter function in the DynamicView filter pipeline
    * @param {function} fun - A javascript filter function to apply to pipeline
    * @param {(string|number)} uid - Optional: The unique ID of this filter, to reference it in the future.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
@@ -458,8 +452,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
   }
 
   /**
-   * removeFilter() - Remove the specified filter from the DynamicView filter pipeline
-   *
+   * Remove the specified filter from the DynamicView filter pipeline
    * @param {(string|number)} uid - The unique ID of the filter to be removed.
    * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
@@ -491,7 +484,6 @@ export class DynamicView<TData extends object = object, TNested extends object =
 
   /**
    * Resolves and pending filtering and sorting, then returns document array as result.
-   *
    * @param {object} options - optional parameters to pass to ResultSet.data() if non-persistent
    * @param {boolean} [options.forceClones] - Allows forcing the return of cloned objects even when
    *        the collection is not configured for clone object.
@@ -531,8 +523,8 @@ export class DynamicView<TData extends object = object, TNested extends object =
 
   /**
    * If the view is sorted we will throttle sorting to either :
-   *    (1) passive - when the user calls data(), or
-   *    (2) active - once they stop updating and yield js thread control
+   * (1) passive - when the user calls data(), or
+   * (2) active - once they stop updating and yield js thread control
    */
   private _queueSortPhase(): void {
     // already queued? exit without queuing again
@@ -587,10 +579,10 @@ export class DynamicView<TData extends object = object, TNested extends object =
 
   /**
    * (Re)evaluating document inclusion.
-   *    Called by : collection.insert() and collection.update().
-   *
+   * Called by : collection.insert() and collection.update().
    * @param {int} objIndex - index of document to (re)run through filter pipeline.
    * @param {boolean} isNew - true if the document was just added to the collection.
+   * @hidden
    */
   _evaluateDocument(objIndex: number, isNew: boolean): void {
     // if no filter applied yet, the result 'set' should remain 'everything'
@@ -688,7 +680,8 @@ export class DynamicView<TData extends object = object, TNested extends object =
   }
 
   /**
-   * internal function called on collection.delete()
+   * Internal function called on collection.delete().
+   * @hidden
    */
   _removeDocument(objIndex: number): void {
     // if no filter applied yet, the result 'set' should remain 'everything'
@@ -749,7 +742,6 @@ export class DynamicView<TData extends object = object, TNested extends object =
 
   /**
    * Data transformation via user supplied functions
-   *
    * @param {function} mapFunction - this function accepts a single document for you to transform and return
    * @param {function} reduceFunction - this function accepts many (array of map outputs) and returns single value
    * @returns The output of your reduceFunction

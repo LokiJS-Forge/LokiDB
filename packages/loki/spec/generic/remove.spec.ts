@@ -42,7 +42,7 @@ describe("remove", () => {
 
     users.removeWhere((obj: User) => obj.age > 35);
     expect(users.count()).toEqual(4);
-    users.removeWhere({
+    users.findAndRemove({
       "age": {
         $gt: 25
       }
