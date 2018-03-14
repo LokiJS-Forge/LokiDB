@@ -2170,7 +2170,7 @@ export namespace Collection {
   } | {
     type: "simplesort";
     property: keyof (TData & TNested);
-    desc?: boolean;
+    options?: boolean | ResultSet.SimpleSortOptions;
   } | {
     type: "compoundsort";
     value: (keyof (TData & TNested) | [keyof (TData & TNested), boolean])[];

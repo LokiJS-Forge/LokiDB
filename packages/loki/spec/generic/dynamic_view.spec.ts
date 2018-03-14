@@ -3,6 +3,7 @@ import {Loki} from "../../src/loki";
 import {MemoryStorage} from "../../../memory-storage/src/memory_storage";
 import {Collection} from "../../src/collection";
 import {Doc} from "../../../common/types";
+import {LokiOps} from "../../src/result_set";
 
 describe("dynamicviews", () => {
   interface User {
@@ -291,10 +292,10 @@ describe("dynamicviews", () => {
       expect(resultsNoIndex.length).toEqual(0);
 
       const resultsWithIndex = itc.find({
-        "testindex":  4
+        "testindex": 4
       });
       //it("no results found", () => {
-        expect(resultsWithIndex.length).toEqual(0);
+      expect(resultsWithIndex.length).toEqual(0);
       //});
     });
 
@@ -341,6 +342,156 @@ describe("dynamicviews", () => {
           });
           db.close().then(() => done.fail, done);
         });
+    });
+  });
+
+  it("applySortCriteria", () => {
+    const db = new Loki("dvtest.db");
+    const coll = db.addCollection<User>("any");
+    coll.insert([{
+      name: "mjolnir",
+      owner: "odin",
+      maker: "dwarves",
+    }, {
+      name: "tyrfing",
+      owner: "thor",
+      maker: "dwarves",
+    }, {
+      name: "gungnir",
+      owner: "odin",
+      maker: "elves",
+    }, {
+      name: "draupnir",
+      owner: "thor",
+      maker: "elves",
+    }]);
+    const dv = coll.addDynamicView("test");
+
+    let result = dv.applySortCriteria(["owner", "maker"]).data();
+    expect(result).toEqual(dv.applySortCriteria([["owner", false], ["maker", false]]).data());
+    expect(result.length).toBe(4);
+    expect(result[0].name).toBe("mjolnir");
+    expect(result[1].name).toBe("gungnir");
+    expect(result[2].name).toBe("tyrfing");
+    expect(result[3].name).toBe("draupnir");
+
+    result = dv.applySortCriteria([["owner", false], ["maker", true]]).data();
+    expect(result.length).toBe(4);
+    expect(result[0].name).toBe("gungnir");
+    expect(result[1].name).toBe("mjolnir");
+    expect(result[2].name).toBe("draupnir");
+    expect(result[3].name).toBe("tyrfing");
+
+    result = dv.applySortCriteria([["owner", true], ["maker", false]]).data();
+    expect(result.length).toBe(4);
+    expect(result[0].name).toBe("tyrfing");
+    expect(result[1].name).toBe("draupnir");
+    expect(result[2].name).toBe("mjolnir");
+    expect(result[3].name).toBe("gungnir");
+
+    result = dv.applySortCriteria([["owner", true], ["maker", true]]).data();
+    expect(result.length).toBe(4);
+    expect(result[0].name).toBe("draupnir");
+    expect(result[1].name).toBe("tyrfing");
+    expect(result[2].name).toBe("gungnir");
+    expect(result[3].name).toBe("mjolnir");
+
+    result = dv.applySortCriteria(["maker", "owner"]).data();
+    expect(result).toEqual(dv.applySortCriteria([["maker", false], ["owner", false]]).data());
+    expect(result.length).toBe(4);
+    expect(result[0].name).toBe("mjolnir");
+    expect(result[1].name).toBe("tyrfing");
+    expect(result[2].name).toBe("gungnir");
+    expect(result[3].name).toBe("draupnir");
+
+    result = dv.applySortCriteria([["maker", false], ["owner", true]]).data();
+    expect(result.length).toBe(4);
+    expect(result[0].name).toBe("tyrfing");
+    expect(result[1].name).toBe("mjolnir");
+    expect(result[2].name).toBe("draupnir");
+    expect(result[3].name).toBe("gungnir");
+
+    result = dv.applySortCriteria([["maker", true], ["owner", false]]).data();
+    expect(result.length).toBe(4);
+    expect(result[0].name).toBe("gungnir");
+    expect(result[1].name).toBe("draupnir");
+    expect(result[2].name).toBe("mjolnir");
+    expect(result[3].name).toBe("tyrfing");
+
+    result = dv.applySortCriteria([["maker", true], ["owner", true]]).data();
+    expect(result.length).toBe(4);
+    expect(result[0].name).toBe("draupnir");
+    expect(result[1].name).toBe("gungnir");
+    expect(result[2].name).toBe("tyrfing");
+    expect(result[3].name).toBe("mjolnir");
+  });
+
+  describe("dynamic view simplesort options work correctly", () => {
+    it("works", function () {
+      const db = new Loki("dvtest.db");
+      let coll = db.addCollection<{ a: number, b: number }>("colltest", {indices: ["a", "b"]});
+
+      // add basic dv with filter on a and basic simplesort on b
+      let dv = coll.addDynamicView("dvtest");
+      dv.applyFind({a: {$lte: 20}});
+      dv.applySimpleSort("b");
+
+      // data only needs to be inserted once since we are leaving collection intact while
+      // building up and tearing down dynamic views within it
+      coll.insert([{a: 1, b: 11}, {a: 2, b: 9}, {a: 8, b: 3}, {a: 6, b: 7}, {a: 2, b: 14}, {a: 22, b: 1}]);
+
+      // test whether results are valid
+      let results = dv.data();
+      expect(results.length).toBe(5);
+      for (let idx = 0; idx < results.length - 1; idx++) {
+        expect(LokiOps.$lte(results[idx]["b"], results[idx + 1]["b"]));
+      }
+
+      // remove dynamic view
+      coll.removeDynamicView("dvtest");
+
+      // add basic dv with filter on a and simplesort (with js fallback) on b
+      dv = coll.addDynamicView("dvtest");
+      dv.applyFind({a: {$lte: 20}});
+      dv.applySimpleSort("b", {useJavascriptSorting: true});
+
+      // test whether results are valid
+      // for our simple integer datatypes javascript sorting is same as loki sorting
+      results = dv.data();
+      expect(results.length).toBe(5);
+      for (let idx = 0; idx < results.length - 1; idx++) {
+        expect(results[idx]["b"] <= results[idx + 1]["b"]);
+      }
+
+      // remove dynamic view
+      coll.removeDynamicView("dvtest");
+
+      // add basic dv with filter on a and simplesort (forced js sort) on b
+      dv = coll.addDynamicView("dvtest");
+      dv.applyFind({a: {$lte: 20}});
+      dv.applySimpleSort("b", {disableIndexIntersect: true, useJavascriptSorting: true});
+
+      // test whether results are valid
+      results = dv.data();
+      expect(results.length).toBe(5);
+      for (let idx = 0; idx < results.length - 1; idx++) {
+        expect(results[idx]["b"] <= results[idx + 1]["b"]);
+      }
+
+      // remove dynamic view
+      coll.removeDynamicView("dvtest");
+
+      // add basic dv with filter on a and simplesort (forced loki sort) on b
+      dv = coll.addDynamicView("dvtest");
+      dv.applyFind({a: {$lte: 20}});
+      dv.applySimpleSort("b", {forceIndexIntersect: true});
+
+      // test whether results are valid
+      results = dv.data();
+      expect(results.length).toBe(5);
+      for (let idx = 0; idx < results.length - 1; idx++) {
+        expect(LokiOps.$lte(results[idx]["b"], results[idx + 1]["b"]));
+      }
     });
   });
 });

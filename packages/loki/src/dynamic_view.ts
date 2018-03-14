@@ -41,6 +41,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
 
   private _sortFunction: (lhs: Doc<TData & TNested>, rhs: Doc<TData & TNested>) => number;
   private _sortCriteria: (keyof (TData & TNested) | [keyof (TData & TNested), boolean])[];
+  private _sortCriteriaSimple: { field: keyof (TData & TNested), options: boolean | ResultSet.SimpleSortOptions };
   private _sortByScoring: boolean;
   private _sortDirty: boolean;
 
@@ -83,6 +84,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
     // we only support one active search, applied using applySort() or applySimpleSort()
     this._sortFunction = null;
     this._sortCriteria = null;
+    this._sortCriteriaSimple = null;
     this._sortByScoring = null;
     this._sortDirty = false;
 
@@ -109,7 +111,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
     this._resultDirty = true;
     this._resultSet = new ResultSet(this._collection);
 
-    if (this._sortFunction || this._sortCriteria || this._sortByScoring !== null) {
+    if (this._sortFunction || this._sortCriteria || this._sortCriteriaSimple || this._sortByScoring !== null) {
       this._sortDirty = true;
     }
 
@@ -149,7 +151,6 @@ export class DynamicView<TData extends object = object, TNested extends object =
    * Makes a copy of the internal ResultSet for branched queries.
    * Unlike this dynamic view, the branched ResultSet will not be 'live' updated,
    * so your branched query should be immediately resolved and not held for future evaluation.
-   *
    * @param {(string|array=)} transform - Optional name of collection transform, or an array of transform steps
    * @param {object} parameters - optional parameters (if optional transform requires them)
    * @returns {ResultSet} A copy of the internal ResultSet for branched queries.
@@ -174,6 +175,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
       _resultSet: this._resultSet,
       _filterPipeline: this._filterPipeline,
       _sortCriteria: this._sortCriteria,
+      _sortCriteriaSimple: this._sortCriteriaSimple,
       _sortByScoring: this._sortByScoring,
       _sortDirty: this._sortDirty,
     };
@@ -185,6 +187,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
     dv._filterPipeline = obj._filterPipeline;
     dv._resultData = [];
     dv._sortCriteria = obj._sortCriteria as any;
+    dv._sortCriteriaSimple = obj._sortCriteriaSimple as any;
     dv._sortByScoring = obj._sortByScoring;
     dv._sortDirty = obj._sortDirty;
     dv._resultSet._filteredRows = obj._resultSet._filteredRows;
@@ -215,6 +218,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
     // we only support one active search, applied using applySort() or applySimpleSort()
     this._sortFunction = null;
     this._sortCriteria = null;
+    this._sortCriteriaSimple = null;
     this._sortByScoring = null;
     this._sortDirty = false;
 
@@ -237,6 +241,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
   public applySort(comparefun: (lhs: Doc<TData & TNested>, rhs: Doc<TData & TNested>) => number): this {
     this._sortFunction = comparefun;
     this._sortCriteria = null;
+    this._sortCriteriaSimple = null;
     this._sortByScoring = null;
     this._queueSortPhase();
     return this;
@@ -244,17 +249,20 @@ export class DynamicView<TData extends object = object, TNested extends object =
 
   /**
    * Used to specify a property used for view translation.
+   * @param {string} field - the field name
+   * @param {boolean|object=} options - boolean for sort descending or options object
+   * @param {boolean} [options.desc=false] - whether we should sort descending.
+   * @param {boolean} [options.disableIndexIntersect=false] - whether we should explicity not use array intersection.
+   * @param {boolean} [options.forceIndexIntersect=false] - force array intersection (if binary index exists).
+   * @param {boolean} [options.useJavascriptSorting=false] - whether results are sorted via basic javascript sort.
+   * @returns {DynamicView} this DynamicView object, for further chain ops.
    * @example
    * dv.applySimpleSort("name");
-   * @param {string} propname - Name of property by which to sort.
-   * @param {boolean} isdesc - (Optional) If true, the sort will be in descending order.
-   * @returns {DynamicView} this DynamicView object, for further chain ops.
    */
-  public applySimpleSort(propname: keyof (TData & TNested), isdesc?: boolean): this {
-    this._sortCriteria = [
-      [propname, isdesc || false]
-    ];
+  public applySimpleSort(field: keyof (TData & TNested), options: boolean | ResultSet.SimpleSortOptions = false): this {
+    this._sortCriteriaSimple = {field, options};
     this._sortFunction = null;
+    this._sortCriteria = null;
     this._sortByScoring = null;
     this._queueSortPhase();
     return this;
@@ -262,19 +270,19 @@ export class DynamicView<TData extends object = object, TNested extends object =
 
   /**
    * Allows sorting a ResultSet based on multiple columns.
+   * @param {Array} criteria - array of property names or subarray of [propertyname, isdesc] used evaluate sort order
+   * @returns {DynamicView} Reference to this DynamicView, sorted, for future chain operations.
    * @example
    * // to sort by age and then name (both ascending)
    * dv.applySortCriteria(['age', 'name']);
    * // to sort by age (ascending) and then by name (descending)
-   * dv.applySortCriteria(['age', ['name', true]);
+   * dv.applySortCriteria(['age', ['name', true]]);
    * // to sort by age (descending) and then by name (descending)
-   * dv.applySortCriteria(['age', true], ['name', true]);
-   *
-   * @param {Array} criteria - array of property names or subarray of [propertyname, isdesc] used evaluate sort order
-   * @returns {DynamicView} Reference to this DynamicView, sorted, for future chain operations.
+   * dv.applySortCriteria([['age', true], ['name', true]]);
    */
   public applySortCriteria(criteria: (keyof (TData & TNested) | [keyof (TData & TNested), boolean])[]): this {
     this._sortCriteria = criteria;
+    this._sortCriteriaSimple = null;
     this._sortFunction = null;
     this._sortByScoring = null;
     this._queueSortPhase();
@@ -288,6 +296,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
   public applySortByScoring(ascending = false): this {
     this._sortFunction = null;
     this._sortCriteria = null;
+    this._sortCriteriaSimple = null;
     this._sortByScoring = ascending;
     this._queueSortPhase();
     return this;
@@ -382,7 +391,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
       this._addFilter(filters[idx]);
     }
 
-    if (this._sortFunction || this._sortCriteria || this._sortByScoring !== null) {
+    if (this._sortFunction || this._sortCriteria || this._sortCriteriaSimple || this._sortByScoring !== null) {
       this._queueSortPhase();
     } else {
       this._queueRebuildEvent();
@@ -412,7 +421,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
 
     this._addFilter(filter);
 
-    if (this._sortFunction || this._sortCriteria || this._sortByScoring !== null) {
+    if (this._sortFunction || this._sortCriteria || this._sortCriteriaSimple || this._sortByScoring !== null) {
       this._queueSortPhase();
     } else {
       this._queueRebuildEvent();
@@ -559,6 +568,8 @@ export class DynamicView<TData extends object = object, TNested extends object =
         this._resultSet.sort(this._sortFunction);
       } else if (this._sortCriteria) {
         this._resultSet.compoundsort(this._sortCriteria);
+      } else if (this._sortCriteriaSimple) {
+        this._resultSet.simplesort(this._sortCriteriaSimple.field, this._sortCriteriaSimple.options);
       } else if (this._sortByScoring !== null) {
         this._resultSet.sortByScoring(this._sortByScoring);
       }
@@ -591,7 +602,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
         this._resultData = this._resultSet.data();
       }
       // need to re-sort to sort new document
-      if (this._sortFunction || this._sortCriteria) {
+      if (this._sortFunction || this._sortCriteria || this._sortCriteriaSimple) {
         this._queueSortPhase();
       } else {
         this._queueRebuildEvent();
@@ -629,7 +640,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
       }
 
       // need to re-sort to sort new document
-      if (this._sortFunction || this._sortCriteria) {
+      if (this._sortFunction || this._sortCriteria || this._sortCriteriaSimple) {
         this._queueSortPhase();
       } else {
         this._queueRebuildEvent();
@@ -655,7 +666,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
       }
 
       // in case changes to data altered a sort column
-      if (this._sortFunction || this._sortCriteria) {
+      if (this._sortFunction || this._sortCriteria || this._sortCriteriaSimple) {
         this._queueSortPhase();
       } else {
         this._queueRebuildEvent();
@@ -671,7 +682,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
       }
 
       // in case changes to data altered a sort column
-      if (this._sortFunction || this._sortCriteria) {
+      if (this._sortFunction || this._sortCriteria || this._sortCriteriaSimple) {
         this._queueSortPhase();
       } else {
         this._queueRebuildEvent();
@@ -690,7 +701,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
         this._resultData = this._resultSet.data();
       }
       // in case changes to data altered a sort column
-      if (this._sortFunction || this._sortCriteria) {
+      if (this._sortFunction || this._sortCriteria || this._sortCriteriaSimple) {
         this._queueSortPhase();
       } else {
         this._queueRebuildEvent();
@@ -722,7 +733,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
       }
 
       // in case changes to data altered a sort column
-      if (this._sortFunction || this._sortCriteria) {
+      if (this._sortFunction || this._sortCriteria || this._sortCriteriaSimple) {
         this._queueSortPhase();
       } else {
         this._queueRebuildEvent();
@@ -772,6 +783,7 @@ export namespace DynamicView {
     _resultSet: ResultSet<any>;
     _filterPipeline: Filter<any>[];
     _sortCriteria: (string | [string, boolean])[];
+    _sortCriteriaSimple: { field: string, options: boolean | ResultSet.SimpleSortOptions };
     _sortByScoring: boolean;
     _sortDirty: boolean;
   }

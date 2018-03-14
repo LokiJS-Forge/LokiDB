@@ -1,6 +1,7 @@
 /* global describe, beforeEach, it, expect */
 import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
+import {LokiOps} from "../../src/result_set";
 
 describe("sorting and indexing", () => {
   let db: Loki;
@@ -8,223 +9,209 @@ describe("sorting and indexing", () => {
     db = new Loki("sortingIndexingTest");
   });
 
-  describe("ResultSet simplesort", () => {
-    it("works", () => {
-      interface Sortable {
+  it("ResultSet simplesort", () => {
+    interface Sortable {
+      a: number;
+      b: number;
+    }
+
+    const rss = db.addCollection<Sortable>("rssort");
+
+    rss.insert({a: 4, b: 2});
+    rss.insert({a: 7, b: 1});
+    rss.insert({a: 3, b: 4});
+    rss.insert({a: 9, b: 5});
+
+    const results = rss.chain().simplesort("a").data();
+    expect(results[0].a).toBe(3);
+    expect(results[1].a).toBe(4);
+    expect(results[2].a).toBe(7);
+    expect(results[3].a).toBe(9);
+  });
+
+  it("ResultSet simplesort descending", () => {
+    interface Sortable {
+      a: number;
+      b: number;
+    }
+
+    const rss = db.addCollection<Sortable>("rssort");
+
+    rss.insert({a: 4, b: 2});
+    rss.insert({a: 7, b: 1});
+    rss.insert({a: 3, b: 4});
+    rss.insert({a: 9, b: 5});
+
+    let results = rss.chain().simplesort("a", true).data();
+    expect(results[0].a).toBe(9);
+    expect(results[1].a).toBe(7);
+    expect(results[2].a).toBe(4);
+    expect(results[3].a).toBe(3);
+
+    // test when indexed
+    const rss2 = db.addCollection<Sortable>("rssort2", {indices: ["a"]});
+
+    rss2.insert({a: 4, b: 2});
+    rss2.insert({a: 7, b: 1});
+    rss2.insert({a: 3, b: 4});
+    rss2.insert({a: 9, b: 5});
+
+    results = rss2.chain().simplesort("a", true).data();
+    expect(results[0].a).toBe(9);
+    expect(results[1].a).toBe(7);
+    expect(results[2].a).toBe(4);
+    expect(results[3].a).toBe(3);
+  });
+
+  it("ResultSet simplesort on nested properties", () => {
+    interface Sortable {
+      foo: {
         a: number;
         b: number;
-      }
-
-      const rss = db.addCollection<Sortable>("rssort");
-
-      rss.insert({a: 4, b: 2});
-      rss.insert({a: 7, b: 1});
-      rss.insert({a: 3, b: 4});
-      rss.insert({a: 9, b: 5});
-
-      const results = rss.chain().simplesort("a").data();
-      expect(results[0].a).toBe(3);
-      expect(results[1].a).toBe(4);
-      expect(results[2].a).toBe(7);
-      expect(results[3].a).toBe(9);
-    });
-  });
-
-  describe("ResultSet simplesort descending", () => {
-    it("works", () => {
-      interface Sortable {
-        a: number;
-        b: number;
-      }
-
-      const rss = db.addCollection<Sortable>("rssort");
-
-      rss.insert({a: 4, b: 2});
-      rss.insert({a: 7, b: 1});
-      rss.insert({a: 3, b: 4});
-      rss.insert({a: 9, b: 5});
-
-      let results = rss.chain().simplesort("a", true).data();
-      expect(results[0].a).toBe(9);
-      expect(results[1].a).toBe(7);
-      expect(results[2].a).toBe(4);
-      expect(results[3].a).toBe(3);
-
-      // test when indexed
-      const rss2 = db.addCollection<Sortable>("rssort2", {indices: ["a"]});
-
-      rss2.insert({a: 4, b: 2});
-      rss2.insert({a: 7, b: 1});
-      rss2.insert({a: 3, b: 4});
-      rss2.insert({a: 9, b: 5});
-
-      results = rss2.chain().simplesort("a", true).data();
-      expect(results[0].a).toBe(9);
-      expect(results[1].a).toBe(7);
-      expect(results[2].a).toBe(4);
-      expect(results[3].a).toBe(3);
-    });
-  });
-
-  describe("ResultSet simplesort on nested properties", () => {
-    it("works", function () {
-      interface Sortable {
-        foo: {
-          a: number;
-          b: number;
-        };
-      }
-
-      const rss = db.addCollection<Sortable, { "foo.a": number }>("rssort",
-        {
-          nestedProperties: ["foo.a"]
-        });
-
-      rss.insert({foo: {a: 4, b: 2}});
-      rss.insert({foo: {a: 7, b: 1}});
-      rss.insert({foo: {a: 3, b: 4}});
-      rss.insert({foo: {a: 9, b: 5}});
-
-      const results = rss.chain().simplesort("foo.a").data();
-      expect(results[0].foo.a).toBe(3);
-      expect(results[1].foo.a).toBe(4);
-      expect(results[2].foo.a).toBe(7);
-      expect(results[3].foo.a).toBe(9);
-    });
-  });
-
-  describe("ResultSet simplesort with dates", () => {
-    it("works", () => {
-      const now = new Date().getTime();
-      const dt1 = new Date(now - 1000);
-      const dt2 = new Date(now + 5000);
-      const dt3 = new Date(2000, 6, 1);
-      const dt4 = new Date(now + 2000);
-      const dt5 = new Date(now - 3000);
-
-      interface Sortable {
-        a: number;
-        b: Date;
-      }
-
-      const rss = db.addCollection<Sortable>("rssort");
-
-      rss.insert({a: 1, b: dt1});
-      rss.insert({a: 2, b: dt2});
-      rss.insert({a: 3, b: dt3});
-      rss.insert({a: 4, b: dt4});
-      rss.insert({a: 5, b: dt5});
-
-      const results = rss.chain().simplesort("b").data();
-      expect(results[0].a).toBe(3);
-      expect(results[1].a).toBe(5);
-      expect(results[2].a).toBe(1);
-      expect(results[3].a).toBe(4);
-      expect(results[4].a).toBe(2);
-    });
-  });
-
-  describe("ResultSet sort works correctly", () => {
-    it("works", () => {
-      interface Sortable {
-        a: number;
-        b: number;
-        c: string;
-      }
-
-      const db = new Loki("test.db");
-      const coll = db.addCollection<Sortable>("coll");
-
-      coll.insert([
-        {a: 1, b: 9, c: "first"},
-        {a: 5, b: 7, c: "second"},
-        {a: 2, b: 9, c: "third"}
-      ]);
-
-      const sortfun = (obj1: Sortable, obj2: Sortable) => {
-        if (obj1.a === obj2.a) return 0;
-        if (obj1.a > obj2.a) return 1;
-        if (obj1.a < obj2.a) return -1;
       };
+    }
 
-      const result = coll.chain().sort(sortfun).data();
-      expect(result.length).toEqual(3);
-      expect(result[0].a).toEqual(1);
-      expect(result[1].a).toEqual(2);
-      expect(result[2].a).toEqual(5);
-    });
+    const rss = db.addCollection<Sortable, { "foo.a": number }>("rssort",
+      {
+        nestedProperties: ["foo.a"]
+      });
+
+    rss.insert({foo: {a: 4, b: 2}});
+    rss.insert({foo: {a: 7, b: 1}});
+    rss.insert({foo: {a: 3, b: 4}});
+    rss.insert({foo: {a: 9, b: 5}});
+
+    const results = rss.chain().simplesort("foo.a").data();
+    expect(results[0].foo.a).toBe(3);
+    expect(results[1].foo.a).toBe(4);
+    expect(results[2].foo.a).toBe(7);
+    expect(results[3].foo.a).toBe(9);
   });
 
-  describe("ResultSet compoundsort works correctly", () => {
-    it("works", () => {
-      const db = new Loki("test.db");
+  it("ResultSet simplesort with dates", () => {
+    const now = new Date().getTime();
+    const dt1 = new Date(now - 1000);
+    const dt2 = new Date(now + 5000);
+    const dt3 = new Date(2000, 6, 1);
+    const dt4 = new Date(now + 2000);
+    const dt5 = new Date(now - 3000);
 
-      interface ABC {
-        a: number;
-        b: number;
-        c: string;
-      }
+    interface Sortable {
+      a: number;
+      b: Date;
+    }
 
-      const coll = db.addCollection<ABC>("coll");
+    const rss = db.addCollection<Sortable>("rssort");
 
-      coll.insert([
-        {a: 1, b: 9, c: "first"},
-        {a: 5, b: 7, c: "second"},
-        {a: 2, b: 9, c: "third"}
-      ]);
+    rss.insert({a: 1, b: dt1});
+    rss.insert({a: 2, b: dt2});
+    rss.insert({a: 3, b: dt3});
+    rss.insert({a: 4, b: dt4});
+    rss.insert({a: 5, b: dt5});
 
-      let result = coll.chain().compoundsort(["b", "c"]).data();
-      expect(result.length).toEqual(3);
-      expect(result[0].a).toEqual(5);
-      expect(result[1].a).toEqual(1);
-      expect(result[2].a).toEqual(2);
-
-      result = coll.chain().compoundsort(["b", ["c", true]]).data();
-      expect(result.length).toEqual(3);
-      expect(result[0].a).toEqual(5);
-      expect(result[1].a).toEqual(2);
-      expect(result[2].a).toEqual(1);
-    });
+    const results = rss.chain().simplesort("b").data();
+    expect(results[0].a).toBe(3);
+    expect(results[1].a).toBe(5);
+    expect(results[2].a).toBe(1);
+    expect(results[3].a).toBe(4);
+    expect(results[4].a).toBe(2);
   });
 
-  describe("ResultSet compoundsort on nested properties works correctly", () => {
-    it("works", function () {
-      const db = new Loki("test.db");
+  it("ResultSet sort works correctly", () => {
+    interface Sortable {
+      a: number;
+      b: number;
+      c: string;
+    }
 
-      interface AZYBC {
-        a: number;
-        z: {
-          y: {
-            b: number;
-            c: string;
-          };
+    const db = new Loki("test.db");
+    const coll = db.addCollection<Sortable>("coll");
+
+    coll.insert([
+      {a: 1, b: 9, c: "first"},
+      {a: 5, b: 7, c: "second"},
+      {a: 2, b: 9, c: "third"}
+    ]);
+
+    const sortfun = (obj1: Sortable, obj2: Sortable) => {
+      if (obj1.a === obj2.a) return 0;
+      if (obj1.a > obj2.a) return 1;
+      if (obj1.a < obj2.a) return -1;
+    };
+
+    const result = coll.chain().sort(sortfun).data();
+    expect(result.length).toEqual(3);
+    expect(result[0].a).toEqual(1);
+    expect(result[1].a).toEqual(2);
+    expect(result[2].a).toEqual(5);
+  });
+
+  it("ResultSet compoundsort works correctly", () => {
+    const db = new Loki("test.db");
+
+    interface ABC {
+      a: number;
+      b: number;
+      c: string;
+    }
+
+    const coll = db.addCollection<ABC>("coll");
+
+    coll.insert([
+      {a: 1, b: 9, c: "first"},
+      {a: 5, b: 7, c: "second"},
+      {a: 2, b: 9, c: "third"}
+    ]);
+
+    let result = coll.chain().compoundsort(["b", "c"]).data();
+    expect(result.length).toEqual(3);
+    expect(result[0].a).toEqual(5);
+    expect(result[1].a).toEqual(1);
+    expect(result[2].a).toEqual(2);
+
+    result = coll.chain().compoundsort(["b", ["c", true]]).data();
+    expect(result.length).toEqual(3);
+    expect(result[0].a).toEqual(5);
+    expect(result[1].a).toEqual(2);
+    expect(result[2].a).toEqual(1);
+  });
+
+  it("ResultSet compoundsort on nested properties works correctly", () => {
+    const db = new Loki("test.db");
+
+    interface AZYBC {
+      a: number;
+      z: {
+        y: {
+          b: number;
+          c: string;
         };
-      }
+      };
+    }
 
-      const coll = db.addCollection<AZYBC, { "z.y.b": number, "z.y.c": number }>("coll",
-        {
-          nestedProperties: ["z.y.b", "z.y.c"]
-        });
+    const coll = db.addCollection<AZYBC, { "z.y.b": number, "z.y.c": number }>("coll",
+      {
+        nestedProperties: ["z.y.b", "z.y.c"]
+      });
 
-      coll.insert([
-        {a: 1, z: {y: {b: 9, c: "first"}}},
-        {a: 5, z: {y: {b: 7, c: "second"}}},
-        {
-          a: 2, z: {y: {b: 9, c: "third"}}
-        }]);
+    coll.insert([
+      {a: 1, z: {y: {b: 9, c: "first"}}},
+      {a: 5, z: {y: {b: 7, c: "second"}}},
+      {
+        a: 2, z: {y: {b: 9, c: "third"}}
+      }]);
 
-      let result = coll.chain().compoundsort(["z.y.b", "z.y.c"]).data();
-      expect(result.length).toEqual(3);
-      expect(result[0].a).toEqual(5);
-      expect(result[1].a).toEqual(1);
-      expect(result[2].a).toEqual(2);
+    let result = coll.chain().compoundsort(["z.y.b", "z.y.c"]).data();
+    expect(result.length).toEqual(3);
+    expect(result[0].a).toEqual(5);
+    expect(result[1].a).toEqual(1);
+    expect(result[2].a).toEqual(2);
 
-      result = coll.chain().compoundsort(["z.y.b", ["z.y.c", true]]).data();
-      expect(result.length).toEqual(3);
-      expect(result[0].a).toEqual(5);
-      expect(result[1].a).toEqual(2);
-      expect(result[2].a).toEqual(1);
-    });
+    result = coll.chain().compoundsort(["z.y.b", ["z.y.c", true]]).data();
+    expect(result.length).toEqual(3);
+    expect(result[0].a).toEqual(5);
+    expect(result[1].a).toEqual(2);
+    expect(result[2].a).toEqual(1);
   });
 
   describe("collection indexing", () => {
@@ -307,7 +294,7 @@ describe("sorting and indexing", () => {
       expect(indexVals[13] === "asdf").toEqual(true);
     });
 
-    it("works", () => {
+    it("date sort as expected", () => {
       const now = new Date().getTime();
       const dt1 = new Date(now - 1000);
       const dt2 = new Date(now + 5000);
@@ -337,12 +324,10 @@ describe("sorting and indexing", () => {
       // Strict equality checks would need to be extra filtering phase
       const sdt = new Date(now + 5000);
 
-
       // after refactoring binary indices to be loose equality/ranges everywhere,
       // this unit test passed, meaning the dteq op is not needed if binary index exists
-
-      //results = cidx.find({'b': sdt});
-      //expect(results.length).toBe(0);
+      results = cidx.find({"b": sdt});
+      expect(results.length).toBe(0);
 
       // now try with new $dteq operator
       results = cidx.find({"b": {"$dteq": sdt}});
@@ -359,4 +344,60 @@ describe("sorting and indexing", () => {
     });
   });
 
+  it("simplesort index intersect works correctly", () => {
+    const db = new Loki("rss.db");
+    const rss = db.addCollection<{ a: number, b: number }>("rssort", {indices: ["a", "b"]});
+
+    rss.insert({a: 4, b: 1});
+    rss.insert({a: 7, b: 1});
+    rss.insert({a: 3, b: 1});
+    rss.insert({a: 9, b: 5});
+    rss.insert({a: 14, b: 1});
+    rss.insert({a: 17, b: 1});
+    rss.insert({a: 13, b: 1});
+    rss.insert({a: 19, b: 5});
+
+    // test explicit force index intercept simplesort code path
+    let results = rss.chain().find({b: 1}).simplesort("a", {forceIndexIntersect: true}).data();
+    expect(results.length).toBe(6);
+    for (let i = 0; i < results.length - 1; i++) {
+      expect(LokiOps.$lte(results[i]["a"], results[i + 1]["a"]));
+    }
+
+    // test explicit disable index intercept simplesort code path
+    results = rss.chain().find({b: 1}).simplesort("a", {disableIndexIntersect: true}).data();
+    expect(results.length).toBe(6);
+    for (let i = 0; i < results.length - 1; i++) {
+      expect(LokiOps.$lte(results[i]["a"], results[i + 1]["a"]));
+    }
+
+    // test 'smart' simplesort
+    results = rss.chain().find({b: 1}).simplesort("a").data();
+    expect(results.length).toBe(6);
+    for (let i = 0; i < results.length - 1; i++) {
+      expect(LokiOps.$lte(results[i]["a"], results[i + 1]["a"]));
+    }
+  });
+
+  it("simplesort using javascript sorting works correctly", () => {
+    const db = new Loki("rss.db");
+    const rss = db.addCollection<{ a: number, b: number }>("rssort", {indices: ["a", "b"]});
+
+    rss.insert({a: 4, b: 1});
+    rss.insert({a: 7, b: 1});
+    rss.insert({a: 3, b: 1});
+    rss.insert({a: 9, b: 5});
+    rss.insert({a: 14, b: 1});
+    rss.insert({a: 17, b: 1});
+    rss.insert({a: 13, b: 1});
+    rss.insert({a: 19, b: 5});
+
+    // test explicit force index intercept simplesort code path
+    const results = rss.chain().find({b: 1}).simplesort("a", {useJavascriptSorting: true}).data();
+
+    expect(results.length).toBe(6);
+    for (let i = 0; i < results.length - 1; i++) {
+      expect(LokiOps.$lte(results[i]["a"], results[i + 1]["a"]));
+    }
+  });
 });
