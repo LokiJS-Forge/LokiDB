@@ -1,6 +1,6 @@
 import {LokiEventEmitter} from "./event_emitter";
 import {UniqueIndex} from "./unique_index";
-import {ResultSet} from "./result_set";
+import {ResultSet, LokiOps} from "./result_set";
 import {DynamicView} from "./dynamic_view";
 import {ltHelper, gtHelper, aeqHelper} from "./helper";
 import {Loki} from "./loki";
@@ -593,6 +593,137 @@ export class Collection<TData extends object = object, TNested extends object = 
     index.dirty = false;
 
     this.dirty = true; // for autosave scenarios
+  }
+
+
+  /**
+   * Perform checks to determine validity/consistency of a binary index.
+   * @param {string} field - the field name of the binary-indexed to check
+   * @param {object=} options - optional configuration object
+   * @param {boolean} [options.randomSampling=false] - whether (faster) random sampling should be used
+   * @param {number} [options.randomSamplingFactor=0.10] - percentage of total rows to randomly sample
+   * @param {boolean} [options.repair=false] - whether to fix problems if they are encountered
+   * @returns {boolean} whether the index was found to be valid (before optional correcting).
+   * @example
+   * // full test
+   * var valid = coll.checkIndex('name');
+   * // full test with repair (if issues found)
+   * valid = coll.checkIndex('name', { repair: true });
+   * // random sampling (default is 10% of total document count)
+   * valid = coll.checkIndex('name', { randomSampling: true });
+   * // random sampling (sample 20% of total document count)
+   * valid = coll.checkIndex('name', { randomSampling: true, randomSamplingFactor: 0.20 });
+   * // random sampling (implied boolean)
+   * valid = coll.checkIndex('name', { randomSamplingFactor: 0.20 });
+   * // random sampling with repair (if issues found)
+   * valid = coll.checkIndex('name', { repair: true, randomSampling: true });
+   */
+  public checkIndex(field: keyof (TData & TNested), options: Collection.CheckIndexOptions = {repair: false}) {
+    // if lazy indexing, rebuild only if flagged as dirty
+    if (!this.adaptiveBinaryIndices) {
+      this.ensureIndex(field);
+    }
+
+    // if 'randomSamplingFactor' specified but not 'randomSampling', assume true
+    if (options.randomSamplingFactor && options.randomSampling !== false) {
+      options.randomSampling = true;
+    }
+    options.randomSamplingFactor = options.randomSamplingFactor || 0.1;
+    if (options.randomSamplingFactor < 0 || options.randomSamplingFactor > 1) {
+      options.randomSamplingFactor = 0.1;
+    }
+
+    const biv = this.binaryIndices[field].values;
+    const len = biv.length;
+
+    // if the index has an incorrect number of values
+    if (len !== this._data.length) {
+      if (options.repair) {
+        this.ensureIndex(field, true);
+      }
+      return false;
+    }
+
+    if (len === 0) {
+      return true;
+    }
+
+    let valid = true;
+    if (len === 1) {
+      valid = (biv[0] === 0);
+    } else {
+      if (options.randomSampling) {
+        // validate first and last
+        if (!LokiOps.$lte(this._data[biv[0]][field], this._data[biv[1]][field])) {
+          valid = false;
+        }
+        if (!LokiOps.$lte(this._data[biv[len - 2]][field], this._data[biv[len - 1]][field])) {
+          valid = false;
+        }
+
+        // if first and last positions are sorted correctly with their nearest neighbor,
+        // continue onto random sampling phase...
+        if (valid) {
+          // # random samplings = total count * sampling factor
+          const iter = Math.floor((len - 1) * options.randomSamplingFactor);
+
+          // for each random sampling, validate that the binary index is sequenced properly
+          // with next higher value.
+          for (let idx = 0; idx < iter; idx++) {
+            // calculate random position
+            const pos = Math.floor(Math.random() * (len - 1));
+            if (!LokiOps.$lte(this._data[biv[pos]][field], this._data[biv[pos + 1]][field])) {
+              valid = false;
+              break;
+            }
+          }
+        }
+      }
+      else {
+        // validate that the binary index is sequenced properly
+        for (let idx = 0; idx < len - 1; idx++) {
+          if (!LokiOps.$lte(this._data[biv[idx]][field], this._data[biv[idx + 1]][field])) {
+            valid = false;
+            break;
+          }
+        }
+      }
+    }
+
+    // if incorrectly sequenced and we are to fix problems, rebuild index
+    if (!valid && options.repair) {
+      this.ensureIndex(field, true);
+    }
+
+    return valid;
+  }
+
+  /**
+   * Perform checks to determine validity/consistency of all binary indices
+   * @param {object=} options - optional configuration object
+   * @param {boolean} [options.randomSampling=false] - whether (faster) random sampling should be used
+   * @param {number} [options.randomSamplingFactor=0.10] - percentage of total rows to randomly sample
+   * @param {boolean} [options.repair=false] - whether to fix problems if they are encountered
+   * @returns {string[]} array of index names where problems were found
+   * @example
+   * // check all indices on a collection, returns array of invalid index names
+   * var result = coll.checkAllIndexes({ repair: true, randomSampling: true, randomSamplingFactor: 0.15 });
+   * if (result.length > 0) {
+   *   results.forEach(function(name) {
+   *     console.log('problem encountered with index : ' + name);
+   *   });
+   * }
+   */
+  public checkAllIndexes(options?: Collection.CheckIndexOptions): (keyof TData & TNested)[] {
+    const results = [];
+    let keys = Object.keys(this.binaryIndices) as (keyof TData & TNested)[];
+    for (let i = 0; i < keys.length; i++) {
+      const result = this.checkIndex(keys[i], options);
+      if (!result) {
+        results.push(keys[i]);
+      }
+    }
+    return results;
   }
 
   public ensureUniqueIndex(field: keyof (TData & TNested)) {
@@ -2159,6 +2290,12 @@ export namespace Collection {
     cloneMethod: CloneMethod;
     changes: any;
     _fullTextSearch: FullTextSearch;
+  }
+
+  export interface CheckIndexOptions {
+    randomSampling?: boolean;
+    randomSamplingFactor?: number;
+    repair?: boolean;
   }
 
   export type Transform<TData extends object = object, TNested extends object = object> = {

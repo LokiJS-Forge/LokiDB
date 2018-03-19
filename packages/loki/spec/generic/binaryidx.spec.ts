@@ -76,7 +76,7 @@ describe("binary indices", () => {
     }
 
     // Add a collection to the database
-    const dirtydata = db.addCollection<AB, {"some.b": any}>("dirtydata", {
+    const dirtydata = db.addCollection<AB, { "some.b": any }>("dirtydata", {
       nestedProperties: ["some.b"],
       indices: ["some.b"]
     });
@@ -555,5 +555,64 @@ describe("binary indices", () => {
     newDatabase.loadJSON(jsonString);
 
     expect(newDatabase.getCollection("users").adaptiveBinaryIndices).toBe(false);
+  });
+
+  it("checkIndex works", () => {
+    const db = new Loki("bitest.db");
+    const coll = db.addCollection<{ a: number }>("bitest", {indices: ["a"]});
+    coll.insert([{a: 9}, {a: 3}, {a: 7}, {a: 0}, {a: 1}]);
+
+    // verify our initial order is valid
+    expect(coll.checkIndex("a")).toBe(true);
+
+    // now force index corruption by tampering with it
+    coll.binaryIndices["a"].values.reverse();
+
+    // verify out index is now invalid
+    expect(coll.checkIndex("a")).toBe(false);
+
+    // also verify our test of all indices reports false
+    let result = coll.checkAllIndexes();
+    expect(result.length).toBe(1);
+    expect(result[0]).toBe("a");
+
+    // let's just make sure that random sampling doesn't throw error
+    coll.checkIndex("a", {randomSampling: true, randomSamplingFactor: .5});
+
+    // now have checkindex repair the index
+    // also expect it to report that it was invalid before fixing
+    expect(coll.checkIndex("a", {repair: true})).toBe(false);
+
+    // now expect it to report that the index is valid
+    expect(coll.checkIndex("a")).toBe(true);
+
+    // now leave index ordering valid but remove the last value (from index)
+    coll.binaryIndices["a"].values.pop();
+
+    // expect checkIndex to report index to be invalid
+    expect(coll.checkIndex("a")).toBe(false);
+
+    // now have checkindex repair the index
+    // also expect it to report that it was invalid before fixing
+    expect(coll.checkIndex("a", {repair: true})).toBe(false);
+
+    // now expect it to report that the index is valid
+    expect(coll.checkIndex("a")).toBe(true);
+
+    // verify the check all indexes function returns empty array
+    expect(coll.checkAllIndexes().length).toBe(0);
+
+    // Keep only one document.
+    coll.clear();
+    coll.insert({a: 1});
+    expect(coll.checkIndex("a")).toBe(true);
+
+    // Make index invalid.
+    coll.binaryIndices["a"].values = [1];
+    expect(coll.checkIndex("a")).toBe(false);
+
+    // Repair.
+    expect(coll.checkIndex("a", {repair: true})).toBe(false);
+    expect(coll.checkIndex("a")).toBe(true);
   });
 });
