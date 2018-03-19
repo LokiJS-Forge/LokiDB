@@ -270,7 +270,7 @@ describe("transforms", () => {
         {
           type: "simplesort",
           property: "a",
-          desc: true
+          options: true
         },
         {
           type: "limit",

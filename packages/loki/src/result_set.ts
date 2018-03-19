@@ -367,7 +367,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
           rs.where(step.value as (obj: Doc<TData & TNested>) => boolean);
           break;
         case "simplesort":
-          rs.simplesort(step.property, step.desc);
+          rs.simplesort(step.property, step.options);
           break;
         case "compoundsort":
           rs.compoundsort(step.value);
@@ -435,16 +435,63 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
   /**
    * Simpler, loose evaluation for user to sort based on a property name. (chainable).
-   *    Sorting based on the same lt/gt helper functions used for binary indices.
-   *
+   * Sorting based on the same lt/gt helper functions used for binary indices.
    * @param {string} propname - name of property to sort by.
-   * @param {boolean} [descending=false] - if true, the property will be sorted in descending order
+   * @param {boolean|object=} options - boolean for sort descending or options object
+   * @param {boolean} [options.desc=false] - whether to sort descending
+   * @param {boolean} [options.disableIndexIntersect=false] - whether we should explicitly not use array intersection.
+   * @param {boolean} [options.forceIndexIntersect=false] - force array intersection (if binary index exists).
+   * @param {boolean} [options.useJavascriptSorting=false] - whether results are sorted via basic javascript sort.
    * @returns {ResultSet} Reference to this ResultSet, sorted, for future chain operations.
    */
-  public simplesort(propname: keyof (TData & TNested), descending: boolean = false): this {
+  public simplesort(propname: keyof (TData & TNested), options: boolean | ResultSet.SimpleSortOptions = {desc: false}): this {
+    if (typeof options === "boolean") {
+      options = {
+        desc: options
+      };
+    }
+
+    // If already filtered, but we want to leverage binary index on sort.
+    // This will use custom array intection algorithm.
+    if (!options.disableIndexIntersect && this._collection.binaryIndices.hasOwnProperty(propname)
+      && this._filterInitialized) {
+
+      const eff = this._collection._data.length / this._filteredRows.length;
+      // when javascript sort fallback is enabled, you generally need more than ~17% of total docs in resultset
+      // before array intersect is determined to be the faster algorithm, otherwise leave at 10% for loki sort.
+      const targetEff = options.useJavascriptSorting ? 6 : 10;
+
+      // anything more than ratio of 10:1 (total documents/current results) should use old sort code path
+      // So we will only use array intersection if you have more than 10% of total docs in your current ResultSet.
+      if (eff <= targetEff || options.forceIndexIntersect) {
+        const io = {};
+        // set up hashobject for simple 'inclusion test' with existing (filtered) results
+        for (let i = 0; i < this._filteredRows.length; i++) {
+          io[this._filteredRows[i]] = true;
+        }
+        // grab full sorted binary index array and filter by existing results
+        this._filteredRows = this._collection.binaryIndices[propname].values.filter((n: string) => {
+          return io[n];
+        });
+
+        if (options.desc) {
+          this._filteredRows.reverse();
+        }
+
+        return this;
+      }
+    }
+
+    if (options.useJavascriptSorting) {
+      return this.sort((obj1, obj2) => {
+        if (obj1[propname] === obj2[propname]) return 0;
+        if (obj1[propname] > obj2[propname]) return 1;
+        if (obj1[propname] < obj2[propname]) return -1;
+      });
+    }
+
     // if this has no filters applied, just we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
-      //TODO:
       // if we have a binary index and no other filters applied, we can use that instead of sorting (again)
       if (this._collection.binaryIndices[propname] !== undefined) {
         // make sure index is up-to-date
@@ -452,7 +499,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
         // copy index values into filteredRows
         this._filteredRows = this._collection.binaryIndices[propname].values.slice(0);
 
-        if (descending) {
+        if (options.desc) {
           this._filteredRows.reverse();
         }
 
@@ -467,7 +514,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
     const data = this._collection._data;
     const wrappedComparer = (a: number, b: number) => {
-      return sortHelper(data[a][propname], data[b][propname], descending);
+      return sortHelper(data[a][propname], data[b][propname], (options as ResultSet.SimpleSortOptions).desc);
     };
 
     this._filteredRows.sort(wrappedComparer);
@@ -495,7 +542,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
       if (typeof prop === "string") {
         return this.simplesort(prop, false);
       } else {
-        return this.simplesort(prop[0] as keyof (TData & TNested), prop[1] as boolean);
+        return this.simplesort(prop[0] as keyof (TData & TNested), prop[1] as boolean | ResultSet.SimpleSortOptions);
       }
     }
 
@@ -1159,6 +1206,13 @@ export namespace ResultSet {
     forceClones?: boolean;
     forceCloneMethod?: CloneMethod;
     removeMeta?: boolean;
+  }
+
+  export interface SimpleSortOptions {
+    desc?: boolean;
+    disableIndexIntersect?: boolean;
+    forceIndexIntersect?: boolean;
+    useJavascriptSorting?: boolean;
   }
 
   export type LokiOps<R> = {
