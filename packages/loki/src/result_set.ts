@@ -111,6 +111,28 @@ export const LokiOps = {
     return (gtHelper(a, range[0], true) && ltHelper(a, range[1], true));
   },
 
+  // lightweight javascript comparisons
+  $jgt(a: any, b: any): boolean {
+    return a > b;
+  },
+
+  $jgte(a: any, b: any): boolean {
+    return a >= b;
+  },
+
+  $jlt(a: any, b: any): boolean {
+    return a < b;
+  },
+
+  $jlte(a: any, b: any): boolean {
+    return a <= b;
+  },
+
+  $jbetween(a: any, range: [any, any]): boolean {
+    if (a === undefined || a === null) return false;
+    return (a >= range[0] && a <= range[1]);
+  },
+
   $in(a: any, b: any): boolean {
     return b.indexOf(a) !== -1;
   },
@@ -1265,6 +1287,16 @@ export namespace ResultSet {
     $len?: number;
   } | {
     $where?: (val?: R) => boolean;
+  } | {
+    $jgt?: R;
+  } | {
+    $jgte?: R;
+  } | {
+    $jlt?: R;
+  } | {
+    $jlte?: R;
+  } | {
+    $jbetween?: [R, R];
   };
 
   export type Query<T> =
