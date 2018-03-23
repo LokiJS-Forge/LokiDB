@@ -136,7 +136,8 @@ function merge() {
     "draft": false,
     "prerelease": false
   };
-  run("curl", ["--request", "POST", "--data", JSON.stringify(release), `https://${GH_TOKEN}@api.github.com/repos/${TRAVIS_REPO_SLUG}/releases`]);
+  run("curl", ["--request", "POST", "--data", JSON.stringify(release),
+    `https://${GH_TOKEN}@api.github.com/repos/${TRAVIS_REPO_SLUG}/releases`]);
 
   print("====== Update documentation");
   run("mkdocs", ["gh-deploy"]);
@@ -147,11 +148,13 @@ function build() {
 
   print(`====== BUILDING: Version ${VERSION} (${CURRENT_COMMIT})`);
 
+  const README = `${ROOT_DIR}/README.md`;
+
   for (const PACKAGE of PACKAGES) {
 
-    const SRC_DIR = `${ROOT_DIR}/packages/${PACKAGE}`;
-    const OUT_DIR = `${ROOT_DIR}/dist/packages/${PACKAGE}`;
-    const NPM_DIR = `${ROOT_DIR}/dist/packages-dist/${PACKAGE}`;
+    const SRC_DIR = `${ROOT_DIR}/packages/${PACKAGE}/`;
+    const OUT_DIR = `${ROOT_DIR}/dist/packages/${PACKAGE}/`;
+    const NPM_DIR = `${ROOT_DIR}/dist/packages-dist/${PACKAGE}/`;
     const FILENAME = `lokidb.${PACKAGE}.js`;
     const FILENAME_MINIFIED = `lokidb.${PACKAGE}.min.js`;
 
@@ -176,14 +179,16 @@ function build() {
     const ln = script.match(/(\d+).*/)[1];
     // Add simple name as default export.
     run("sed", ["-i", "-E",
-      `${ln}s/(.+);/{\\1; root["${simple_name}"] = root["@lokidb\\/${library_name}"].default;}/`, OUT_DIR + "/" + FILENAME]);
+      `${ln}s/(.+);/{\\1; root["${simple_name}"] = root["@lokidb\\/${library_name}"].default;}/`,
+      `${OUT_DIR}/${FILENAME}`]);
 
     print(`======      [${PACKAGE}]: BUNDLING   =====`);
     remove_dir(NPM_DIR);
     make_dir(NPM_DIR);
 
-    run("rsync", ["-a", `${OUT_DIR}/`, `${NPM_DIR}`]);
-    run("rsync", ["-am", "--include=package.json", "--include=*/", "--exclude=*", `${SRC_DIR}/`, `${NPM_DIR}/`]);
+    run("rsync", ["-a", OUT_DIR, NPM_DIR]);
+    run("rsync", ["-am", "--include=package.json", "--include=*/", "--exclude=*", SRC_DIR, NPM_DIR]);
+    run("cp", [README, NPM_DIR]);
 
     print(`======      [${PACKAGE}]: MINIFY     =====`);
     run(UGLIFYJS, [`${OUT_DIR}/${FILENAME}`, "--output", `${OUT_DIR}/${FILENAME_MINIFIED}`]);
