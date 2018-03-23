@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>FieldOptions | @lokijs/lokijs-src</title>
+	<title>FieldOptions | @lokidb/lokidb-src</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -22,7 +22,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="../index.html" class="title">@lokijs/lokijs-src</a>
+					<a href="../index.html" class="title">@lokidb/lokidb-src</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -87,10 +87,10 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="fulltextsearch.fieldoptions.html#name" class="tsd-kind-icon">name</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="fulltextsearch.fieldoptions.html#analyzer" class="tsd-kind-icon">analyzer</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="fulltextsearch.fieldoptions.html#field" class="tsd-kind-icon">field</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="fulltextsearch.fieldoptions.html#optimizechanges" class="tsd-kind-icon">optimize<wbr>Changes</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="fulltextsearch.fieldoptions.html#store" class="tsd-kind-icon">store</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="fulltextsearch.fieldoptions.html#tokenizer" class="tsd-kind-icon">tokenizer</a></li>
 							</ul>
 						</section>
 					</div>
@@ -98,13 +98,24 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+					<a name="analyzer" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> analyzer</h3>
+					<div class="tsd-signature tsd-kind-icon">analyzer<span class="tsd-signature-symbol">:</span> <a href="analyzer.html" class="tsd-signature-type">Analyzer</a></div>
+					<aside class="tsd-sources">
+						<p>Inherited from FieldOptions.analyzer</p>
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search/src/inverted_index.ts#L396">full-text-search/src/inverted_index.ts:396</a></li>
+						</ul>
+					</aside>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="name" class="tsd-anchor"></a>
-					<h3>name</h3>
-					<div class="tsd-signature tsd-kind-icon">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<a name="field" class="tsd-anchor"></a>
+					<h3>field</h3>
+					<div class="tsd-signature tsd-kind-icon">field<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/full-text-search/src/full_text_search.ts#L102">full-text-search/src/full_text_search.ts:102</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search/src/full_text_search.ts#L104">full-text-search/src/full_text_search.ts:104</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -115,7 +126,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from FieldOptions.optimizeChanges</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/full-text-search/src/inverted_index.ts#L401">full-text-search/src/inverted_index.ts:401</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search/src/inverted_index.ts#L395">full-text-search/src/inverted_index.ts:395</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -126,18 +137,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from FieldOptions.store</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/full-text-search/src/inverted_index.ts#L400">full-text-search/src/inverted_index.ts:400</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-					<a name="tokenizer" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> tokenizer</h3>
-					<div class="tsd-signature tsd-kind-icon">tokenizer<span class="tsd-signature-symbol">:</span> <a href="../classes/tokenizer.html" class="tsd-signature-type">Tokenizer</a></div>
-					<aside class="tsd-sources">
-						<p>Inherited from FieldOptions.tokenizer</p>
-						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/full-text-search/src/inverted_index.ts#L402">full-text-search/src/inverted_index.ts:402</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search/src/inverted_index.ts#L394">full-text-search/src/inverted_index.ts:394</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -161,17 +161,17 @@
 							<li class="current tsd-kind-interface tsd-parent-kind-class">
 								<a href="fulltextsearch.fieldoptions.html" class="tsd-kind-icon">Field<wbr>Options</a>
 								<ul>
+									<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+										<a href="fulltextsearch.fieldoptions.html#analyzer" class="tsd-kind-icon">analyzer</a>
+									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="fulltextsearch.fieldoptions.html#name" class="tsd-kind-icon">name</a>
+										<a href="fulltextsearch.fieldoptions.html#field" class="tsd-kind-icon">field</a>
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
 										<a href="fulltextsearch.fieldoptions.html#optimizechanges" class="tsd-kind-icon">optimize<wbr>Changes</a>
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
 										<a href="fulltextsearch.fieldoptions.html#store" class="tsd-kind-icon">store</a>
-									</li>
-									<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-										<a href="fulltextsearch.fieldoptions.html#tokenizer" class="tsd-kind-icon">tokenizer</a>
 									</li>
 								</ul>
 							</li>

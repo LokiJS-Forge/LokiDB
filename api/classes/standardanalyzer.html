@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>TermQuery | @lokidb/lokidb-src</title>
+	<title>StandardAnalyzer | @lokidb/lokidb-src</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="termquery.html">TermQuery</a>
+					<a href="standardanalyzer.html">StandardAnalyzer</a>
 				</li>
 			</ul>
-			<h1>Interface TermQuery</h1>
+			<h1>Class StandardAnalyzer</h1>
 		</div>
 	</div>
 </header>
@@ -67,7 +67,7 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>A query which finds documents where a document field contains a term.</p>
+						<p>An analyzer with the whitespace tokenizer and the lowercase token filter.</p>
 					</div>
 				</div>
 			</section>
@@ -75,13 +75,14 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<a href="basequery.html" class="tsd-signature-type">BaseQuery</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">"term"</span><span class="tsd-signature-symbol">&gt;</span>
-						<ul class="tsd-hierarchy">
-							<li>
-								<span class="target">TermQuery</span>
-							</li>
-						</ul>
+						<span class="target">StandardAnalyzer</span>
 					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel">
+				<h3>Implements</h3>
+				<ul class="tsd-hierarchy">
+					<li><a href="../interfaces/analyzer.html" class="tsd-signature-type">Analyzer</a></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -91,10 +92,8 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="termquery.html#boost" class="tsd-kind-icon">boost</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="termquery.html#field" class="tsd-kind-icon">field</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="termquery.html#type" class="tsd-kind-icon">type</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="termquery.html#value" class="tsd-kind-icon">value</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="standardanalyzer.html#token_filter" class="tsd-kind-icon">token_<wbr>filter</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="standardanalyzer.html#tokenizer" class="tsd-kind-icon">tokenizer</a></li>
 							</ul>
 						</section>
 					</div>
@@ -102,45 +101,25 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-					<a name="boost" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> boost</h3>
-					<div class="tsd-signature tsd-kind-icon">boost<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="token_filter" class="tsd-anchor"></a>
+					<h3>token_<wbr>filter</h3>
+					<div class="tsd-signature tsd-kind-icon">token_<wbr>filter<span class="tsd-signature-symbol">:</span> <a href="../globals.html#lowercasetokenfilter" class="tsd-signature-type">lowercaseTokenFilter</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[lowercaseTokenFilter]</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="basequery.html">BaseQuery</a>.<a href="basequery.html#boost">boost</a></p>
+						<p>Implementation of <a href="../interfaces/analyzer.html">Analyzer</a>.<a href="../interfaces/analyzer.html#token_filter">token_filter</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search/src/query_types.ts#L8">full-text-search/src/query_types.ts:8</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search/src/analyzer/analyzer.ts#L52">full-text-search/src/analyzer/analyzer.ts:52</a></li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="field" class="tsd-anchor"></a>
-					<h3>field</h3>
-					<div class="tsd-signature tsd-kind-icon">field<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="tokenizer" class="tsd-anchor"></a>
+					<h3>tokenizer</h3>
+					<div class="tsd-signature tsd-kind-icon">tokenizer<span class="tsd-signature-symbol">:</span> <a href="../globals.html#whitespacetokenizer" class="tsd-signature-type">whitespaceTokenizer</a><span class="tsd-signature-symbol"> =&nbsp;whitespaceTokenizer</span></div>
 					<aside class="tsd-sources">
+						<p>Implementation of <a href="../interfaces/analyzer.html">Analyzer</a>.<a href="../interfaces/analyzer.html#tokenizer">tokenizer</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search/src/query_types.ts#L16">full-text-search/src/query_types.ts:16</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-					<a name="type" class="tsd-anchor"></a>
-					<h3>type</h3>
-					<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"term"</span></div>
-					<aside class="tsd-sources">
-						<p>Inherited from <a href="basequery.html">BaseQuery</a>.<a href="basequery.html#type">type</a></p>
-						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search/src/query_types.ts#L6">full-text-search/src/query_types.ts:6</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="value" class="tsd-anchor"></a>
-					<h3>value</h3>
-					<div class="tsd-signature tsd-kind-icon">value<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search/src/query_types.ts#L18">full-text-search/src/query_types.ts:18</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search/src/analyzer/analyzer.ts#L51">full-text-search/src/analyzer/analyzer.ts:51</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -158,20 +137,14 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-interface">
-						<a href="termquery.html" class="tsd-kind-icon">Term<wbr>Query</a>
+					<li class="current tsd-kind-class">
+						<a href="standardanalyzer.html" class="tsd-kind-icon">Standard<wbr>Analyzer</a>
 						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-								<a href="termquery.html#boost" class="tsd-kind-icon">boost</a>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="standardanalyzer.html#token_filter" class="tsd-kind-icon">token_<wbr>filter</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="termquery.html#field" class="tsd-kind-icon">field</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-								<a href="termquery.html#type" class="tsd-kind-icon">type</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="termquery.html#value" class="tsd-kind-icon">value</a>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="standardanalyzer.html#tokenizer" class="tsd-kind-icon">tokenizer</a>
 							</li>
 						</ul>
 					</li>

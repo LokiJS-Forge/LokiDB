@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Serialization | @lokijs/lokijs-src</title>
+	<title>SimpleSortOptions | @lokidb/lokidb-src</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -22,7 +22,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="../index.html" class="title">@lokijs/lokijs-src</a>
+					<a href="../index.html" class="title">@lokidb/lokidb-src</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -54,13 +54,13 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../classes/tokenizer.html">Tokenizer</a>
+					<a href="../classes/resultset.html">ResultSet</a>
 				</li>
 				<li>
-					<a href="tokenizer.serialization.html">Serialization</a>
+					<a href="resultset.simplesortoptions.html">SimpleSortOptions</a>
 				</li>
 			</ul>
-			<h1>Interface Serialization</h1>
+			<h1>Interface SimpleSortOptions</h1>
 		</div>
 	</div>
 </header>
@@ -71,7 +71,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">Serialization</span>
+						<span class="target">SimpleSortOptions</span>
 					</li>
 				</ul>
 			</section>
@@ -82,8 +82,10 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="tokenizer.serialization.html#splitter" class="tsd-kind-icon">splitter</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="tokenizer.serialization.html#tokenizers" class="tsd-kind-icon">tokenizers</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="resultset.simplesortoptions.html#desc" class="tsd-kind-icon">desc</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="resultset.simplesortoptions.html#disableindexintersect" class="tsd-kind-icon">disable<wbr>Index<wbr>Intersect</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="resultset.simplesortoptions.html#forceindexintersect" class="tsd-kind-icon">force<wbr>Index<wbr>Intersect</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="resultset.simplesortoptions.html#usejavascriptsorting" class="tsd-kind-icon">use<wbr>Javascript<wbr>Sorting</a></li>
 							</ul>
 						</section>
 					</div>
@@ -92,22 +94,42 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="splitter" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> splitter</h3>
-					<div class="tsd-signature tsd-kind-icon">splitter<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<a name="desc" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> desc</h3>
+					<div class="tsd-signature tsd-kind-icon">desc<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/full-text-search/src/tokenizer.ts#L277">full-text-search/src/tokenizer.ts:277</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/loki/src/result_set.ts#L1234">loki/src/result_set.ts:1234</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="tokenizers" class="tsd-anchor"></a>
-					<h3>tokenizers</h3>
-					<div class="tsd-signature tsd-kind-icon">tokenizers<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
+					<a name="disableindexintersect" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> disable<wbr>Index<wbr>Intersect</h3>
+					<div class="tsd-signature tsd-kind-icon">disable<wbr>Index<wbr>Intersect<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiJS2/blob/eba3285/packages/full-text-search/src/tokenizer.ts#L278">full-text-search/src/tokenizer.ts:278</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/loki/src/result_set.ts#L1235">loki/src/result_set.ts:1235</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="forceindexintersect" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> force<wbr>Index<wbr>Intersect</h3>
+					<div class="tsd-signature tsd-kind-icon">force<wbr>Index<wbr>Intersect<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/loki/src/result_set.ts#L1236">loki/src/result_set.ts:1236</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="usejavascriptsorting" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> use<wbr>Javascript<wbr>Sorting</h3>
+					<div class="tsd-signature tsd-kind-icon">use<wbr>Javascript<wbr>Sorting<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/loki/src/result_set.ts#L1237">loki/src/result_set.ts:1237</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -125,70 +147,118 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-class">
-						<a href="../classes/tokenizer.html" class="tsd-kind-icon">Tokenizer</a>
+					<li class="current tsd-kind-class tsd-has-type-parameter">
+						<a href="../classes/resultset.html" class="tsd-kind-icon">Result<wbr>Set</a>
 						<ul>
+							<li class=" tsd-kind-interface tsd-parent-kind-class">
+								<a href="resultset.dataoptions.html" class="tsd-kind-icon">Data<wbr>Options</a>
+							</li>
 							<li class="current tsd-kind-interface tsd-parent-kind-class">
-								<a href="tokenizer.serialization.html" class="tsd-kind-icon">Serialization</a>
+								<a href="resultset.simplesortoptions.html" class="tsd-kind-icon">Simple<wbr>Sort<wbr>Options</a>
 								<ul>
 									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="tokenizer.serialization.html#splitter" class="tsd-kind-icon">splitter</a>
+										<a href="resultset.simplesortoptions.html#desc" class="tsd-kind-icon">desc</a>
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="tokenizer.serialization.html#tokenizers" class="tsd-kind-icon">tokenizers</a>
+										<a href="resultset.simplesortoptions.html#disableindexintersect" class="tsd-kind-icon">disable<wbr>Index<wbr>Intersect</a>
+									</li>
+									<li class=" tsd-kind-property tsd-parent-kind-interface">
+										<a href="resultset.simplesortoptions.html#forceindexintersect" class="tsd-kind-icon">force<wbr>Index<wbr>Intersect</a>
+									</li>
+									<li class=" tsd-kind-property tsd-parent-kind-interface">
+										<a href="resultset.simplesortoptions.html#usejavascriptsorting" class="tsd-kind-icon">use<wbr>Javascript<wbr>Sorting</a>
 									</li>
 								</ul>
 							</li>
 							<li class=" tsd-kind-type-alias tsd-parent-kind-class tsd-is-static">
-								<a href="../classes/tokenizer.html#functionserialization" class="tsd-kind-icon">Function<wbr>Serialization</a>
+								<a href="../classes/resultset.html#lokiops" class="tsd-kind-icon">Loki<wbr>Ops</a>
 							</li>
 							<li class=" tsd-kind-type-alias tsd-parent-kind-class tsd-is-static">
-								<a href="../classes/tokenizer.html#splitterfunction" class="tsd-kind-icon">Splitter<wbr>Function</a>
-							</li>
-							<li class=" tsd-kind-type-alias tsd-parent-kind-class tsd-is-static">
-								<a href="../classes/tokenizer.html#tokinizefunction" class="tsd-kind-icon">Tokinize<wbr>Function</a>
+								<a href="../classes/resultset.html#query" class="tsd-kind-icon">Query</a>
 							</li>
 							<li class=" tsd-kind-constructor tsd-parent-kind-class">
-								<a href="../classes/tokenizer.html#constructor" class="tsd-kind-icon">constructor</a>
+								<a href="../classes/resultset.html#constructor" class="tsd-kind-icon">constructor</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="../classes/resultset.html#_collection" class="tsd-kind-icon">_collection</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="../classes/resultset.html#_filterinitialized" class="tsd-kind-icon">_filter<wbr>Initialized</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="../classes/resultset.html#_filteredrows" class="tsd-kind-icon">_filtered<wbr>Rows</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="../classes/tokenizer.html#add" class="tsd-kind-icon">add</a>
+								<a href="../classes/resultset.html#_and" class="tsd-kind-icon">$and</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="../classes/tokenizer.html#addafter" class="tsd-kind-icon">add<wbr>After</a>
+								<a href="../classes/resultset.html#_or" class="tsd-kind-icon">$or</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="../classes/tokenizer.html#addbefore" class="tsd-kind-icon">add<wbr>Before</a>
+								<a href="../classes/resultset.html#compoundsort" class="tsd-kind-icon">compoundsort</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="../classes/tokenizer.html#get" class="tsd-kind-icon">get</a>
+								<a href="../classes/resultset.html#copy" class="tsd-kind-icon">copy</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="../classes/tokenizer.html#getsplitter" class="tsd-kind-icon">get<wbr>Splitter</a>
+								<a href="../classes/resultset.html#count" class="tsd-kind-icon">count</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="../classes/tokenizer.html#has" class="tsd-kind-icon">has</a>
+								<a href="../classes/resultset.html#data" class="tsd-kind-icon">data</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="../classes/tokenizer.html#remove" class="tsd-kind-icon">remove</a>
+								<a href="../classes/resultset.html#eqjoin" class="tsd-kind-icon">eq<wbr>Join</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="../classes/tokenizer.html#reset" class="tsd-kind-icon">reset</a>
+								<a href="../classes/resultset.html#find" class="tsd-kind-icon">find</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="../classes/tokenizer.html#resetsplitter" class="tsd-kind-icon">reset<wbr>Splitter</a>
+								<a href="../classes/resultset.html#findand" class="tsd-kind-icon">find<wbr>And</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="../classes/tokenizer.html#setsplitter" class="tsd-kind-icon">set<wbr>Splitter</a>
+								<a href="../classes/resultset.html#findor" class="tsd-kind-icon">find<wbr>Or</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="../classes/tokenizer.html#tojson" class="tsd-kind-icon">toJSON</a>
+								<a href="../classes/resultset.html#getscoring" class="tsd-kind-icon">get<wbr>Scoring</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="../classes/tokenizer.html#tokenize" class="tsd-kind-icon">tokenize</a>
+								<a href="../classes/resultset.html#limit" class="tsd-kind-icon">limit</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
-								<a href="../classes/tokenizer.html#fromjsonobject" class="tsd-kind-icon">fromJSONObject</a>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
+								<a href="../classes/resultset.html#map" class="tsd-kind-icon">map</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
+								<a href="../classes/resultset.html#mapreduce" class="tsd-kind-icon">map<wbr>Reduce</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="../classes/resultset.html#offset" class="tsd-kind-icon">offset</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="../classes/resultset.html#remove" class="tsd-kind-icon">remove</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="../classes/resultset.html#reset" class="tsd-kind-icon">reset</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="../classes/resultset.html#simplesort" class="tsd-kind-icon">simplesort</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="../classes/resultset.html#sort" class="tsd-kind-icon">sort</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="../classes/resultset.html#sortbyscoring" class="tsd-kind-icon">sort<wbr>ByScoring</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="../classes/resultset.html#tojson" class="tsd-kind-icon">toJSON</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="../classes/resultset.html#transform" class="tsd-kind-icon">transform</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="../classes/resultset.html#update" class="tsd-kind-icon">update</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="../classes/resultset.html#where" class="tsd-kind-icon">where</a>
 							</li>
 						</ul>
 					</li>
