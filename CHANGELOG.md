@@ -1,3 +1,36 @@
+<a name="2.0.0-beta.6"></a>
+# [2.0.0-beta.6](https://github.com/LokiJS-Forge/LokiDB/compare/2.0.0-beta.5...2.0.0-beta.6) (2018-03-23)
+
+For a better distinction, the library has been renamed to LokiDB.
+
+The repository is now located under https://github.com/LokiJS-Forge/LokiDB
+
+The npm packages can be found under the organization scope @lokidb.
+
+
+## Commit Summary
+### Bug Fixes
+
+* **full-text-search:** fix fuzzy's prefix length, edit distance and idf ([#68](https://github.com/LokiJS-Forge/LokiDB/issues/68)) ([da06836](https://github.com/LokiJS-Forge/LokiDB/commit/da06836))
+* **full-text-search:** rename field option "name" to "field" ([#67](https://github.com/LokiJS-Forge/LokiDB/issues/67)) ([ff74219](https://github.com/LokiJS-Forge/LokiDB/commit/ff74219))
+* **loki:** fix a autosave race condition when using asynchronous adapter ([#79](https://github.com/LokiJS-Forge/LokiDB/issues/79)) ([db26d02](https://github.com/LokiJS-Forge/LokiDB/commit/db26d02))
+* **loki:** fix binary index in batch updates when not cloning ([#78](https://github.com/LokiJS-Forge/LokiDB/issues/78)) ([8081799](https://github.com/LokiJS-Forge/LokiDB/commit/8081799))
+
+
+### Features
+
+* **full-text-search:** remove query builder ([#73](https://github.com/LokiJS-Forge/LokiDB/issues/73)) ([84757ab](https://github.com/LokiJS-Forge/LokiDB/commit/84757ab))
+* **full-text-search:** remove unnecessary array query ([#75](https://github.com/LokiJS-Forge/LokiDB/issues/75)) ([4ff5165](https://github.com/LokiJS-Forge/LokiDB/commit/4ff5165))
+* **full-text-search:** replace the old "tokenizer" class with an analyzer interface ([#76](https://github.com/LokiJS-Forge/LokiDB/issues/76)) ([2d44384](https://github.com/LokiJS-Forge/LokiDB/commit/2d44384))
+* **full-text-search:** return score result as an equivalent array to result set data ([#69](https://github.com/LokiJS-Forge/LokiDB/issues/69)) ([7ea17c0](https://github.com/LokiJS-Forge/LokiDB/commit/7ea17c0))
+* **loki:** add diagnostic function to test binary index validity ([#85](https://github.com/LokiJS-Forge/LokiDB/issues/85)) ([d611722](https://github.com/LokiJS-Forge/LokiDB/commit/d611722))
+* **loki:** add option to disable meta property for documents added to a collection ([#80](https://github.com/LokiJS-Forge/LokiDB/issues/80)) ([1a49470](https://github.com/LokiJS-Forge/LokiDB/commit/1a49470))
+* **loki:** add simplified javascript comparisons $jgt, $jgte, $jlt, $jlte, $jbetween ([#87](https://github.com/LokiJS-Forge/LokiDB/issues/87)) ([32e4b1e](https://github.com/LokiJS-Forge/LokiDB/commit/32e4b1e))
+* **loki:** change and improve nested property support ([#81](https://github.com/LokiJS-Forge/LokiDB/issues/81)) ([2730284](https://github.com/LokiJS-Forge/LokiDB/commit/2730284))
+* **loki:** return an existing collection if a collection with the same name already exists ([#77](https://github.com/LokiJS-Forge/LokiDB/issues/77)) ([75afd67](https://github.com/LokiJS-Forge/LokiDB/commit/75afd67))
+* **loki:** simplesort leverages binary indices better when filtered ([#83](https://github.com/LokiJS-Forge/LokiDB/issues/83)) ([4d1b25b](https://github.com/LokiJS-Forge/LokiDB/commit/4d1b25b))
+
+
 <a name="2.0.0-beta.5"></a>
 # [2.0.0-beta.5](https://github.com/LokiJS-Forge/LokiJS2/compare/2.0.0-beta.4...2.0.0-beta.5) (2018-01-02)
 
