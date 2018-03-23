@@ -7,10 +7,12 @@
 
 </div>
 
-<h1 align="center">LokiDB 2</h1>
+<h1 align="center">LokiDB</h1>
 
-LokiDB is a document oriented database written in javascript, published under MIT License.
+LokiDB is a document oriented database written in TypeScript, published under MIT License.
 Its purpose is to store javascript objects as documents in a nosql fashion and retrieve them with a similar mechanism.
+
+LokiDB is the official successor of [LokiJS][lokijs-url].
 
 <h2 align="center">Install</h2>
 
@@ -49,6 +51,8 @@ Check out our interactive [documentation](https://LokiJS-Forge.github.io/LokiDB/
 [build-url]: https://travis-ci.org/LokiJS-Forge/LokiDB
 [coverage]: https://coveralls.io/repos/github/LokiJS-Forge/LokiDB/badge.svg?branch=master
 [coverage-url]: https://coveralls.io/github/LokiJS-Forge/LokiDB?branch=master
+
+[lokijs-url]: https://github.com/techfort/LokiJS
 
 [npm]: https://img.shields.io/npm/v/@lokidb/loki.svg
 [npm-url]: https://www.npmjs.com/package/@lokidb/loki
