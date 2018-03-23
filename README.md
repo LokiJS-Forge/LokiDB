@@ -9,8 +9,9 @@
 
 <h1 align="center">LokiDB</h1>
 
-LokiDB is a document oriented database written in TypeScript, published under MIT License.
-Its purpose is to store javascript objects as documents in a nosql fashion and retrieve them with a similar mechanism.
+LokiDB is a document oriented database written in TypeScript.
+
+Its purpose is to store javascript objects as documents in a blazing fast nosql fashion and retrieve them with a similar mechanism.
 
 LokiDB is the official successor of [LokiJS][lokijs-url].
 
