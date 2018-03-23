@@ -43,10 +43,10 @@ Check out our interactive [documentation](https://LokiJS-Forge.github.io/LokiDB/
 
 |Name|Description|
 |:---|:----------|
-|[@lokidb/full-text-search][full-text-search]                         |  A full-text search engine. |
-|[@lokidb/full-text-search-language][full-text-search-language]       |  A language analyzer utility package. |
-|[@lokidb/full-text-search-language-de][full-text-search-language-de] |  ![flag][full-text-search-language-de-flag] A german language analyzer. |
-|[@lokidb/full-text-search-language-en][full-text-search-language-en] |  ![flag][full-text-search-language-en-flag] An english language analyzer. |
+|[@lokidb/full-text-search][full-text-search-npm-url]                         |  A full-text search engine. |
+|[@lokidb/full-text-search-language][full-text-search-language-npm-url]       |  A language analyzer utility package. |
+|[@lokidb/full-text-search-language-de][full-text-search-language-de-npm-url] |  ![flag][full-text-search-language-de-flag] A german language analyzer. |
+|[@lokidb/full-text-search-language-en][full-text-search-language-en-npm-url] |  ![flag][full-text-search-language-en-flag] An english language analyzer. |
 
 [build]: https://travis-ci.org/LokiJS-Forge/LokiDB.svg?branch=master
 [build-url]: https://travis-ci.org/LokiJS-Forge/LokiDB
