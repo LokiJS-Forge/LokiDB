@@ -1,15 +1,15 @@
 {
-  "name": "@lokijs/memory-storage",
+  "name": "@lokidb/memory-storage",
   "description": "A persistence adapter which persists to memory.",
   "author": "Various authors",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/LokiJS-Forge/LokiJS2.git"
+    "url": "https://github.com/LokiJS-Forge/LokiDB.git"
   },
-  "main": "lokijs.memory-storage.js",
+  "main": "lokidb.memory-storage.js",
   "types": "./types/memory-storage/src/index.d.ts",
   "dependencies": {
-    "@lokijs/loki": "0"
+    "@lokidb/loki": "0"
   }
 }

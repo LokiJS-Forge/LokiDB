@@ -1,16 +1,16 @@
 {
-  "name": "@lokijs/full-text-search-language-en",
+  "name": "@lokidb/full-text-search-language-en",
   "description": "An English language analyzer.",
   "author": "Various authors",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/LokiJS-Forge/LokiJS2.git"
+    "url": "https://github.com/LokiJS-Forge/LokiDB.git"
   },
-  "main": "lokijs.full-text-search-language-en.js",
+  "main": "lokidb.full-text-search-language-en.js",
   "types": "./types/full-text-search-language-en/src/index.d.ts",
   "dependencies": {
-    "@lokijs/full-text-search": "0",
-    "@lokijs/full-text-search-language": "0"
+    "@lokidb/full-text-search": "0",
+    "@lokidb/full-text-search-language": "0"
   }
 }

@@ -4,6 +4,6 @@ const webpackConigCreator = require('../../config/webpack-config-creator.js');
 
 module.exports = webpackConigCreator({
   entry: path.join(__dirname, "src", "index.ts"),
-  filename: "lokijs.full-text-search-language.js",
-  library: "@lokijs/full-text-search-language"
+  filename: "lokidb.full-text-search-language.js",
+  library: "@lokidb/full-text-search-language"
 });

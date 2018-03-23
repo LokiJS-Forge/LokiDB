@@ -1,5 +1,5 @@
 {
-  "name": "@lokijs/lokijs-src",
+  "name": "@lokidb/lokidb-src",
   "version": "2.0.0-beta.5",
   "description": "Fast document oriented javascript in-memory database",
   "author": "Various authors",
@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LokiJS-Forge/LokiJS2.git"
+    "url": "git+https://github.com/LokiJS-Forge/LokiDB.git"
   },
   "keywords": [
     "javascript",
@@ -25,13 +25,13 @@
     "mmdb",
     "database",
     "json",
-    "lokijs",
+    "lokidb",
     "in-memory"
   ],
   "bugs": {
-    "url": "https://github.com/LokiJS-Forge/LokiJS2/issues"
+    "url": "https://github.com/LokiJS-Forge/LokiDB/issues"
   },
-  "homepage": "https://lokijs-forge.github.io/LokiJS2",
+  "homepage": "https://LokiJS-Forge.github.io/LokiDB",
   "devDependencies": {
     "@types/elasticsearch": "^5.0.19",
     "@types/jasmine": "^2.8.6",

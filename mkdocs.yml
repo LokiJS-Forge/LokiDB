@@ -1,7 +1,7 @@
 copyright: Copyright &copy; 2017
 
-site_name: LokiJS2
-repo_url: https://github.com/lokijs-forge/lokijs2
+site_name: LokiDB
+repo_url: https://github.com/LokiJS-Forge/LokiDB
 repo_name: GitHub
 
 extra_css:

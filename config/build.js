@@ -152,8 +152,8 @@ function build() {
     const SRC_DIR = `${ROOT_DIR}/packages/${PACKAGE}`;
     const OUT_DIR = `${ROOT_DIR}/dist/packages/${PACKAGE}`;
     const NPM_DIR = `${ROOT_DIR}/dist/packages-dist/${PACKAGE}`;
-    const FILENAME = `lokijs.${PACKAGE}.js`;
-    const FILENAME_MINIFIED = `lokijs.${PACKAGE}.min.js`;
+    const FILENAME = `lokidb.${PACKAGE}.js`;
+    const FILENAME_MINIFIED = `lokidb.${PACKAGE}.min.js`;
 
     print(`======      [${PACKAGE}]: PACKING    =====`);
     remove_dir(OUT_DIR);
@@ -163,7 +163,7 @@ function build() {
     // Update script tag export of UMD to use default module export.
     // Get script tag export.
     let script = run("grep", ["-n", "root\\[.*] = factory(", OUT_DIR + "/" + FILENAME])[1].toString();
-    let library_name = script.match(/root\["@lokijs\/(.+?)"/)[1];
+    let library_name = script.match(/root\["@lokidb\/(.+?)"/)[1];
     // Transform library name to Loki<LibraryName>.
     let simple_name = library_name.replace(/(?:-|^)([a-z])/ig, ( all, letter ) => {
       return letter.toUpperCase();
@@ -176,7 +176,7 @@ function build() {
     const ln = script.match(/(\d+).*/)[1];
     // Add simple name as default export.
     run("sed", ["-i", "-E",
-      `${ln}s/(.+);/{\\1; root["${simple_name}"] = root["@lokijs\\/${library_name}"].default;}/`, OUT_DIR + "/" + FILENAME]);
+      `${ln}s/(.+);/{\\1; root["${simple_name}"] = root["@lokidb\\/${library_name}"].default;}/`, OUT_DIR + "/" + FILENAME]);
 
     print(`======      [${PACKAGE}]: BUNDLING   =====`);
     remove_dir(NPM_DIR);
@@ -192,17 +192,17 @@ function build() {
     const data = fs.readFileSync(`${NPM_DIR}/package.json`);
     let json = JSON.parse(data);
     json.version = VERSION;
-    // Update version of other needed LokiJS packages
+    // Update version of other needed LokiDB packages
     if (json.dependencies) {
       for (let pack of Object.keys(json.dependencies)) {
-        if (pack.startsWith("@lokijs/")) {
+        if (pack.startsWith("@lokidb/")) {
           json.dependencies[pack] = VERSION;
         }
       }
     }
     if (json.optionalDependencies) {
       for (let pack of Object.keys(json.optionalDependencies)) {
-        if (pack.startsWith("@lokijs/")) {
+        if (pack.startsWith("@lokidb/")) {
           json.optionalDependencies[pack] = VERSION;
         }
       }
