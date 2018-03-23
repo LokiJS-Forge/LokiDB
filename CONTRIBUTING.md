@@ -1,8 +1,8 @@
 <!-- This page is a modified version of [Angular's CONTRIBUTING.md](https://github.com/angular/angular/blob/master/CONTRIBUTING.md). -->
 
-# Contributing to LokiJS
+# Contributing to LokiDB
 
-We would love for you to contribute to LokiJS and help make it even better than it is
+We would love for you to contribute to LokiDB and help make it even better than it is
 today! As a contributor, here are the guidelines we would like you to follow:
 
  - [Code of Conduct](#coc)
@@ -11,14 +11,14 @@ today! As a contributor, here are the guidelines we would like you to follow:
  - [Feature Requests](#feature)
  - [Submission Guidelines](#submit)
  - [Coding Rules](#rules)
- - [Test LokiJS](#develop)
+ - [Test LokiDB](#develop)
 
 ## <a name="coc"></a> Code of Conduct
-Help us keep LokiJS open and inclusive. Please read and follow our [Code of Conduct][coc].
+Help us keep LokiDB open and inclusive. Please read and follow our [Code of Conduct][coc].
 
 ## <a name="question"></a> Got a Question or Problem?
 
-Please ask your questions tagged with `lokijs` at [Stack Overflow][stackoverflow].
+Please ask your questions tagged with `lokidb` at [Stack Overflow][stackoverflow].
 
 If you would like to chat about the questions in real-time, you can reach out via [our gitter channel][gitter].
 
@@ -40,7 +40,7 @@ Before you submit an issue, please search the issue tracker, maybe an issue for 
 
 We want to fix all the issues as soon as possible, but before fixing a bug we need to reproduce and confirm it. In order to reproduce bugs we will systematically ask you to provide a minimal reproduction scenario using http://plnkr.co. Having a live, reproducible scenario gives us wealth of important information without going back & forth to you with additional questions like:
 
-- version of LokiJS used
+- version of LokiDB used
 - 3rd-party libraries and their versions
 - and most importantly - a use-case that fails
 
@@ -59,15 +59,15 @@ Before you submit your Pull Request (PR) consider the following guidelines:
 * Search [GitHub][pulls] for an open or closed PR that relates to your submission. You don't want to duplicate effort.
 * Create your patch, **including appropriate test cases**.
 * Follow our [Coding Rules](#rules).
-* Run the full LokiJS test suite, as described in the [developer documentation][dev-doc],
+* Run the full LokiDB test suite, as described in the [developer documentation][dev-doc],
   and ensure that all tests pass.
 * Commit your changes using a descriptive commit message that follows our
   [commit message conventions](#commit). Adherence to these conventions
   is necessary because release notes are automatically generated from these messages.
-* In GitHub, send a pull request to `LokiJS2:master`.
+* In GitHub, send a pull request to `LokiDB:master`.
 * If we suggest changes then:
   * Make the required updates.
-  * Re-run the LokiJS test suites to ensure tests are still passing.
+  * Re-run the LokiDB test suites to ensure tests are still passing.
 
 That's it! Thank you for your contribution!
 
@@ -82,7 +82,7 @@ To ensure consistency throughout the source code, keep these rules in mind as yo
 
 We have very precise rules over how our git commit messages can be formatted.  This leads to **more
 readable messages** that are easy to follow when looking through the **project history**.  But also,
-we use the git commit messages to **generate the LokiJS change log**.
+we use the git commit messages to **generate the LokiDB change log**.
 
 ### Commit Message Format
 Each commit message consists of a **header**, a **body** and a **footer**.  The header has a special
@@ -135,7 +135,7 @@ The scope should be the name of the npm package affected (as perceived by person
 
 The following is the list of supported scopes:
 
-* **loki**: The LokiJS database.
+* **loki**: The LokiDB database.
 * **partitioning-adapter**: The partitioning adapter.
 * **local-storage**: The local storage adapter.
 * **indexed-storage**: The indexed db storage adapter.
@@ -168,12 +168,12 @@ reference GitHub issues that this commit **Closes**.
 
 **Breaking Changes** should start with the word `BREAKING CHANGE:` with a space or two newlines. The rest of the commit message is then used for this.
 
-[coc]: https://github.com/LokiJS-Forge/LokiJS2/blob/master/CODE_OF_CONDUCT.md
-[dev-doc]: https://github.com/LokiJS-Forge/LokiJS2/blob/master/DEVELOPER.md
-[github]: https://github.com/LokiJS-Forge/LokiJS2
-[new-issue]: https://github.com/LokiJS-Forge/LokiJS2/issues/new
-[pulls]: https://github.com/LokiJS-Forge/LokiJS2/pulls
-[commit]: https://github.com/LokiJS-Forge/LokiJS2/commits/master
-[gitter]: https://gitter.im/techfort/LokiJS
+[coc]: https://github.com/LokiJS-Forge/LokiDB/blob/master/CODE_OF_CONDUCT.md
+[dev-doc]: https://github.com/LokiJS-Forge/LokiDB/blob/master/DEVELOPER.md
+[github]: https://github.com/LokiJS-Forge/LokiDB
+[new-issue]: https://github.com/LokiJS-Forge/LokiDB/issues/new
+[pulls]: https://github.com/LokiJS-Forge/LokiDB/pulls
+[commit]: https://github.com/LokiJS-Forge/LokiDB/commits/master
+[gitter]: https://gitter.im/techfort/LokiDB
 [plunker]: http://plnkr.co/edit
-[stackoverflow]: http://stackoverflow.com/questions/tagged/lokijs?sort=newest
+[stackoverflow]: http://stackoverflow.com/questions/tagged/lokidb?sort=newest

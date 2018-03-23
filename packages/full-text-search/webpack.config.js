@@ -4,9 +4,9 @@ const webpackConigCreator = require('../../config/webpack-config-creator.js');
 
 module.exports = webpackConigCreator({
   entry: path.join(__dirname, "src", "index.ts"),
-  filename: "lokijs.full-text-search.js",
-  library: "@lokijs/full-text-search",
+  filename: "lokidb.full-text-search.js",
+  library: "@lokidb/full-text-search",
   externals: {
-    "../../loki/src/loki": "@lokijs/loki"
+    "../../loki/src/loki": "@lokidb/loki"
   },
 });

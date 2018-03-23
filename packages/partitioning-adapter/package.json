@@ -1,15 +1,15 @@
 {
-  "name": "@lokijs/partitioning-adapter",
+  "name": "@lokidb/partitioning-adapter",
   "description": "An adapter for adapters. Converts a non reference mode adapter into a reference mode adapter which can perform destructuring and partitioning.",
   "author": "Various authors",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/LokiJS-Forge/LokiJS2.git"
+    "url": "https://github.com/LokiJS-Forge/LokiDB.git"
   },
-  "main": "lokijs.partitioning-adapter.js",
+  "main": "lokidb.partitioning-adapter.js",
   "types": "./types/partitioning-adapter/src/index.d.ts",
   "dependencies": {
-    "@lokijs/loki": "0"
+    "@lokidb/loki": "0"
   }
 }

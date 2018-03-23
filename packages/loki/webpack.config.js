@@ -4,6 +4,6 @@ const webpackConigCreator = require('../../config/webpack-config-creator.js');
 
 module.exports = webpackConigCreator({
   entry: path.join(__dirname, "src", "index.ts"),
-  filename: "lokijs.loki.js",
-  library: "@lokijs/loki",
+  filename: "lokidb.loki.js",
+  library: "@lokidb/loki",
 });

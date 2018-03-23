@@ -4,9 +4,9 @@ const webpackConigCreator = require('../../config/webpack-config-creator.js');
 
 module.exports = webpackConigCreator({
   entry: path.join(__dirname, "src", "index.ts"),
-  filename: "lokijs.indexed-storage.js",
-  library: "@lokijs/indexed-storage",
+  filename: "lokidb.indexed-storage.js",
+  library: "@lokidb/indexed-storage",
   externals: {
-    "../../loki/src/loki": "@lokijs/loki"
+    "../../loki/src/loki": "@lokidb/loki"
   },
 });

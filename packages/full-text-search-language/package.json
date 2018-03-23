@@ -1,12 +1,12 @@
 {
-  "name": "@lokijs/full-text-search-language",
+  "name": "@lokidb/full-text-search-language",
   "description": "A language analyzer utility package.",
   "author": "Various authors",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/LokiJS-Forge/LokiJS2.git"
+    "url": "https://github.com/LokiJS-Forge/LokiDB.git"
   },
-  "main": "lokijs.full-text-search-language.js",
+  "main": "lokidb.full-text-search-language.js",
   "types": "./types/full-text-search-language/src/index.d.ts"
 }

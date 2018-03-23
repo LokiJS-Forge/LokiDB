@@ -1,19 +1,19 @@
 <!-- This page is a modified version of [Angular](https://github.com/angular/angular/blob/master/docs/DEVELOPER.md). -->
 
-# Building and testing LokiJS
+# Building and testing LokiDB
 
-This document describes how to set up your development environment to build and test LokiJS.
+This document describes how to set up your development environment to build and test LokiDB.
 
 * [Prerequisite software](#prerequisite-software)
 * [Running tests](#running-tests)
 * [Formatting your source code](#formatting-your-source-code)
-* [Building LokiJS](#building-lokijs)
+* [Building LokiDB](#building-lokidb)
 
-See the [contribution guidelines][contribution] if you'd like to contribute to LokiJS.
+See the [contribution guidelines][contribution] if you'd like to contribute to LokiDB.
 
 ## Prerequisite software
 
-Before you can build and test LokiJS, you must install and configure the
+Before you can build and test LokiDB, you must install and configure the
 following products on your development machine:
 
 * [Git](http://git-scm.com) and/or the **GitHub app** (for [Mac](http://mac.github.com) or
@@ -24,14 +24,14 @@ following products on your development machine:
   We also use Node's Package Manager, `npm`(version `>=4.0.0`), which comes with Node.
   Depending on your system, you can install Node either from source or as a pre-packaged bundle.
 
-* [Elasticsearch](https://www.elastic.co/downloads/elasticsearch) which is used to unit test LokiJS's full text search.
+* [Elasticsearch](https://www.elastic.co/downloads/elasticsearch) which is used to unit test LokiDB's full text search.
 
 ## Running tests
 
 To run tests:
 
 ```shell
-$ npm run test            # Run all LokiJS tests
+$ npm run test            # Run all LokiDB tests
 
 $ npm run test:web        # Run tests only in web browser
 $ npm run test:node       # Run tests only in node
@@ -41,7 +41,7 @@ All the tests are executed on our Continuous Integration infrastructure and a PR
 
 ## Formatting your source code
 
-LokiJS uses [ESLint][eslint] to format the source code. If the source code is not properly formatted, the CI will fail and the PR can not be merged.
+LokiDB uses [ESLint][eslint] to format the source code. If the source code is not properly formatted, the CI will fail and the PR can not be merged.
 
 You can check that your code is properly formatted and adheres to coding style by running:
 
@@ -55,13 +55,13 @@ You can automatically format your code by running:
 $ npm run lint:fix
 ```
 
-## Building LokiJS
+## Building LokiDB
 
-To build LokiJS, run:
+To build LokiDB, run:
 
 ``` shell
 $ npm run build
 ```
 
 [eslint]: https://eslint.org/
-[contribution]: https://github.com/LokiJS-Forge/LokiJS2/blob/master/CONTRIBUTING.md
+[contribution]: https://github.com/LokiJS-Forge/LokiDB/blob/master/CONTRIBUTING.md

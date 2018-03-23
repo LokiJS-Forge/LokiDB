@@ -11,7 +11,7 @@ ISSUES MISSING IMPORTANT INFORMATION MAY BE CLOSED WITHOUT INVESTIGATION.
 [ ] Bug report  <!-- Please search GitHub for a similar issue or PR before submitting -->
 [ ] Feature request
 [ ] Documentation issue or request
-[ ] Support request => Please do not submit support request here, instead see https://github.com/LokiJS-Forge/LokiJS2/blob/master/CONTRIBUTING.md#question
+[ ] Support request => Please do not submit support request here, instead see https://github.com/LokiJS-Forge/LokiDB/blob/master/CONTRIBUTING.md#question
 </code></pre>
 
 ## Current behavior
@@ -34,8 +34,8 @@ For bug reports please provide the *STEPS TO REPRODUCE* and if possible a *MINIM
 ## Environment
 
 <pre><code>
-LokiJS version: X.Y.Z
-<!-- Check whether this is still an issue in the most recent LokiJS version -->
+LokiDB version: X.Y.Z
+<!-- Check whether this is still an issue in the most recent LokiDB version -->
 
 Browser/Node version: Browser X.Y.Z.
 

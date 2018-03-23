@@ -1,7 +1,7 @@
-[![Build Status](https://travis-ci.org/LokiJS-Forge/LokiJS2.svg?branch=master)](https://travis-ci.org/LokiJS-Forge/LokiJS2)
-[![Coverage Status](https://coveralls.io/repos/github/LokiJS-Forge/LokiJS2/badge.svg?branch=feature%2Fadd_build_system)](https://coveralls.io/github/LokiJS-Forge/LokiJS2?branch=feature%2Fadd_build_system)
+[![Build Status](https://travis-ci.org/LokiJS-Forge/LokiDB.svg?branch=master)](https://travis-ci.org/LokiJS-Forge/LokiDB)
+[![Coverage Status](https://coveralls.io/repos/github/LokiJS-Forge/LokiDB/badge.svg?branch=feature%2Fadd_build_system)](https://coveralls.io/github/LokiJS-Forge/LokiDB?branch=feature%2Fadd_build_system)
 
-# Welcome to LokiJS2
+# Welcome to LokiDB
 
 
 Checkout our [API Reference](api/index.html).
