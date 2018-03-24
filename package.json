@@ -5,12 +5,12 @@
   "author": "Various authors",
   "license": "(MIT OR Apache-2.0)",
   "scripts": {
-    "lint": "tslint -p 'tsconfig.json' -c 'config/tslint.json'",
-    "lint:fix": "tslint -p 'tsconfig.json' -c 'config/tslint.json' --fix",
+    "lint": "tslint -p \"tsconfig.json\" -c \"config/tslint.json\"",
+    "lint:fix": "tslint -p \"tsconfig.json\" -c \"config/tslint.json\" --fix",
     "test": "npm run test:web && npm run test:node && npm run coverage",
     "test:web": "karma start config/karma.config.js --single-run",
     "test:web:watch": "karma start config/karma.config.js",
-    "test:node": "nyc --report-dir coverage/node jasmine --config='config/jasmine.json'",
+    "test:node": "nyc --report-dir coverage/node jasmine --config=\"config/jasmine.json\"",
     "coverage": "istanbul report html lcov json text-summary",
     "docs": "typedoc packages/",
     "build": "node config/build.js"

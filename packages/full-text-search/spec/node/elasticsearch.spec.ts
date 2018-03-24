@@ -132,13 +132,21 @@ describe("Compare scoring against elasticsearch", () => {
 
   let client = new Client({
     host: "localhost:9200",
-    log: "warning"
+    log: "error"
   });
+
+  // Flag to skip tests if elasticsearch is not available.
+  let es_not_available = false;
 
   let fts = initFTS();
   let es = initES();
 
   beforeEach((done) => {
+    if (es_not_available) {
+      es.catch(() => {});
+      done();
+      return;
+    }
     es.then(() => {
       return client.info({});
     }).then((body: any) => {
@@ -155,6 +163,10 @@ describe("Compare scoring against elasticsearch", () => {
   for (let i = 0; i < QUERIES.length; i++) {
     let query: any = QUERIES[i];
     it(" -> " + i + ": " + JSON.stringify(query), (done) => {
+      if (es_not_available) {
+        done();
+        return;
+      }
       client.search({
         index: INDEX_NAME,
         type: INDEX_TYPE,
@@ -260,6 +272,10 @@ describe("Compare scoring against elasticsearch", () => {
         return Promise.all(DATA.map(createAction)).then(() => {
           return client.indices.refresh({index: INDEX_NAME});
         });
+      }).catch((e) => {
+        if (e.message === "No Living connections") {
+          es_not_available = true;
+        }
       });
     }
   }
