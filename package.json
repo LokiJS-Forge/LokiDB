@@ -38,6 +38,7 @@
     "@types/node": "^8.9.4",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
     "babel-register": "^6.26.0",
+    "cash": "^0.8.0",
     "conventional-changelog": "^1.1.15",
     "coveralls": "^2.13.3",
     "elasticsearch": "^13.3.1",

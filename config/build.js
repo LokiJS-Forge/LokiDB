@@ -3,6 +3,8 @@
 
 const {spawn, spawnSync} = require("child_process");
 const fs = require("fs");
+const cash = require("cash");
+const path = require("path");
 const process = require("process");
 const stream = require("stream");
 const conventionalChangelog = require("conventional-changelog");
@@ -144,7 +146,7 @@ function merge() {
 }
 
 function build() {
-  const UGLIFYJS = `${ROOT_DIR}/node_modules/uglify-es/bin/uglifyjs`;
+  const UGLIFYJS = path.join(ROOT_DIR, "node_modules", "uglify-es", "bin", "uglifyjs");
 
   print(`====== BUILDING: Version ${VERSION} (${CURRENT_COMMIT})`);
 
@@ -152,49 +154,61 @@ function build() {
 
   for (const PACKAGE of PACKAGES) {
 
-    const SRC_DIR = `${ROOT_DIR}/packages/${PACKAGE}/`;
-    const OUT_DIR = `${ROOT_DIR}/dist/packages/${PACKAGE}/`;
-    const NPM_DIR = `${ROOT_DIR}/dist/packages-dist/${PACKAGE}/`;
-    const FILENAME = `lokidb.${PACKAGE}.js`;
-    const FILENAME_MINIFIED = `lokidb.${PACKAGE}.min.js`;
+    const SRC_DIR = path.join(ROOT_DIR, "packages", PACKAGE);
+    const SRC_PACKAGE_JSON = path.join(SRC_DIR, "package.json");
+    const SRC_WEBPACK_CONFIG = path.join(SRC_DIR, "webpack.config.js");
+    const OUT_DIR = path.join(ROOT_DIR, "dist", "packages", PACKAGE);
+    const OUT_DIR_FILENAME = path.join(OUT_DIR, `lokidb.${PACKAGE}.js`);
+    const OUT_DIR_FILENAME_MINIFIED = path.join(OUT_DIR, `lokidb.${PACKAGE}.min.js`);
+    const NPM_DIR = path.join(ROOT_DIR, "dist", "packages-dist", PACKAGE);
+    const NPM_PACKAGE_JSON = path.join(NPM_DIR, "package.json");
 
     print(`======      [${PACKAGE}]: PACKING    =====`);
     remove_dir(OUT_DIR);
 
-    run("webpack", [`--config=${SRC_DIR}/webpack.config.js`, `--output-path=${OUT_DIR}`]);
+    run("webpack", ["--config=" + SRC_WEBPACK_CONFIG, "--output-path=" + OUT_DIR]);
 
     // Update script tag export of UMD to use default module export.
-    // Get script tag export.
-    let script = run("grep", ["-n", "root\\[.*] = factory(", OUT_DIR + "/" + FILENAME])[1].toString();
-    let library_name = script.match(/root\["@lokidb\/(.+?)"/)[1];
-    // Transform library name to Loki<LibraryName>.
-    let simple_name = library_name.replace(/(?:-|^)([a-z])/ig, ( all, letter ) => {
-      return letter.toUpperCase();
-    });
-    if (!simple_name.startsWith("Loki")) {
-      simple_name = "Loki" + simple_name;
-    }
+    {
+      const bundle = fs.readFileSync(OUT_DIR_FILENAME).toString();
 
-    // Get line number of script tag.
-    const ln = script.match(/(\d+).*/)[1];
-    // Add simple name as default export.
-    run("sed", ["-i", "-E",
-      `${ln}s/(.+);/{\\1; root["${simple_name}"] = root["@lokidb\\/${library_name}"].default;}/`,
-      `${OUT_DIR}/${FILENAME}`]);
+      // Split on script export of UMD.
+      const script_start = bundle.search(/root\[.+] = factory.+\);/);
+      const script_end = script_start + bundle.slice(script_start).indexOf(";") + 1;
+
+      const umd_part = bundle.slice(0, script_start);
+      let script_part = bundle.slice(script_start, script_end);
+      const library_part = bundle.slice(script_end);
+
+      // Update script tag export of UMD to use default module export.
+      let library_name = script_part.match(/root\["@lokidb\/(.+?)"/)[1];
+      // Transform library name to Loki<LibraryName>.
+      let simple_name = library_name.replace(/(?:-|^)([a-z])/ig, (all, letter) => {
+        return letter.toUpperCase();
+      });
+      if (!simple_name.startsWith("Loki")) {
+        simple_name = "Loki" + simple_name;
+      }
+
+      // Add default export to script.
+      script_part = `{ ${script_part} root["${simple_name}"] = root["@lokidb/${library_name}"].default; }`;
+      fs.writeFileSync(OUT_DIR_FILENAME, umd_part + script_part + library_part);
+    }
 
     print(`======      [${PACKAGE}]: BUNDLING   =====`);
     remove_dir(NPM_DIR);
     make_dir(NPM_DIR);
 
-    run("rsync", ["-a", OUT_DIR, NPM_DIR]);
-    run("rsync", ["-am", "--include=package.json", "--include=*/", "--exclude=*", SRC_DIR, NPM_DIR]);
-    run("cp", [README, NPM_DIR]);
+    // Copy files to dist and npm dist.
+    copy(OUT_DIR, NPM_DIR, true);
+    copy(SRC_PACKAGE_JSON, NPM_DIR);
+    copy(README, NPM_DIR);
 
     print(`======      [${PACKAGE}]: MINIFY     =====`);
-    run(UGLIFYJS, [`${OUT_DIR}/${FILENAME}`, "--output", `${OUT_DIR}/${FILENAME_MINIFIED}`]);
+    run("node", [UGLIFYJS, OUT_DIR_FILENAME, "--output", OUT_DIR_FILENAME_MINIFIED]);
 
     print(`======      [${PACKAGE}]: VERSIONING =====`);
-    const data = fs.readFileSync(`${NPM_DIR}/package.json`);
+    const data = fs.readFileSync(NPM_PACKAGE_JSON);
     let json = JSON.parse(data);
     json.version = VERSION;
     // Update version of other needed LokiDB packages
@@ -212,7 +226,7 @@ function build() {
         }
       }
     }
-    fs.writeFileSync(`/${NPM_DIR}/package.json`, JSON.stringify(json, null, 2));
+    fs.writeFileSync(NPM_PACKAGE_JSON, JSON.stringify(json, null, 2));
   }
 }
 
@@ -349,6 +363,9 @@ function fetch_all() {
 }
 
 function run(command, args = [], object = {}) {
+  if (!object.hasOwnProperty("shell")) {
+    object.shell = true;
+  }
   const child = spawnSync(command, args, object);
   if (child.status !== 0) {
     throw Error("Process failed: " + command + " " + args.join(" ") + "\n"
@@ -357,12 +374,16 @@ function run(command, args = [], object = {}) {
   return child.output;
 }
 
+function copy(src, dst, recursive = false) {
+  cash.cp(`${src} ${dst}`, {recursive: recursive});
+}
+
 function remove_dir(path) {
-  run("rm", ["-rf", path]);
+  cash.rm(path, {recursive: true});
 }
 
 function make_dir(path) {
-  run("mkdir", ["-p", path]);
+  cash.mkdir(path, {parents: true});
 }
 
 function print(txt, lb = "\n") {
