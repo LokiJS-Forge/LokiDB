@@ -21,16 +21,16 @@ extra_javascript:
   - js/codemirror/addon/fold/foldgutter.js
   - js/codemirror/addon/edit/matchbrackets.js
   - js/codemirror/mode/javascript/javascript.js
-  - js/@lokijs/lokijs.fs-storage.min.js
-  - js/@lokijs/lokijs.full-text-search.min.js
-  - js/@lokijs/lokijs.full-text-search-language.min.js
-  - js/@lokijs/lokijs.full-text-search-language-de.min.js
-  - js/@lokijs/lokijs.full-text-search-language-en.min.js
-  - js/@lokijs/lokijs.indexed-storage.min.js
-  - js/@lokijs/lokijs.local-storage.min.js
-  - js/@lokijs/lokijs.loki.min.js
-  - js/@lokijs/lokijs.memory-storage.min.js
-  - js/@lokijs/lokijs.partitioning-adapter.min.js
+  - js/@lokidb/lokidb.fs-storage.min.js
+  - js/@lokidb/lokidb.full-text-search.min.js
+  - js/@lokidb/lokidb.full-text-search-language.min.js
+  - js/@lokidb/lokidb.full-text-search-language-de.min.js
+  - js/@lokidb/lokidb.full-text-search-language-en.min.js
+  - js/@lokidb/lokidb.indexed-storage.min.js
+  - js/@lokidb/lokidb.local-storage.min.js
+  - js/@lokidb/lokidb.loki.min.js
+  - js/@lokidb/lokidb.memory-storage.min.js
+  - js/@lokidb/lokidb.partitioning-adapter.min.js
 
 
 theme: readthedocs

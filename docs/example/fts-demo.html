@@ -125,17 +125,9 @@
 
         // Create database.
         const loki = new Loki();
-        const tk = new LokiFullTextSearch.Tokenizer();
-        tk.setSplitter("whitespace", (str) => {
-          let tokens = str.split(/[^\S]+/);
-          for (let i = 0; i < tokens.length; i++) {
-            tokens[i] = tokens[i].toLowerCase();
-          }
-          return tokens;
-        });
 
         // Fill collection with empty data.
-        const coll = loki.addCollection("test", {fullTextSearch: [{field: "txt", tokenizer: tk}]});
+        const coll = loki.addCollection("test", {fullTextSearch: [{field: "txt"}]});
         for (let i = 0; i < 5; i++) {
           coll.insert({txt: ""});
         }

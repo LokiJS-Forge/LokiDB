@@ -1,8 +1,8 @@
 # Introduction
 
-LokiJS provides a fast and powerful open-source full-text search engine.
+LokiDB provides a fast and powerful open-source full-text search engine.
 
-The engine can be used with the LokiJS database to perform full-text
+The engine can be used with the LokiDB database to perform full-text
 searches over a collection. In addition, the combination enables an easy
 document and persistence management since this is already handled by the
 database itself.
@@ -94,7 +94,7 @@ Check out section [Analyzer](#analyzer) to control which and how words should be
 
 # Quick Start
 
-The library functionality can be imported with `import {<...>} from "@lokijs/full-text-search`.
+The library functionality can be imported with `import {<...>} from "@lokidb/full-text-search`.
 If the library is included directly with a html-script tag, the global variable `LokiFullTextSearch` is available.
 
 - FullTextSearch (default exported)
@@ -124,7 +124,7 @@ const result = fts.search(query);
 cout(result);
 ```
 
-## With LokiJS
+## With LokiDB
 
 ```javascript
 // Runnable code
@@ -198,7 +198,7 @@ const query = {
 }
 ```
 
-Via the property `$fts` the queries of the full-text search can be used in conjunction with the queries of LokiJS.
+Via the property `$fts` the queries of the full-text search can be used in conjunction with the queries of LokiDB.
 
 ```js
 // Finds all documents with the field age greater than 25
@@ -221,7 +221,7 @@ coll.find({
 Please note that the search time of a full-text search query will not decrease because of a reduced document selection
 from a previous query. Each query (if caching is disabled) will always browse the whole inverted index.
 
-As opposed to this, non-indexed queries (like LokiJS' queries) could speed up because of fewer documents after a
+As opposed to this, non-indexed queries (like LokiDB' queries) could speed up because of fewer documents after a
 full-text search query.
 
 # Scoring

@@ -145,6 +145,8 @@ function merge() {
     "prerelease": false
   };
   run("curl", ["--request", "POST", "--data", JSON.stringify(release),
+    `https://${GH_TOKEN}@api.github.com/repos/${TRAVIS_REPO_SLUG}/releases`]);
+}
 
 function update_documentation() {
   print("====== Update documentation");
@@ -157,10 +159,9 @@ function build() {
 
   print(`====== BUILDING: Version ${VERSION} (${CURRENT_COMMIT})`);
 
-  const README = `${ROOT_DIR}/README.md`;
-
-  const DOC_DIR = `${ROOT_DIR}/docs/js/@lokijs`;
-  mkdir(DOC_DIR);
+  const README = path.join(ROOT_DIR, "README.md");
+  const DOC_DIR = path.join(ROOT_DIR, "docs", "js", "@lokidb");
+  make_dir(DOC_DIR);
 
   for (const PACKAGE of PACKAGES) {
 
@@ -169,9 +170,11 @@ function build() {
     const SRC_WEBPACK_CONFIG = path.join(SRC_DIR, "webpack.config.js");
     const OUT_DIR = path.join(ROOT_DIR, "dist", "packages", PACKAGE);
     const OUT_DIR_FILENAME = path.join(OUT_DIR, `lokidb.${PACKAGE}.js`);
-    const OUT_DIR_FILENAME_MINIFIED = path.join(OUT_DIR, `lokidb.${PACKAGE}.min.js`);
+    const FILENAME_MINIFIED = `lokidb.${PACKAGE}.min.js`;
+    const OUT_DIR_FILENAME_MINIFIED = path.join(OUT_DIR, FILENAME_MINIFIED);
     const NPM_DIR = path.join(ROOT_DIR, "dist", "packages-dist", PACKAGE);
     const NPM_PACKAGE_JSON = path.join(NPM_DIR, "package.json");
+    const DOC_DIR_FILENAME_MINIFIED = path.join(DOC_DIR, FILENAME_MINIFIED);
 
     print(`======      [${PACKAGE}]: PACKING    =====`);
     remove_dir(OUT_DIR);
@@ -216,8 +219,7 @@ function build() {
 
     print(`======      [${PACKAGE}]: MINIFY     =====`);
     run("node", [UGLIFYJS, OUT_DIR_FILENAME, "--output", OUT_DIR_FILENAME_MINIFIED]);
-    // Copy minified to docs.
-    catch.cp(OUT_DIR_FILENAME_MINIFIED, DOC_DIR_FILENAME_MINIFIED);
+    copy(OUT_DIR_FILENAME_MINIFIED, DOC_DIR_FILENAME_MINIFIED);
 
     print(`======      [${PACKAGE}]: VERSIONING =====`);
     const data = fs.readFileSync(NPM_PACKAGE_JSON);
