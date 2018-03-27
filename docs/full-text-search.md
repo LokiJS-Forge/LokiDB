@@ -75,12 +75,12 @@ Now the inverted index can be searched in different ways:
  * the fuzzy query *"pepers"* finds `peppers`
  * the term query *"betty"* finds nothing
 
-Section [Query types](#query types) explains all query types in detail.
+Section [Query types](#query-types) explains all query types in detail.
 
 In addition to this, the full-text search ranks the matching documents according to their relevance to a given query
-using the ranking function [Okapi BM25][BM25]. Take a look at section [Scoring](#scoring) for more information.
+using the ranking function [Okapi BM25][BM25]. Section [Scoring](#scoring) provides more information about this.
 
-Check out section [Analyzer](#analyzer) to control which and how words should be indexed.
+Section [Analyzer](#analyzer) explains how to control which words should be indexed.
 
 [Lucene]: https://lucene.apache.org/core/
 [Elasticsearch]: https://www.elastic.co/de/products/elasticsearch
@@ -96,9 +96,6 @@ Check out section [Analyzer](#analyzer) to control which and how words should be
 
 The library functionality can be imported with `import {<...>} from "@lokidb/full-text-search`.
 If the library is included directly with a html-script tag, the global variable `LokiFullTextSearch` is available.
-
-- FullTextSearch (default exported)
-- Tokenizer
 
 ## Standalone
 
@@ -160,7 +157,7 @@ cout(result);
 The full-text search queries are simple javascript objects following an easy to understand language specification
 similar to the [Query DSL of Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html).
 
-There exists two kinds of query clauses:
+There exist two kinds of query clauses:
 
 - Leaf query clauses look for a particular value in a particular field.
     - [Term query](api/interfaces/termquery.html)
@@ -172,11 +169,11 @@ There exists two kinds of query clauses:
     - [Exists query](api/interfaces/existsquery.html)
     - [Match all query](api/interfaces/matchallquery.html)
 - Compound query clauses wrap other leaf or compound queries and are used to combine multiple queries in a logical
-fashion, or to alter their behaviour.
+fashion, or to alter their behavior.
     - [Bool query](api/interfaces/boolquery.html)
     - [Constant score query](api/interfaces/constantscorequery.html)
 
-Apart from this the behaviour of the clauses depends on the used context:
+Apart from this, the behavior of the clauses depends on the used context:
 
 - The query context considers how well a clause matches a specific document using the calculated scoring.
 - The filter context only includes or excludes matching documents of a clause.
@@ -186,11 +183,11 @@ The example below shows the synergy of the query clauses and the query contexts.
 ```js
 const query = {
   query: {  // Indicates a query context.
-    bool: { // A compound query clauses.
-      must: [{ // Still query context.
+    bool: {  // A compound query clauses.
+      must: [{  // Still query context.
         type: "term", field: "name", value: "odin" // A leaf query clauses.
       }],
-      filter: [{   // Indicates a filter context.
+      filter: [{  // Indicates a filter context.
         type: "term", field: "username", value: "thor" // A leaf query clauses.
       }]
     }
@@ -209,7 +206,7 @@ coll.find({
   }, {
     $fts: {
       query: {
-        type: term,
+        type: "term",
         field: "name",
         value: "gungnir"
       }
@@ -219,9 +216,9 @@ coll.find({
 ```
 
 Please note that the search time of a full-text search query will not decrease because of a reduced document selection
-from a previous query. Each query (if caching is disabled) will always browse the whole inverted index.
+from a previous query. Each query (if [caching](#caching) is disabled) will always browse the whole inverted index.
 
-As opposed to this, non-indexed queries (like LokiDB' queries) could speed up because of fewer documents after a
+As opposed to this, non-indexed queries (like some LokiDB's queries) could speed up because of fewer documents after a
 full-text search query.
 
 # Scoring
@@ -239,20 +236,53 @@ properties described in the [API](api/interfaces/query.html).
 
 A given document string will be analyzed to extract only relevant tokens, which should be indexed.
 
-An analyser is the appropriate combination of:
+An analyzer is an appropriate combination of:
 
-- zero or more [characters filters](#character filters)
-- a [tokenizer](#tokenizer)
-- zero or more [token filters]
+- zero or more [characters filters](#character-filters)
+- one [tokenizer](#tokenizer)
+- zero or more [token filters](#token-filters)
 
-Available analyzer
+Available analyzers are:
 
-- English analyzer
-- German analyzer
+- [Standard analyzer](api/classes/standardanalyzer)
+- [English analyzer](api/globals.html#englishanalyzer)
+- [German analyzer](api/globals.html#germananalyzer)
+
+It is also possible to create a custom analyzer like shown below.
+
+```javascript
+// Runnable code
+const custom_analyzer = {
+  char_filter: [
+    // Exclude text inside parentheses.
+    (str) => str.replace(/\(.+?\)/, ""),
+  ],
+  // Split at underscores.
+  tokenizer: (str) => str.split("_"),
+  token_filter: [
+    // Make tokens lowercase.
+    LokiFullTextSearch.TokenFilter.lowercaseTokenFilter,
+    // Exclude the word "and".
+    (token) => token === "and" ? "" : token,
+    // "Loptr" is old norse for "Loki"
+    (token) => token === "loptr" ? "loki" : token
+  ]
+}
+
+const text = "Loptr_and_Balder(a true story)"
+
+const result = LokiFullTextSearch.Analyzer.analyze(custom_analyzer, text);
+cout(result);
+```
 
 ## Character filters
 
-TODO
+A character filter modifies a given string by adding, changing or removing characters.
+A typical example is a character filter to strip html tags:
+
+`"<p>Betty <i>Botter</i> some butter.</p>"` to `"Betty Botter some butter."`
+
+LokiDB does not provide any character filters yet.
 
 ## Tokenizer
 
@@ -261,17 +291,23 @@ whitespace:
 
 `"Betty Botter some butter."` to `["Betty", "Botter", "some", "butter."]`
 
-Available tokenizer:
+Available tokenizers are:
 
-- Whitespace tokenizer
-- Word tokenizer
+- [Whitespace tokenizer](whitespaceTokenizer)
+- Word tokenizer TODO?
 
 ## Token filters
 
-A token filter takes the tokens form a tokenizer and can modify tokens (e.g. lowercasing), delete token (e.g. remove
-stopwords) or add tokens (e.g. synonyms).
+A token filter takes the tokens form a tokenizer and can modify tokens (e.g. lowercasing), delete tokens (e.g. remove
+stopwords) or add tokens (e.g. synonyms). For example, the lowercase token filter:
 
-- LowercaseTokenFilter
+`["Betty", "Botter", "some", "butter."]` to `["betty", "botter", "some", "butter."]`
 
+Available token filters are:
 
+- [Lowercase token filter](api/globals.html#lowercasetokenfilter)
+- [Uppercase token filter](api/globals.html#uppercasetokenfilter)
 
+# Caching
+
+Coming soon.

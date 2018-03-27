@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/LokiJS-Forge/LokiDB.svg?branch=master)](https://travis-ci.org/LokiJS-Forge/LokiDB)
-[![Coverage Status](https://coveralls.io/repos/github/LokiJS-Forge/LokiDB/badge.svg?branch=feature%2Fadd_build_system)](https://coveralls.io/github/LokiJS-Forge/LokiDB?branch=feature%2Fadd_build_system)
+[![Coverage Status](https://coveralls.io/repos/github/LokiJS-Forge/LokiDB/badge.svg?branch=master)](https://coveralls.io/github/LokiJS-Forge/LokiDB?branch=master)
 
 # Welcome to LokiDB
 

@@ -162,11 +162,11 @@
             query: {query: {type: "wildcard", field: "txt", value: "", enable_scoring: true}},
           },
           fuzzy: {
-            hint: "Type a word misspelled...",
+            hint: "Type a misspelled word...",
             query: {query: {type: "fuzzy", field: "txt", value: "", fuzziness: 2, prefix_length: 0, extended: true}}
           },
           match: {
-            hint: "Type multiple words misspelled...",
+            hint: "Type multiple misspelled words...",
             query: {query: {type: "match", field: "txt", value: "", fuzziness: 2, prefix_length: 0, extended: true}}
           }
         };
