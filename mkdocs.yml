@@ -9,6 +9,7 @@ extra_css:
   - css/javascript_editor.css
   - css/codemirror/codemirror.css
   - css/codemirror/foldgutter.css
+  - vs/editor/editor.main.css
 
 extra_javascript:
   - js/auto-complete.js
@@ -31,6 +32,8 @@ extra_javascript:
   - js/@lokidb/lokidb.loki.min.js
   - js/@lokidb/lokidb.memory-storage.min.js
   - js/@lokidb/lokidb.partitioning-adapter.min.js
-
+  - vs/loader.js
+  - vs/editor/editor.main.nls.js
+  - vs/editor/editor.main.js
 
 theme: readthedocs

@@ -1,5 +1,7 @@
 # Introduction
 
+<div id="container" style="width:800px;height:600px;border:1px solid grey"> </div>
+
 LokiDB provides a fast and powerful open-source full-text search engine.
 
 The engine can be used with the LokiDB database to perform full-text

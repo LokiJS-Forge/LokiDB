@@ -3,6 +3,7 @@
 
 # Welcome to LokiDB
 
+<div id="container" style="width:800px;height:600px;border:1px solid grey"> </div>
 
 Checkout our [API Reference](api/index.html).
 
