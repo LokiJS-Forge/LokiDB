@@ -4,7 +4,7 @@ const path = require("path");
 module.exports = function (config) {
   const configuration = {
     frameworks: ["jasmine", "jasmine-matchers"],
-    browsers: ["Chrome"],
+    browsers: ["ChromeHeadless"],
     files: [
       {pattern: "../packages/*/spec/generic/**/*.spec.ts", watched: false},
       {pattern: "../packages/*/spec/web/**/*.spec.ts", watched: false}
