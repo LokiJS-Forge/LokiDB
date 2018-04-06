@@ -107,7 +107,7 @@ export class Loki extends LokiEventEmitter {
     this._throttledSaveRunning = null;
     this._throttledSavePending = null;
 
-    this.events = {
+    this._events = {
       "init": [],
       "loaded": [],
       "flushChanges": [],

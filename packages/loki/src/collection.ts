@@ -264,7 +264,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     this.cloneObjects = options.clone !== undefined ? options.clone : false;
 
     // .
-    this.asyncListeners = options.asyncListeners !== undefined ? options.asyncListeners : false;
+    this._asyncListeners = options.asyncListeners !== undefined ? options.asyncListeners : false;
 
     // .
     this.disableMeta = options.disableMeta !== undefined ? options.disableMeta : false;
@@ -311,7 +311,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     this._dynamicViews = [];
 
     // events
-    this.events = {
+    this._events = {
       "insert": [],
       "update": [],
       "pre-insert": [],
@@ -389,7 +389,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       _nestedProperties: this._nestedProperties,
       adaptiveBinaryIndices: this.adaptiveBinaryIndices,
       transactional: this.transactional,
-      asyncListeners: this.asyncListeners,
+      asyncListeners: this._asyncListeners,
       disableMeta: this.disableMeta,
       disableChangesApi: this.disableChangesApi,
       disableDeltaChangesApi: this.disableDeltaChangesApi,
@@ -408,7 +408,7 @@ export class Collection<TData extends object = object, TNested extends object = 
 
     coll.adaptiveBinaryIndices = obj.adaptiveBinaryIndices !== undefined ? (obj.adaptiveBinaryIndices === true) : false;
     coll.transactional = obj.transactional;
-    coll.asyncListeners = obj.asyncListeners;
+    coll._asyncListeners = obj.asyncListeners;
     coll.disableMeta = obj.disableMeta;
     coll.disableChangesApi = obj.disableChangesApi;
     coll.cloneObjects = obj.cloneObjects;
@@ -1060,9 +1060,9 @@ export class Collection<TData extends object = object, TNested extends object = 
 
       if (this.adaptiveBinaryIndices) {
         // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
-        const bIndices = this.binaryIndices;
-        for (const key in bIndices) {
-          this.adaptiveBinaryIndexUpdate(position, key);
+        const bIndices = Object.keys(this.binaryIndices) as (keyof (TData & TNested))[];
+        for (let i = 0; i < bIndices.length; i++) {
+          this.adaptiveBinaryIndexUpdate(position, bIndices[i]);
         }
       } else {
         this.flagBinaryIndexesDirty();
@@ -1143,8 +1143,9 @@ export class Collection<TData extends object = object, TNested extends object = 
 
       if (this.adaptiveBinaryIndices) {
         // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
-        for (const key in this.binaryIndices) {
-          this.adaptiveBinaryIndexInsert(addedPos, key);
+        const bIndices = Object.keys(this.binaryIndices) as (keyof (TData & TNested))[];
+        for (let i = 0; i < bIndices.length; i++) {
+          this.adaptiveBinaryIndexInsert(addedPos, bIndices[i]);
         }
       } else {
         this.flagBinaryIndexesDirty();
@@ -1236,8 +1237,9 @@ export class Collection<TData extends object = object, TNested extends object = 
 
       if (this.adaptiveBinaryIndices) {
         // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
-        for (const key in this.binaryIndices) {
-          this.adaptiveBinaryIndexRemove(position, key);
+        const bIndices = Object.keys(this.binaryIndices) as (keyof (TData & TNested))[];
+        for (let i = 0; i < bIndices.length; i++) {
+          this.adaptiveBinaryIndexRemove(position, bIndices[i]);
         }
       } else {
         this.flagBinaryIndexesDirty();

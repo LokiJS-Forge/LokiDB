@@ -17,7 +17,7 @@ export class Long {
    * @param {number} numBits - number of bits
    * @returns {Long} the long
    */
-  shiftRight(numBits: number): Long {
+  public shiftRight(numBits: number): Long {
     if ((numBits &= 63) === 0)
       return this;
     else if (numBits < 32)
@@ -31,7 +31,7 @@ export class Long {
    * @param {number} numBits - number of bits
    * @returns {Long} the long
    */
-  shiftLeft(numBits: number): Long {
+  public shiftLeft(numBits: number): Long {
     if ((numBits &= 63) === 0)
       return this;
     else if (numBits < 32)
@@ -45,7 +45,7 @@ export class Long {
    * @param {Long} other - the other Long
    * @returns {Long} the long
    */
-  and(other: Long): Long {
+  public and(other: Long): Long {
     return new Long(this._low & other._low, this._high & other._high);
   }
 
@@ -53,7 +53,7 @@ export class Long {
    * Converts the Long to a 32 bit integer, assuming it is a 32 bit integer.
    * @returns {number}
    */
-  toInt(): number {
+  public toInt(): number {
     return this._low;
   }
 }

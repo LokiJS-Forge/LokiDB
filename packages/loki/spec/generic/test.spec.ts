@@ -317,7 +317,7 @@ describe("loki", () => {
         }[];
       }
 
-      const dna = db.addCollection<ABC, { "children.someProperty": number }>("dnacoll", {
+      const dna = db.addCollection<ABC, { "children.someProperty": number[] }>("dnacoll", {
         nestedProperties: ["children.someProperty"]
       });
 
@@ -430,7 +430,7 @@ describe("loki", () => {
         }[];
       }
 
-      const dna = db.addCollection<ABC, { "children.someArray.someProperty": number }>("dnacoll",
+      const dna = db.addCollection<ABC, { "children.someArray.someProperty": number[] }>("dnacoll",
         {
           nestedProperties: ["children.someArray.someProperty"]
         });

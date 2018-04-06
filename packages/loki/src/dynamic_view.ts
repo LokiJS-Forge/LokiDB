@@ -24,26 +24,29 @@ import {Scorer} from "../../full-text-search/src/scorer";
  */
 export class DynamicView<TData extends object = object, TNested extends object = object> extends LokiEventEmitter {
 
+  public readonly name: string;
   private _collection: Collection<TData, TNested>;
   private _persistent: boolean;
   private _sortPriority: DynamicView.SortPriority;
   private _minRebuildInterval: number;
-  public name: string;
-  private _rebuildPending: boolean;
+  private _rebuildPending: boolean = false;
 
   private _resultSet: ResultSet<TData, TNested>;
-  private _resultData: Doc<TData & TNested>[];
-  private _resultDirty: boolean;
+  private _resultData: Doc<TData & TNested>[] = [];
+  private _resultDirty: boolean = false;
 
-  private _cachedResultSet: ResultSet<TData, TNested>;
+  private _cachedResultSet: ResultSet<TData, TNested> = null;
 
-  private _filterPipeline: DynamicView.Filter<TData, TNested>[];
+  // keep ordered filter pipeline
+  private _filterPipeline: DynamicView.Filter<TData, TNested>[] = [];
 
-  private _sortFunction: (lhs: Doc<TData & TNested>, rhs: Doc<TData & TNested>) => number;
-  private _sortCriteria: (keyof (TData & TNested) | [keyof (TData & TNested), boolean])[];
-  private _sortCriteriaSimple: { field: keyof (TData & TNested), options: boolean | ResultSet.SimpleSortOptions };
-  private _sortByScoring: boolean;
-  private _sortDirty: boolean;
+  // sorting member variables
+  // we only support one active search, applied using applySort() or applySimpleSort()
+  private _sortFunction: (lhs: Doc<TData & TNested>, rhs: Doc<TData & TNested>) => number = null;
+  private _sortCriteria: (keyof (TData & TNested) | [keyof (TData & TNested), boolean])[] = null;
+  private _sortCriteriaSimple: { field: keyof (TData & TNested), options: boolean | ResultSet.SimpleSortOptions } = null;
+  private _sortByScoring: boolean = null;
+  private _sortDirty: boolean = false;
 
   /**
    * Constructor.
@@ -59,6 +62,8 @@ export class DynamicView<TData extends object = object, TNested extends object =
     (
       {
         persistent: this._persistent = false,
+        // 'passive' will defer the sort phase until they call data(). (most efficient overall)
+        // 'active' will sort async whenever next idle. (prioritizes read speeds)
         sortPriority: this._sortPriority = "passive",
         minRebuildInterval: this._minRebuildInterval = 1
       } = options
@@ -66,32 +71,11 @@ export class DynamicView<TData extends object = object, TNested extends object =
 
     this._collection = collection;
     this.name = name;
-    this._rebuildPending = false;
-
-    // 'passive' will defer the sort phase until they call data(). (most efficient overall)
-    // 'active' will sort async whenever next idle. (prioritizes read speeds)
-
     this._resultSet = new ResultSet(collection);
-    this._resultData = [];
-    this._resultDirty = false;
-
-    this._cachedResultSet = null;
-
-    // keep ordered filter pipeline
-    this._filterPipeline = [];
-
-    // sorting member variables
-    // we only support one active search, applied using applySort() or applySimpleSort()
-    this._sortFunction = null;
-    this._sortCriteria = null;
-    this._sortCriteriaSimple = null;
-    this._sortByScoring = null;
-    this._sortDirty = false;
 
     // for now just have 1 event for when we finally rebuilt lazy view
     // once we refactor transactions, i will tie in certain transactional events
-
-    this.events = {
+    this._events = {
       "rebuild": []
     };
   }
@@ -106,7 +90,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
    * @returns {DynamicView} This dynamic view for further chained ops.
    * @fires DynamicView.rebuild
    */
-  _rematerialize({removeWhereFilters = false}): this {
+  private _rematerialize({removeWhereFilters = false}): this {
     this._resultData = [];
     this._resultDirty = true;
     this._resultSet = new ResultSet(this._collection);

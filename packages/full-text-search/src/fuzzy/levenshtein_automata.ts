@@ -18,7 +18,7 @@ export class LevenshteinAutomata {
   constructor(input: number[], editDistance: number) {
     this._word = input;
     this._editDistance = editDistance;
-    this._alphabet = [...new Set(this._word)].sort((a, b) => a - b) as any;
+    this._alphabet = [...new Set(this._word)].sort((a: number, b: number) => a - b);
 
     this._numRanges = 0;
     this._rangeLower = new Array(this._alphabet.length + 2);
@@ -53,7 +53,7 @@ export class LevenshteinAutomata {
    * Transforms the NDFA to a DFA.
    * @returns {Automaton}
    */
-  public toAutomaton() {
+  public toAutomaton(): Automaton {
     let automat = new Automaton();
     const range = 2 * this._editDistance + 1;
 
@@ -80,7 +80,7 @@ export class LevenshteinAutomata {
       const end = xpos + Math.min(this._word.length - xpos, range);
       for (let x = 0; x < this._alphabet.length; x++) {
         const ch = this._alphabet[x];
-        const cvec = this.getVector(ch, xpos, end);
+        const cvec = this._getVector(ch, xpos, end);
         const dest = this._description.transition(k, xpos, cvec);
 
         if (dest >= 0) {
@@ -102,7 +102,7 @@ export class LevenshteinAutomata {
     return automat;
   }
 
-  private getVector(x: number, pos: number, end: number) {
+  private _getVector(x: number, pos: number, end: number): number {
     let vector = 0;
     for (let i = pos; i < end; i++) {
       vector <<= 1;

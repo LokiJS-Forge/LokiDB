@@ -195,38 +195,38 @@ export class Lev2TParametricDescription extends ParametricDescription {
     if (position === this._w) {
       if (state < 3) {
         const loc = vector * 3 + state;
-        offset += this.unpack(offsetIncrs0, loc, 1);
-        state = this.unpack(toStates0, loc, 2) - 1;
+        offset += ParametricDescription.unpack(offsetIncrs0, loc, 1);
+        state = ParametricDescription.unpack(toStates0, loc, 2) - 1;
       }
     } else if (position === this._w - 1) {
       if (state < 5) {
         const loc = vector * 5 + state;
-        offset += this.unpack(offsetIncrs1, loc, 1);
-        state = this.unpack(toStates1, loc, 3) - 1;
+        offset += ParametricDescription.unpack(offsetIncrs1, loc, 1);
+        state = ParametricDescription.unpack(toStates1, loc, 3) - 1;
       }
     } else if (position === this._w - 2) {
       if (state < 13) {
         const loc = vector * 13 + state;
-        offset += this.unpack(offsetIncrs2, loc, 2);
-        state = this.unpack(toStates2, loc, 4) - 1;
+        offset += ParametricDescription.unpack(offsetIncrs2, loc, 2);
+        state = ParametricDescription.unpack(toStates2, loc, 4) - 1;
       }
     } else if (position === this._w - 3) {
       if (state < 28) {
         const loc = vector * 28 + state;
-        offset += this.unpack(offsetIncrs3, loc, 2);
-        state = this.unpack(toStates3, loc, 5) - 1;
+        offset += ParametricDescription.unpack(offsetIncrs3, loc, 2);
+        state = ParametricDescription.unpack(toStates3, loc, 5) - 1;
       }
     } else if (position === this._w - 4) {
       if (state < 45) {
         const loc = vector * 45 + state;
-        offset += this.unpack(offsetIncrs4, loc, 3);
-        state = this.unpack(toStates4, loc, 6) - 1;
+        offset += ParametricDescription.unpack(offsetIncrs4, loc, 3);
+        state = ParametricDescription.unpack(toStates4, loc, 6) - 1;
       }
     } else {
       if (state < 45) {
         const loc = vector * 45 + state;
-        offset += this.unpack(offsetIncrs5, loc, 3);
-        state = this.unpack(toStates5, loc, 6) - 1;
+        offset += ParametricDescription.unpack(offsetIncrs5, loc, 3);
+        state = ParametricDescription.unpack(toStates5, loc, 6) - 1;
       }
     }
 

@@ -1,38 +1,33 @@
 export type CloneMethod = "parse-stringify" | "deep" | "shallow" | "shallow-recurse-objects";
 
-function add(copy: any, key: any, value: any) {
+function add(copy: any, key: any, value: any): any {
   if (copy instanceof Array) {
     copy.push(value);
     return copy[copy.length - 1];
-  }
-  else if (copy instanceof Object) {
+  } else if (copy instanceof Object) {
     copy[key] = value;
     return copy[key];
   }
 }
 
-function walk(target: any, copy: any) {
+function walk(target: any, copy: any): void {
   for (let key in target) {
     let obj = target[key];
     if (obj instanceof Date) {
       let value = new Date(obj.getTime());
       add(copy, key, value);
-    }
-    else if (obj instanceof Function) {
+    } else if (obj instanceof Function) {
       let value = obj;
       add(copy, key, value);
-    }
-    else if (obj instanceof Array) {
+    } else if (obj instanceof Array) {
       let value: any[] = [];
       let last = add(copy, key, value);
       walk(obj, last);
-    }
-    else if (obj instanceof Object) {
+    } else if (obj instanceof Object) {
       let value = {};
       let last = add(copy, key, value);
       walk(obj, last);
-    }
-    else {
+    } else {
       let value = obj;
       add(copy, key, value);
     }
@@ -47,8 +42,7 @@ function walk(target: any, copy: any) {
 function deepCopy(target: any) {
   if (/number|string|boolean/.test(typeof target)) {
     return target;
-  }
-  if (target instanceof Date) {
+  } else if (target instanceof Date) {
     return new Date(target.getTime());
   }
 

@@ -161,10 +161,6 @@ export const LokiOps = {
     return b.test(a);
   },
 
-  $containsString(a: any, b: string): boolean {
-    return (typeof a === "string") && (a.indexOf(b) !== -1);
-  },
-
   $containsNone(a: any, b: any): boolean {
     return !LokiOps.$containsAny(a, b);
   },
@@ -277,10 +273,10 @@ const indexedOps = {
 export class ResultSet<TData extends object = object, TNested extends object = object> {
 
   public _collection: Collection<TData, TNested>;
-  public _filteredRows: number[];
-  public _filterInitialized: boolean;
+  public _filteredRows: number[] = [];
+  public _filterInitialized: boolean = false;
   // Holds the scoring result of the last full-text search.
-  private _scoring: Scorer.ScoreResults;
+  private _scoring: Scorer.ScoreResults = null;
 
   /**
    * Constructor.
@@ -289,17 +285,13 @@ export class ResultSet<TData extends object = object, TNested extends object = o
   constructor(collection: Collection<TData, TNested>) {
     // retain reference to collection we are querying against
     this._collection = collection;
-    this._filteredRows = [];
-    this._filterInitialized = false;
-    this._scoring = null;
   }
 
   /**
-   * reset() - Reset the ResultSet to its initial state.
-   *
+   * Reset the ResultSet to its initial state.
    * @returns {ResultSet} Reference to this ResultSet, for future chain operations.
    */
-  reset(): this {
+  public reset(): this {
     if (this._filteredRows.length > 0) {
       this._filteredRows = [];
     }
@@ -309,7 +301,6 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
   /**
    * Override of toJSON to avoid circular references
-   *
    */
   public toJSON(): ResultSet<TData, TNested> {
     const copy = this.copy();
@@ -943,38 +934,35 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     } else {
       throw new TypeError("Argument is not a stored view or a function");
     }
-    try {
-      // If the filteredRows[] is already initialized, use it
-      if (this._filterInitialized) {
-        let j = this._filteredRows.length;
 
-        while (j--) {
-          if (viewFunction(this._collection._data[this._filteredRows[j]]) === true) {
-            result.push(this._filteredRows[j]);
-          }
+    // If the filteredRows[] is already initialized, use it
+    if (this._filterInitialized) {
+      let j = this._filteredRows.length;
+
+      while (j--) {
+        if (viewFunction(this._collection._data[this._filteredRows[j]]) === true) {
+          result.push(this._filteredRows[j]);
         }
-
-        this._filteredRows = result;
-
-        return this;
       }
-      // otherwise this is initial chained op, work against data, push into filteredRows[]
-      else {
-        let k = this._collection._data.length;
 
-        while (k--) {
-          if (viewFunction(this._collection._data[k]) === true) {
-            result.push(k);
-          }
+      this._filteredRows = result;
+
+      return this;
+    }
+    // otherwise this is initial chained op, work against data, push into filteredRows[]
+    else {
+      let k = this._collection._data.length;
+
+      while (k--) {
+        if (viewFunction(this._collection._data[k]) === true) {
+          result.push(k);
         }
-
-        this._filteredRows = result;
-        this._filterInitialized = true;
-
-        return this;
       }
-    } catch (err) {
-      throw err;
+
+      this._filteredRows = result;
+      this._filterInitialized = true;
+
+      return this;
     }
   }
 
@@ -1080,7 +1068,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    * @param {function} updateFunction - User supplied updateFunction(obj) will be executed for each document object.
    * @returns {ResultSet} this ResultSet for further chain ops.
    */
-  update(updateFunction: (obj: Doc<TData & TNested>) => Doc<TData & TNested>): this {
+  public update(updateFunction: (obj: Doc<TData & TNested>) => Doc<TData & TNested>): this {
     // if this has no filters applied, we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       this._filteredRows = this._collection._prepareFullDocIndex();
@@ -1211,8 +1199,8 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method
    * @return {ResultSet}
    */
-  map<U extends object>(mapFun: (obj: Doc<TData & TNested>, index: number, array: Doc<TData & TNested>[]) => U,
-                        dataOptions?: ResultSet.DataOptions): ResultSet<U> {
+  public map<U extends object>(mapFun: (obj: Doc<TData & TNested>, index: number, array: Doc<TData & TNested>[]) => U,
+                               dataOptions?: ResultSet.DataOptions): ResultSet<U> {
     const data = this.data(dataOptions).map(mapFun);
     //return return a new ResultSet with no filters
     this._collection = new Collection("mappedData");
@@ -1236,6 +1224,11 @@ export namespace ResultSet {
     forceIndexIntersect?: boolean;
     useJavascriptSorting?: boolean;
   }
+
+  export type ContainsHelperType<R> =
+    R extends string ? string | string[] :
+      R extends any[] ? R[number] | R[number][] :
+        R extends object ? keyof R | (keyof R)[] : never;
 
   export type LokiOps<R> = {
     $eq?: R;
@@ -1270,13 +1263,11 @@ export namespace ResultSet {
   } | {
     $regex?: RegExp | string | [string, string] // string and [string, string] are better for serialization
   } | {
-    $containsString?: string;
+    $containsNone?: ContainsHelperType<R>;
   } | {
-    $containsNone?: R[] | R; // Only R if string.
+    $containsAny?: ContainsHelperType<R>;
   } | {
-    $containsAny?: R[] | R; // Only R if string.
-  } | {
-    $contains?: any; // ? R without array!
+    $contains?: ContainsHelperType<R>;
   } | {
     $type?: string;
   } | {
