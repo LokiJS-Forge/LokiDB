@@ -123,6 +123,7 @@ export class PartitioningAdapter implements StorageAdapter {
       if (++partition < this._dbref["_collections"].length) {
         return this._loadNextPartition(partition);
       }
+      return Promise.resolve();
     });
   }
 
@@ -170,6 +171,7 @@ export class PartitioningAdapter implements StorageAdapter {
         this._pageIterator.pageIndex++;
         return this._loadNextPage();
       }
+      return Promise.resolve();
     });
   }
 
@@ -219,6 +221,7 @@ export class PartitioningAdapter implements StorageAdapter {
         if (this._dirtyPartitions.length !== 0) {
           return this._saveNextPartition();
         }
+        return Promise.resolve();
       });
     }
 
@@ -233,6 +236,7 @@ export class PartitioningAdapter implements StorageAdapter {
       if (this._dirtyPartitions.length !== 0) {
         return this._saveNextPartition();
       }
+      return Promise.resolve();
     });
   }
 
@@ -260,6 +264,7 @@ export class PartitioningAdapter implements StorageAdapter {
         this._pageIterator.pageIndex++;
         return this._saveNextPage();
       }
+      return Promise.resolve();
     };
 
     if (coll._data.length === 0) {

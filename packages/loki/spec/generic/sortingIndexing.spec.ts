@@ -1,6 +1,5 @@
 /* global describe, beforeEach, it, expect */
 import {Loki} from "../../src/loki";
-import {Collection} from "../../src/collection";
 import {LokiOps} from "../../src/result_set";
 
 describe("sorting and indexing", () => {
@@ -136,7 +135,7 @@ describe("sorting and indexing", () => {
     const sortfun = (obj1: Sortable, obj2: Sortable) => {
       if (obj1.a === obj2.a) return 0;
       if (obj1.a > obj2.a) return 1;
-      if (obj1.a < obj2.a) return -1;
+      return -1;
     };
 
     const result = coll.chain().sort(sortfun).data();

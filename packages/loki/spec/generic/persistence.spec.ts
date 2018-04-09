@@ -2,7 +2,6 @@
 import {Loki} from "../../src/loki";
 import {MemoryStorage} from "../../../memory-storage/src/memory_storage";
 import {Collection} from "../../src/collection";
-import SerializationMethod = Loki.SerializationMethod;
 import {StorageAdapter} from "../../../common/types";
 
 interface AB {
@@ -420,7 +419,7 @@ describe("testing adapter functionality", () => {
         return Promise.resolve();
       }
 
-      deleteDatabase(name: string) {
+      deleteDatabase() {
         return Promise.resolve();
       }
 

@@ -3,7 +3,6 @@ import {UniqueIndex} from "./unique_index";
 import {ResultSet, LokiOps} from "./result_set";
 import {DynamicView} from "./dynamic_view";
 import {ltHelper, gtHelper, aeqHelper} from "./helper";
-import {Loki} from "./loki";
 import {clone, CloneMethod} from "./clone";
 import {Doc, Dict} from "../../common/types";
 import {FullTextSearch} from "../../full-text-search/src/full_text_search";

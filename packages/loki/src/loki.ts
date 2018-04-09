@@ -18,7 +18,6 @@ function getENV(): Loki.Environment {
     }
   }
 
-  const isBrowser = window !== undefined && ({}).toString.call(window) === "[object Window]";
   if (document !== undefined) {
     if (document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) {
       return "CORDOVA";
@@ -26,9 +25,11 @@ function getENV(): Loki.Environment {
     return "BROWSER";
   }
 
-  if (!isBrowser) {
-    throw SyntaxError("Unknown environment...");
+  const isBrowser = window !== undefined && ({}).toString.call(window) === "[object Window]";
+  if (isBrowser) {
+    return "BROWSER";
   }
+  throw SyntaxError("Unknown environment...");
 }
 
 export class Loki extends LokiEventEmitter {

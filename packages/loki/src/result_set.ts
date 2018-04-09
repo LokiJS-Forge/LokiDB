@@ -496,10 +496,10 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     }
 
     if (options.useJavascriptSorting) {
-      return this.sort((obj1, obj2) => {
+      return this.sort((obj1: TData & TNested, obj2: TData & TNested): number => {
         if (obj1[propname] === obj2[propname]) return 0;
         if (obj1[propname] > obj2[propname]) return 1;
-        if (obj1[propname] < obj2[propname]) return -1;
+        return -1;
       });
     }
 
@@ -762,7 +762,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     }
 
     // see if query object is in shorthand mode (assuming eq operator)
-    let operator;
+    let operator = "";
     if (queryObjectOp === null || (typeof queryObjectOp !== "object" || queryObjectOp instanceof Date)) {
       operator = "$eq";
       value = queryObjectOp;
@@ -821,7 +821,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
       let filter = this._filteredRows;
 
       if (property === "$fts") {
-        this._scoring = this._collection._fullTextSearch.search(query.$fts as FullTextSearchQuery);
+        this._scoring = this._collection._fullTextSearch.search(queryObject.$fts as FullTextSearchQuery);
         let keys = Object.keys(this._scoring);
         for (let i = 0; i < keys.length; i++) {
           if (filter.indexOf(+keys[i]) !== -1) {
@@ -852,7 +852,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     this._filterInitialized = true; // next time work against filteredRows[]
 
     if (property === "$fts") {
-      this._scoring = this._collection._fullTextSearch.search(query.$fts as FullTextSearchQuery);
+      this._scoring = this._collection._fullTextSearch.search(queryObject.$fts as FullTextSearchQuery);
       let keys = Object.keys(this._scoring);
       for (let i = 0; i < keys.length; i++) {
         result.push(+keys[i]);
@@ -994,7 +994,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     let removeMeta: boolean;
     (
       {
-        forceClones,
+        forceClones = false,
         forceCloneMethod = this._collection.cloneMethod,
         removeMeta = false
       } = options
@@ -1133,7 +1133,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    */
   public eqJoin(joinData: Collection<any> | ResultSet<any> | any[], leftJoinKey: string | ((obj: any) => string),
                 rightJoinKey: string | ((obj: any) => string), mapFun?: (left: any, right: any) => any,
-                dataOptions?: ResultSet.DataOptions): ResultSet<any> {
+                dataOptions?: ResultSet.DataOptions): ResultSet<any, any> {
     let rightData = [];
     let rightDataLength;
     let key;
