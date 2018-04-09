@@ -63,12 +63,14 @@ function getNestedPropertyValue(obj: object, path: string[], array: any[], pathI
  * @param <TNested> - nested properties of data type
  */
 export class Collection<TData extends object = object, TNested extends object = object> extends LokiEventEmitter {
-
+  // the name of the collection
   public name: string;
   // the data held by the collection
-  public _data: Doc<TData & TNested>[];
-  private idIndex: number[]; // index of id
-  public binaryIndices: { [P in keyof (TData & TNested)]?: Collection.BinaryIndex }; // user defined indexes
+  public _data: Doc<TData & TNested>[] = [];
+  // index of id
+  private idIndex: number[] = [];
+  // user defined indexes
+  public binaryIndices: { [P in keyof (TData & TNested)]?: Collection.BinaryIndex } = {}; // user defined indexes
 
   /**
    * Unique constraints contain duplicate object references, so they are not persisted.
@@ -77,27 +79,28 @@ export class Collection<TData extends object = object, TNested extends object = 
   public constraints: {
     unique: {
       [P in keyof (TData & TNested)]?: UniqueIndex<TData & TNested>;
-      }
-  };
+    }
+  } = {unique: {}};
 
   /**
    * Transforms will be used to store frequently used query chains as a series of steps which itself can be stored along
    * with the database.
    */
-  public transforms: Dict<Collection.Transform<TData, TNested>[]>;
+  public transforms: Dict<Collection.Transform<TData, TNested>[]> = {};
 
   /**
    * In autosave scenarios we will use collection level dirty flags to determine whether save is needed.
    * currently, if any collection is dirty we will autosave the whole database if autosave is configured.
    * Defaulting to true since this is called from addCollection and adding a collection should trigger save.
    */
-  public dirty: boolean;
+  public dirty: boolean = true;
 
+  // private holder for cached data
   private _cached: {
     index: number[];
     data: Doc<TData & TNested>[];
     binaryIndex: { [P in keyof (TData & TNested)]?: Collection.BinaryIndex };
-  };
+  } = null;
 
   /**
    * If set to true we will optimally keep indices 'fresh' during insert/update/remove ops (never dirty/never needs rebuild).
@@ -145,37 +148,36 @@ export class Collection<TData extends object = object, TNested extends object = 
   /**
    * Name of path of used nested properties.
    */
-  private _nestedProperties: { name: keyof TNested, path: string[] }[];
+  private _nestedProperties: { name: keyof TNested, path: string[] }[] = [];
 
   /**
    * Option to activate a cleaner daemon - clears "aged" documents at set intervals.
    */
-  public ttl: Collection.TTL;
+  public ttl: Collection.TTL = {
+    age: null,
+    ttlInterval: null,
+    daemon: null
+  };
 
-  private maxId: number;
-  private _dynamicViews: DynamicView<TData, TNested>[];
+  // currentMaxId - change manually at your own peril!
+  private maxId: number = 0;
+  private _dynamicViews: DynamicView<TData, TNested>[] = [];
 
   /**
    * Changes are tracked by collection and aggregated by the db.
    */
-  private changes: Collection.Change[];
+  private changes: Collection.Change[] = [];
 
   /* assign correct handler based on ChangesAPI flag */
   private insertHandler: (obj: Doc<TData>) => void;
   private updateHandler: (obj: Doc<TData>, old: Doc<TData>) => void;
 
-  public console: {
-    log(...args: any[]): void;
-    warn(...args: any[]): void;
-    error(...args: any[]): void;
-  };
-
   /**
    * stages: a map of uniquely identified 'stages', which hold copies of objects to be
    * manipulated without affecting the data in the original collection
    */
-  private stages: object;
-  private commitLog: { timestamp: number; message: string; data: any }[];
+  private stages: object = {};
+  private commitLog: { timestamp: number; message: string; data: any }[] = [];
 
   public _fullTextSearch: FullTextSearch;
 
@@ -217,22 +219,6 @@ export class Collection<TData extends object = object, TNested extends object = 
 
     // the name of the collection
     this.name = name;
-    // the data held by the collection
-    this._data = [];
-    this.idIndex = []; // index of id
-    this.binaryIndices = {}; // user defined indexes
-    this.constraints = {
-      unique: {}
-    };
-
-    // .
-    this.transforms = {};
-
-    // .
-    this.dirty = true;
-
-    // private holder for cached data
-    this._cached = null;
 
     /* OPTIONS */
     // exact match and unique constraints
@@ -284,7 +270,6 @@ export class Collection<TData extends object = object, TNested extends object = 
     this.serializableIndices = options.serializableIndices !== undefined ? options.serializableIndices : true;
 
     // .
-    this._nestedProperties = [];
     if (options.nestedProperties != undefined) {
       for (let i = 0; i < options.nestedProperties.length; i++) {
         const nestedProperty = options.nestedProperties[i];
@@ -296,18 +281,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       }
     }
 
-    //
-    this.ttl = {
-      age: null,
-      ttlInterval: null,
-      daemon: null
-    };
     this.setTTL(options.ttl || -1, options.ttlInterval);
-
-    // currentMaxId - change manually at your own peril!
-    this.maxId = 0;
-
-    this._dynamicViews = [];
 
     // events
     this._events = {
@@ -321,9 +295,6 @@ export class Collection<TData extends object = object, TNested extends object = 
       "delete": [],
       "warning": []
     };
-
-    // .
-    this.changes = [];
 
     // initialize the id index
     this._ensureId();
@@ -349,29 +320,8 @@ export class Collection<TData extends object = object, TNested extends object = 
       }
     });
 
-    this.on("warning", (warning: string) => {
-      this.console.warn(warning);
-    });
-
     // for de-serialization purposes
     this.flushChanges();
-
-    this.console = {
-      log() {
-      },
-      warn() {
-      },
-      error() {
-      }
-    };
-
-    /* ------ STAGING API -------- */
-    /**
-     * stages: a map of uniquely identified 'stages', which hold copies of objects to be
-     * manipulated without affecting the data in the original collection
-     */
-    this.stages = {};
-    this.commitLog = [];
   }
 
   toJSON(): Collection.Serialized {
@@ -1080,7 +1030,6 @@ export class Collection<TData extends object = object, TNested extends object = 
       this.emit("update", doc, this.cloneObjects || !this.disableDeltaChangesApi ? clone(oldInternal, this.cloneMethod) : null);
     } catch (err) {
       this.rollback();
-      this.console.error(err.message);
       this.emit("error", err);
       throw (err); // re-throw error so user does not think it succeeded
     }
@@ -1161,7 +1110,6 @@ export class Collection<TData extends object = object, TNested extends object = 
       return (this.cloneObjects) ? (clone(newDoc, this.cloneMethod)) : (newDoc);
     } catch (err) {
       this.rollback();
-      this.console.error(err.message);
       this.emit("error", err);
       throw (err); // re-throw error so user does not think it succeeded
     }
@@ -1180,7 +1128,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       }
     } catch (err) {
       this.rollback();
-      this.console.error(err.message);
+      throw err;
     }
   }
 
@@ -1261,9 +1209,8 @@ export class Collection<TData extends object = object, TNested extends object = 
       delete doc.meta;
     } catch (err) {
       this.rollback();
-      this.console.error(err.message);
       this.emit("error", err);
-      return null;
+      throw err;
     }
   }
 
