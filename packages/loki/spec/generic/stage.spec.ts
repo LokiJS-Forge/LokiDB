@@ -45,6 +45,6 @@ describe("Staging and commits", () => {
     expect(cohen.name).toEqual("Cohen Brothers");
     directors.commitStage(stageName, message);
     expect(directors.get(cohen.$loki).name).toEqual("Joel and Ethan Cohen");
-    expect(directors["commitLog"][0].message).toEqual(message);
+    expect(directors["_commitLog"][0].message).toEqual(message);
   });
 });

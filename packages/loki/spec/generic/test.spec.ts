@@ -652,30 +652,30 @@ describe("loki", () => {
         adaptiveBinaryIndices: false
       });
 
-      let hasIdx = ilc.binaryIndices.hasOwnProperty("testid");
+      let hasIdx = ilc._binaryIndices.hasOwnProperty("testid");
       expect(hasIdx).toEqual(false);
 
       ilc.ensureIndex("testid");
-      hasIdx = ilc.binaryIndices.hasOwnProperty("testid");
+      hasIdx = ilc._binaryIndices.hasOwnProperty("testid");
       expect(hasIdx).toEqual(true);
-      expect(ilc.binaryIndices.testid.dirty).toEqual(false);
-      expect(ilc.binaryIndices.testid.values).toEqual([]);
+      expect(ilc._binaryIndices.testid.dirty).toEqual(false);
+      expect(ilc._binaryIndices.testid.values).toEqual([]);
 
       ilc.insert({
         "testid": 5
       });
-      expect(ilc.binaryIndices.testid.dirty).toEqual(true);
+      expect(ilc._binaryIndices.testid.dirty).toEqual(true);
       ilc.insert({
         "testid": 8
       });
-      expect(ilc.binaryIndices.testid.values).toEqual([]);
-      expect(ilc.binaryIndices.testid.dirty).toEqual(true);
+      expect(ilc._binaryIndices.testid.values).toEqual([]);
+      expect(ilc._binaryIndices.testid.dirty).toEqual(true);
 
       ilc.find({
         "testid": 8
       }); // should force index build
-      expect(ilc.binaryIndices.testid.dirty).toEqual(false);
-      expect(ilc.binaryIndices.testid.values.length).toEqual(2);
+      expect(ilc._binaryIndices.testid.dirty).toEqual(false);
+      expect(ilc._binaryIndices.testid.values.length).toEqual(2);
     });
   });
 

@@ -361,7 +361,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
   public transform(transform: string | Collection.Transform<TData, TNested>[], parameters?: object): this {
     // if transform is name, then do lookup first
     if (typeof transform === "string") {
-      transform = this._collection.transforms[transform];
+      transform = this._collection._transforms[transform];
     }
 
     if (parameters !== undefined) {
@@ -466,7 +466,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
     // If already filtered, but we want to leverage binary index on sort.
     // This will use custom array intection algorithm.
-    if (!options.disableIndexIntersect && this._collection.binaryIndices.hasOwnProperty(propname)
+    if (!options.disableIndexIntersect && this._collection._binaryIndices.hasOwnProperty(propname)
       && this._filterInitialized) {
 
       const eff = this._collection._data.length / this._filteredRows.length;
@@ -483,7 +483,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
           io[this._filteredRows[i]] = true;
         }
         // grab full sorted binary index array and filter by existing results
-        this._filteredRows = this._collection.binaryIndices[propname].values.filter((n: string) => {
+        this._filteredRows = this._collection._binaryIndices[propname].values.filter((n: string) => {
           return io[n];
         });
 
@@ -506,11 +506,11 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     // if this has no filters applied, just we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       // if we have a binary index and no other filters applied, we can use that instead of sorting (again)
-      if (this._collection.binaryIndices[propname] !== undefined) {
+      if (this._collection._binaryIndices[propname] !== undefined) {
         // make sure index is up-to-date
         this._collection.ensureIndex(propname as keyof TData);
         // copy index values into filteredRows
-        this._filteredRows = this._collection.binaryIndices[propname].values.slice(0);
+        this._filteredRows = this._collection._binaryIndices[propname].values.slice(0);
 
         if (options.desc) {
           this._filteredRows.reverse();
@@ -792,12 +792,12 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     const doIndexCheck = !this._filterInitialized;
 
     let searchByIndex = false;
-    if (doIndexCheck && this._collection.binaryIndices[property] && indexedOps[operator]) {
+    if (doIndexCheck && this._collection._binaryIndices[property] && indexedOps[operator]) {
       // this is where our lazy index rebuilding will take place
       // basically we will leave all indexes dirty until we need them
       // so here we will rebuild only the index tied to this property
       // ensureIndex() will only rebuild if flagged as dirty since we are not passing force=true param
-      if (this._collection.adaptiveBinaryIndices !== true) {
+      if (this._collection._adaptiveBinaryIndices !== true) {
         this._collection.ensureIndex(property);
       }
       searchByIndex = true;
@@ -828,9 +828,9 @@ export class ResultSet<TData extends object = object, TNested extends object = o
             result.push(+keys[i]);
           }
         }
-      } else if (this._collection.constraints.unique[property] !== undefined && operator === "$eq") {
+      } else if (this._collection._constraints.unique[property] !== undefined && operator === "$eq") {
         // Use unique constraint for search.
-        let row = this._collection.constraints.unique[property].get(value);
+        let row = this._collection._constraints.unique[property].get(value);
         if (filter.indexOf(row) !== -1) {
           result.push(row);
         }
@@ -861,8 +861,8 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     }
 
     // Use unique constraint for search.
-    if (this._collection.constraints.unique[property] !== undefined && operator === "$eq") {
-      result.push(this._collection.constraints.unique[property].get(value));
+    if (this._collection._constraints.unique[property] !== undefined && operator === "$eq") {
+      result.push(this._collection._constraints.unique[property].get(value));
       return this;
     }
 
@@ -880,7 +880,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
       return this;
     }
 
-    let index = this._collection.binaryIndices[property];
+    let index = this._collection._binaryIndices[property];
     if (operator !== "$in") {
       // search by index
       const segm = this._collection.calculateRange(operator, property, value);
@@ -995,7 +995,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     (
       {
         forceClones = false,
-        forceCloneMethod = this._collection.cloneMethod,
+        forceCloneMethod = this._collection._cloneMethod,
         removeMeta = false
       } = options
     );
@@ -1012,7 +1012,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     }
 
     // if collection has delta changes active, then force clones and use CloneMethod.DEEP for effective change tracking of nested objects
-    if (!this._collection.disableDeltaChangesApi) {
+    if (!this._collection._disableDeltaChangesApi) {
       forceClones = true;
       forceCloneMethod = "deep";
     }
@@ -1021,7 +1021,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     if (!this._filterInitialized) {
       if (this._filteredRows.length === 0) {
         // determine whether we need to clone objects or not
-        if (this._collection.cloneObjects || forceClones) {
+        if (this._collection._cloneObjects || forceClones) {
           method = forceCloneMethod;
 
           for (let i = 0; i < data.length; i++) {
@@ -1045,7 +1045,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     }
 
     const fr = this._filteredRows;
-    if (this._collection.cloneObjects || forceClones) {
+    if (this._collection._cloneObjects || forceClones) {
       method = forceCloneMethod;
       for (let i = 0; i < fr.length; i++) {
         obj = this._collection._defineNestedProperties(clone(data[fr[i]], method));

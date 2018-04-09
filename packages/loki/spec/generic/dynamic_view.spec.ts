@@ -305,7 +305,7 @@ describe("dynamicviews", () => {
       const db = new Loki("testCollections");
       db.initializePersistence({adapter: mem})
         .then(() => {
-          expect(db.getName()).toEqual("testCollections");
+          expect(db.filename).toEqual("testCollections");
 
           const t = db.addCollection<any>("test1", {
             transactional: true

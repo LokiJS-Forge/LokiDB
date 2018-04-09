@@ -68,15 +68,15 @@ export class Collection<TData extends object = object, TNested extends object = 
   // the data held by the collection
   public _data: Doc<TData & TNested>[] = [];
   // index of id
-  private idIndex: number[] = [];
+  private _idIndex: number[] = [];
   // user defined indexes
-  public binaryIndices: { [P in keyof (TData & TNested)]?: Collection.BinaryIndex } = {}; // user defined indexes
+  public _binaryIndices: { [P in keyof (TData & TNested)]?: Collection.BinaryIndex } = {}; // user defined indexes
 
   /**
    * Unique constraints contain duplicate object references, so they are not persisted.
    * We will keep track of properties which have unique constraints applied here, and regenerate on load.
    */
-  public constraints: {
+  public _constraints: {
     unique: {
       [P in keyof (TData & TNested)]?: UniqueIndex<TData & TNested>;
     }
@@ -86,14 +86,14 @@ export class Collection<TData extends object = object, TNested extends object = 
    * Transforms will be used to store frequently used query chains as a series of steps which itself can be stored along
    * with the database.
    */
-  public transforms: Dict<Collection.Transform<TData, TNested>[]> = {};
+  public _transforms: Dict<Collection.Transform<TData, TNested>[]> = {};
 
   /**
    * In autosave scenarios we will use collection level dirty flags to determine whether save is needed.
    * currently, if any collection is dirty we will autosave the whole database if autosave is configured.
    * Defaulting to true since this is called from addCollection and adding a collection should trigger save.
    */
-  public dirty: boolean = true;
+  public _dirty: boolean = true;
 
   // private holder for cached data
   private _cached: {
@@ -106,44 +106,44 @@ export class Collection<TData extends object = object, TNested extends object = 
    * If set to true we will optimally keep indices 'fresh' during insert/update/remove ops (never dirty/never needs rebuild).
    * If you frequently intersperse insert/update/remove ops between find ops this will likely be significantly faster option.
    */
-  public adaptiveBinaryIndices: boolean;
+  public _adaptiveBinaryIndices: boolean;
 
   /**
    * Is collection transactional.
    */
-  private transactional: boolean;
+  private _transactional: boolean;
 
   /**
    * Options to clone objects when inserting them.
    */
-  public cloneObjects: boolean;
+  public _cloneObjects: boolean;
 
   /**
    * Default clone method (if enabled) is parse-stringify.
    */
-  public cloneMethod: CloneMethod;
+  public _cloneMethod: CloneMethod;
 
   /**
    * If set to true we will not maintain a meta property for a document.
    */
-  private disableMeta: boolean;
+  private _disableMeta: boolean;
 
   /**
    * Disable track changes.
    */
-  private disableChangesApi: boolean;
+  private _disableChangesApi: boolean;
 
   /**
    * Disable delta update object style on changes.
    */
-  public disableDeltaChangesApi: boolean;
+  public _disableDeltaChangesApi: boolean;
 
   /**
    * By default, if you insert a document into a collection with binary indices, if those indexed properties contain
    * a DateTime we will convert to epoch time format so that (across serializations) its value position will be the
    * same 'after' serialization as it was 'before'.
    */
-  private serializableIndices: boolean;
+  private _serializableIndices: boolean;
 
   /**
    * Name of path of used nested properties.
@@ -153,31 +153,31 @@ export class Collection<TData extends object = object, TNested extends object = 
   /**
    * Option to activate a cleaner daemon - clears "aged" documents at set intervals.
    */
-  public ttl: Collection.TTL = {
+  public _ttl: Collection.TTL = {
     age: null,
     ttlInterval: null,
     daemon: null
   };
 
   // currentMaxId - change manually at your own peril!
-  private maxId: number = 0;
+  private _maxId: number = 0;
   private _dynamicViews: DynamicView<TData, TNested>[] = [];
 
   /**
    * Changes are tracked by collection and aggregated by the db.
    */
-  private changes: Collection.Change[] = [];
+  private _changes: Collection.Change[] = [];
 
   /* assign correct handler based on ChangesAPI flag */
-  private insertHandler: (obj: Doc<TData>) => void;
-  private updateHandler: (obj: Doc<TData>, old: Doc<TData>) => void;
+  private _insertHandler: (obj: Doc<TData>) => void;
+  private _updateHandler: (obj: Doc<TData>, old: Doc<TData>) => void;
 
   /**
    * stages: a map of uniquely identified 'stages', which hold copies of objects to be
    * manipulated without affecting the data in the original collection
    */
-  private stages: object = {};
-  private commitLog: { timestamp: number; message: string; data: any }[] = [];
+  private _stages: object = {};
+  private _commitLog: { timestamp: number; message: string; data: any }[] = [];
 
   public _fullTextSearch: FullTextSearch;
 
@@ -227,7 +227,7 @@ export class Collection<TData extends object = object, TNested extends object = 
         options.unique = [options.unique];
       }
       options.unique.forEach((prop: keyof (TData & TNested)) => {
-        this.constraints.unique[prop] = new UniqueIndex<TData & TNested>(prop);
+        this._constraints.unique[prop] = new UniqueIndex<TData & TNested>(prop);
       });
     }
 
@@ -240,34 +240,34 @@ export class Collection<TData extends object = object, TNested extends object = 
     }
 
     // .
-    this.adaptiveBinaryIndices = options.adaptiveBinaryIndices !== undefined ? options.adaptiveBinaryIndices : true;
+    this._adaptiveBinaryIndices = options.adaptiveBinaryIndices !== undefined ? options.adaptiveBinaryIndices : true;
 
     // .
-    this.transactional = options.transactional !== undefined ? options.transactional : false;
+    this._transactional = options.transactional !== undefined ? options.transactional : false;
 
     // .
-    this.cloneObjects = options.clone !== undefined ? options.clone : false;
+    this._cloneObjects = options.clone !== undefined ? options.clone : false;
 
     // .
     this._asyncListeners = options.asyncListeners !== undefined ? options.asyncListeners : false;
 
     // .
-    this.disableMeta = options.disableMeta !== undefined ? options.disableMeta : false;
+    this._disableMeta = options.disableMeta !== undefined ? options.disableMeta : false;
 
     // .
-    this.disableChangesApi = options.disableChangesApi !== undefined ? options.disableChangesApi : true;
+    this._disableChangesApi = options.disableChangesApi !== undefined ? options.disableChangesApi : true;
 
     // .
-    this.disableDeltaChangesApi = options.disableDeltaChangesApi !== undefined ? options.disableDeltaChangesApi : true;
+    this._disableDeltaChangesApi = options.disableDeltaChangesApi !== undefined ? options.disableDeltaChangesApi : true;
 
     // .
-    this.cloneMethod = options.cloneMethod !== undefined ? options.cloneMethod : "deep";
-    if (this.disableChangesApi) {
-      this.disableDeltaChangesApi = true;
+    this._cloneMethod = options.cloneMethod !== undefined ? options.cloneMethod : "deep";
+    if (this._disableChangesApi) {
+      this._disableDeltaChangesApi = true;
     }
 
     // .
-    this.serializableIndices = options.serializableIndices !== undefined ? options.serializableIndices : true;
+    this._serializableIndices = options.serializableIndices !== undefined ? options.serializableIndices : true;
 
     // .
     if (options.nestedProperties != undefined) {
@@ -303,19 +303,19 @@ export class Collection<TData extends object = object, TNested extends object = 
       this.ensureIndex(options.indices[idx]);
     }
 
-    this.setChangesApi(this.disableChangesApi, this.disableDeltaChangesApi);
+    this.setChangesApi(this._disableChangesApi, this._disableDeltaChangesApi);
 
     // Add change api to event callback.
     this.on("insert", (obj: Doc<TData>) => {
-      this.insertHandler(obj);
+      this._insertHandler(obj);
     });
 
     this.on("update", (obj: Doc<TData>, old: Doc<TData>) => {
-      this.updateHandler(obj, old);
+      this._updateHandler(obj, old);
     });
 
     this.on("delete", (obj: Doc<TData>) => {
-      if (!this.disableChangesApi) {
+      if (!this._disableChangesApi) {
         this._createChange(this.name, "R", obj);
       }
     });
@@ -328,23 +328,23 @@ export class Collection<TData extends object = object, TNested extends object = 
     return {
       name: this.name,
       _dynamicViews: this._dynamicViews,
-      uniqueNames: Object.keys(this.constraints.unique),
-      transforms: this.transforms as any,
-      binaryIndices: this.binaryIndices as any,
+      uniqueNames: Object.keys(this._constraints.unique),
+      transforms: this._transforms as any,
+      binaryIndices: this._binaryIndices as any,
       _data: this._data,
-      idIndex: this.idIndex,
-      maxId: this.maxId,
-      dirty: this.dirty,
+      idIndex: this._idIndex,
+      maxId: this._maxId,
+      _dirty: this._dirty,
       _nestedProperties: this._nestedProperties,
-      adaptiveBinaryIndices: this.adaptiveBinaryIndices,
-      transactional: this.transactional,
+      adaptiveBinaryIndices: this._adaptiveBinaryIndices,
+      transactional: this._transactional,
       asyncListeners: this._asyncListeners,
-      disableMeta: this.disableMeta,
-      disableChangesApi: this.disableChangesApi,
-      disableDeltaChangesApi: this.disableDeltaChangesApi,
-      cloneObjects: this.cloneObjects,
-      cloneMethod: this.cloneMethod,
-      changes: this.changes,
+      disableMeta: this._disableMeta,
+      disableChangesApi: this._disableChangesApi,
+      disableDeltaChangesApi: this._disableDeltaChangesApi,
+      cloneObjects: this._cloneObjects,
+      cloneMethod: this._cloneMethod,
+      changes: this._changes,
       _fullTextSearch: this._fullTextSearch
     };
   }
@@ -355,17 +355,17 @@ export class Collection<TData extends object = object, TNested extends object = 
       disableDeltaChangesApi: obj.disableDeltaChangesApi
     });
 
-    coll.adaptiveBinaryIndices = obj.adaptiveBinaryIndices !== undefined ? (obj.adaptiveBinaryIndices === true) : false;
-    coll.transactional = obj.transactional;
+    coll._adaptiveBinaryIndices = obj.adaptiveBinaryIndices !== undefined ? (obj.adaptiveBinaryIndices === true) : false;
+    coll._transactional = obj.transactional;
     coll._asyncListeners = obj.asyncListeners;
-    coll.disableMeta = obj.disableMeta;
-    coll.disableChangesApi = obj.disableChangesApi;
-    coll.cloneObjects = obj.cloneObjects;
-    coll.cloneMethod = obj.cloneMethod || "deep";
-    coll.changes = obj.changes;
+    coll._disableMeta = obj.disableMeta;
+    coll._disableChangesApi = obj.disableChangesApi;
+    coll._cloneObjects = obj.cloneObjects;
+    coll._cloneMethod = obj.cloneMethod || "deep";
+    coll._changes = obj.changes;
     coll._nestedProperties = obj._nestedProperties as any[];
 
-    coll.dirty = (options && options.retainDirtyFlags === true) ? obj.dirty : false;
+    coll._dirty = (options && options.retainDirtyFlags === true) ? obj._dirty : false;
 
     function makeLoader(coll: Collection.Serialized) {
       const collOptions = options[coll.name];
@@ -400,13 +400,13 @@ export class Collection<TData extends object = object, TNested extends object = 
       }
     }
 
-    coll.maxId = (obj.maxId === undefined) ? 0 : obj.maxId;
-    coll.idIndex = obj.idIndex;
+    coll._maxId = (obj.maxId === undefined) ? 0 : obj.maxId;
+    coll._idIndex = obj.idIndex;
     if (obj.binaryIndices !== undefined) {
-      coll.binaryIndices = obj.binaryIndices;
+      coll._binaryIndices = obj.binaryIndices;
     }
     if (obj.transforms !== undefined) {
-      coll.transforms = obj.transforms;
+      coll._transforms = obj.transforms;
     }
 
     coll._ensureId();
@@ -439,10 +439,10 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {array} transform - an array of transformation 'step' objects to save into the collection
    */
   public addTransform(name: string, transform: Collection.Transform<TData, TNested>[]): void {
-    if (this.transforms[name] !== undefined) {
+    if (this._transforms[name] !== undefined) {
       throw new Error("a transform by that name already exists");
     }
-    this.transforms[name] = transform;
+    this._transforms[name] = transform;
   }
 
   /**
@@ -450,7 +450,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {string} name - name of the transform to lookup.
    */
   public getTransform(name: string): Collection.Transform<TData, TNested>[] {
-    return this.transforms[name];
+    return this._transforms[name];
   }
 
   /**
@@ -459,7 +459,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {object} transform - a transformation object to save into collection
    */
   public setTransform(name: string, transform: Collection.Transform<TData, TNested>[]): void {
-    this.transforms[name] = transform;
+    this._transforms[name] = transform;
   }
 
   /**
@@ -467,7 +467,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {string} name - name of collection transform to remove
    */
   public removeTransform(name: string): void {
-    delete this.transforms[name];
+    delete this._transforms[name];
   }
 
   /*----------------------------+
@@ -475,16 +475,16 @@ export class Collection<TData extends object = object, TNested extends object = 
    +----------------------------*/
   private setTTL(age: number, interval: number): void {
     if (age < 0) {
-      clearInterval(this.ttl.daemon);
+      clearInterval(this._ttl.daemon);
     } else {
-      this.ttl.age = age;
-      this.ttl.ttlInterval = interval;
-      this.ttl.daemon = setInterval(() => {
+      this._ttl.age = age;
+      this._ttl.ttlInterval = interval;
+      this._ttl.daemon = setInterval(() => {
         const now = Date.now();
         const toRemove = this.chain().where((member: Doc<TData>) => {
           const timestamp = member.meta.updated || member.meta.created;
           const diff = now - timestamp;
-          return this.ttl.age < diff;
+          return this._ttl.age < diff;
         });
         toRemove.remove();
       }, interval);
@@ -512,12 +512,12 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {boolean} [force=false] - flag indicating whether to construct index immediately
    */
   public ensureIndex(field: keyof (TData & TNested), force = false) {
-    if (this.binaryIndices[field] && !force && !this.binaryIndices[field].dirty) {
+    if (this._binaryIndices[field] && !force && !this._binaryIndices[field].dirty) {
       return;
     }
 
     // if the index is already defined and we are using adaptiveBinaryIndices and we are not forcing a rebuild, return.
-    if (this.adaptiveBinaryIndices === true && this.binaryIndices[field] !== undefined && !force) {
+    if (this._adaptiveBinaryIndices === true && this._binaryIndices[field] !== undefined && !force) {
       return;
     }
 
@@ -526,7 +526,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       dirty: true,
       values: this._prepareFullDocIndex()
     };
-    this.binaryIndices[field] = index;
+    this._binaryIndices[field] = index;
 
     const wrappedComparer = (a: number, b: number) => {
       const val1 = this._data[a][field];
@@ -541,7 +541,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     index.values.sort(wrappedComparer);
     index.dirty = false;
 
-    this.dirty = true; // for autosave scenarios
+    this._dirty = true; // for autosave scenarios
   }
 
 
@@ -569,7 +569,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    */
   public checkIndex(field: keyof (TData & TNested), options: Collection.CheckIndexOptions = {repair: false}) {
     // if lazy indexing, rebuild only if flagged as dirty
-    if (!this.adaptiveBinaryIndices) {
+    if (!this._adaptiveBinaryIndices) {
       this.ensureIndex(field);
     }
 
@@ -582,7 +582,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       options.randomSamplingFactor = 0.1;
     }
 
-    const biv = this.binaryIndices[field].values;
+    const biv = this._binaryIndices[field].values;
     const len = biv.length;
 
     // if the index has an incorrect number of values
@@ -665,7 +665,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    */
   public checkAllIndexes(options?: Collection.CheckIndexOptions): (keyof TData & TNested)[] {
     const results = [];
-    let keys = Object.keys(this.binaryIndices) as (keyof TData & TNested)[];
+    let keys = Object.keys(this._binaryIndices) as (keyof TData & TNested)[];
     for (let i = 0; i < keys.length; i++) {
       const result = this.checkIndex(keys[i], options);
       if (!result) {
@@ -679,7 +679,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     let index = new UniqueIndex<TData & TNested>(field);
 
     // if index already existed, (re)loading it will likely cause collisions, rebuild always
-    this.constraints.unique[field] = index;
+    this._constraints.unique[field] = index;
     for (let i = 0; i < this._data.length; i++) {
       index.set(this._data[i], i);
     }
@@ -690,21 +690,21 @@ export class Collection<TData extends object = object, TNested extends object = 
    * Ensure all binary indices.
    */
   public ensureAllIndexes(force = false) {
-    const keys = Object.keys(this.binaryIndices) as (keyof (TData & TNested))[];
+    const keys = Object.keys(this._binaryIndices) as (keyof (TData & TNested))[];
     for (let i = 0; i < keys.length; i++) {
       this.ensureIndex(keys[i], force);
     }
   }
 
   public flagBinaryIndexesDirty() {
-    const keys = Object.keys(this.binaryIndices) as (keyof (TData & TNested))[];
+    const keys = Object.keys(this._binaryIndices) as (keyof (TData & TNested))[];
     for (let i = 0; i < keys.length; i++) {
       this.flagBinaryIndexDirty(keys[i]);
     }
   }
 
   public flagBinaryIndexDirty(index: keyof (TData & TNested)) {
-    this.binaryIndices[index].dirty = true;
+    this._binaryIndices[index].dirty = true;
   }
 
   /**
@@ -723,9 +723,9 @@ export class Collection<TData extends object = object, TNested extends object = 
    * Rebuild idIndex
    */
   private _ensureId(): void {
-    this.idIndex = [];
+    this._idIndex = [];
     for (let i = 0; i < this._data.length; i++) {
-      this.idIndex.push(this._data[i].$loki);
+      this._idIndex.push(this._data[i].$loki);
     }
   }
 
@@ -817,7 +817,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     this.emit("insert", results);
 
     // if clone option is set, clone return values
-    results = this.cloneObjects ? clone(results, this.cloneMethod) : results;
+    results = this._cloneObjects ? clone(results, this._cloneMethod) : results;
 
     return results.length === 1 ? results[0] : results;
   }
@@ -844,9 +844,9 @@ export class Collection<TData extends object = object, TNested extends object = 
     }
 
     // if configured to clone, do so now... otherwise just use same obj reference
-    const obj = this._defineNestedProperties(this.cloneObjects ? clone(doc, this.cloneMethod) : doc);
+    const obj = this._defineNestedProperties(this._cloneObjects ? clone(doc, this._cloneMethod) : doc);
 
-    if (!this.disableMeta && (obj as Doc<TData>).meta === undefined) {
+    if (!this._disableMeta && (obj as Doc<TData>).meta === undefined) {
       (obj as Doc<TData>).meta = {
         version: 0,
         revision: 0,
@@ -866,7 +866,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     returnObj = obj;
     if (!bulkInsert) {
       this.emit("insert", obj);
-      returnObj = this.cloneObjects ? clone(obj, this.cloneMethod) : obj;
+      returnObj = this._cloneObjects ? clone(obj, this._cloneMethod) : obj;
     }
 
     return returnObj as Doc<TData & TNested>;
@@ -910,33 +910,33 @@ export class Collection<TData extends object = object, TNested extends object = 
    */
   public clear({removeIndices: removeIndices = false} = {}) {
     this._data = [];
-    this.idIndex = [];
+    this._idIndex = [];
     this._cached = null;
-    this.maxId = 0;
+    this._maxId = 0;
     this._dynamicViews = [];
-    this.dirty = true;
+    this._dirty = true;
 
     // if removing indices entirely
     if (removeIndices === true) {
-      this.binaryIndices = {};
+      this._binaryIndices = {};
 
-      this.constraints = {
+      this._constraints = {
         unique: {}
       };
     }
     // clear indices but leave definitions in place
     else {
       // clear binary indices
-      const keys = Object.keys(this.binaryIndices);
+      const keys = Object.keys(this._binaryIndices);
       keys.forEach((biname) => {
-        this.binaryIndices[biname].dirty = false;
-        this.binaryIndices[biname].values = [];
+        this._binaryIndices[biname].dirty = false;
+        this._binaryIndices[biname].values = [];
       });
 
       // clear entire unique indices definition
-      const uniqueNames = Object.keys(this.constraints.unique);
+      const uniqueNames = Object.keys(this._constraints.unique);
       for (let i = 0; i < uniqueNames.length; i++) {
-        this.constraints.unique[uniqueNames[i]].clear();
+        this._constraints.unique[uniqueNames[i]].clear();
       }
     }
 
@@ -954,10 +954,10 @@ export class Collection<TData extends object = object, TNested extends object = 
 
       // If not cloning, disable adaptive binary indices for the duration of the batch update,
       // followed by lazy rebuild and re-enabling adaptive indices after batch update.
-      const adaptiveBatchOverride = !this.cloneObjects && this.adaptiveBinaryIndices
-        && Object.keys(this.binaryIndices).length > 0;
+      const adaptiveBatchOverride = !this._cloneObjects && this._adaptiveBinaryIndices
+        && Object.keys(this._binaryIndices).length > 0;
       if (adaptiveBatchOverride) {
-        this.adaptiveBinaryIndices = false;
+        this._adaptiveBinaryIndices = false;
       }
 
       for (let i = 0; i < doc.length; i++) {
@@ -966,7 +966,7 @@ export class Collection<TData extends object = object, TNested extends object = 
 
       if (adaptiveBatchOverride) {
         this.ensureAllIndexes();
-        this.adaptiveBinaryIndices = true;
+        this._adaptiveBinaryIndices = true;
       }
 
       return;
@@ -990,12 +990,12 @@ export class Collection<TData extends object = object, TNested extends object = 
 
       // ref to new internal obj
       // if configured to clone, do so now... otherwise just use same obj reference
-      let newInternal = this._defineNestedProperties(this.cloneObjects || !this.disableDeltaChangesApi ? clone(doc, this.cloneMethod) : doc);
+      let newInternal = this._defineNestedProperties(this._cloneObjects || !this._disableDeltaChangesApi ? clone(doc, this._cloneMethod) : doc);
 
       this.emit("pre-update", doc);
 
-      Object.keys(this.constraints.unique).forEach((key) => {
-        this.constraints.unique[key].update(newInternal, position);
+      Object.keys(this._constraints.unique).forEach((key) => {
+        this._constraints.unique[key].update(newInternal, position);
       });
 
       // operate the update
@@ -1007,9 +1007,9 @@ export class Collection<TData extends object = object, TNested extends object = 
         this._dynamicViews[idx]._evaluateDocument(position, false);
       }
 
-      if (this.adaptiveBinaryIndices) {
+      if (this._adaptiveBinaryIndices) {
         // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
-        const bIndices = Object.keys(this.binaryIndices) as (keyof (TData & TNested))[];
+        const bIndices = Object.keys(this._binaryIndices) as (keyof (TData & TNested))[];
         for (let i = 0; i < bIndices.length; i++) {
           this.adaptiveBinaryIndexUpdate(position, bIndices[i]);
         }
@@ -1017,7 +1017,7 @@ export class Collection<TData extends object = object, TNested extends object = 
         this.flagBinaryIndexesDirty();
       }
 
-      this.idIndex[position] = newInternal.$loki;
+      this._idIndex[position] = newInternal.$loki;
 
       // FullTextSearch.
       if (this._fullTextSearch !== null) {
@@ -1025,9 +1025,9 @@ export class Collection<TData extends object = object, TNested extends object = 
       }
 
       this.commit();
-      this.dirty = true; // for autosave scenarios
+      this._dirty = true; // for autosave scenarios
 
-      this.emit("update", doc, this.cloneObjects || !this.disableDeltaChangesApi ? clone(oldInternal, this.cloneMethod) : null);
+      this.emit("update", doc, this._cloneObjects || !this._disableDeltaChangesApi ? clone(oldInternal, this._cloneMethod) : null);
     } catch (err) {
       this.rollback();
       this.emit("error", err);
@@ -1055,19 +1055,19 @@ export class Collection<TData extends object = object, TNested extends object = 
      */
     try {
       this.startTransaction();
-      this.maxId++;
+      this._maxId++;
 
-      if (isNaN(this.maxId)) {
-        this.maxId = (this._data[this._data.length - 1].$loki + 1);
+      if (isNaN(this._maxId)) {
+        this._maxId = (this._data[this._data.length - 1].$loki + 1);
       }
 
       const newDoc = obj as Doc<TData & TNested>;
-      newDoc.$loki = this.maxId;
-      if (!this.disableMeta) {
+      newDoc.$loki = this._maxId;
+      if (!this._disableMeta) {
         newDoc.meta.version = 0;
       }
 
-      const constrUnique = this.constraints.unique;
+      const constrUnique = this._constraints.unique;
       for (const key in constrUnique) {
         if (constrUnique[key] !== undefined) {
           constrUnique[key].set(newDoc, this._data.length);
@@ -1075,7 +1075,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       }
 
       // add new obj id to idIndex
-      this.idIndex.push(newDoc.$loki);
+      this._idIndex.push(newDoc.$loki);
 
       // add the object
       this._data.push(newDoc);
@@ -1089,9 +1089,9 @@ export class Collection<TData extends object = object, TNested extends object = 
         this._dynamicViews[i]._evaluateDocument(addedPos, true);
       }
 
-      if (this.adaptiveBinaryIndices) {
+      if (this._adaptiveBinaryIndices) {
         // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
-        const bIndices = Object.keys(this.binaryIndices) as (keyof (TData & TNested))[];
+        const bIndices = Object.keys(this._binaryIndices) as (keyof (TData & TNested))[];
         for (let i = 0; i < bIndices.length; i++) {
           this.adaptiveBinaryIndexInsert(addedPos, bIndices[i]);
         }
@@ -1105,9 +1105,9 @@ export class Collection<TData extends object = object, TNested extends object = 
       }
 
       this.commit();
-      this.dirty = true; // for autosave scenarios
+      this._dirty = true; // for autosave scenarios
 
-      return (this.cloneObjects) ? (clone(newDoc, this.cloneMethod)) : (newDoc);
+      return (this._cloneObjects) ? (clone(newDoc, this._cloneMethod)) : (newDoc);
     } catch (err) {
       this.rollback();
       this.emit("error", err);
@@ -1171,9 +1171,9 @@ export class Collection<TData extends object = object, TNested extends object = 
 
       const position = arr[1];
 
-      Object.keys(this.constraints.unique).forEach((key) => {
+      Object.keys(this._constraints.unique).forEach((key) => {
         if (doc[key] !== null && doc[key] !== undefined) {
-          this.constraints.unique[key].remove(doc[key]);
+          this._constraints.unique[key].remove(doc[key]);
         }
       });
       // now that we can efficiently determine the data[] position of newly added document,
@@ -1182,9 +1182,9 @@ export class Collection<TData extends object = object, TNested extends object = 
         this._dynamicViews[idx]._removeDocument(position);
       }
 
-      if (this.adaptiveBinaryIndices) {
+      if (this._adaptiveBinaryIndices) {
         // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
-        const bIndices = Object.keys(this.binaryIndices) as (keyof (TData & TNested))[];
+        const bIndices = Object.keys(this._binaryIndices) as (keyof (TData & TNested))[];
         for (let i = 0; i < bIndices.length; i++) {
           this.adaptiveBinaryIndexRemove(position, bIndices[i]);
         }
@@ -1195,7 +1195,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       this._data.splice(position, 1);
 
       // remove id from idIndex
-      this.idIndex.splice(position, 1);
+      this._idIndex.splice(position, 1);
 
       // FullTextSearch.
       if (this._fullTextSearch !== null) {
@@ -1203,7 +1203,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       }
 
       this.commit();
-      this.dirty = true; // for autosave scenarios
+      this._dirty = true; // for autosave scenarios
       this.emit("delete", arr[0]);
       delete doc.$loki;
       delete doc.meta;
@@ -1222,7 +1222,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @returns {Collection.Change[]}
    */
   public getChanges(): Collection.Change[] {
-    return this.changes;
+    return this._changes;
   }
 
   /**
@@ -1231,22 +1231,22 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {boolean} disableDeltaChangesApi
    */
   public setChangesApi(disableChangesApi: boolean, disableDeltaChangesApi: boolean = true) {
-    this.disableChangesApi = disableChangesApi;
-    this.disableDeltaChangesApi = disableDeltaChangesApi;
+    this._disableChangesApi = disableChangesApi;
+    this._disableDeltaChangesApi = disableDeltaChangesApi;
 
     if (disableChangesApi) {
-      this.disableDeltaChangesApi = true;
+      this._disableDeltaChangesApi = true;
     }
 
-    this.insertHandler = this.disableChangesApi ? this._insertMeta : this._insertMetaWithChange;
-    this.updateHandler = this.disableChangesApi ? this._updateMeta : this._updateMetaWithChange;
+    this._insertHandler = this._disableChangesApi ? this._insertMeta : this._insertMetaWithChange;
+    this._updateHandler = this._disableChangesApi ? this._updateMeta : this._updateMetaWithChange;
   }
 
   /**
    * Clears all the changes.
    */
   public flushChanges() {
-    this.changes = [];
+    this._changes = [];
   }
 
   private _getObjectDelta(oldObject: Doc<TData>, newObject: Doc<TData>) {
@@ -1256,7 +1256,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       for (let i = 0; i < propertyNames.length; i++) {
         const propertyName = propertyNames[i];
         if (newObject.hasOwnProperty(propertyName)) {
-          if (!oldObject.hasOwnProperty(propertyName) || this.constraints.unique[propertyName] !== undefined || propertyName === "$loki" || propertyName === "meta") {
+          if (!oldObject.hasOwnProperty(propertyName) || this._constraints.unique[propertyName] !== undefined || propertyName === "$loki" || propertyName === "meta") {
             delta[propertyName] = newObject[propertyName];
           }
           else {
@@ -1291,10 +1291,10 @@ export class Collection<TData extends object = object, TNested extends object = 
    * so the parent db can aggregate and generate a changes object for the entire db
    */
   private _createChange(name: string, op: string, obj: Doc<TData>, old?: Doc<TData>) {
-    this.changes.push({
+    this._changes.push({
       name,
       operation: op,
-      obj: op === "U" && !this.disableDeltaChangesApi ? this._getChangeDelta(obj, old) : JSON.parse(JSON.stringify(obj))
+      obj: op === "U" && !this._disableDeltaChangesApi ? this._getChangeDelta(obj, old) : JSON.parse(JSON.stringify(obj))
     });
   }
 
@@ -1309,7 +1309,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     let len;
     let idx;
 
-    if (this.disableMeta || !obj) {
+    if (this._disableMeta || !obj) {
       return;
     }
 
@@ -1343,7 +1343,7 @@ export class Collection<TData extends object = object, TNested extends object = 
   }
 
   private _updateMeta(obj: Doc<TData>) {
-    if (this.disableMeta || !obj) {
+    if (this._disableMeta || !obj) {
       return;
     }
     obj.meta.updated = (new Date()).getTime();
@@ -1379,7 +1379,7 @@ export class Collection<TData extends object = object, TNested extends object = 
   public get(id: number): Doc<TData & TNested>;
   public get(id: number, returnPosition: boolean): Doc<TData & TNested> | [Doc<TData & TNested>, number];
   public get(id: number, returnPosition = false) {
-    const data = this.idIndex;
+    const data = this._idIndex;
     let max = data.length - 1;
     let min = 0;
     let mid = (min + max) >> 1;
@@ -1418,7 +1418,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    */
   public getBinaryIndexPosition(dataPosition: number, binaryIndexName: keyof (TData & TNested)) {
     const val = this._data[dataPosition][binaryIndexName];
-    const index = this.binaryIndices[binaryIndexName].values;
+    const index = this._binaryIndices[binaryIndexName].values;
 
     // i think calculateRange can probably be moved to collection
     // as it doesn't seem to need ResultSet.  need to verify
@@ -1450,11 +1450,11 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {string} binaryIndexName : index to search for dataPosition in
    */
   public adaptiveBinaryIndexInsert(dataPosition: number, binaryIndexName: keyof (TData & TNested)) {
-    const index = this.binaryIndices[binaryIndexName].values;
+    const index = this._binaryIndices[binaryIndexName].values;
     let val: any = this._data[dataPosition][binaryIndexName];
 
     // If you are inserting a javascript Date value into a binary index, convert to epoch time
-    if (this.serializableIndices === true && val instanceof Date) {
+    if (this._serializableIndices === true && val instanceof Date) {
       this._data[dataPosition][binaryIndexName] = val.getTime() as any;
       val = this._data[dataPosition][binaryIndexName];
     }
@@ -1463,7 +1463,7 @@ export class Collection<TData extends object = object, TNested extends object = 
 
     // insert new data index into our binary index at the proper sorted location for relevant property calculated by idxPos.
     // doing this after adjusting dataPositions so no clash with previous item at that position.
-    this.binaryIndices[binaryIndexName].values.splice(idxPos, 0, dataPosition);
+    this._binaryIndices[binaryIndexName].values.splice(idxPos, 0, dataPosition);
   }
 
   /**
@@ -1476,7 +1476,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     // within (my) node 5.6.0, the following for() loop with strict compare is -much- faster than indexOf()
     let idxPos;
 
-    const index = this.binaryIndices[binaryIndexName].values;
+    const index = this._binaryIndices[binaryIndexName].values;
     const len = index.length;
 
     for (idxPos = 0; idxPos < len; idxPos++) {
@@ -1484,7 +1484,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     }
 
     //let idxPos = this.binaryIndices[binaryIndexName].values.indexOf(dataPosition);
-    this.binaryIndices[binaryIndexName].values.splice(idxPos, 1);
+    this._binaryIndices[binaryIndexName].values.splice(idxPos, 1);
 
     //this.adaptiveBinaryIndexRemove(dataPosition, binaryIndexName, true);
     this.adaptiveBinaryIndexInsert(dataPosition, binaryIndexName);
@@ -1503,7 +1503,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     }
 
     // remove document from index
-    this.binaryIndices[binaryIndexName].values.splice(idxPos, 1);
+    this._binaryIndices[binaryIndexName].values.splice(idxPos, 1);
 
     // if we passed this optional flag parameter, we are calling from adaptiveBinaryIndexUpdate,
     // in which case data positions stay the same.
@@ -1513,7 +1513,7 @@ export class Collection<TData extends object = object, TNested extends object = 
 
     // since index stores data array positions, if we remove a document
     // we need to adjust array positions -1 for all document positions greater than removed position
-    const index = this.binaryIndices[binaryIndexName].values;
+    const index = this._binaryIndices[binaryIndexName].values;
     for (let idx = 0; idx < index.length; idx++) {
       if (index[idx] > dataPosition) {
         index[idx]--;
@@ -1537,7 +1537,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    */
   private _calculateRangeStart(prop: keyof (TData & TNested), val: any, adaptive = false): number {
     const rcd = this._data;
-    const index = this.binaryIndices[prop].values;
+    const index = this._binaryIndices[prop].values;
     let min = 0;
     let max = index.length - 1;
     let mid = 0;
@@ -1579,7 +1579,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    */
   private _calculateRangeEnd(prop: keyof (TData & TNested), val: any) {
     const rcd = this._data;
-    const index = this.binaryIndices[prop].values;
+    const index = this._binaryIndices[prop].values;
     let min = 0;
     let max = index.length - 1;
     let mid = 0;
@@ -1632,7 +1632,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    */
   public calculateRange(op: string, prop: keyof (TData & TNested), val: any): [number, number] {
     const rcd = this._data;
-    const index = this.binaryIndices[prop].values;
+    const index = this._binaryIndices[prop].values;
     const min = 0;
     const max = index.length - 1;
     let lbound;
@@ -1827,10 +1827,10 @@ export class Collection<TData extends object = object, TNested extends object = 
     if (Array.isArray(result) && result.length === 0) {
       return null;
     } else {
-      if (!this.cloneObjects) {
+      if (!this._cloneObjects) {
         return result[0] as any as Doc<TData & TNested>;
       } else {
-        return clone(result[0], this.cloneMethod) as any as Doc<TData & TNested>;
+        return clone(result[0], this._cloneMethod) as any as Doc<TData & TNested>;
       }
     }
   }
@@ -1886,11 +1886,11 @@ export class Collection<TData extends object = object, TNested extends object = 
    * start the transation
    */
   public startTransaction(): void {
-    if (this.transactional) {
+    if (this._transactional) {
       this._cached = {
-        index: this.idIndex,
-        data: clone(this._data, this.cloneMethod),
-        binaryIndex: this.binaryIndices,
+        index: this._idIndex,
+        data: clone(this._data, this._cloneMethod),
+        binaryIndex: this._binaryIndices,
       };
 
       // propagate startTransaction to dynamic views
@@ -1904,7 +1904,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * Commit the transaction.
    */
   public commit(): void {
-    if (this.transactional) {
+    if (this._transactional) {
       this._cached = null;
 
       // propagate commit to dynamic views
@@ -1918,11 +1918,11 @@ export class Collection<TData extends object = object, TNested extends object = 
    * Rollback the transaction.
    */
   public rollback(): void {
-    if (this.transactional) {
+    if (this._transactional) {
       if (this._cached !== null) {
-        this.idIndex = this._cached.index;
+        this._idIndex = this._cached.index;
         this._data = this._defineNestedProperties(this._cached.data);
-        this.binaryIndices = this._cached.binaryIndex;
+        this._binaryIndices = this._cached.binaryIndex;
 
         // propagate rollback to dynamic views
         for (let idx = 0; idx < this._dynamicViews.length; idx++) {
@@ -1979,10 +1979,10 @@ export class Collection<TData extends object = object, TNested extends object = 
    * (Staging API) create a stage and/or retrieve it
    */
   getStage(name: string) {
-    if (!this.stages[name]) {
-      this.stages[name] = {};
+    if (!this._stages[name]) {
+      this._stages[name] = {};
     }
-    return this.stages[name];
+    return this._stages[name];
   }
 
   /**
@@ -2010,13 +2010,13 @@ export class Collection<TData extends object = object, TNested extends object = 
 
     for (const prop in stage) {
       this.update(stage[prop]);
-      this.commitLog.push({
+      this._commitLog.push({
         timestamp,
         message,
         data: JSON.parse(JSON.stringify(stage[prop]))
       });
     }
-    this.stages[stageName] = {};
+    this._stages[stageName] = {};
   }
 
   /**
@@ -2227,7 +2227,7 @@ export namespace Collection {
     _data: Doc<any>[];
     idIndex: number[];
     maxId: number;
-    dirty: boolean;
+    _dirty: boolean;
     adaptiveBinaryIndices: boolean;
     transactional: boolean;
     asyncListeners: boolean;

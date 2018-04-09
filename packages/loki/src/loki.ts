@@ -33,15 +33,14 @@ function getENV(): Loki.Environment {
 }
 
 export class Loki extends LokiEventEmitter {
-
-  private filename: string;
+  public filename: string;
 
   // persist version of code which created the database to the database.
   // could use for upgrade scenarios
   private databaseVersion: number = 1.5; // TODO
   private engineVersion: number = 1.5;
 
-  private _collections: Collection[];
+  public _collections: Collection[];
 
   private _env: Loki.Environment;
 
@@ -209,8 +208,8 @@ export class Loki extends LokiEventEmitter {
       databaseCopy._persistenceAdapter = null;
 
       for (let idx = 0; idx < databaseCopy._collections.length; idx++) {
-        databaseCopy._collections[idx].constraints = null;
-        databaseCopy._collections[idx].ttl = null;
+        databaseCopy._collections[idx]._constraints = null;
+        databaseCopy._collections[idx]._ttl = null;
       }
     }
 
@@ -314,10 +313,6 @@ export class Loki extends LokiEventEmitter {
         return;
       }
     }
-  }
-
-  public getName(): string {
-    return this.filename;
   }
 
   /**
@@ -980,7 +975,7 @@ export class Loki extends LokiEventEmitter {
    */
   private _autosaveDirty(): boolean {
     for (let idx = 0; idx < this._collections.length; idx++) {
-      if (this._collections[idx].dirty) {
+      if (this._collections[idx]._dirty) {
         return true;
       }
     }
@@ -992,7 +987,7 @@ export class Loki extends LokiEventEmitter {
    */
   private _autosaveClearFlags() {
     for (let idx = 0; idx < this._collections.length; idx++) {
-      this._collections[idx].dirty = false;
+      this._collections[idx]._dirty = false;
     }
   }
 
