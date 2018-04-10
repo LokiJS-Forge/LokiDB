@@ -43,7 +43,7 @@ describe("changesApi", () => {
 
     expect(allChanges.length).toEqual(4);
     users.setChangesApi(true);
-    expect(users["disableChangesApi"]).toEqual(true);
+    expect(users["_disableChangesApi"]).toEqual(true);
 
     u.name = "john";
     users.update(u);

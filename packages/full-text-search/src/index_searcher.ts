@@ -170,7 +170,7 @@ export class IndexSearcher {
       }
       case "exists": {
         if (root !== null) {
-          for (const docId of this._invIdxs[fieldName].documentStore.keys()) {
+          for (const docId of this._invIdxs[fieldName].docStore.keys()) {
             this._scorer.scoreConstant(boost, docId, queryResults);
           }
         }
@@ -218,7 +218,7 @@ export class IndexSearcher {
     return queryResults;
   }
 
-  private _getUnique(queries: any[], doScoring: boolean, queryResults: QueryResults) {
+  private _getUnique(queries: any[], doScoring: boolean, queryResults: QueryResults): QueryResults {
     if (queries.length === 0) {
       return queryResults;
     }
@@ -241,7 +241,7 @@ export class IndexSearcher {
     return queryResults;
   }
 
-  private _getAll(queries: any[], doScoring: boolean) {
+  private _getAll(queries: any[], doScoring: boolean): QueryResults {
     let queryResults: QueryResults = new Map();
     for (let i = 0; i < queries.length; i++) {
       let currDocs = this._recursive(queries[i], doScoring);
@@ -267,7 +267,7 @@ type FuzzyResult = { index: Index, term: number[], boost: number };
  * @param {string} a - a string
  * @param {string} b - a string
  */
-function levenshteinDistance(a: number[], b: number[]) {
+function calculateLevenshteinDistance(a: number[], b: number[]): number {
   let i;
   let j;
   let prev;
@@ -381,7 +381,7 @@ function fuzzySearch(query: FuzzyQuery, root: Index): [FuzzyResult[], number] {
       // Special handling for smaller terms.
       if (term.length < fuzzy.length) {
         if (ed !== fuzziness) {
-          return levenshteinDistance(term, fuzzy);
+          return calculateLevenshteinDistance(term, fuzzy);
         }
         // Include the term and fuzzy length.
         ed -= fuzzy.length - term.length;

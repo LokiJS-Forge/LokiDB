@@ -34,7 +34,7 @@ function resolveTransformParams<TData extends object, TNested extends object>(tr
   const resolvedTransform: Collection.Transform<TData, TNested>[] = [];
   for (let idx = 0; idx < transform.length; idx++) {
     // clone transform so our scan/replace can operate directly on cloned transform
-    const clonedStep = clone(transform[idx], "shallow-recurse-objects");
+    const clonedStep = clone(transform[idx], "shallow-recurse");
     resolvedTransform.push(resolveTransformObject<TData, TNested>(clonedStep, params));
   }
 
@@ -161,10 +161,6 @@ export const LokiOps = {
     return b.test(a);
   },
 
-  $containsString(a: any, b: string): boolean {
-    return (typeof a === "string") && (a.indexOf(b) !== -1);
-  },
-
   $containsNone(a: any, b: any): boolean {
     return !LokiOps.$containsAny(a, b);
   },
@@ -277,10 +273,10 @@ const indexedOps = {
 export class ResultSet<TData extends object = object, TNested extends object = object> {
 
   public _collection: Collection<TData, TNested>;
-  public _filteredRows: number[];
-  public _filterInitialized: boolean;
+  public _filteredRows: number[] = [];
+  public _filterInitialized: boolean = false;
   // Holds the scoring result of the last full-text search.
-  private _scoring: Scorer.ScoreResults;
+  private _scoring: Scorer.ScoreResults = null;
 
   /**
    * Constructor.
@@ -289,17 +285,13 @@ export class ResultSet<TData extends object = object, TNested extends object = o
   constructor(collection: Collection<TData, TNested>) {
     // retain reference to collection we are querying against
     this._collection = collection;
-    this._filteredRows = [];
-    this._filterInitialized = false;
-    this._scoring = null;
   }
 
   /**
-   * reset() - Reset the ResultSet to its initial state.
-   *
+   * Reset the ResultSet to its initial state.
    * @returns {ResultSet} Reference to this ResultSet, for future chain operations.
    */
-  reset(): this {
+  public reset(): this {
     if (this._filteredRows.length > 0) {
       this._filteredRows = [];
     }
@@ -309,7 +301,6 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
   /**
    * Override of toJSON to avoid circular references
-   *
    */
   public toJSON(): ResultSet<TData, TNested> {
     const copy = this.copy();
@@ -370,7 +361,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
   public transform(transform: string | Collection.Transform<TData, TNested>[], parameters?: object): this {
     // if transform is name, then do lookup first
     if (typeof transform === "string") {
-      transform = this._collection.transforms[transform];
+      transform = this._collection._transforms[transform];
     }
 
     if (parameters !== undefined) {
@@ -475,7 +466,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
     // If already filtered, but we want to leverage binary index on sort.
     // This will use custom array intection algorithm.
-    if (!options.disableIndexIntersect && this._collection.binaryIndices.hasOwnProperty(propname)
+    if (!options.disableIndexIntersect && this._collection._binaryIndices.hasOwnProperty(propname)
       && this._filterInitialized) {
 
       const eff = this._collection._data.length / this._filteredRows.length;
@@ -492,7 +483,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
           io[this._filteredRows[i]] = true;
         }
         // grab full sorted binary index array and filter by existing results
-        this._filteredRows = this._collection.binaryIndices[propname].values.filter((n: string) => {
+        this._filteredRows = this._collection._binaryIndices[propname].values.filter((n: string) => {
           return io[n];
         });
 
@@ -505,21 +496,21 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     }
 
     if (options.useJavascriptSorting) {
-      return this.sort((obj1, obj2) => {
+      return this.sort((obj1: TData & TNested, obj2: TData & TNested): number => {
         if (obj1[propname] === obj2[propname]) return 0;
         if (obj1[propname] > obj2[propname]) return 1;
-        if (obj1[propname] < obj2[propname]) return -1;
+        return -1;
       });
     }
 
     // if this has no filters applied, just we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       // if we have a binary index and no other filters applied, we can use that instead of sorting (again)
-      if (this._collection.binaryIndices[propname] !== undefined) {
+      if (this._collection._binaryIndices[propname] !== undefined) {
         // make sure index is up-to-date
         this._collection.ensureIndex(propname as keyof TData);
         // copy index values into filteredRows
-        this._filteredRows = this._collection.binaryIndices[propname].values.slice(0);
+        this._filteredRows = this._collection._binaryIndices[propname].values.slice(0);
 
         if (options.desc) {
           this._filteredRows.reverse();
@@ -771,7 +762,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     }
 
     // see if query object is in shorthand mode (assuming eq operator)
-    let operator;
+    let operator = "";
     if (queryObjectOp === null || (typeof queryObjectOp !== "object" || queryObjectOp instanceof Date)) {
       operator = "$eq";
       value = queryObjectOp;
@@ -801,12 +792,12 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     const doIndexCheck = !this._filterInitialized;
 
     let searchByIndex = false;
-    if (doIndexCheck && this._collection.binaryIndices[property] && indexedOps[operator]) {
+    if (doIndexCheck && this._collection._binaryIndices[property] && indexedOps[operator]) {
       // this is where our lazy index rebuilding will take place
       // basically we will leave all indexes dirty until we need them
       // so here we will rebuild only the index tied to this property
       // ensureIndex() will only rebuild if flagged as dirty since we are not passing force=true param
-      if (this._collection.adaptiveBinaryIndices !== true) {
+      if (this._collection._adaptiveBinaryIndices !== true) {
         this._collection.ensureIndex(property);
       }
       searchByIndex = true;
@@ -830,16 +821,16 @@ export class ResultSet<TData extends object = object, TNested extends object = o
       let filter = this._filteredRows;
 
       if (property === "$fts") {
-        this._scoring = this._collection._fullTextSearch.search(query.$fts as FullTextSearchQuery);
+        this._scoring = this._collection._fullTextSearch.search(queryObject.$fts as FullTextSearchQuery);
         let keys = Object.keys(this._scoring);
         for (let i = 0; i < keys.length; i++) {
           if (filter.indexOf(+keys[i]) !== -1) {
             result.push(+keys[i]);
           }
         }
-      } else if (this._collection.constraints.unique[property] !== undefined && operator === "$eq") {
+      } else if (this._collection._constraints.unique[property] !== undefined && operator === "$eq") {
         // Use unique constraint for search.
-        let row = this._collection.constraints.unique[property].get(value);
+        let row = this._collection._constraints.unique[property].get(value);
         if (filter.indexOf(row) !== -1) {
           result.push(row);
         }
@@ -861,7 +852,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     this._filterInitialized = true; // next time work against filteredRows[]
 
     if (property === "$fts") {
-      this._scoring = this._collection._fullTextSearch.search(query.$fts as FullTextSearchQuery);
+      this._scoring = this._collection._fullTextSearch.search(queryObject.$fts as FullTextSearchQuery);
       let keys = Object.keys(this._scoring);
       for (let i = 0; i < keys.length; i++) {
         result.push(+keys[i]);
@@ -870,8 +861,8 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     }
 
     // Use unique constraint for search.
-    if (this._collection.constraints.unique[property] !== undefined && operator === "$eq") {
-      result.push(this._collection.constraints.unique[property].get(value));
+    if (this._collection._constraints.unique[property] !== undefined && operator === "$eq") {
+      result.push(this._collection._constraints.unique[property].get(value));
       return this;
     }
 
@@ -889,7 +880,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
       return this;
     }
 
-    let index = this._collection.binaryIndices[property];
+    let index = this._collection._binaryIndices[property];
     if (operator !== "$in") {
       // search by index
       const segm = this._collection.calculateRange(operator, property, value);
@@ -943,38 +934,35 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     } else {
       throw new TypeError("Argument is not a stored view or a function");
     }
-    try {
-      // If the filteredRows[] is already initialized, use it
-      if (this._filterInitialized) {
-        let j = this._filteredRows.length;
 
-        while (j--) {
-          if (viewFunction(this._collection._data[this._filteredRows[j]]) === true) {
-            result.push(this._filteredRows[j]);
-          }
+    // If the filteredRows[] is already initialized, use it
+    if (this._filterInitialized) {
+      let j = this._filteredRows.length;
+
+      while (j--) {
+        if (viewFunction(this._collection._data[this._filteredRows[j]]) === true) {
+          result.push(this._filteredRows[j]);
         }
-
-        this._filteredRows = result;
-
-        return this;
       }
-      // otherwise this is initial chained op, work against data, push into filteredRows[]
-      else {
-        let k = this._collection._data.length;
 
-        while (k--) {
-          if (viewFunction(this._collection._data[k]) === true) {
-            result.push(k);
-          }
+      this._filteredRows = result;
+
+      return this;
+    }
+    // otherwise this is initial chained op, work against data, push into filteredRows[]
+    else {
+      let k = this._collection._data.length;
+
+      while (k--) {
+        if (viewFunction(this._collection._data[k]) === true) {
+          result.push(k);
         }
-
-        this._filteredRows = result;
-        this._filterInitialized = true;
-
-        return this;
       }
-    } catch (err) {
-      throw err;
+
+      this._filteredRows = result;
+      this._filterInitialized = true;
+
+      return this;
     }
   }
 
@@ -1006,8 +994,8 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     let removeMeta: boolean;
     (
       {
-        forceClones,
-        forceCloneMethod = this._collection.cloneMethod,
+        forceClones = false,
+        forceCloneMethod = this._collection._cloneMethod,
         removeMeta = false
       } = options
     );
@@ -1024,7 +1012,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     }
 
     // if collection has delta changes active, then force clones and use CloneMethod.DEEP for effective change tracking of nested objects
-    if (!this._collection.disableDeltaChangesApi) {
+    if (!this._collection._disableDeltaChangesApi) {
       forceClones = true;
       forceCloneMethod = "deep";
     }
@@ -1033,7 +1021,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     if (!this._filterInitialized) {
       if (this._filteredRows.length === 0) {
         // determine whether we need to clone objects or not
-        if (this._collection.cloneObjects || forceClones) {
+        if (this._collection._cloneObjects || forceClones) {
           method = forceCloneMethod;
 
           for (let i = 0; i < data.length; i++) {
@@ -1057,7 +1045,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     }
 
     const fr = this._filteredRows;
-    if (this._collection.cloneObjects || forceClones) {
+    if (this._collection._cloneObjects || forceClones) {
       method = forceCloneMethod;
       for (let i = 0; i < fr.length; i++) {
         obj = this._collection._defineNestedProperties(clone(data[fr[i]], method));
@@ -1080,7 +1068,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    * @param {function} updateFunction - User supplied updateFunction(obj) will be executed for each document object.
    * @returns {ResultSet} this ResultSet for further chain ops.
    */
-  update(updateFunction: (obj: Doc<TData & TNested>) => Doc<TData & TNested>): this {
+  public update(updateFunction: (obj: Doc<TData & TNested>) => Doc<TData & TNested>): this {
     // if this has no filters applied, we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       this._filteredRows = this._collection._prepareFullDocIndex();
@@ -1145,7 +1133,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    */
   public eqJoin(joinData: Collection<any> | ResultSet<any> | any[], leftJoinKey: string | ((obj: any) => string),
                 rightJoinKey: string | ((obj: any) => string), mapFun?: (left: any, right: any) => any,
-                dataOptions?: ResultSet.DataOptions): ResultSet<any> {
+                dataOptions?: ResultSet.DataOptions): ResultSet<any, any> {
     let rightData = [];
     let rightDataLength;
     let key;
@@ -1211,8 +1199,8 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method
    * @return {ResultSet}
    */
-  map<U extends object>(mapFun: (obj: Doc<TData & TNested>, index: number, array: Doc<TData & TNested>[]) => U,
-                        dataOptions?: ResultSet.DataOptions): ResultSet<U> {
+  public map<U extends object>(mapFun: (obj: Doc<TData & TNested>, index: number, array: Doc<TData & TNested>[]) => U,
+                               dataOptions?: ResultSet.DataOptions): ResultSet<U> {
     const data = this.data(dataOptions).map(mapFun);
     //return return a new ResultSet with no filters
     this._collection = new Collection("mappedData");
@@ -1237,6 +1225,11 @@ export namespace ResultSet {
     useJavascriptSorting?: boolean;
   }
 
+  export type ContainsHelperType<R> =
+    R extends string ? string | string[] :
+      R extends any[] ? R[number] | R[number][] :
+        R extends object ? keyof R | (keyof R)[] : never;
+
   export type LokiOps<R> = {
     $eq?: R;
   } | {
@@ -1244,7 +1237,7 @@ export namespace ResultSet {
   } | {
     $ne?: R;
   } | {
-    $dteq?: R;
+    $dteq?: Date;
   } | {
     $gt?: R;
   } | {
@@ -1270,13 +1263,11 @@ export namespace ResultSet {
   } | {
     $regex?: RegExp | string | [string, string] // string and [string, string] are better for serialization
   } | {
-    $containsString?: string;
+    $containsNone?: ContainsHelperType<R>;
   } | {
-    $containsNone?: R[] | R; // Only R if string.
+    $containsAny?: ContainsHelperType<R>;
   } | {
-    $containsAny?: R[] | R; // Only R if string.
-  } | {
-    $contains?: any; // ? R without array!
+    $contains?: ContainsHelperType<R>;
   } | {
     $type?: string;
   } | {

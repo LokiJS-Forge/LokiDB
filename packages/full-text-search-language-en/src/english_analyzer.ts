@@ -6,8 +6,6 @@ import {Analyzer} from "../../full-text-search/src/analyzer/analyzer";
 import {
   generateTrimmer,
   generateStopWordFilter,
-  Among,
-  SnowballProgram
 } from "../../full-text-search-language/src/language";
 
 class EnglishStemmer {

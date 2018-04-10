@@ -113,7 +113,7 @@ export class IndexedStorage implements StorageAdapter {
 
     let resolve: ANY;
     let reject: ANY;
-    const result = new Promise((res: ANY, rej: ANY) => {
+    const result = new Promise<void>((res: ANY, rej: ANY) => {
       resolve = res;
       reject = rej;
     });
@@ -135,13 +135,13 @@ export class IndexedStorage implements StorageAdapter {
         cat.setAppKey(appName, dbname, dbstring, saveCallback);
       });
 
-      return Promise.resolve() as Promise<void>;
+      return result;
     }
 
     // set (add/update) entry to AKV database
     this.catalog.setAppKey(appName, dbname, dbstring, saveCallback);
 
-    return Promise.resolve() as Promise<void>;
+    return result;
   }
 
   /**

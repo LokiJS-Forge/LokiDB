@@ -312,20 +312,171 @@ describe("Individual operator tests", () => {
     expect(results.length).toEqual(1);
   });
 
-  it("$containsString", () => {
-    interface User {
-      name: string;
-    }
+  describe("$contains, $containsNone, $containsAny", () => {
 
-    const db = new Loki("db");
-    const coll = db.addCollection<User>("coll");
-    coll.insert({name: "mjolnir"});
+    describe("string", () => {
+      interface User {
+        name: string;
+      }
 
-    let results = coll.find({name: {$containsString: "mj"}});
-    expect(results.length).toEqual(1);
+      const db = new Loki("db");
+      const coll = db.addCollection<User>("coll");
+      coll.insert({name: "odin"});
+      coll.insert({name: "thor"});
+      coll.insert({name: "svafrlami"});
+      coll.insert({name: "arngrim"});
 
-    results = coll.find({name: {$containsString: "nj"}});
-    expect(results.length).toEqual(0);
+      it("$contains", () => {
+        let results = coll.find({name: {$contains: "d"}});
+        expect(results.length).toEqual(1);
+        expect(results[0].name).toEqual("odin");
+
+        results = coll.find({name: {$contains: ["o", "i"]}});
+        expect(results.length).toEqual(1);
+        expect(results[0].name).toEqual("odin");
+
+        results = coll.find({name: {$contains: "x"}});
+        expect(results.length).toEqual(0);
+      });
+
+      it("$containsNone", () => {
+        let results = coll.find({name: {$containsNone: "d"}});
+        expect(results.length).toEqual(3);
+        expect(results[0].name).toEqual("thor");
+        expect(results[1].name).toEqual("svafrlami");
+        expect(results[2].name).toEqual("arngrim");
+
+        results = coll.find({name: {$containsNone: ["i", "o"]}});
+        expect(results.length).toEqual(0);
+
+        results = coll.find({name: {$containsNone: "x"}});
+        expect(results.length).toEqual(4);
+      });
+
+      it("$containsAny", () => {
+        let results = coll.find({name: {$containsAny: "d"}});
+        expect(results.length).toEqual(1);
+        expect(results[0].name).toEqual("odin");
+
+        results = coll.find({name: {$containsAny: ["o", "i"]}});
+        expect(results.length).toEqual(4);
+
+        results = coll.find({name: {$containsAny: "x"}});
+        expect(results.length).toEqual(0);
+      });
+    });
+
+    describe("array", () => {
+      interface User {
+        name: string;
+        weapons: string[];
+      }
+
+      const db = new Loki("db");
+      const coll = db.addCollection<User>("coll");
+      coll.insert({name: "odin", weapons: ["gungnir", "draupnir"]});
+      coll.insert({name: "thor", weapons: ["mjolnir"]});
+      coll.insert({name: "svafrlami", weapons: ["tyrfing"]});
+      coll.insert({name: "arngrim", weapons: ["tyrfing"]});
+
+      it("$contains", () => {
+        let results = coll.find({weapons: {$contains: ["gungnir", "draupnir"]}});
+        expect(results.length).toEqual(1);
+        expect(results[0].name).toEqual("odin");
+
+        results = coll.find({weapons: {$contains: ["mjolnir"]}});
+        expect(results).toEqual(coll.find({weapons: {$contains: "mjolnir"}}));
+        expect(results.length).toEqual(1);
+        coll.find({weapons: {$contains: "mjolnir"}});
+
+        results = coll.find({weapons: {$contains: ["mjolnir", "tyrfing"]}});
+        expect(results.length).toEqual(0);
+      });
+
+      it("$containsNone", () => {
+        let results = coll.find({weapons: {$containsNone: ["mjolnir", "tyrfing"]}});
+        expect(results.length).toEqual(1);
+        expect(results[0].name).toEqual("odin");
+
+        results = coll.find({weapons: {$containsNone: ["draupnir"]}});
+        expect(results.length).toEqual(3);
+      });
+
+      it("$containsAny", () => {
+        let results = coll.find({weapons: {$containsAny: ["gungnir", "mjolnir"]}});
+        expect(results.length).toEqual(2);
+        expect(results[0].name).toEqual("odin");
+        expect(results[1].name).toEqual("thor");
+
+        results = coll.find({weapons: {$containsAny: ["svafrlami"]}});
+        expect(results.length).toEqual(0);
+      });
+    });
+
+    describe("object", () => {
+      interface User {
+        name: string;
+        options: {
+          a?: boolean;
+          b?: boolean;
+          c?: boolean;
+        };
+      }
+
+      const db = new Loki("db");
+      const coll = db.addCollection<User>("coll");
+      coll.insert({name: "odin", options: {a: true, b: true}});
+      coll.insert({name: "thor", options: {a: true}});
+      coll.insert({name: "svafrlami", options: {}});
+      coll.insert({name: "arngrim", options: {b: true}});
+
+      it("$contains", () => {
+        let results = coll.find({options: {$contains: ["a", "b"]}});
+        expect(results.length).toEqual(1);
+        expect(results[0].name).toEqual("odin");
+
+        results = coll.find({options: {$contains: ["a"]}});
+        expect(results).toEqual(coll.find({options: {$contains: "a"}}));
+        expect(results.length).toEqual(2);
+        expect(results[0].name).toEqual("odin");
+        expect(results[1].name).toEqual("thor");
+
+        results = coll.find({options: {$contains: ["c"]}});
+        expect(results.length).toEqual(0);
+      });
+
+      it("$containsNone", () => {
+        let results = coll.find({options: {$containsNone: ["a"]}});
+        expect(results).toEqual(coll.find({options: {$containsNone: "a"}}));
+        expect(results.length).toEqual(2);
+        expect(results[0].name).toEqual("svafrlami");
+        expect(results[1].name).toEqual("arngrim");
+
+        results = coll.find({options: {$containsNone: ["a", "b"]}});
+        expect(results.length).toEqual(1);
+        expect(results[0].name).toEqual("svafrlami");
+
+        results = coll.find({options: {$containsNone: ["c"]}});
+        expect(results.length).toEqual(4);
+      });
+
+      it("$containsAny", () => {
+        let results = coll.find({options: {$containsAny: ["a", "b"]}});
+        expect(results.length).toEqual(3);
+        expect(results[0].name).toEqual("odin");
+        expect(results[1].name).toEqual("thor");
+        expect(results[2].name).toEqual("arngrim");
+
+        results = coll.find({options: {$containsAny: ["b"]}});
+        expect(results).toEqual(coll.find({options: {$containsAny: "b"}}));
+        expect(results.length).toEqual( 2);
+        expect(results[0].name).toEqual("odin");
+        expect(results[1].name).toEqual("arngrim");
+
+        results = coll.find({options: {$containsAny: ["c"]}});
+        expect(results.length).toEqual(0);
+      });
+    });
   });
 
   it("ops work with mixed datatypes", () => {
@@ -377,22 +528,22 @@ describe("Individual operator tests", () => {
 
   it("js range ops work as expected", () => {
     const db = new Loki("db");
-    const coll = db.addCollection<{a: string | number, b:number}>("coll");
+    const coll = db.addCollection<{ a: string | number, b: number }>("coll");
 
-    coll.insert({ a: null, b: 5});
-    coll.insert({ a: "11", b: 5});
-    coll.insert({ a: 2, b: 5});
-    coll.insert({ a: "1", b: 5});
-    coll.insert({ a: "4", b: 5});
-    coll.insert({ a: 7.2, b: 5});
-    coll.insert({ a: "5", b: 5});
-    coll.insert({ a: 4, b: 5});
-    coll.insert({ a: "18.1", b: 5});
+    coll.insert({a: null, b: 5});
+    coll.insert({a: "11", b: 5});
+    coll.insert({a: 2, b: 5});
+    coll.insert({a: "1", b: 5});
+    coll.insert({a: "4", b: 5});
+    coll.insert({a: 7.2, b: 5});
+    coll.insert({a: "5", b: 5});
+    coll.insert({a: 4, b: 5});
+    coll.insert({a: "18.1", b: 5});
 
-    expect(coll.find({ a: { $jgt: 5 } }).length).toEqual(3);
-    expect(coll.find({ a: { $jgte: 5 } }).length).toEqual(4);
-    expect(coll.find({ a: { $jlt: 7.2 } }).length).toEqual(6);
-    expect(coll.find({ a: { $jlte: 7.2 } }).length).toEqual(7);
-    expect(coll.find({ a: { $jbetween: [3.2, 7.8] } }).length).toEqual(4);
+    expect(coll.find({a: {$jgt: 5}}).length).toEqual(3);
+    expect(coll.find({a: {$jgte: 5}}).length).toEqual(4);
+    expect(coll.find({a: {$jlt: 7.2}}).length).toEqual(6);
+    expect(coll.find({a: {$jlte: 7.2}}).length).toEqual(7);
+    expect(coll.find({a: {$jbetween: [3.2, 7.8]}}).length).toEqual(4);
   });
 });

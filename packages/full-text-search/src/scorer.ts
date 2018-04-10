@@ -7,11 +7,10 @@ import {Query} from "./query_types";
  */
 export class Scorer {
   private _invIdxs: Dict<InvertedIndex>;
-  private _cache: Dict<Scorer.IDFCache>;
+  private _cache: Dict<Scorer.IDFCache> = {};
 
   constructor(invIdxs: Dict<InvertedIndex>) {
     this._invIdxs = invIdxs;
-    this._cache = {};
   }
 
   public setDirty(): void {
@@ -40,7 +39,7 @@ export class Scorer {
     }
   }
 
-  public scoreConstant(boost: number, docId: number, queryResults: Scorer.QueryResults) {
+  public scoreConstant(boost: number, docId: number, queryResults: Scorer.QueryResults): Scorer.QueryResults {
     if (!queryResults.has(docId)) {
       queryResults.set(docId, []);
     }
@@ -63,7 +62,7 @@ export class Scorer {
         if (queryResult.tf !== undefined) {
           // BM25 scoring.
           const tf = queryResult.tf;
-          const fieldLength = Scorer._calculateFieldLength(this._invIdxs[queryResult.fieldName].documentStore.get(+docId)
+          const fieldLength = Scorer._calculateFieldLength(this._invIdxs[queryResult.fieldName].docStore.get(+docId)
             .fieldLength);
           const avgFieldLength = this._avgFieldLength(queryResult.fieldName);
           const tfNorm = (tf * (k1 + 1)) / (tf + k1 * (1 - b + b * (fieldLength / avgFieldLength)));
@@ -116,7 +115,7 @@ export class Scorer {
 
   private _getCache(fieldName: string): Scorer.IDFCache {
     if (this._cache[fieldName] === undefined) {
-      const avgFieldLength = this._invIdxs[fieldName].totalFieldLength / this._invIdxs[fieldName].documentCount;
+      const avgFieldLength = this._invIdxs[fieldName].totalFieldLength / this._invIdxs[fieldName].docCount;
       this._cache[fieldName] = {idfs: {}, avgFieldLength};
     }
     return this._cache[fieldName];
@@ -134,7 +133,7 @@ export class Scorer {
     if (cache.idfs[docFreq] !== undefined) {
       return cache.idfs[docFreq];
     }
-    return cache.idfs[docFreq] = Math.log(1 + (this._invIdxs[fieldName].documentCount - docFreq + 0.5) / (docFreq + 0.5));
+    return cache.idfs[docFreq] = Math.log(1 + (this._invIdxs[fieldName].docCount - docFreq + 0.5) / (docFreq + 0.5));
   }
 
   private _avgFieldLength(fieldName: string): number {

@@ -58,7 +58,7 @@ export class ParametricDescription {
     return absState % (this._w + 1);
   }
 
-  public unpack(data: Long[], index: number, bitsPerValue: number): number {
+  public static unpack(data: Long[], index: number, bitsPerValue: number): number {
     const bitLoc = bitsPerValue * index;
     const dataLoc = (bitLoc >> 6);
     const bitStart = (bitLoc & 63);

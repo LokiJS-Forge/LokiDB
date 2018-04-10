@@ -82,7 +82,7 @@ function fieldLengthES6(fieldLength: number) {
       // normal value
       let shift = numBits - 4;
       // only keep the 5 most significant bits
-      let encoded = (i >> shift);//Math.toIntExact(i >>> shift);
+      let encoded = (i >>> shift);
       // clear the most significant bit, which is implicit
       encoded &= 0x07;
       // encode the shift, adding 1 because 0 is reserved for subnormal values
@@ -105,8 +105,8 @@ function fieldLengthES6(fieldLength: number) {
     return decoded;
   }
 
-  let MAX_INT4 = longToInt4(Math.pow(2, 31));
-  let NUM_FREE_VALUES = 24;//64 - MAX_INT4;
+  const MAX_INT4 = longToInt4(Math.pow(2, 31) - 1);
+  const NUM_FREE_VALUES = 255 - MAX_INT4;
 
   function intToByte4(i: number) {
     if (i < NUM_FREE_VALUES) {
@@ -203,6 +203,7 @@ describe("Compare scoring against elasticsearch", () => {
 
           for (let j = 0; j < ftsHitDocs.length; j++) {
             if (esHits[j] === undefined) {
+              fail("Missmatching documents:" + ftsHitDocs[j]);
               expect(false).toBe(true);
             }
             let esID = esHits[j]._id;
@@ -219,7 +220,7 @@ describe("Compare scoring against elasticsearch", () => {
           done();
         })
         .catch((e) => {
-          expect(false).toBe(true);
+          fail(e);
           done();
         });
     });

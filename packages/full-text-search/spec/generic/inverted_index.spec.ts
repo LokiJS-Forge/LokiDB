@@ -11,8 +11,8 @@ describe("inverted index", () => {
 
   it("get", () => {
     let ii = new InvertedIndex();
-    expect(ii.documentCount).toBeNumber();
-    expect(ii.documentStore instanceof Map).toBeTrue();
+    expect(ii.docCount).toBeNumber();
+    expect(ii.docStore instanceof Map).toBeTrue();
     expect(ii.totalFieldLength).toBeNumber();
     expect(ii.analyzer).toBeObject();
     expect(ii.root instanceof Map).toBeTrue();
@@ -121,8 +121,8 @@ describe("inverted index", () => {
     ii2.insert(field3, 3);
 
     expect(JSON.stringify(ii1)).toEqual(JSON.stringify(ii2));
-    ii1.store = true;
-    ii2.store = true;
+    ii1["_store"] = true;
+    ii2["_store"] = true;
     expect(JSON.stringify(ii1)).toEqual(JSON.stringify(ii2));
 
     ii2.insert(field4, 4);

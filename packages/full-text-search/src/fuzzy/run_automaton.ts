@@ -33,7 +33,7 @@ export class RunAutomaton {
     }
   }
 
-  getCharClass(c: number): number {
+  public getCharClass(c: number): number {
     // binary search
     let a = 0;
     let b = this._points.length;
@@ -50,7 +50,7 @@ export class RunAutomaton {
     return a;
   }
 
-  step(state: number, c: number): number {
+  public step(state: number, c: number): number {
     if (c >= this._classmap.length) {
       return this._transitions[state * this._points.length + this.getCharClass(c)];
     } else {
@@ -58,7 +58,7 @@ export class RunAutomaton {
     }
   }
 
-  isAccept(state: number): boolean {
+  public isAccept(state: number): boolean {
     return this._accept[state];
   }
 }

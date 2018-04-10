@@ -92,7 +92,7 @@ describe("dynamicviews", () => {
       expect(dv.data().length).toEqual(2);
       expect(dv["_filterPipeline"].length).toEqual(2);
 
-      dv._rematerialize({removeWhereFilters: true});
+      dv["_rematerialize"]({removeWhereFilters: true});
       expect(dv.data().length).toEqual(2);
       expect(dv["_filterPipeline"].length).toEqual(1);
     });
@@ -305,7 +305,7 @@ describe("dynamicviews", () => {
       const db = new Loki("testCollections");
       db.initializePersistence({adapter: mem})
         .then(() => {
-          expect(db.getName()).toEqual("testCollections");
+          expect(db.filename).toEqual("testCollections");
 
           const t = db.addCollection<any>("test1", {
             transactional: true

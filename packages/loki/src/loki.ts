@@ -18,7 +18,6 @@ function getENV(): Loki.Environment {
     }
   }
 
-  const isBrowser = window !== undefined && ({}).toString.call(window) === "[object Window]";
   if (document !== undefined) {
     if (document.URL.indexOf("http://") === -1 && document.URL.indexOf("https://") === -1) {
       return "CORDOVA";
@@ -26,34 +25,46 @@ function getENV(): Loki.Environment {
     return "BROWSER";
   }
 
-  if (!isBrowser) {
-    throw SyntaxError("Unknown environment...");
+  const isBrowser = window !== undefined && ({}).toString.call(window) === "[object Window]";
+  if (isBrowser) {
+    return "BROWSER";
   }
+  throw SyntaxError("Unknown environment...");
 }
 
 export class Loki extends LokiEventEmitter {
+  public filename: string;
 
-  private filename: string;
-  private databaseVersion: number;
-  private engineVersion: number;
+  // persist version of code which created the database to the database.
+  // could use for upgrade scenarios
+  private databaseVersion: number = 1.5; // TODO
+  private engineVersion: number = 1.5;
 
-  private _collections: Collection[];
-  private _verbose: boolean;
+  public _collections: Collection[];
 
   private _env: Loki.Environment;
 
+  // currently keeping persistenceMethod and persistenceAdapter as loki level properties that
+  // will not or cannot be deserialized  You are required to configure persistence every time
+  // you instantiate a loki object (or use default environment detection) in order to load the database anyways.
   private _serializationMethod: Loki.SerializationMethod;
   private _destructureDelimiter: string;
-  private _persistenceMethod: Loki.PersistenceMethod;
-  private _persistenceAdapter: StorageAdapter;
+  // persistenceMethod could be 'fs', 'localStorage', or 'adapter'
+  // this is optional option param, otherwise environment detection will be used
+  // if user passes their own adapter we will force this method to 'adapter' later, so no need to pass method option.
+  private _persistenceMethod: Loki.PersistenceMethod = null;
+  // retain reference to optional (non-serializable) persistenceAdapter 'instance'
+  private _persistenceAdapter: StorageAdapter = null;
 
-  private _throttledSaves: boolean;
-  private _throttledSaveRunning: Promise<void>;
-  private _throttledSavePending: Promise<void>;
+  // flags used to throttle saves
+  private _throttledSaves: boolean = true;
+  private _throttledSaveRunning: Promise<void> = null;
+  private _throttledSavePending: Promise<void> = null;
 
-  private _autosave: boolean;
-  private _autosaveInterval: number;
-  private _autosaveHandle: Function;
+  // autosave support (disabled by default)
+  private _autosave: boolean = false;
+  private _autosaveInterval: number = 5000;
+  private _autosaveHandle: Function = null;
 
 
   /**
@@ -63,7 +74,6 @@ export class Loki extends LokiEventEmitter {
    * @param {Loki.Environment} [options.env] - the javascript environment
    * @param {Loki.SerializationMethod} [options.serializationMethod=NORMAL] - the serialization method
    * @param {string} [options.destructureDelimiter="$<\n"] - string delimiter used for destructured serialization
-   * @param {boolean} [options.verbose=false] - enable console output
    */
   constructor(filename = "loki.db", options: Loki.Options = {}) {
     super();
@@ -75,39 +85,11 @@ export class Loki extends LokiEventEmitter {
       {
         serializationMethod: this._serializationMethod = "normal",
         destructureDelimiter: this._destructureDelimiter = "$<\n",
-        verbose: this._verbose = false,
         env: this._env = getENV()
       } = options
     );
 
-    // persist version of code which created the database to the database.
-    // could use for upgrade scenarios
-    this.databaseVersion = 1.5;
-    this.engineVersion = 1.5;
-
-    // autosave support (disabled by default)
-    this._autosave = false;
-    this._autosaveInterval = 5000;
-    this._autosaveHandle = null;
-    this._throttledSaves = true;
-
-    // currently keeping persistenceMethod and persistenceAdapter as loki level properties that
-    // will not or cannot be deserialized  You are required to configure persistence every time
-    // you instantiate a loki object (or use default environment detection) in order to load the database anyways.
-
-    // persistenceMethod could be 'fs', 'localStorage', or 'adapter'
-    // this is optional option param, otherwise environment detection will be used
-    // if user passes their own adapter we will force this method to 'adapter' later, so no need to pass method option.
-    this._persistenceMethod = null;
-
-    // retain reference to optional (non-serializable) persistenceAdapter 'instance'
-    this._persistenceAdapter = null;
-
-    // flags used to throttle saves
-    this._throttledSaveRunning = null;
-    this._throttledSavePending = null;
-
-    this.events = {
+    this._events = {
       "init": [],
       "loaded": [],
       "flushChanges": [],
@@ -226,8 +208,8 @@ export class Loki extends LokiEventEmitter {
       databaseCopy._persistenceAdapter = null;
 
       for (let idx = 0; idx < databaseCopy._collections.length; idx++) {
-        databaseCopy._collections[idx].constraints = null;
-        databaseCopy._collections[idx].ttl = null;
+        databaseCopy._collections[idx]._constraints = null;
+        databaseCopy._collections[idx]._ttl = null;
       }
     }
 
@@ -261,10 +243,6 @@ export class Loki extends LokiEventEmitter {
     // Create a new collection otherwise.
     const collection = new Collection<TData, TNested>(name, options);
     this._collections.push(collection);
-
-    if (this._verbose) {
-      collection.console = console;
-    }
     return collection;
   }
 
@@ -337,10 +315,6 @@ export class Loki extends LokiEventEmitter {
     }
   }
 
-  public getName(): string {
-    return this.filename;
-  }
-
   /**
    * Serialize database to a string which can be loaded via {@link Loki#loadJSON}
    *
@@ -376,8 +350,7 @@ export class Loki extends LokiEventEmitter {
       filename: this.filename,
       _persistenceAdapter: this._persistenceAdapter,
       _persistenceMethod: this._persistenceMethod,
-      _throttledSaves: this._throttledSaves,
-      _verbose: this._verbose
+      _throttledSaves: this._throttledSaves
     };
   }
 
@@ -1002,7 +975,7 @@ export class Loki extends LokiEventEmitter {
    */
   private _autosaveDirty(): boolean {
     for (let idx = 0; idx < this._collections.length; idx++) {
-      if (this._collections[idx].dirty) {
+      if (this._collections[idx]._dirty) {
         return true;
       }
     }
@@ -1014,7 +987,7 @@ export class Loki extends LokiEventEmitter {
    */
   private _autosaveClearFlags() {
     for (let idx = 0; idx < this._collections.length; idx++) {
-      this._collections[idx].dirty = false;
+      this._collections[idx]._dirty = false;
     }
   }
 
@@ -1058,7 +1031,6 @@ export namespace Loki {
     env?: Environment;
     serializationMethod?: SerializationMethod;
     destructureDelimiter?: string;
-    verbose?: boolean;
   }
 
   export interface PersistenceOptions {
@@ -1111,7 +1083,6 @@ export namespace Loki {
     _persistenceAdapter: StorageAdapter;
     _persistenceMethod: PersistenceMethod;
     _throttledSaves: boolean;
-    _verbose: boolean;
   }
 
   export type LoadDatabaseOptions = Collection.DeserializeOptions & ThrottledDrainOptions;

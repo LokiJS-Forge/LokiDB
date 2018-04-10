@@ -2,7 +2,6 @@
 import {Loki} from "../../src/loki";
 import {MemoryStorage} from "../../../memory-storage/src/memory_storage";
 import {Collection} from "../../src/collection";
-import SerializationMethod = Loki.SerializationMethod;
 import {StorageAdapter} from "../../../common/types";
 
 interface AB {
@@ -49,7 +48,7 @@ describe("testing unique index serialization", () => {
     reloaded.loadJSON(ser);
     const coll = reloaded.getCollection<AUser>("users");
     expect(coll.count()).toEqual(4);
-    expect(coll.constraints.unique["username"]).toBeDefined();
+    expect(coll._constraints.unique["username"]).toBeDefined();
     const joe = coll.by("username", "joe");
     expect(joe).toBeDefined();
     expect(joe.username).toEqual("joe");
@@ -105,7 +104,7 @@ describe("testing nested binary index serialization", () => {
     reloaded.loadJSON(ser);
     const coll = reloaded.getCollection<AUser, Nested>("users");
     expect(coll.count()).toEqual(4);
-    expect(coll.binaryIndices["user.id"].values.length).toBe(4);
+    expect(coll._binaryIndices["user.id"].values.length).toBe(4);
     const joe = coll.find({"user.id": 1})[0];
     expect(joe).toBeDefined();
     expect(joe.user.id).toEqual(1);
@@ -124,7 +123,7 @@ describe("testing disable meta serialization", function () {
     const reloaded = new Loki();
     reloaded.loadJSON(ser);
     const coll = reloaded.getCollection("users");
-    expect(coll["disableMeta"]).toEqual(true);
+    expect(coll["_disableMeta"]).toEqual(true);
   });
 });
 
@@ -420,7 +419,7 @@ describe("testing adapter functionality", () => {
         return Promise.resolve();
       }
 
-      deleteDatabase(name: string) {
+      deleteDatabase() {
         return Promise.resolve();
       }
 

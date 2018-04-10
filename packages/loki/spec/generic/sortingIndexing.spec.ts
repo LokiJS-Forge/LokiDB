@@ -1,6 +1,5 @@
 /* global describe, beforeEach, it, expect */
 import {Loki} from "../../src/loki";
-import {Collection} from "../../src/collection";
 import {LokiOps} from "../../src/result_set";
 
 describe("sorting and indexing", () => {
@@ -136,7 +135,7 @@ describe("sorting and indexing", () => {
     const sortfun = (obj1: Sortable, obj2: Sortable) => {
       if (obj1.a === obj2.a) return 0;
       if (obj1.a > obj2.a) return 1;
-      if (obj1.a < obj2.a) return -1;
+      return -1;
     };
 
     const result = coll.chain().sort(sortfun).data();
@@ -270,7 +269,7 @@ describe("sorting and indexing", () => {
       indexVals = [];
       coll.ensureIndex("a");
 
-      coll["binaryIndices"].a.values.forEach((vi: any) => {
+      coll["_binaryIndices"].a.values.forEach((vi: any) => {
         indexVals.push(coll._data[vi].a);
       });
 
@@ -336,11 +335,11 @@ describe("sorting and indexing", () => {
 
       // now verify indices
       // they are array of 'positions' so both array index and value are zero based
-      expect(cidx["binaryIndices"].b.values[0]).toBe(2);
-      expect(cidx["binaryIndices"].b.values[1]).toBe(4);
-      expect(cidx["binaryIndices"].b.values[2]).toBe(0);
-      expect(cidx["binaryIndices"].b.values[3]).toBe(3);
-      expect(cidx["binaryIndices"].b.values[4]).toBe(1);
+      expect(cidx["_binaryIndices"].b.values[0]).toBe(2);
+      expect(cidx["_binaryIndices"].b.values[1]).toBe(4);
+      expect(cidx["_binaryIndices"].b.values[2]).toBe(0);
+      expect(cidx["_binaryIndices"].b.values[3]).toBe(3);
+      expect(cidx["_binaryIndices"].b.values[4]).toBe(1);
     });
   });
 

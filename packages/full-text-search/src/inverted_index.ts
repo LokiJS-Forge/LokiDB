@@ -1,4 +1,3 @@
-import Index = InvertedIndex.Index;
 import {Analyzer, StandardAnalyzer, analyze} from "./analyzer/analyzer";
 
 /**
@@ -28,13 +27,14 @@ export function toCodePoints(str: string): number[] {
  * @hidden
  */
 export class InvertedIndex {
+  public analyzer: Analyzer;
+  public docCount: number = 0;
+  public docStore: Map<number, InvertedIndex.DocStore> = new Map();
+  public totalFieldLength: number = 0;
+  public root: InvertedIndex.Index = new Map();
+
   private _store: boolean;
   private _optimizeChanges: boolean;
-  private _analyzer: Analyzer;
-  private _docCount: number = 0;
-  private _docStore: Map<number, InvertedIndex.DocStore> = new Map();
-  private _totalFieldLength: number = 0;
-  private _root: Index = new Map();
 
   /**
    * @param {boolean} [options.store=true] - inverted index will be stored at serialization rather than rebuilt on load
@@ -46,37 +46,9 @@ export class InvertedIndex {
       {
         store: this._store = true,
         optimizeChanges: this._optimizeChanges = true,
-        analyzer: this._analyzer = new StandardAnalyzer()
+        analyzer: this.analyzer = new StandardAnalyzer()
       } = options
     );
-  }
-
-  get store() {
-    return this._store;
-  }
-
-  set store(val: boolean) {
-    this._store = val;
-  }
-
-  get analyzer() {
-    return this._analyzer;
-  }
-
-  get documentCount() {
-    return this._docCount;
-  }
-
-  get documentStore() {
-    return this._docStore;
-  }
-
-  get totalFieldLength() {
-    return this._totalFieldLength;
-  }
-
-  get root() {
-    return this._root;
   }
 
   /**
@@ -84,21 +56,21 @@ export class InvertedIndex {
    * @param {string} field - the field to add
    * @param {number} docId - the doc id of the field
    */
-  insert(field: string, docId: number) {
-    if (this._docStore.has(docId)) {
+  public insert(field: string, docId: number): void {
+    if (this.docStore.has(docId)) {
       throw Error("Field already added.");
     }
 
     // Tokenize document field.
-    const fieldTokens = analyze(this._analyzer, field);
-    this._totalFieldLength += fieldTokens.length;
-    this._docCount += 1;
-    this._docStore.set(docId, {fieldLength: fieldTokens.length});
+    const fieldTokens = analyze(this.analyzer, field);
+    this.totalFieldLength += fieldTokens.length;
+    this.docCount += 1;
+    this.docStore.set(docId, {fieldLength: fieldTokens.length});
 
     // Holds references to each index of a document.
-    const indexRef: Index[] = [];
+    const indexRef: InvertedIndex.Index[] = [];
     if (this._optimizeChanges) {
-      Object.defineProperties(this._docStore.get(docId), {
+      Object.defineProperties(this.docStore.get(docId), {
         indexRef: {enumerable: false, configurable: true, writable: true, value: indexRef}
       });
     }
@@ -114,7 +86,7 @@ export class InvertedIndex {
       }
 
       // Add term to index tree.
-      let branch = this._root;
+      let branch = this.root;
 
       for (const c of toCodePoints(token)) {
         let child = branch.get(c);
@@ -144,17 +116,17 @@ export class InvertedIndex {
    * Removes all relevant terms of a document from the inverted index.
    * @param {number} docId - the document.
    */
-  remove(docId: number) {
-    if (!this._docStore.has(docId)) {
+  public remove(docId: number): void {
+    if (!this.docStore.has(docId)) {
       return;
     }
-    const docStore = this._docStore.get(docId);
+    const docStore = this.docStore.get(docId);
     // Remove document.
-    this._docStore.delete(docId);
-    this._docCount -= 1;
+    this.docStore.delete(docId);
+    this.docCount -= 1;
 
     // Reduce total field length.
-    this._totalFieldLength -= docStore.fieldLength;
+    this.totalFieldLength -= docStore.fieldLength;
 
     if (this._optimizeChanges) {
       // Iterate over all term references.
@@ -196,7 +168,7 @@ export class InvertedIndex {
         }
       }
     } else {
-      this._remove(this._root, docId);
+      this._remove(this.root, docId);
     }
   }
 
@@ -207,7 +179,7 @@ export class InvertedIndex {
    * @param {number} start - the position of the term string to start from
    * @return {object} - The term index or null if the term is not in the term tree.
    */
-  static getTermIndex(term: number[], root: Index, start: number = 0) {
+  public static getTermIndex(term: number[], root: InvertedIndex.Index, start: number = 0): InvertedIndex.Index {
     if (start >= term.length) {
       return null;
     }
@@ -228,7 +200,7 @@ export class InvertedIndex {
    * @param {Array} termIndices - all extended indices with their term
    * @returns {Array} - Array with term indices and extension
    */
-  static extendTermIndex(idx: Index, term: number[] = [], termIndices: InvertedIndex.IndexTerm[] = []): InvertedIndex.IndexTerm[] {
+  public static extendTermIndex(idx: InvertedIndex.Index, term: number[] = [], termIndices: InvertedIndex.IndexTerm[] = []): InvertedIndex.IndexTerm[] {
     if (idx.df !== undefined) {
       termIndices.push({index: idx, term: term.slice()});
     }
@@ -246,15 +218,15 @@ export class InvertedIndex {
    * Serialize the inverted index.
    * @returns {{docStore: *, _fields: *, index: *}}
    */
-  public toJSON() {
+  public toJSON(): InvertedIndex.Serialization {
     if (this._store) {
       return {
         _store: true,
         _optimizeChanges: this._optimizeChanges,
-        _docCount: this._docCount,
-        _docStore: [...this._docStore],
-        _totalFieldLength: this._totalFieldLength,
-        _root: InvertedIndex.serializeIndex(this._root)
+        docCount: this.docCount,
+        docStore: [...this.docStore],
+        totalFieldLength: this.totalFieldLength,
+        root: InvertedIndex._serializeIndex(this.root)
       };
     }
     return {
@@ -268,27 +240,28 @@ export class InvertedIndex {
    * @param {{docStore: *, _fields: *, index: *}} serialized - The serialized inverted index.
    * @param {Analyzer} analyzer[undefined] - an analyzer
    */
-  public static fromJSONObject(serialized: InvertedIndex.Serialization, analyzer?: Analyzer) {
+  public static fromJSONObject(serialized: InvertedIndex.Serialization, analyzer?: Analyzer): InvertedIndex {
     const invIdx = new InvertedIndex({
       store: serialized._store,
       optimizeChanges: serialized._optimizeChanges,
       analyzer: analyzer
     });
-    if (invIdx._store) {
-      invIdx._docCount = serialized._docCount;
-      invIdx._docStore = new Map(serialized._docStore);
-      invIdx._totalFieldLength = serialized._totalFieldLength;
-      invIdx._root = InvertedIndex.deserializeIndex(serialized._root);
+
+    if (serialized._store) {
+      invIdx.docCount = serialized.docCount;
+      invIdx.docStore = new Map(serialized.docStore);
+      invIdx.totalFieldLength = serialized.totalFieldLength;
+      invIdx.root = InvertedIndex._deserializeIndex(serialized.root);
     }
 
     if (invIdx._optimizeChanges) {
-      invIdx._regenerate(invIdx._root, null);
+      invIdx._regenerate(invIdx.root, null);
     }
 
     return invIdx;
   }
 
-  private static serializeIndex(idx: Index): InvertedIndex.SerializedIndex {
+  private static _serializeIndex(idx: InvertedIndex.Index): InvertedIndex.SerializedIndex {
     const serialized: InvertedIndex.SerializedIndex = {};
     if (idx.dc !== undefined) {
       serialized.d = {df: idx.df, dc: [...idx.dc]};
@@ -302,7 +275,7 @@ export class InvertedIndex {
     const values = [];
     for (const child of idx) {
       keys.push(child[0]);
-      values.push(InvertedIndex.serializeIndex(child[1]));
+      values.push(InvertedIndex._serializeIndex(child[1]));
     }
     serialized.k = keys;
     serialized.v = values;
@@ -310,12 +283,12 @@ export class InvertedIndex {
     return serialized;
   }
 
-  private static deserializeIndex(serialized: InvertedIndex.SerializedIndex): Index {
-    const idx: Index = new Map();
+  private static _deserializeIndex(serialized: InvertedIndex.SerializedIndex): InvertedIndex.Index {
+    const idx: InvertedIndex.Index = new Map();
 
     if (serialized.k !== undefined) {
       for (let i = 0; i < serialized.k.length; i++) {
-        idx.set(serialized.k[i], InvertedIndex.deserializeIndex(serialized.v[i]));
+        idx.set(serialized.k[i], InvertedIndex._deserializeIndex(serialized.v[i]));
       }
     }
     if (serialized.d !== undefined) {
@@ -330,7 +303,7 @@ export class InvertedIndex {
    * @param {Index} index - the index
    * @param {Index} parent - the parent
    */
-  private _regenerate(index: Index, parent: Index) {
+  private _regenerate(index: InvertedIndex.Index, parent: InvertedIndex.Index): void {
     // Set parent.
     if (parent !== null) {
       index.pa = parent;
@@ -345,7 +318,7 @@ export class InvertedIndex {
       // Get documents of term.
       for (const docId of index.dc.keys()) {
         // Get document store at specific document/field.
-        const ref = this._docStore.get(docId);
+        const ref = this.docStore.get(docId);
         if (ref.indexRef === undefined) {
           Object.defineProperties(ref, {
             indexRef: {enumerable: false, configurable: true, writable: true, value: []}
@@ -365,7 +338,7 @@ export class InvertedIndex {
    * @param {number} docId - the doc id
    * @returns {boolean} true if index is empty
    */
-  private _remove(idx: Index, docId: number) {
+  private _remove(idx: InvertedIndex.Index, docId: number): boolean {
     for (const child of idx) {
       // Checkout branch.
       if (this._remove(child[1], docId)) {
@@ -409,14 +382,21 @@ export namespace InvertedIndex {
     v?: SerializedIndex[];
   }
 
-  export interface Serialization {
-    _store: boolean;
+  export type Serialization = SpareSerialization | FullSerialization;
+
+  export type SpareSerialization = {
+    _store: false;
     _optimizeChanges: boolean;
-    _docCount?: number;
-    _docStore?: Map<number, DocStore>;
-    _totalFieldLength?: number;
-    _root?: SerializedIndex;
-  }
+  };
+
+  export type FullSerialization = {
+    _store: true;
+    _optimizeChanges: boolean;
+    docCount: number;
+    docStore: [number, DocStore][];
+    totalFieldLength: number;
+    root: SerializedIndex;
+  };
 
   export interface DocStore {
     fieldLength?: number;

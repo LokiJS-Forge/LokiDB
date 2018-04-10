@@ -17,7 +17,7 @@ describe("eventEmitter", () => {
   });
 
   it("async", function testAsync() {
-    expect(db["asyncListeners"]).toBe(false);
+    expect(db["_asyncListeners"]).toBe(false);
   });
 
   it("emit", () => {
@@ -25,9 +25,9 @@ describe("eventEmitter", () => {
       expect(obj).toEqual(42);
     });
 
-    db.emit("test", 42);
+    db["emit"]("test", 42);
     db.removeListener("test", index);
 
-    expect(db["events"]["test"].length).toEqual(0);
+    expect(db["_events"]["test"].length).toEqual(0);
   });
 });

@@ -2,7 +2,6 @@
 import {Loki} from "../../src/loki";
 import {Collection} from "../../src/collection";
 import Transform = Collection.Transform;
-import {Doc} from "../../../common/types";
 
 describe("transforms", () => {
   interface User {

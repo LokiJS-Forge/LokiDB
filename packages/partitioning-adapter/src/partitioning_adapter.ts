@@ -89,7 +89,7 @@ export class PartitioningAdapter implements StorageAdapter {
       this._dbref.loadJSONObject(db);
       db = null;
 
-      if (this._dbref["_collections"].length === 0) {
+      if (this._dbref._collections.length === 0) {
         return this._dbref;
       }
 
@@ -116,13 +116,14 @@ export class PartitioningAdapter implements StorageAdapter {
 
     const keyname = this._dbname + "." + partition;
     return this._adapter.loadDatabase(keyname).then((result: string) => {
-      this._dbref["_collections"][partition]._data = this._dbref.deserializeCollection(result, {
+      this._dbref._collections[partition]._data = this._dbref.deserializeCollection(result, {
         delimited: true
       });
 
-      if (++partition < this._dbref["_collections"].length) {
+      if (++partition < this._dbref._collections.length) {
         return this._loadNextPartition(partition);
       }
+      return Promise.resolve();
     });
   }
 
@@ -155,7 +156,7 @@ export class PartitioningAdapter implements StorageAdapter {
 
       // convert stringified array elements to object instances and push to collection data
       for (let idx = 0; idx < dlen; idx++) {
-        this._dbref["_collections"][this._pageIterator.collection]._data.push(JSON.parse(data[idx]));
+        this._dbref._collections[this._pageIterator.collection]._data.push(JSON.parse(data[idx]));
         data[idx] = null;
       }
       data = [];
@@ -163,13 +164,14 @@ export class PartitioningAdapter implements StorageAdapter {
       // if last page, we are done with this partition
       if (isLastPage) {
         // if there are more partitions, kick off next partition load
-        if (++this._pageIterator.collection < this._dbref["_collections"].length) {
+        if (++this._pageIterator.collection < this._dbref._collections.length) {
           return this._loadNextPartition(this._pageIterator.collection);
         }
       } else {
         this._pageIterator.pageIndex++;
         return this._loadNextPage();
       }
+      return Promise.resolve();
     });
   }
 
@@ -188,8 +190,8 @@ export class PartitioningAdapter implements StorageAdapter {
 
     // queue up dirty partitions to be saved
     this._dirtyPartitions = [-1];
-    for (let idx = 0; idx < dbref["_collections"].length; idx++) {
-      if (dbref["_collections"][idx].dirty) {
+    for (let idx = 0; idx < dbref._collections.length; idx++) {
+      if (dbref._collections[idx]._dirty) {
         this._dirtyPartitions.push(idx);
       }
     }
@@ -219,6 +221,7 @@ export class PartitioningAdapter implements StorageAdapter {
         if (this._dirtyPartitions.length !== 0) {
           return this._saveNextPartition();
         }
+        return Promise.resolve();
       });
     }
 
@@ -233,6 +236,7 @@ export class PartitioningAdapter implements StorageAdapter {
       if (this._dirtyPartitions.length !== 0) {
         return this._saveNextPartition();
       }
+      return Promise.resolve();
     });
   }
 
@@ -242,7 +246,7 @@ export class PartitioningAdapter implements StorageAdapter {
    * @returns {Promise} a Promise that resolves after the next partition is saved
    */
   private _saveNextPage(): Promise<void> {
-    const coll = this._dbref["_collections"][this._pageIterator.collection];
+    const coll = this._dbref._collections[this._pageIterator.collection];
     const keyname = this._dbname + "." + this._pageIterator.collection + "." + this._pageIterator.pageIndex;
     let pageLen = 0;
     const cdlen = coll._data.length;
@@ -260,6 +264,7 @@ export class PartitioningAdapter implements StorageAdapter {
         this._pageIterator.pageIndex++;
         return this._saveNextPage();
       }
+      return Promise.resolve();
     };
 
     if (coll._data.length === 0) {
