@@ -34,7 +34,7 @@ function resolveTransformParams<TData extends object, TNested extends object>(tr
   const resolvedTransform: Collection.Transform<TData, TNested>[] = [];
   for (let idx = 0; idx < transform.length; idx++) {
     // clone transform so our scan/replace can operate directly on cloned transform
-    const clonedStep = clone(transform[idx], "shallow-recurse-objects");
+    const clonedStep = clone(transform[idx], "shallow-recurse");
     resolvedTransform.push(resolveTransformObject<TData, TNested>(clonedStep, params));
   }
 
@@ -1237,7 +1237,7 @@ export namespace ResultSet {
   } | {
     $ne?: R;
   } | {
-    $dteq?: R;
+    $dteq?: Date;
   } | {
     $gt?: R;
   } | {

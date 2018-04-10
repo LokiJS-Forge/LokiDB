@@ -23,7 +23,6 @@ describe("cloning behavior", () => {
 
   describe("cloning disabled", () => {
     it("works", () => {
-
       const mj = items.findOne({name: "mjolnir"});
 
       // you are modifying the actual object instance so this is worst case
@@ -49,6 +48,74 @@ describe("cloning behavior", () => {
 
       const result = citems.findOne({"owner": "thor"});
       expect(result.name).toBe("mjolnir");
+    });
+  });
+
+  describe("cloning Date and Arrays", () => {
+    it("deep", () => {
+      const cdb = new Loki("clonetest");
+      const citems = cdb.addCollection<{ some: Date, other: (number | string | Date)[] }>("items", {
+        clone: true,
+        cloneMethod: "deep"
+      });
+      const oldObject = {
+        some: new Date("July 21, 1983 01:14:00"),
+        other: [1, "2", 3, "4", new Date("July 21, 1983 01:15:00"), new Date("July 21, 1983 01:16:00")]
+      };
+      const insObject = citems.insert(oldObject);
+
+      oldObject.some = new Date("July 21, 1982 01:15:00");
+      oldObject.other = ["2", 1, "3", new Date("July 22, 1983 01:15:00"), "4"];
+      insObject.some = new Date("July 21, 1981 01:15:00");
+      insObject.other = ["3", 4, "7", new Date("July 20, 1983 01:15:00"), 5];
+
+      const result = citems.findOne({"some": {$dteq: new Date("July 21, 1983 01:14:00")}});
+      expect(result.other).not.toEqual(oldObject.other);
+      expect(result.other).not.toEqual(insObject.other);
+    });
+
+    it("shallow-recursive", () => {
+      const cdb = new Loki("clonetest");
+      const citems = cdb.addCollection<{ some: Date, other: (number | string | Date)[] }>("items", {
+        clone: true,
+        cloneMethod: "shallow-recurse"
+      });
+      const oldObject = {
+        some: new Date("July 21, 1983 01:14:00"),
+        other: [1, "2", 3, "4", new Date("July 21, 1983 01:15:00"), new Date("July 21, 1983 01:16:00")]
+      };
+      const insObject = citems.insert(oldObject);
+
+      oldObject.some = new Date("July 21, 1982 01:15:00");
+      oldObject.other = ["2", 1, "3", new Date("July 22, 1983 01:15:00"), "4"];
+      insObject.some = new Date("July 21, 1981 01:15:00");
+      insObject.other = ["3", 4, "7", new Date("July 20, 1983 01:15:00"), 5];
+
+      const result = citems.findOne({"some": {$dteq: new Date("July 21, 1983 01:14:00")}});
+      expect(result.other).not.toEqual(oldObject.other);
+      expect(result.other).not.toEqual(insObject.other);
+    });
+
+    it("parse-stringify", () => {
+      const cdb = new Loki("clonetest");
+      const citems = cdb.addCollection<{ some: Date, other: (number | string | Date)[] }>("items", {
+        clone: true,
+        cloneMethod: "parse-stringify"
+      });
+      const oldObject = {
+        some: new Date("July 21, 1983 01:14:00"),
+        other: [1, "2", 3, "4", new Date("July 21, 1983 01:15:00"), new Date("July 21, 1983 01:16:00")]
+      };
+      const insObject = citems.insert(oldObject);
+
+      oldObject.some = new Date("July 21, 1982 01:15:00");
+      oldObject.other = ["2", 1, "3", new Date("July 22, 1983 01:15:00"), "4"];
+      insObject.some = new Date("July 21, 1981 01:15:00");
+      insObject.other = ["3", 4, "7", new Date("July 20, 1983 01:15:00"), 5];
+
+      const result = citems.findOne({"some": new Date("July 21, 1983 01:14:00").toISOString() as any});
+      expect(result.other).not.toEqual(oldObject.other);
+      expect(result.other).not.toEqual(insObject.other);
     });
   });
 

@@ -1,4 +1,4 @@
-export type CloneMethod = "parse-stringify" | "deep" | "shallow" | "shallow-recurse-objects";
+export type CloneMethod = "parse-stringify" | "deep" | "shallow" | "shallow-recurse";
 
 function add(copy: any, key: any, value: any): any {
   if (copy instanceof Array) {
@@ -72,7 +72,7 @@ export function clone<T>(data: T, method: CloneMethod = "parse-stringify"): T {
       cloned = Object.create(data.constructor.prototype);
       Object.assign(cloned, data);
       break;
-    case "shallow-recurse-objects":
+    case "shallow-recurse":
       // shallow clone top level properties
       cloned = clone(data, "shallow");
       const keys = Object.keys(data);
@@ -80,7 +80,7 @@ export function clone<T>(data: T, method: CloneMethod = "parse-stringify"): T {
       for (let i = 0; i < keys.length; i++) {
         const key = keys[i];
         if (typeof data[key] === "object" && data[key].constructor.name === "Object") {
-          cloned[key] = clone(data[key], "shallow-recurse-objects");
+          cloned[key] = clone(data[key], "shallow-recurse");
         }
       }
       break;
