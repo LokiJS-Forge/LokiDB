@@ -330,7 +330,11 @@ export class Collection<TData extends object = object, TNested extends object = 
     };
   }
 
-  static fromJSONObject(obj: Collection.Serialized, options?: Collection.DeserializeOptions) {
+  static fromJSONObject(obj: Collection | Collection.Serialized, options?: Collection.DeserializeOptions) {
+    if (obj instanceof Collection) {
+      return clone(this, "shallow");
+    }
+
     let coll = new Collection<any>(obj.name, {
       disableChangesApi: obj.disableChangesApi,
       disableDeltaChangesApi: obj.disableDeltaChangesApi
