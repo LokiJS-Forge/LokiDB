@@ -16,7 +16,8 @@ export interface StorageAdapter {
 }
 
 export type Doc<T extends object = object> = T & {
-  $loki: number; meta?: {
+  $loki: number;
+  meta?: {
     created: number;
     revision: number;
     version: number,

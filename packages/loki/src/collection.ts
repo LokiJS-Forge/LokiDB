@@ -168,10 +168,6 @@ export class Collection<TData extends object = object, TNested extends object = 
    */
   private _changes: Collection.Change[] = [];
 
-  /* assign correct handler based on ChangesAPI flag */
-  private _insertHandler: (obj: Doc<TData>) => void;
-  private _updateHandler: (obj: Doc<TData>, old: Doc<TData>) => void;
-
   /**
    * stages: a map of uniquely identified 'stages', which hold copies of objects to be
    * manipulated without affecting the data in the original collection
@@ -304,21 +300,6 @@ export class Collection<TData extends object = object, TNested extends object = 
     }
 
     this.setChangesApi(this._disableChangesApi, this._disableDeltaChangesApi);
-
-    // Add change api to event callback.
-    this.on("insert", (obj: Doc<TData>) => {
-      this._insertHandler(obj);
-    });
-
-    this.on("update", (obj: Doc<TData>, old: Doc<TData>) => {
-      this._updateHandler(obj, old);
-    });
-
-    this.on("delete", (obj: Doc<TData>) => {
-      if (!this._disableChangesApi) {
-        this._createChange(this.name, "R", obj);
-      }
-    });
 
     // for de-serialization purposes
     this.flushChanges();
@@ -863,10 +844,18 @@ export class Collection<TData extends object = object, TNested extends object = 
       return undefined;
     }
 
-    returnObj = obj;
+    // update meta and store changes if ChangesAPI is enabled
+    // (moved from "insert" event listener to allow internal reference to be used)
+    if (this._disableChangesApi) {
+      this._insertMeta(obj as Doc<TData>);
+    } else {
+      this._insertMetaWithChange(obj as Doc<TData>);
+    }
+
+    // if cloning is enabled, emit insert event with clone of new object
+    returnObj = this._cloneObjects ? clone(obj, this._cloneMethod) : obj;
     if (!bulkInsert) {
-      this.emit("insert", obj);
-      returnObj = this._cloneObjects ? clone(obj, this._cloneMethod) : obj;
+      this.emit("insert", returnObj);
     }
 
     return returnObj as Doc<TData & TNested>;
@@ -1027,7 +1016,21 @@ export class Collection<TData extends object = object, TNested extends object = 
       this.commit();
       this._dirty = true; // for autosave scenarios
 
-      this.emit("update", doc, this._cloneObjects || !this._disableDeltaChangesApi ? clone(oldInternal, this._cloneMethod) : null);
+      // update meta and store changes if ChangesAPI is enabled
+      if (this._disableChangesApi) {
+        this._updateMeta(newInternal);
+      }
+      else {
+        this._updateMetaWithChange(newInternal, oldInternal);
+      }
+
+      let returnObj = newInternal;
+      // if cloning is enabled, emit 'update' event and return with clone of new object
+      if (this._cloneObjects) {
+        returnObj = clone(newInternal, this._cloneMethod);
+      }
+
+      this.emit("update", returnObj, oldInternal);
     } catch (err) {
       this.rollback();
       this.emit("error", err);
@@ -1204,6 +1207,11 @@ export class Collection<TData extends object = object, TNested extends object = 
 
       this.commit();
       this._dirty = true; // for autosave scenarios
+
+      if (!this._disableChangesApi) {
+        this._createChange(this.name, "R", arr[0]);
+      }
+
       this.emit("delete", arr[0]);
       delete doc.$loki;
       delete doc.meta;
@@ -1232,14 +1240,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    */
   public setChangesApi(disableChangesApi: boolean, disableDeltaChangesApi: boolean = true) {
     this._disableChangesApi = disableChangesApi;
-    this._disableDeltaChangesApi = disableDeltaChangesApi;
-
-    if (disableChangesApi) {
-      this._disableDeltaChangesApi = true;
-    }
-
-    this._insertHandler = this._disableChangesApi ? this._insertMeta : this._insertMetaWithChange;
-    this._updateHandler = this._disableChangesApi ? this._updateMeta : this._updateMetaWithChange;
+    this._disableDeltaChangesApi = disableChangesApi ? true : disableDeltaChangesApi;
   }
 
   /**
@@ -1256,10 +1257,10 @@ export class Collection<TData extends object = object, TNested extends object = 
       for (let i = 0; i < propertyNames.length; i++) {
         const propertyName = propertyNames[i];
         if (newObject.hasOwnProperty(propertyName)) {
-          if (!oldObject.hasOwnProperty(propertyName) || this._constraints.unique[propertyName] !== undefined || propertyName === "$loki" || propertyName === "meta") {
+          if (!oldObject.hasOwnProperty(propertyName) || this._constraints.unique[propertyName] !== undefined
+            || propertyName === "$loki" || propertyName === "meta") {
             delta[propertyName] = newObject[propertyName];
-          }
-          else {
+          } else {
             const propertyDelta = this._getObjectDelta(oldObject[propertyName], newObject[propertyName]);
             if (propertyDelta !== undefined && propertyDelta !== {}) {
               delta[propertyName] = propertyDelta;
@@ -1268,8 +1269,7 @@ export class Collection<TData extends object = object, TNested extends object = 
         }
       }
       return Object.keys(delta).length === 0 ? undefined : delta;
-    }
-    else {
+    } else {
       return oldObject === newObject ? undefined : newObject;
     }
   }
@@ -1280,76 +1280,28 @@ export class Collection<TData extends object = object, TNested extends object = 
   private _getChangeDelta(obj: Doc<TData>, old: Doc<TData>) {
     if (old) {
       return this._getObjectDelta(old, obj);
-    }
-    else {
+    } else {
       return JSON.parse(JSON.stringify(obj));
     }
   }
 
   /**
-   * This method creates a clone of the current status of an object and associates operation and collection name,
+   * Creates a clone of the current status of an object and associates operation and collection name,
    * so the parent db can aggregate and generate a changes object for the entire db
    */
   private _createChange(name: string, op: string, obj: Doc<TData>, old?: Doc<TData>) {
     this._changes.push({
       name,
       operation: op,
-      obj: op === "U" && !this._disableDeltaChangesApi ? this._getChangeDelta(obj, old) : JSON.parse(JSON.stringify(obj))
+      obj: op === "U" && !this._disableDeltaChangesApi
+        ? this._getChangeDelta(obj, old)
+        : JSON.parse(JSON.stringify(obj))
     });
   }
 
   private _createInsertChange(obj: Doc<TData>) {
     this._createChange(this.name, "I", obj);
   }
-
-  /**
-   * If the changes API is disabled make sure only metadata is added without re-evaluating everytime if the changesApi is enabled
-   */
-  private _insertMeta(obj: Doc<TData>) {
-    let len;
-    let idx;
-
-    if (this._disableMeta || !obj) {
-      return;
-    }
-
-    // if batch insert
-    if (Array.isArray(obj)) {
-      len = obj.length;
-
-      for (idx = 0; idx < len; idx++) {
-        if (obj[idx].meta === undefined) {
-          obj[idx].meta = {};
-        }
-
-        obj[idx].meta.created = (new Date()).getTime();
-        obj[idx].meta.revision = 0;
-      }
-
-      return;
-    }
-
-    // single object
-    if (!obj.meta) {
-      obj.meta = {
-        version: 0,
-        revision: 0,
-        created: 0
-      };
-    }
-
-    obj.meta.created = (new Date()).getTime();
-    obj.meta.revision = 0;
-  }
-
-  private _updateMeta(obj: Doc<TData>) {
-    if (this._disableMeta || !obj) {
-      return;
-    }
-    obj.meta.updated = (new Date()).getTime();
-    obj.meta.revision += 1;
-  }
-
 
   private _createUpdateChange(obj: Doc<TData>, old: Doc<TData>) {
     this._createChange(this.name, "U", obj, old);
@@ -1363,6 +1315,31 @@ export class Collection<TData extends object = object, TNested extends object = 
   private _updateMetaWithChange(obj: Doc<TData>, old: Doc<TData>) {
     this._updateMeta(obj);
     this._createUpdateChange(obj, old);
+  }
+
+  private _insertMeta(obj: Doc<TData>) {
+    if (this._disableMeta) {
+      return;
+    }
+
+    if (!obj.meta) {
+      obj.meta = {
+        version: 0,
+        revision: 0,
+        created: 0
+      };
+    }
+    obj.meta.created = (new Date()).getTime();
+    obj.meta.revision = 0;
+  }
+
+  private _updateMeta(obj: Doc<TData>) {
+    if (this._disableMeta) {
+      return;
+    }
+
+    obj.meta.updated = (new Date()).getTime();
+    obj.meta.revision += 1;
   }
 
   /*---------------------+
