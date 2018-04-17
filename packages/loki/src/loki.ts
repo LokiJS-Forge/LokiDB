@@ -1,8 +1,9 @@
 /* global global */
-import { LokiEventEmitter } from "./event_emitter";
-import { Collection } from "./collection";
-import { Doc, StorageAdapter } from "../../common/types";
-import { PLUGINS } from "../../common/plugin";
+import {LokiEventEmitter} from "./event_emitter";
+import {Collection} from "./collection";
+import {clone} from "./clone";
+import {Doc, StorageAdapter} from "../../common/types";
+import {PLUGINS} from "../../common/plugin";
 
 function getENV(): Loki.Environment {
   if (global !== undefined && (global["android"] || global["NSObject"])) {
@@ -187,30 +188,16 @@ export class Loki extends LokiEventEmitter {
 
   /**
    * Copies 'this' database into a new Loki instance. Object references are shared to make lightweight.
-   * @param {object} options - options
-   * @param {boolean} options.removeNonSerializable - nulls properties not safe for serialization.
+   * @return {Loki} a shallow copy.
    */
-  public copy(options: Loki.CopyOptions = {}): Loki {
-    const databaseCopy = new Loki(this.filename, {env: this._env});
+  private _copy(): Loki {
+    const dbCopy = clone(this, "shallow");
+    dbCopy._collections = [];
 
-    // currently inverting and letting loadJSONObject do most of the work
-    databaseCopy.loadJSONObject(this, {
-      retainDirtyFlags: true
-    });
-
-    // since our toJSON is not invoked for reference database adapters, this will let us mimic
-    if (options.removeNonSerializable) {
-      // databaseCopy._autosaveHandle = null;
-      // databaseCopy._persistenceAdapter = null;
-
-      for (let idx = 0; idx < databaseCopy._collections.length; idx++) {
-        // TODO: Move to class.
-        // databaseCopy._collections[idx]._constraints = null;
-        // databaseCopy._collections[idx]._ttl = null;
-      }
+    for (let i = 0; i < this._collections.length; i++) {
+      dbCopy._collections[i] = clone(this._collections[i], "shallow");
     }
-
-    return databaseCopy;
+    return dbCopy;
   }
 
   /**
@@ -337,17 +324,10 @@ export class Loki extends LokiEventEmitter {
   // alias of serialize
   public toJSON(): Loki.Serialized {
     return {
-      _env: this._env,
-      _serializationMethod: this._serializationMethod,
-      _autosave: this._autosave,
-      _autosaveInterval: this._autosaveInterval,
-      _collections: this._collections,
+      _collections: this._collections as any as Collection.Serialized[],
       databaseVersion: this.databaseVersion,
       engineVersion: this.engineVersion,
       filename: this.filename,
-      _persistenceAdapter: this._persistenceAdapter,
-      _persistenceMethod: this._persistenceMethod,
-      _throttledSaves: this._throttledSaves
     };
   }
 
@@ -388,8 +368,9 @@ export class Loki extends LokiEventEmitter {
     }
 
     // not just an individual collection, so we will need to serialize db container via shallow copy
-    let dbcopy = new Loki(this.filename);
-    dbcopy.loadJSONObject(this);
+    // let dbcopy = new Loki(this.filename);
+    // dbcopy.loadJSONObject(this);
+    let dbcopy = this._copy();
 
     for (let idx = 0; idx < dbcopy._collections.length; idx++) {
       dbcopy._collections[idx]._data = [];
@@ -680,13 +661,11 @@ export class Loki extends LokiEventEmitter {
 
   /**
    * Inflates a loki database from a JS object
-   *
    * @param {object} dbObject - a serialized loki database object
    * @param {object} options - apply or override collection level settings
    * @param {boolean} options.retainDirtyFlags - whether collection dirty flags will be preserved
    */
-  // public loadJSONObject(dbObject: Loki, options?: Collection.DeserializeOptions): void;
-  public loadJSONObject(dbObject: Loki | Loki.Serialized, options: Collection.DeserializeOptions = {}): void {
+  public loadJSONObject(dbObject: Loki.Serialized, options: Collection.DeserializeOptions = {}): void {
     // Legacy support.
     // if (dbObject.databaseVersion === 1.5) {
     //   dbObject = dbObject as LokiJS.Loki;
@@ -912,7 +891,7 @@ export class Loki extends LokiEventEmitter {
     // check if the adapter is requesting (and supports) a 'reference' mode export
     if (this._persistenceAdapter.mode === "reference" && typeof this._persistenceAdapter.exportDatabase === "function") {
       // filename may seem redundant but loadDatabase will need to expect this same filename
-      return Promise.resolve(this._persistenceAdapter.exportDatabase(this.filename, this.copy({removeNonSerializable: true})))
+      return Promise.resolve(this._persistenceAdapter.exportDatabase(this.filename, this._copy()))
         .then(() => {
           this._autosaveClearFlags();
           this.emit("save");
@@ -1080,17 +1059,10 @@ export namespace Loki {
   }
 
   export interface Serialized {
-    _env: Environment;
-    _serializationMethod: SerializationMethod;
-    _autosave: boolean;
-    _autosaveInterval: number;
-    _collections: Collection[];
+    _collections: Collection.Serialized[];
     databaseVersion: 2.0;
     engineVersion: 2.0;
     filename: string;
-    _persistenceAdapter: StorageAdapter;
-    _persistenceMethod: PersistenceMethod;
-    _throttledSaves: boolean;
   }
 
   export type LoadDatabaseOptions = Collection.DeserializeOptions & ThrottledDrainOptions;
