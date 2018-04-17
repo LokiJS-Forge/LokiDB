@@ -1077,12 +1077,19 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     const len = this._filteredRows.length;
     const rcd = this._collection._data;
 
+    // pass in each document object currently in ResultSet to user supplied updateFunction
     for (let idx = 0; idx < len; idx++) {
-      // pass in each document object currently in ResultSet to user supplied updateFunction
-      updateFunction(rcd[this._filteredRows[idx]]);
-
-      // notify collection we have changed this object so it can update meta and allow DynamicViews to re-evaluate
-      this._collection.update(rcd[this._filteredRows[idx]]);
+      // if we have cloning option specified or are doing differential delta changes, clone object first
+      if (this._collection._cloneObjects || !this._collection._disableDeltaChangesApi) {
+        const obj = clone(rcd[this._filteredRows[idx]], this._collection._cloneMethod);
+        updateFunction(obj);
+        this._collection.update(obj);
+      }
+      else {
+        // no need to clone, so just perform update on collection data object instance
+        updateFunction(rcd[this._filteredRows[idx]]);
+        this._collection.update(rcd[this._filteredRows[idx]]);
+      }
     }
 
     return this;

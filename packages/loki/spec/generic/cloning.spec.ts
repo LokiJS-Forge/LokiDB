@@ -119,6 +119,30 @@ describe("cloning behavior", () => {
     });
   });
 
+  describe("cloning insert events emit cloned object", function () {
+    it("works", () => {
+      const cdb = new Loki("clonetest");
+      const citems = cdb.addCollection<User & { count: number }>("items", {clone: true});
+
+      citems.on("insert", (obj: User) => {
+        /// attempt to tamper with name
+        obj.name = "zzz";
+      });
+
+      citems.insert({name: "mjolnir", owner: "thor", maker: "dwarves", count: 0});
+      citems.insert({name: "gungnir", owner: "odin", maker: "elves", count: 0});
+      citems.insert({name: "tyrfing", owner: "Svafrlami", maker: "dwarves", count: 0});
+      citems.insert({name: "draupnir", owner: "odin", maker: "elves", count: 0});
+
+      const results = citems.find();
+      expect(results.length).toEqual(4);
+
+      results.forEach((obj) => {
+        expect(obj.name === "zzz").toEqual(false);
+      });
+    });
+  });
+
   describe("cloning updates are immutable", () => {
     it("works", () => {
       const cdb = new Loki("clonetest");
@@ -136,6 +160,38 @@ describe("cloning behavior", () => {
       const result = citems.findOne({"owner": "thor"});
 
       expect(result.name).toBe("mjolnir");
+    });
+  });
+
+  describe("cloning updates events emit cloned object", function () {
+    it("works", () => {
+      const cdb = new Loki("clonetest");
+      const citems = cdb.addCollection<User & { count: number }>("items", {clone: true});
+
+      citems.insert({name: "mjolnir", owner: "thor", maker: "dwarves", count: 0});
+      citems.insert({name: "gungnir", owner: "odin", maker: "elves", count: 0});
+      citems.insert({name: "tyrfing", owner: "Svafrlami", maker: "dwarves", count: 0});
+      citems.insert({name: "draupnir", owner: "odin", maker: "elves", count: 0});
+
+      citems.on("update", (obj: User & { count: number }) => {
+        /// attempt to tamper with name
+        obj.name = "zzz";
+      });
+
+      citems.findAndUpdate({name: "mjolnir"}, function (o) {
+        // make an approved modification
+        o.count++;
+      });
+
+      const results = citems.find();
+      expect(results.length).toEqual(4);
+
+      results.forEach((obj) => {
+        expect(obj.name === "zzz").toEqual(false);
+      });
+
+      const mj = citems.findOne({name: "mjolnir"});
+      expect(mj.count).toEqual(1);
     });
   });
 
