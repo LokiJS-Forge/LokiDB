@@ -689,7 +689,7 @@ describe("async adapter tests", () => {
 });
 
 describe("autosave/autoload", () => {
-  fit("verify autosave works", (done) => {
+  it("verify autosave works", (done) => {
     class DummyStorage implements StorageAdapter {
 
       public counter = 0;
@@ -700,7 +700,7 @@ describe("autosave/autoload", () => {
 
       saveDatabase(_0: string, _1: string): Promise<void> {
         this.counter++;
-        return new Promise(resolve => setTimeout(resolve, 50));
+        return Promise.resolve();
       }
     }
 
@@ -708,20 +708,49 @@ describe("autosave/autoload", () => {
     const db = new Loki("sandbox.db");
     const items = db.addCollection<User>("items");
 
-    db.initializePersistence({adapter: dummyStorage, autosave: true, autosaveInterval: 50})
+    db.initializePersistence({adapter: dummyStorage, autosave: true, autosaveInterval: 1})
       .then(() => {
         items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
-        return new Promise(resolve => setTimeout(resolve, 50));
+        expect(dummyStorage.counter).toEqual(0);
+        return new Promise(resolve => setTimeout(resolve, 2));
       })
       .then(() => {
         items.insert({name: "gungnir", owner: "odin", maker: "elves"});
-        return new Promise(resolve => setTimeout(resolve, 50));
+        expect(dummyStorage.counter).toEqual(1);
+        return new Promise(resolve => setTimeout(resolve, 2));
       })
       .then(() => {
-        expect(dummyStorage.counter).toBeWithinRange(20, 10);
-        done();
-      });
-    });
+        items.insert({name: "gungnir", owner: "odin", maker: "elves"});
+        expect(dummyStorage.counter).toEqual(2);
+        return db.close();
+      })
+      .then(() => {
+        expect(dummyStorage.counter).toEqual(3);
+      })
+      .then(done)
+      .catch(done.fail);
+  });
+
+  it("verify autosave with autoload works", (done) => {
+    const mem = new MemoryStorage({asyncResponses: true, asyncTimeout: 1});
+    const db = new Loki("sandbox.db");
+    const db2 = new Loki("sandbox.db");
+    const items = db.addCollection<User>("items");
+
+    db.initializePersistence({adapter: mem, autosave: true, autosaveInterval: 1})
+      .then(() => {
+        items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
+        return new Promise(resolve => setTimeout(resolve, 2));
+      })
+      .then(() => {
+        return db2.initializePersistence({adapter: mem, autoload: true});
+      })
+      .then(() => {
+        expect(db2.getCollection("items")).toBeDefined();
+        return db.close();
+      })
+      .then(done)
+      .catch(done.fail);
   });
 });
 

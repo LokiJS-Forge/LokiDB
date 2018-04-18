@@ -3,7 +3,6 @@ import {LokiEventEmitter} from "./event_emitter";
 import {Collection} from "./collection";
 import {Doc, StorageAdapter} from "../../common/types";
 import {PLUGINS} from "../../common/plugin";
-import {clearInterval} from "timers";
 
 function getENV(): Loki.Environment {
   if (global !== undefined && (global["android"] || global["NSObject"])) {
@@ -66,7 +65,7 @@ export class Loki extends LokiEventEmitter {
   private _autosave: boolean = false;
   private _autosaveInterval: number = 5000;
   private _autosaveRunning: boolean = false;
-
+  private _autosaveHandler: Promise<void> = Promise.resolve();
 
   /**
    * Constructs the main database class.
@@ -118,7 +117,7 @@ export class Loki extends LokiEventEmitter {
    */
   public initializePersistence(options: Loki.PersistenceOptions = {}): Promise<void> {
 
-    this._autosaveDisable();
+    let loaded = this._autosaveDisable();
 
     (
       {
@@ -177,11 +176,8 @@ export class Loki extends LokiEventEmitter {
 
     // if they want to load database on loki instantiation, now is a good time to load... after adapter set and before
     // possible autosave initiation
-    let loaded;
     if (options.autoload) {
-      loaded = this.loadDatabase(options.inflate);
-    } else {
-      loaded = Promise.resolve();
+      loaded = loaded.then(() => this.loadDatabase(options.inflate));
     }
 
     return loaded.then(() => {
@@ -705,17 +701,19 @@ export class Loki extends LokiEventEmitter {
    * @returns {Promise} a Promise that resolves after closing the database succeeded
    */
   public close(): Promise<void> {
-    let saved;
     // for autosave scenarios, we will let close perform final save (if dirty)
     // For web use, you might call from window.onbeforeunload to shutdown database, saving pending changes
     if (this._autosave) {
-      this._autosaveDisable();
-      if (this._autosaveDirty()) {
-        saved = this.saveDatabase();
-      }
+      return this._autosaveDisable()
+        .then(() => {
+          if (this._autosaveDirty()) {
+            return this.saveDatabase();
+          }
+          return Promise.resolve();
+        });
     }
 
-    return Promise.resolve(saved).then(() => {
+    return Promise.resolve().then(() => {
       this.emit("close");
     });
   }
@@ -1004,21 +1002,14 @@ export class Loki extends LokiEventEmitter {
     }
     this._autosaveRunning = true;
 
-    let promise = Promise.resolve();
     const interval = setInterval(() => {
       if (!this._autosaveRunning) {
         clearInterval(interval);
       } else if (this._autosaveDirty()) {
-        console.log("dirty")
-        this.saveDatabase().then(() => {
-          console.log("good");
-        }).catch(() => {
-          console.log("bad");
-        });
-        // promise
-        //   .then(this.saveDatabase)
-        //   .catch(() => {
-        //   });
+        this._autosaveHandler = this._autosaveHandler
+          .then(() => {
+            return this.saveDatabase();
+          });
       }
     }, this._autosaveInterval);
   }
@@ -1026,8 +1017,9 @@ export class Loki extends LokiEventEmitter {
   /**
    * Stops the autosave interval timer.
    */
-  private _autosaveDisable(): void {
+  private _autosaveDisable(): Promise<void> {
     this._autosaveRunning = false;
+    return this._autosaveHandler;
   }
 }
 
