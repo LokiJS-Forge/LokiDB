@@ -688,6 +688,43 @@ describe("async adapter tests", () => {
   });
 });
 
+describe("autosave/autoload", () => {
+  fit("verify autosave works", (done) => {
+    class DummyStorage implements StorageAdapter {
+
+      public counter = 0;
+
+      loadDatabase(_0: string): Promise<any> {
+        return undefined;
+      }
+
+      saveDatabase(_0: string, _1: string): Promise<void> {
+        this.counter++;
+        return new Promise(resolve => setTimeout(resolve, 50));
+      }
+    }
+
+    const dummyStorage = new DummyStorage();
+    const db = new Loki("sandbox.db");
+    const items = db.addCollection<User>("items");
+
+    db.initializePersistence({adapter: dummyStorage, autosave: true, autosaveInterval: 50})
+      .then(() => {
+        items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
+        return new Promise(resolve => setTimeout(resolve, 50));
+      })
+      .then(() => {
+        items.insert({name: "gungnir", owner: "odin", maker: "elves"});
+        return new Promise(resolve => setTimeout(resolve, 50));
+      })
+      .then(() => {
+        expect(dummyStorage.counter).toBeWithinRange(20, 10);
+        done();
+      });
+    });
+  });
+});
+
 describe("testing changesAPI", () => {
   it("verify pending changes persist across save/load cycle", (done) => {
     const mem = new MemoryStorage();
