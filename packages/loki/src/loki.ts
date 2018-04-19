@@ -64,8 +64,8 @@ export class Loki extends LokiEventEmitter {
   // autosave support (disabled by default)
   private _autosave: boolean = false;
   private _autosaveInterval: number = 5000;
-  private _autosaveHandle: Function = null;
-
+  private _autosaveRunning: boolean = false;
+  private _autosaveHandler: Promise<void> = Promise.resolve();
 
   /**
    * Constructs the main database class.
@@ -116,6 +116,9 @@ export class Loki extends LokiEventEmitter {
    * @returns {Promise} a Promise that resolves after initialization and (if enabled) autoloading the database
    */
   public initializePersistence(options: Loki.PersistenceOptions = {}): Promise<void> {
+
+    let loaded = this._autosaveDisable();
+
     (
       {
         autosave: this._autosave = false,
@@ -171,21 +174,14 @@ export class Loki extends LokiEventEmitter {
       }
     }
 
-    this._autosaveDisable();
-
     // if they want to load database on loki instantiation, now is a good time to load... after adapter set and before
     // possible autosave initiation
-    let loaded;
     if (options.autoload) {
-      loaded = this.loadDatabase(options.inflate);
-    } else {
-      loaded = Promise.resolve();
+      loaded = loaded.then(() => this.loadDatabase(options.inflate));
     }
 
     return loaded.then(() => {
-      if (this._autosave) {
-        this._autosaveEnable();
-      }
+      this._autosaveEnable();
     });
   }
 
@@ -204,7 +200,6 @@ export class Loki extends LokiEventEmitter {
 
     // since our toJSON is not invoked for reference database adapters, this will let us mimic
     if (options.removeNonSerializable) {
-      databaseCopy._autosaveHandle = null;
       databaseCopy._persistenceAdapter = null;
 
       for (let idx = 0; idx < databaseCopy._collections.length; idx++) {
@@ -706,17 +701,19 @@ export class Loki extends LokiEventEmitter {
    * @returns {Promise} a Promise that resolves after closing the database succeeded
    */
   public close(): Promise<void> {
-    let saved;
     // for autosave scenarios, we will let close perform final save (if dirty)
     // For web use, you might call from window.onbeforeunload to shutdown database, saving pending changes
     if (this._autosave) {
-      this._autosaveDisable();
-      if (this._autosaveDirty()) {
-        saved = this.saveDatabase();
-      }
+      return this._autosaveDisable()
+        .then(() => {
+          if (this._autosaveDirty()) {
+            return this.saveDatabase();
+          }
+          return Promise.resolve();
+        });
     }
 
-    return Promise.resolve(saved).then(() => {
+    return Promise.resolve().then(() => {
       this.emit("close");
     });
   }
@@ -945,6 +942,7 @@ export class Loki extends LokiEventEmitter {
         return this.saveDatabase();
       });
     }
+
     if (this._throttledSavePending !== null) {
       return this._throttledSavePending;
     }
@@ -968,6 +966,10 @@ export class Loki extends LokiEventEmitter {
 
     return Promise.resolve(this._persistenceAdapter.deleteDatabase(this.filename));
   }
+
+  /****************
+   * Autosave API
+   ****************/
 
   /**
    * Check whether any collections are "dirty" meaning we need to save the (entire) database
@@ -995,21 +997,19 @@ export class Loki extends LokiEventEmitter {
    * Starts periodically saves to the underlying storage adapter.
    */
   private _autosaveEnable(): void {
-    if (this._autosaveHandle) {
+    if (!this._autosave || this._autosaveRunning) {
       return;
     }
+    this._autosaveRunning = true;
 
-    let running = true;
-
-    this._autosave = true;
-    this._autosaveHandle = () => {
-      running = false;
-      this._autosaveHandle = undefined;
-    };
-
-    setTimeout(() => {
-      if (running) {
-        this.saveDatabase().then(this.saveDatabase, this.saveDatabase);
+    const interval = setInterval(() => {
+      if (!this._autosaveRunning) {
+        clearInterval(interval);
+      } else if (this._autosaveDirty()) {
+        this._autosaveHandler = this._autosaveHandler
+          .then(() => {
+            return this.saveDatabase();
+          });
       }
     }, this._autosaveInterval);
   }
@@ -1017,12 +1017,9 @@ export class Loki extends LokiEventEmitter {
   /**
    * Stops the autosave interval timer.
    */
-  private _autosaveDisable(): void {
-    this._autosave = false;
-
-    if (this._autosaveHandle) {
-      this._autosaveHandle();
-    }
+  private _autosaveDisable(): Promise<void> {
+    this._autosaveRunning = false;
+    return this._autosaveHandler;
   }
 }
 
