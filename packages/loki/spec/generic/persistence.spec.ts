@@ -390,7 +390,7 @@ describe("testing adapter functionality", () => {
     }).then(done, done.fail);
   });
 
-  it("verify reference adapters get db reference which is copy and serializable-safe", (done) => {
+  fit("verify reference adapters get db reference which is copy and serializable-safe", (done) => {
     // Current loki functionality with regards to reference mode adapters:
     // Since we don't use serializeReplacer on reference mode adapters, we make
     // lightweight clone, cloning only db container and collection containers (object refs are same).

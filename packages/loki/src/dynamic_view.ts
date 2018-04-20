@@ -153,29 +153,30 @@ export class DynamicView<TData extends object = object, TNested extends object =
   public toJSON(): DynamicView.Serialized {
     return {
       name: this.name,
-      _persistent: this._persistent,
-      _sortPriority: this._sortPriority,
-      _minRebuildInterval: this._minRebuildInterval,
-      _resultSet: this._resultSet,
-      _filterPipeline: this._filterPipeline,
-      _sortCriteria: this._sortCriteria,
-      _sortCriteriaSimple: this._sortCriteriaSimple,
-      _sortByScoring: this._sortByScoring,
-      _sortDirty: this._sortDirty,
+      persistent: this._persistent,
+      minRebuildInterval: this._minRebuildInterval,
+      resultSet: this._resultSet.toJSON(),
+      filterPipeline: this._filterPipeline,
+      sortPriority: this._sortPriority,
+      sortCriteria: this._sortCriteria,
+      sortCriteriaSimple: this._sortCriteriaSimple,
+      sortByScoring: this._sortByScoring,
+      sortDirty: this._sortDirty,
     };
   }
 
   public static fromJSONObject(collection: Collection, obj: DynamicView.Serialized): DynamicView {
     let dv = new DynamicView(collection, obj.name);
+    dv._persistent = obj.persistent;
     dv._resultDirty = true;
-    dv._filterPipeline = obj._filterPipeline;
+    dv._filterPipeline = obj.filterPipeline;
     dv._resultData = [];
-    dv._sortCriteria = obj._sortCriteria as any;
-    dv._sortCriteriaSimple = obj._sortCriteriaSimple as any;
-    dv._sortByScoring = obj._sortByScoring;
-    dv._sortDirty = obj._sortDirty;
-    dv._resultSet._filteredRows = obj._resultSet._filteredRows;
-    dv._resultSet._filterInitialized = obj._resultSet._filterInitialized;
+    dv._sortPriority = obj.sortPriority;
+    dv._sortCriteria = obj.sortCriteria as any;
+    dv._sortCriteriaSimple = obj.sortCriteriaSimple as any;
+    dv._sortByScoring = obj.sortByScoring;
+    dv._sortDirty = obj.sortDirty;
+    dv._resultSet = ResultSet.fromJSONObject(collection, obj.resultSet);
     dv._rematerialize({
       removeWhereFilters: true
     });
@@ -761,15 +762,15 @@ export namespace DynamicView {
 
   export interface Serialized {
     name: string;
-    _persistent: boolean;
-    _sortPriority: SortPriority;
-    _minRebuildInterval: number;
-    _resultSet: ResultSet<any>;
-    _filterPipeline: Filter<any>[];
-    _sortCriteria: (string | [string, boolean])[];
-    _sortCriteriaSimple: { field: string, options: boolean | ResultSet.SimpleSortOptions };
-    _sortByScoring: boolean;
-    _sortDirty: boolean;
+    persistent: boolean;
+    sortPriority: SortPriority;
+    minRebuildInterval: number;
+    resultSet: ResultSet.Serialized;
+    filterPipeline: Filter<any>[];
+    sortCriteria: (string | [string, boolean])[];
+    sortCriteriaSimple: { field: string, options: boolean | ResultSet.SimpleSortOptions };
+    sortByScoring: boolean;
+    sortDirty: boolean;
   }
 
   export type Filter<TData extends object = object, TNested extends object = object> = {

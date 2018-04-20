@@ -78,7 +78,7 @@ export class FullTextSearch {
     return this._idxSearcher.search(query);
   }
 
-  public toJSON(): FullTextSearch.Serialization {
+  public toJSON(): FullTextSearch.Serialized {
     let serialized = {id: this._id, ii: {}};
     let fieldNames = Object.keys(this._invIdxs);
     for (let i = 0; i < fieldNames.length; i++) {
@@ -88,7 +88,7 @@ export class FullTextSearch {
     return serialized;
   }
 
-  public static fromJSONObject(serialized: FullTextSearch.Serialization, analyzers: Dict<Analyzer> = {}): FullTextSearch {
+  public static fromJSONObject(serialized: FullTextSearch.Serialized, analyzers: Dict<Analyzer> = {}): FullTextSearch {
     let fts = new FullTextSearch([], serialized.id);
     let fieldNames = Object.keys(serialized.ii);
     for (let i = 0; i < fieldNames.length; i++) {
@@ -104,8 +104,8 @@ export namespace FullTextSearch {
     field: string;
   }
 
-  export interface Serialization {
+  export interface Serialized {
     id: string;
-    ii: Dict<InvertedIndex.Serialization>;
+    ii: Dict<InvertedIndex.Serialized>;
   }
 }

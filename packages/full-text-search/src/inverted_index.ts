@@ -219,7 +219,7 @@ export class InvertedIndex {
    * Serialize the inverted index.
    * @returns {{docStore: *, _fields: *, index: *}}
    */
-  public toJSON(): InvertedIndex.Serialization {
+  public toJSON(): InvertedIndex.Serialized {
     if (this._store) {
       return {
         _store: true,
@@ -241,7 +241,7 @@ export class InvertedIndex {
    * @param {{docStore: *, _fields: *, index: *}} serialized - The serialized inverted index.
    * @param {Analyzer} analyzer[undefined] - an analyzer
    */
-  public static fromJSONObject(serialized: InvertedIndex.Serialization, analyzer?: Analyzer): InvertedIndex {
+  public static fromJSONObject(serialized: InvertedIndex.Serialized, analyzer?: Analyzer): InvertedIndex {
     const invIdx = new InvertedIndex({
       store: serialized._store,
       optimizeChanges: serialized._optimizeChanges,
@@ -383,14 +383,14 @@ export namespace InvertedIndex {
     v?: SerializedIndex[];
   }
 
-  export type Serialization = SpareSerialization | FullSerialization;
+  export type Serialized = SpareSerialized | FullSerialized;
 
-  export type SpareSerialization = {
+  export type SpareSerialized = {
     _store: false;
     _optimizeChanges: boolean;
   };
 
-  export type FullSerialization = {
+  export type FullSerialized = {
     _store: true;
     _optimizeChanges: boolean;
     docCount: number;

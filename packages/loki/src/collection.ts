@@ -308,15 +308,15 @@ export class Collection<TData extends object = object, TNested extends object = 
   toJSON(): Collection.Serialized {
     return {
       name: this.name,
-      _dynamicViews: this._dynamicViews,
+      dynamicViews: this._dynamicViews.map(dV => dV.toJSON()),
       uniqueNames: Object.keys(this._constraints.unique),
       transforms: this._transforms as any,
       binaryIndices: this._binaryIndices as any,
-      _data: this._data,
+      data: this._data,
       idIndex: this._idIndex,
       maxId: this._maxId,
-      _dirty: this._dirty,
-      _nestedProperties: this._nestedProperties,
+      dirty: this._dirty,
+      nestedProperties: this._nestedProperties,
       adaptiveBinaryIndices: this._adaptiveBinaryIndices,
       transactional: this._transactional,
       asyncListeners: this._asyncListeners,
@@ -326,7 +326,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       cloneObjects: this._cloneObjects,
       cloneMethod: this._cloneMethod,
       changes: this._changes,
-      _fullTextSearch: this._fullTextSearch
+      fullTextSearch: this._fullTextSearch ? this._fullTextSearch.toJSON() : null
     };
   }
 
@@ -345,9 +345,9 @@ export class Collection<TData extends object = object, TNested extends object = 
     coll._cloneObjects = obj.cloneObjects;
     coll._cloneMethod = obj.cloneMethod || "deep";
     coll._changes = obj.changes;
-    coll._nestedProperties = obj._nestedProperties as any[];
+    coll._nestedProperties = obj.nestedProperties as any[];
 
-    coll._dirty = (options && options.retainDirtyFlags === true) ? obj._dirty : false;
+    coll._dirty = (options && options.retainDirtyFlags === true) ? obj.dirty : false;
 
     function makeLoader(coll: Collection.Serialized) {
       const collOptions = options[coll.name];
@@ -373,12 +373,12 @@ export class Collection<TData extends object = object, TNested extends object = 
     if (options && options[obj.name] !== undefined) {
       let loader = makeLoader(obj);
 
-      for (let j = 0; j < obj._data.length; j++) {
-        coll._data[j] = coll._defineNestedProperties(loader(obj._data[j]));
+      for (let j = 0; j < obj.data.length; j++) {
+        coll._data[j] = coll._defineNestedProperties(loader(obj.data[j]));
       }
     } else {
-      for (let j = 0; j < obj._data.length; j++) {
-        coll._data[j] = coll._defineNestedProperties(obj._data[j]);
+      for (let j = 0; j < obj.data.length; j++) {
+        coll._data[j] = coll._defineNestedProperties(obj.data[j]);
       }
     }
 
@@ -401,15 +401,15 @@ export class Collection<TData extends object = object, TNested extends object = 
     }
 
     // in case they are loading a database created before we added dynamic views, handle undefined
-    if (obj._dynamicViews !== undefined) {
+    if (obj.dynamicViews !== undefined) {
       // reinflate DynamicViews and attached ResultSets
-      for (let idx = 0; idx < obj._dynamicViews.length; idx++) {
-        coll._dynamicViews.push(DynamicView.fromJSONObject(coll, obj._dynamicViews[idx] as any));
+      for (let idx = 0; idx < obj.dynamicViews.length; idx++) {
+        coll._dynamicViews.push(DynamicView.fromJSONObject(coll, obj.dynamicViews[idx]));
       }
     }
 
-    if (obj._fullTextSearch) {
-      coll._fullTextSearch = PLUGINS["FullTextSearch"].fromJSONObject(obj._fullTextSearch, options.fullTextSearch);
+    if (obj.fullTextSearch) {
+      coll._fullTextSearch = PLUGINS["FullTextSearch"].fromJSONObject(obj.fullTextSearch, options.fullTextSearch);
     }
 
     return coll;
@@ -2197,15 +2197,15 @@ export namespace Collection {
 
   export interface Serialized {
     name: string;
-    _dynamicViews: DynamicView[];
-    _nestedProperties: { name: string, path: string[] }[];
+    dynamicViews: DynamicView.Serialized[];
+    nestedProperties: { name: string, path: string[] }[];
     uniqueNames: string[];
     transforms: Dict<Transform[]>;
     binaryIndices: Dict<Collection.BinaryIndex>;
-    _data: Doc<any>[];
+    data: Doc<any>[];
     idIndex: number[];
     maxId: number;
-    _dirty: boolean;
+    dirty: boolean;
     adaptiveBinaryIndices: boolean;
     transactional: boolean;
     asyncListeners: boolean;
@@ -2215,7 +2215,7 @@ export namespace Collection {
     cloneObjects: boolean;
     cloneMethod: CloneMethod;
     changes: any;
-    _fullTextSearch: FullTextSearch;
+    fullTextSearch: FullTextSearch.Serialized;
   }
 
   export interface CheckIndexOptions {

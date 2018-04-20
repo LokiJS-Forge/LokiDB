@@ -262,6 +262,9 @@ describe("partitioning adapter", () => {
               });
             });
           });
+        }).catch((e) => {
+          console.log(e)
+          done.fail();
         });
       });
     });

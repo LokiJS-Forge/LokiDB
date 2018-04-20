@@ -181,7 +181,7 @@ export class LegacyLoader {
  //      };
  //    }
  //
- //    export interface Serialization {
+ //    export interface Serialized {
  //
  //    }
  //  }

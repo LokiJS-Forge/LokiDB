@@ -48,7 +48,7 @@ export class Loki extends LokiEventEmitter {
   // currently keeping persistenceMethod and persistenceAdapter as loki level properties that
   // will not or cannot be deserialized  You are required to configure persistence every time
   // you instantiate a loki object (or use default environment detection) in order to load the database anyways.
-  private _serializationMethod: Loki.SerializationMethod;
+  private _serializationMethod: Loki.SerializedMethod;
   private _destructureDelimiter: string;
   // persistenceMethod could be 'fs', 'localStorage', or 'adapter'
   // this is optional option param, otherwise environment detection will be used
@@ -73,7 +73,7 @@ export class Loki extends LokiEventEmitter {
    * @param {string} filename - name of the file to be saved to
    * @param {object} [options={}] - options
    * @param {Loki.Environment} [options.env] - the javascript environment
-   * @param {Loki.SerializationMethod} [options.serializationMethod=NORMAL] - the serialization method
+   * @param {Loki.SerializedMethod} [options.serializationMethod=NORMAL] - the serialization method
    * @param {string} [options.destructureDelimiter="$<\n"] - string delimiter used for destructured serialization
    */
   constructor(filename = "loki.db", options: Loki.Options = {}) {
@@ -324,10 +324,10 @@ export class Loki extends LokiEventEmitter {
   // alias of serialize
   public toJSON(): Loki.Serialized {
     return {
-      _collections: this._collections as any as Collection.Serialized[],
+      filename: this.filename,
       databaseVersion: this.databaseVersion,
       engineVersion: this.engineVersion,
-      filename: this.filename,
+      collections: this._collections.map(c => c.toJSON()),
     };
   }
 
@@ -537,13 +537,12 @@ export class Loki extends LokiEventEmitter {
       }
 
       // Otherwise we are restoring an entire partitioned db
-      const cdb = JSON.parse(destructuredSource[0]);
-      const collCount = cdb._collections.length;
+      const cdb: Loki.Serialized = JSON.parse(destructuredSource[0]);
+      const collCount = cdb.collections.length;
       for (let collIndex = 0; collIndex < collCount; collIndex++) {
         // attach each collection docarray to container collection data, add 1 to collection array index since db is at 0
-        cdb._collections[collIndex]._data = this.deserializeCollection(destructuredSource[collIndex + 1], options);
+        cdb.collections[collIndex].data = this.deserializeCollection(destructuredSource[collIndex + 1], options);
       }
-
       return cdb;
     }
 
@@ -567,8 +566,8 @@ export class Loki extends LokiEventEmitter {
     }
 
     // first line is database and collection shells
-    const cdb = JSON.parse(workarray[0]);
-    const collCount = cdb._collections.length;
+    const cdb: Loki.Serialized = JSON.parse(workarray[0]);
+    const collCount = cdb.collections.length;
     workarray[0] = null;
 
     let collIndex = 0;
@@ -582,7 +581,7 @@ export class Loki extends LokiEventEmitter {
           done = true;
         }
       } else {
-        cdb._collections[collIndex]._data.push(JSON.parse(workarray[lineIndex]));
+        cdb.collections[collIndex].data.push(JSON.parse(workarray[lineIndex]));
       }
 
       // lower memory pressure and advance iterator
@@ -674,13 +673,14 @@ export class Loki extends LokiEventEmitter {
     //
     // }
 
-    const len = dbObject._collections ? dbObject._collections.length : 0;
+    const len = dbObject.collections ? dbObject.collections.length : 0;
+    console.log(len)
 
     this.filename = dbObject.filename;
     this._collections = [];
 
     for (let i = 0; i < len; ++i) {
-      this._collections.push(Collection.fromJSONObject(dbObject._collections[i], options));
+      this._collections.push(Collection.fromJSONObject(dbObject.collections[i], options));
     }
   }
 
@@ -833,7 +833,9 @@ export class Loki extends LokiEventEmitter {
           this.loadJSON(dbString, options);
           this.emit("load", this);
         } else {
+          // TODO: WAS EXPECTING A LOKI with correct Serialized structure....
           dbString = dbString as object;
+          console.log("aha");
           // if adapter has returned an js object (other than null or error) attempt to load from JSON object
           if (typeof (dbString) === "object" && dbString !== null && !(dbString instanceof Error)) {
             this.loadJSONObject(dbString, options);
@@ -933,7 +935,7 @@ export class Loki extends LokiEventEmitter {
       });
     }
 
-    if (this._throttledSavePending !== null) {
+        if (this._throttledSavePending !== null) {
       return this._throttledSavePending;
     }
     this._throttledSaveRunning = this._saveDatabase().then(() => {
@@ -1016,7 +1018,7 @@ export class Loki extends LokiEventEmitter {
 export namespace Loki {
   export interface Options {
     env?: Environment;
-    serializationMethod?: SerializationMethod;
+    serializationMethod?: SerializedMethod;
     destructureDelimiter?: string;
   }
 
@@ -1035,7 +1037,7 @@ export namespace Loki {
   }
 
   export interface SerializeOptions {
-    serializationMethod?: SerializationMethod;
+    serializationMethod?: SerializedMethod;
   }
 
   export interface SerializeDestructuredOptions {
@@ -1059,7 +1061,7 @@ export namespace Loki {
   }
 
   export interface Serialized {
-    _collections: Collection.Serialized[];
+    collections: Collection.Serialized[];
     databaseVersion: 2.0;
     engineVersion: 2.0;
     filename: string;
@@ -1067,7 +1069,7 @@ export namespace Loki {
 
   export type LoadDatabaseOptions = Collection.DeserializeOptions & ThrottledDrainOptions;
 
-  export type SerializationMethod = "normal" | "pretty" | "destructured";
+  export type SerializedMethod = "normal" | "pretty" | "destructured";
 
   export type PersistenceMethod = "fs-storage" | "local-storage" | "indexed-storage" | "memory-storage" | "adapter";
 
@@ -1167,7 +1169,7 @@ export namespace LokiJS {
     };
   }
 
-  export interface Serialization {
+  export interface Serialized {
 
   }
 }

@@ -1,9 +1,9 @@
-import { Collection } from "./collection";
-import { clone, CloneMethod } from "./clone";
-import { ltHelper, gtHelper, aeqHelper, sortHelper } from "./helper";
-import { Doc } from "../../common/types";
-import { Scorer } from "../../full-text-search/src/scorer";
-import { Query as FullTextSearchQuery } from "../../full-text-search/src/query_types";
+import {Collection} from "./collection";
+import {clone, CloneMethod} from "./clone";
+import {ltHelper, gtHelper, aeqHelper, sortHelper} from "./helper";
+import {Doc} from "../../common/types";
+import {Scorer} from "../../full-text-search/src/scorer";
+import {Query as FullTextSearchQuery} from "../../full-text-search/src/query_types";
 
 // used to recursively scan hierarchical transform step object for param substitution
 function resolveTransformObject<TData extends object, TNested extends object>(subObj: Collection.Transform<TData, TNested>, params: object, depth: number = 0): Collection.Transform<TData, TNested> {
@@ -302,10 +302,20 @@ export class ResultSet<TData extends object = object, TNested extends object = o
   /**
    * Override of toJSON to avoid circular references
    */
-  public toJSON(): ResultSet<TData, TNested> {
-    const copy = this.copy();
-    copy._collection = <never> null;
-    return copy;
+  public toJSON(): ResultSet.Serialized {
+    return {
+      filterInitialized: this._filterInitialized,
+      filteredRows: this._filteredRows,
+      scoring: this._scoring
+    };
+  }
+
+  public static fromJSONObject(collection: Collection, obj: ResultSet.Serialized): ResultSet {
+    let rs = new ResultSet(collection);
+    rs._filterInitialized = obj.filterInitialized;
+    rs._filteredRows = obj.filteredRows;
+    rs._scoring = obj.scoring;
+    return rs;
   }
 
   /**
@@ -1230,6 +1240,12 @@ export namespace ResultSet {
     disableIndexIntersect?: boolean;
     forceIndexIntersect?: boolean;
     useJavascriptSorting?: boolean;
+  }
+
+  export interface Serialized {
+    filterInitialized: boolean;
+    filteredRows: number[];
+    scoring: Scorer.ScoreResults
   }
 
   export type ContainsHelperType<R> =
