@@ -1,76 +1,104 @@
 // import {Loki} from "../../src/loki";
 
-// declare var loki: any;
 
-type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
+import {mergeRightBiasedWithProxy} from '../../src/clone';
 
-interface DatabaseVersion {
-  version: number;
-}
+fdescribe("load different database versions", function () {
+  fit("mergeRightBiasedWithProxy", () => {
 
-interface Serialized {
-  version: 2;
-  name: string;
-  value: number;
-  sub: SubSerialized;
-}
-
-interface SubSerialized {
-  work: number[];
-  query: boolean;
-  nested: {
-    get: number;
-    float: number;
-    nester: {
-      oh: boolean;
-      wow?: null;
-    }
-  };
-}
-
-interface Serialized2 {
-  version: 1;
-  name: string;
-  sub: SubSerialized2;
-}
-
-interface SubSerialized2 {
-  work: number[];
-}
-
-function get<T, U extends object = object>(t: T, other?: U): (T & U) extends Omit<Serialized, "version"> ? Serialized : never {
-  let l = new Proxy({},
-    {
-      get: (obj, prop) => {
-        if (obj.hasOwnProperty(prop)) {
-          return obj[prop];
-        } else if (other && other.hasOwnProperty(prop)) {
-          if (other[prop] !== null && typeof other[prop] === "object") {
-            return get(t ? t[prop]: undefined, other[prop]);
-          } else {
-            return other[prop];
-          }
-        } else if (t && t.hasOwnProperty(prop)) {
-          return t[prop];
-        }
-      }
-    }
-  );
-  return l as any;
-}
-
-fdescribe("testing legacy loader", function () {
-
-  fit("test", () => {
-
-    let serialized2: Serialized2 = {
-      version: 1,
+    let left = {
+      version: 1 as 1,
       name: "abc",
-      sub: {work: [1]}
+      value: 2,
+      sub: {
+        query: [1, 2, 3],
+        older: {
+          enabled: false as false
+        }
+      },
+      oldObj: {
+        prop1: {
+          val: true
+        }
+      },
+      oldProp: 1,
+      query: {
+        doit: 1
+      },
+      filter: [1, 2]
     };
-    let serialized1 = get(serialized2, {version: 2, value: 1, sub: {query: true, nested: {get: 2, float: 3.0, nester: {oh: true}}}});
-    console.log(serialized1.version);
 
+    let right = {
+      version: 2 as 2,
+      name: "def",
+      value: 3,
+      sub: {
+        query: [true, false, false],
+        newer: {
+          disabled: false
+        }
+      },
+      newProp: 2.0 as 2.0,
+      query: [1, 3, true],
+      filter: {
+        one: 2
+      }
+    };
+
+    interface Merged {
+      version: 2;
+      name: string;
+      value: number;
+      sub: {
+        query: boolean[];
+        older: {
+          enabled: false
+        }
+        newer: {
+          disabled: boolean
+        }
+      };
+      oldObj: {
+        prop1: {
+          val: boolean;
+        }
+      };
+      oldProp: number;
+      newProp: 2.0;
+      query: (boolean | number)[];
+      filter: {
+        one: number
+      };
+    }
+
+    let merged: Merged = mergeRightBiasedWithProxy(left, right);
+    expect(merged.version).toEqual(2);
+    expect(merged.name).toEqual("def");
+    expect(merged.value).toEqual(3);
+    expect(merged.sub.query).toEqual([true, false, false]);
+    expect(merged.sub.older.enabled).toEqual(false);
+    expect(merged.sub.newer.disabled).toEqual(false);
+    expect(merged.oldObj.prop1.val).toEqual(true);
+    expect(merged.oldProp).toEqual(1);
+    expect(merged.query).toEqual([1, 3, true]);
+    expect(merged.newProp).toEqual(2.0);
+    expect(merged.filter.one).toEqual(2);
+
+  });
+
+    // B + A without B
+
+
+    // type AB<T extends object, U extends T> = {
+    //   [P in keyof T]: T[P]
+    // };
+    //
+    // let r2: AB<Serialized2, DEFINED_BY_NEW> = {name: "abc"};
+
+
+    // type rr = Omit<Serialized2, keyof ADD>;
+    // let f: rr;
+    // f.
 
 
     // const legacyDB = new loki();
@@ -118,7 +146,4 @@ fdescribe("testing legacy loader", function () {
     //
     // const db = new Loki();
     // db.loadJSONObject(legacyDB);
-
-
-  });
 });
