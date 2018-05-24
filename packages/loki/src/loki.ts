@@ -368,8 +368,6 @@ export class Loki extends LokiEventEmitter {
     }
 
     // not just an individual collection, so we will need to serialize db container via shallow copy
-    // let dbcopy = new Loki(this.filename);
-    // dbcopy.loadJSONObject(this);
     let dbcopy = this._copy();
 
     for (let idx = 0; idx < dbcopy._collections.length; idx++) {
@@ -674,8 +672,6 @@ export class Loki extends LokiEventEmitter {
     // }
 
     const len = dbObject.collections ? dbObject.collections.length : 0;
-    console.log(len)
-
     this.filename = dbObject.filename;
     this._collections = [];
 
@@ -827,26 +823,16 @@ export class Loki extends LokiEventEmitter {
       return Promise.reject(new Error("persistenceAdapter not configured"));
     }
 
-    return Promise.resolve(this._persistenceAdapter.loadDatabase(this.filename))
-      .then((dbString) => {
-        if (typeof (dbString) === "string") {
-          this.loadJSON(dbString, options);
-          this.emit("load", this);
+    return this._persistenceAdapter.loadDatabase(this.filename)
+      .then((obj) => {
+        if (typeof obj === "string") {
+          this.loadJSON(obj, options);
+        } else if (obj instanceof Loki) {
+          this._collections = obj._collections.slice();
         } else {
-          // TODO: WAS EXPECTING A LOKI with correct Serialized structure....
-          dbString = dbString as object;
-          console.log("aha");
-          // if adapter has returned an js object (other than null or error) attempt to load from JSON object
-          if (typeof (dbString) === "object" && dbString !== null && !(dbString instanceof Error)) {
-            this.loadJSONObject(dbString, options);
-            this.emit("load", this);
-          } else {
-            if (dbString instanceof Error)
-              throw dbString;
-
-            throw new TypeError("The persistence adapter did not load a serialized DB string or object.");
-          }
+          this.loadJSONObject(obj, options);
         }
+        this.emit("load", this);
       });
   }
 

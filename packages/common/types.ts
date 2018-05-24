@@ -4,7 +4,7 @@
 import { Loki } from "../loki/src/loki";
 
 export interface StorageAdapter {
-  loadDatabase(dbname: string): Promise<any>;
+  loadDatabase(dbname: string): Promise<string | Loki | Loki.Serialized>;
 
   saveDatabase?(dbname: string, serialization: string): Promise<void>;
 

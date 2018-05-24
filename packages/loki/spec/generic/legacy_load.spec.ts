@@ -1,10 +1,10 @@
 // import {Loki} from "../../src/loki";
 
 
-import {mergeRightBiasedWithProxy} from '../../src/clone';
+import {mergeRightBiasedWithProxy} from "../../src/clone";
 
-fdescribe("load different database versions", function () {
-  fit("mergeRightBiasedWithProxy", () => {
+describe("load different database versions", function () {
+  it("mergeRightBiasedWithProxy", () => {
 
     let left = {
       version: 1 as 1,
@@ -83,7 +83,6 @@ fdescribe("load different database versions", function () {
     expect(merged.query).toEqual([1, 3, true]);
     expect(merged.newProp).toEqual(2.0);
     expect(merged.filter.one).toEqual(2);
-
   });
 
     // B + A without B

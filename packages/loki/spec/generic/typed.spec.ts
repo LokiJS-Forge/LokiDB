@@ -17,11 +17,13 @@ describe("typed", () => {
       }
     }
 
-    const json = {
+    const json: Loki.Serialized = {
       "filename": "test.json",
-      "_collections": [{
+      "databaseVersion": 2,
+      "engineVersion": 2,
+      "collections": [{
         "name": "users",
-        "_data": [{
+        "data": [{
           "name": "joe",
           "meta": {
             "version": 0,
@@ -42,11 +44,21 @@ describe("typed", () => {
         "binaryIndices": {},
         "transactional": false,
         "maxId": 2,
-        "_nestedProperties": [] as any[],
-      }],
-      "events": {},
-      "ENV": "NODEJS",
-      "fs": {}
+        "nestedProperties": [] as any[],
+        "dynamicViews": [],
+        "uniqueNames": [],
+        "transforms": {},
+        "dirty": false,
+        "adaptiveBinaryIndices": false,
+        "asyncListeners": false,
+        "disableMeta": false,
+        "disableChangesApi": false,
+        "disableDeltaChangesApi": false,
+        "cloneMethod": "deep",
+        "cloneObjects": false,
+        "changes": [],
+        "fullTextSearch": null
+      }]
     };
 
     // Loading only using proto:

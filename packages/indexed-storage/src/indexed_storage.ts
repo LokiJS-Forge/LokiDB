@@ -67,7 +67,7 @@ export class IndexedStorage implements StorageAdapter {
    * @param {string} dbname - the name of the database to retrieve.
    * @returns {Promise} a Promise that resolves after the database was loaded
    */
-  loadDatabase(dbname: string) {
+  loadDatabase(dbname: string): Promise<string> {
     const appName = this._appname;
     const adapter = this;
 

@@ -1245,7 +1245,7 @@ export namespace ResultSet {
   export interface Serialized {
     filterInitialized: boolean;
     filteredRows: number[];
-    scoring: Scorer.ScoreResults
+    scoring: Scorer.ScoreResults;
   }
 
   export type ContainsHelperType<R> =
