@@ -82,6 +82,7 @@ export class PartitioningAdapter implements StorageAdapter {
     return this._adapter.loadDatabase(dbname).then((result: string) => {
       // I will want to use loki destructuring helper methods so i will inflate into typed instance
       this._dbref.loadJSON(result);
+      result = null; // free up memory
 
       if (this._dbref._collections.length === 0) {
         return this._dbref;
@@ -114,6 +115,7 @@ export class PartitioningAdapter implements StorageAdapter {
       this._dbref._collections[partition]._data = this._dbref.deserializeCollection(result, {
         delimited: true
       });
+      result = null; // free up memory
 
       if (++partition < this._dbref._collections.length) {
         return this._loadNextPartition(partition);
@@ -134,7 +136,7 @@ export class PartitioningAdapter implements StorageAdapter {
     // load whatever page is next in sequence
     return this._adapter.loadDatabase(keyname).then((result: string) => {
       let data = result.split(this._delimiter);
-      result = ""; // free up memory now that we have split it into array
+      result = null; // free up memory
       let dlen = data.length;
 
       // detect if last page by presence of final empty string element and remove it if so
@@ -154,7 +156,7 @@ export class PartitioningAdapter implements StorageAdapter {
         this._dbref._collections[this._pageIterator.collection]._data.push(JSON.parse(data[idx]));
         data[idx] = null;
       }
-      data = [];
+      data = null; // free up memory
 
       // if last page, we are done with this partition
       if (isLastPage) {
@@ -220,13 +222,15 @@ export class PartitioningAdapter implements StorageAdapter {
     }
 
     // otherwise this is 'non-paged' partioning...
-    const result = this._dbref.serializeDestructured({
+    let result = this._dbref.serializeDestructured({
       partitioned: true,
       delimited: true,
       partition
     });
 
     return this._adapter.saveDatabase(keyname, result as string).then(() => {
+      result = null; // free up memory
+
       if (this._dirtyPartitions.length !== 0) {
         return this._saveNextPartition();
       }
