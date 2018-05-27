@@ -1,11 +1,11 @@
-// import {Loki} from "../../src/loki";
-
-
+import {Loki, Serialization} from "../../src/loki";
 import {mergeRightBiasedWithProxy} from "../../src/clone";
+
+declare var require: (moduleId: string) => any;
+const loki = require("../lokijs.min.js");
 
 describe("load different database versions", function () {
   it("mergeRightBiasedWithProxy", () => {
-
     let left = {
       version: 1 as 1,
       name: "abc",
@@ -25,7 +25,30 @@ describe("load different database versions", function () {
       query: {
         doit: 1
       },
-      filter: [1, 2]
+      filter: [1, 2],
+      colls: [
+        {
+          id: 1,
+          trans: [
+            {
+              ix: 1
+            }
+          ]
+        },
+        {
+          id: 2,
+          trans: [
+            {
+              ix: 2
+            },
+            {
+              ix: 3
+            }
+          ]
+        }
+      ],
+      callbackOld: () => false,
+      callback: () => "1"
     };
 
     let right = {
@@ -42,7 +65,15 @@ describe("load different database versions", function () {
       query: [1, 3, true],
       filter: {
         one: 2
-      }
+      },
+      colls: left.colls.map(coll => mergeRightBiasedWithProxy(coll, {
+        name: coll.id + ":id",
+        trans: coll.trans.map(tran => mergeRightBiasedWithProxy(tran, {
+          nx: tran.ix + ":ix"
+        }))
+      })),
+      callback: () => 1,
+      callbackNew: () => "2"
     };
 
     interface Merged {
@@ -69,6 +100,17 @@ describe("load different database versions", function () {
       filter: {
         one: number
       };
+      colls: {
+        id: number;
+        name: string;
+        trans: {
+          ix: number;
+          nx: string;
+        }[];
+      }[];
+      callbackOld: () => boolean;
+      callback: () => number;
+      callbackNew: () => string;
     }
 
     let merged: Merged = mergeRightBiasedWithProxy(left, right);
@@ -83,66 +125,95 @@ describe("load different database versions", function () {
     expect(merged.query).toEqual([1, 3, true]);
     expect(merged.newProp).toEqual(2.0);
     expect(merged.filter.one).toEqual(2);
+
+    expect(merged.colls.length).toEqual(2);
+    expect(merged.colls[0].id).toEqual(1);
+    expect(merged.colls[0].name).toEqual("1:id");
+    expect(merged.colls[1].id).toEqual(2);
+    expect(merged.colls[1].name).toEqual("2:id");
+    expect(merged.colls[0].trans.length).toEqual(1);
+    expect(merged.colls[1].trans.length).toEqual(2);
+    expect(merged.colls[0].trans[0].ix).toEqual(1);
+    expect(merged.colls[0].trans[0].nx).toEqual("1:ix");
+    expect(merged.colls[1].trans[0].ix).toEqual(2);
+    expect(merged.colls[1].trans[0].nx).toEqual("2:ix");
+    expect(merged.colls[1].trans[1].ix).toEqual(3);
+    expect(merged.colls[1].trans[1].nx).toEqual("3:ix");
+
+
+    expect(merged.callbackOld()).toEqual(false);
+    expect(merged.callback()).toEqual(1);
+    expect(merged.callbackNew()).toEqual("2");
   });
 
-    // B + A without B
+  fit("load lokijs", () => {
 
+    interface Data {
+      a: number;
+      b: number;
+      c: number;
+      d: {
+        msg: string;
+      };
+    }
 
-    // type AB<T extends object, U extends T> = {
-    //   [P in keyof T]: T[P]
-    // };
-    //
-    // let r2: AB<Serialized2, DEFINED_BY_NEW> = {name: "abc"};
+    const legacyDB = new loki();
+    {
+      const abc = legacyDB.addCollection("abc", {indices: ["a", "c"], unique: ["b"]});
+      abc.insert([
+        {
+          a: 1, b: 2, c: 1, d: {
+            msg: "hello"
+          }
+        },
+        {
+          a: 2, b: 6, c: 2, d: {
+            msg: "loki"
+          }
+        },
+        {
+          a: 3, b: 8, c: 1, d: {
+            msg: "legacy"
+          }
+        },
+      ] as Data[]);
+      const tx = [
+        {
+          type: "find",
+          value: {
+            "d.msg": "loki"
+          }
+        }
+      ];
+      abc.addTransform("findLoki", tx);
 
+      let result = abc.chain("findLoki").data();
+      expect(result.length).toEqual(1);
+      expect(result[0].d.msg).toEqual("loki");
 
-    // type rr = Omit<Serialized2, keyof ADD>;
-    // let f: rr;
-    // f.
+      const dyn = abc.addDynamicView("notLoki");
+      dyn.applyFind({c: 1});
+      dyn.applySimpleSort("a", true);
+      result = dyn.data();
+      expect(result.length).toEqual(2);
+      expect(result[0].d.msg).toEqual("legacy");
+      expect(result[1].d.msg).toEqual("hello");
+    }
 
+    const db = new Loki();
+    db.loadJSONObject(legacyDB as Serialization.Serialized);
 
-    // const legacyDB = new loki();
-    // {
-    //   const abc = legacyDB.addCollection("abc", {indices: ["a", "c"], unique: ["b"]});
-    //   abc.insert([
-    //     {
-    //       a: 1, b: 2,/*/ c: 1, d: {
-    //         msg: "hello"
-    //       }
-    //     },
-    //     {
-    //       a: 2, b: 6, c: 2, d: {
-    //         msg: "loki"
-    //       }
-    //     },
-    //     {
-    //       a: 3, b: 8, c: 1, d: {
-    //         msg: "legacy"
-    //       }
-    //     },
-    //   ]);
-    //   const tx = [
-    //     {
-    //       type: "find",
-    //       value: {
-    //         "d.msg": "loki"
-    //       }
-    //     }
-    //   ];
-    //   abc.addTransform("findLoki", tx);
-    //
-    //   let result = abc.chain("findLoki").data();
-    //   expect(result.length).toEqual(1);
-    //   expect(result[0].d.msg).toEqual("loki");
-    //
-    //   const dyn = abc.addDynamicView("notLoki");
-    //   dyn.applyFind({c: 1});
-    //   dyn.applySimpleSort("a", true);
-    //   result = dyn.data();
-    //   expect(result.length).toEqual(2);
-    //   expect(result[0].d.msg).toEqual("legacy");
-    //   expect(result[1].d.msg).toEqual("hello");
-    // }
-    //
-    // const db = new Loki();
-    // db.loadJSONObject(legacyDB);
+    const abc = db.getCollection<Data>("abc");
+    let result = abc.chain("findLoki").data();
+    expect(result.length).toEqual(1);
+    expect(result[0].d.msg).toEqual("loki");
+
+    const dyn = abc.getDynamicView("notLoki");
+    dyn.applyFind({c: 1});
+    dyn.applySimpleSort("a", true);
+    result = dyn.data();
+    expect(result.length).toEqual(2);
+    expect(result[0].d.msg).toEqual("legacy");
+    expect(result[1].d.msg).toEqual("hello");
+  });
 });

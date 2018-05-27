@@ -94,20 +94,21 @@ export function clone<T>(data: T, method: CloneMethod = "parse-stringify"): T {
 export type MergeRightBiased<TLeft, TRight> =
   TLeft extends any[] ? TRight :
     TRight extends any[] ? TRight :
-      TLeft extends object ?
-        TRight extends object ? {
-          // All properties of Left and Right, recursive
-          [P in keyof TLeft & keyof TRight]: MergeRightBiased<TLeft[P], TRight[P]>
-        } & {
-          // All properties of Left not in Right
-          [P in Exclude<keyof TLeft, keyof TRight>]: TLeft[P];
-        } & {
-          // All properties of Right not in Left
-          [P in Exclude<keyof TRight, keyof TLeft>]: TRight[P]
-        }
-          // Prefer Right
-          : TRight
-        : TRight;
+      TRight extends Function ? TRight :
+        TLeft extends object ?
+          TRight extends object ? {
+            // All properties of Left and Right, recursive
+            [P in keyof TLeft & keyof TRight]: MergeRightBiased<TLeft[P], TRight[P]>
+          } & {
+            // All properties of Left not in Right
+            [P in Exclude<keyof TLeft, keyof TRight>]: TLeft[P];
+          } & {
+            // All properties of Right not in Left
+            [P in Exclude<keyof TRight, keyof TLeft>]: TRight[P]
+          }
+            // Prefer Right
+            : TRight
+          : TRight;
 
 function isObject(t: any): t is object {
   return t !== null && typeof t === "object" && !Array.isArray(t);

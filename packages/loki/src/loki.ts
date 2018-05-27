@@ -1,9 +1,10 @@
 /* global global */
 import {LokiEventEmitter} from "./event_emitter";
 import {Collection} from "./collection";
-import {clone} from "./clone";
-import {Doc, StorageAdapter} from "../../common/types";
+import {clone, mergeRightBiasedWithProxy} from "./clone";
+import {Dict, Doc, StorageAdapter} from "../../common/types";
 import {PLUGINS} from "../../common/plugin";
+import {ResultSet} from "./result_set";
 
 function getENV(): Loki.Environment {
   if (global !== undefined && (global["android"] || global["NSObject"])) {
@@ -656,13 +657,41 @@ export class Loki extends LokiEventEmitter {
     this.loadJSONObject(dbObject, options);
   }
 
+  private _legacySupport(obj: Serialization.Serialized): Loki.Serialized {
+    if (obj.databaseVersion === 1.5) {
+      const dbObject = obj as Serialization.V1_5.Loki;
+      return this._legacySupport(mergeRightBiasedWithProxy(dbObject,
+        {
+          databaseVersion: 2.0,
+          collections: dbObject.collections.map(coll => mergeRightBiasedWithProxy(coll, {
+            dynamicViews: coll.DynamicViews.map(dv => mergeRightBiasedWithProxy(dv, {
+              persistent: dv.options.persistent,
+              sortPriority: dv.options.sortPriority,
+              minRebuildInterval: dv.options.minRebuildInterval,
+              resultSet: mergeRightBiasedWithProxy(dv.resultset, {
+                filteredRows: dv.resultset.filteredrows,
+                scoring: null
+              }),
+              sortByScoring: false,
+              sortCriteriaSimple: {
+                field: dv.sortCriteriaSimple.propname
+              }
+            })),
+            nestedProperties: [],
+            fullTextSearch: null
+          }))
+        }) as Serialization.V2_0.Loki);
+    }
+    return obj as Loki.Serialized;
+  }
+
   /**
    * Inflates a loki database from a JS object
-   * @param {object} dbObject - a serialized loki database object
+   * @param {object} obj - a serialized loki database object
    * @param {object} options - apply or override collection level settings
    * @param {boolean} options.retainDirtyFlags - whether collection dirty flags will be preserved
    */
-  public loadJSONObject(dbObject: Loki.Serialized, options: Collection.DeserializeOptions = {}): void {
+  public loadJSONObject(obj: Serialization.Serialized, options: Collection.DeserializeOptions = {}): void {
     // Legacy support.
     // if (dbObject.databaseVersion === 1.5) {
     //   dbObject = dbObject as LokiJS.Loki;
@@ -670,13 +699,14 @@ export class Loki extends LokiEventEmitter {
     //   // dbObject.co
     //
     // }
+    const dbObj = this._legacySupport(obj);
 
-    const len = dbObject.collections ? dbObject.collections.length : 0;
-    this.filename = dbObject.filename;
+    const len = dbObj.collections ? dbObj.collections.length : 0;
+    this.filename = dbObj.filename;
     this._collections = [];
 
     for (let i = 0; i < len; ++i) {
-      this._collections.push(Collection.fromJSONObject(dbObject.collections[i], options));
+      this._collections.push(Collection.fromJSONObject(dbObj.collections[i], options));
     }
   }
 
@@ -828,7 +858,7 @@ export class Loki extends LokiEventEmitter {
         if (typeof obj === "string") {
           this.loadJSON(obj, options);
         } else if (obj instanceof Loki) {
-          this._collections = obj._collections.slice();
+          this._collections = obj._collections;
         } else {
           this.loadJSONObject(obj, options);
         }
@@ -921,7 +951,7 @@ export class Loki extends LokiEventEmitter {
       });
     }
 
-        if (this._throttledSavePending !== null) {
+    if (this._throttledSavePending !== null) {
       return this._throttledSavePending;
     }
     this._throttledSaveRunning = this._saveDatabase().then(() => {
@@ -1046,12 +1076,7 @@ export namespace Loki {
     started?: Date;
   }
 
-  export interface Serialized {
-    collections: Collection.Serialized[];
-    databaseVersion: 2.0;
-    engineVersion: 2.0;
-    filename: string;
-  }
+  export type Serialized = Serialization.V2_0.Loki;
 
   export type LoadDatabaseOptions = Collection.DeserializeOptions & ThrottledDrainOptions;
 
@@ -1062,98 +1087,160 @@ export namespace Loki {
   export type Environment = "NATIVESCRIPT" | "NODEJS" | "CORDOVA" | "BROWSER" | "MEMORY";
 }
 
-export namespace LokiJS {
-  export interface Loki {
-    filename: string;
-    collections: Collection[];
-    databaseVersion: 1.5;
-    engineVersion: 1.5;
-    throttledSaves: boolean;
-    ENV: "NODEJS" | "NATIVESCRIPT" | "CORDOVA" | "BROWSER";
+export namespace Serialization {
+  export interface Serialized {
+    databaseVersion: number;
   }
 
-  export interface BinaryIndex {
-    name: string;
-    dirty: boolean;
-    values: number[];
-  }
+  export namespace V1_5 {
+    export interface Loki {
+      filename: string;
+      collections: Collection[];
+      databaseVersion: 1.5;
+      engineVersion: number;
+      throttledSaves: boolean;
+      ENV: "NODEJS" | "NATIVESCRIPT" | "CORDOVA" | "BROWSER";
+    }
 
-  export interface Transform {
+    export interface BinaryIndex {
+      name: string;
+      dirty: boolean;
+      values: number[];
+    }
 
-  }
-
-  export interface Collection {
-    name: string;
-    data: Data[];
-    idIndex: number[];
-    binaryIndices: {
-      [key: string]: BinaryIndex
-    };
-    uniqueNames: string[];
-    transforms: {
-      [key: string]: Transform;
-    };
-    objType: string; // ??
-    dirty: boolean; // ??
-    adaptiveBinaryIndices: boolean;
-    transactional: boolean;
-    cloneObjects: boolean;
-    cloneMethod: "parse-stringify" | "??";
-    disableMeta: boolean;
-    disableChangesApi: boolean;
-    disableDeltaChangesApi: boolean;
-    autoupdate: boolean;
-    serializableIndices: boolean;
-    maxId: number;
-    DynamicViews: DynamicView[];
-    events: {};
-    changes: any[];
-  }
-
-  export interface SimplesortOptions {
-    desc?: boolean;
-    disableIndexIntersect?: boolean;
-    forceIndexIntersect?: boolean;
-    useJavascriptSorting?: boolean;
-  }
-
-  export interface DynamicView {
-    name: string;
-    rebuildPending: boolean;
-    options: {
-      persistent: true,
-      sortPriority: "passive" | "active",
-      minRebuildInterval: number;
-    };
-    resultset: ResultSet;
-    filterPipeline: {
-      type: "find",
-      val: any;
+    export type Transform = {
+      type: "find";
+      value: ResultSet.Query<Doc<object>> | string;
     } | {
-      type: "where"
+      type: "where";
+      value: ((obj: Doc<object>) => boolean) | string;
+    } | {
+      type: "simplesort";
+      property: string;
+      options?: boolean | ResultSet.SimpleSortOptions;
+    } | {
+      type: "compoundsort";
+      value: (string | [string, boolean])[];
+    } | {
+      type: "sort";
+      value: (a: Doc<object>, b: Doc<object>) => number;
+    } | {
+      type: "limit";
+      value: number;
+    } | {
+      type: "offset";
+      value: number;
+    } | {
+      type: "map";
+      value: (obj: Doc<object>, index: number, array: Doc<object>[]) => any;
+      dataOptions?: ResultSet.DataOptions;
+    } | {
+      type: "eqJoin";
+      joinData: Collection | ResultSet;
+      leftJoinKey: string | ((obj: any) => string);
+      rightJoinKey: string | ((obj: any) => string);
+      mapFun?: (left: any, right: any) => any;
+      dataOptions?: ResultSet.DataOptions;
+    } | {
+      type: "mapReduce";
+      mapFunction: 2,//(item: Doc<object>, index: number, array: Doc<object>[]) => any;
+      reduceFunction: (array: any[]) => any;
+    } | {
+      type: "update";
+      value: (obj: Doc<object>) => any;
+    } | {
+      type: "remove";
     };
-    sortCriteria: (string | [string, boolean])[];
-    sortCriteriaSimple: {
-      propname: string;
-      options: boolean | SimplesortOptions;
-    };
-    sortDirty: boolean;
+
+
+    export interface Collection {
+      name: string;
+      data: Data[];
+      idIndex: number[];
+      binaryIndices: {
+        [key: string]: BinaryIndex;
+      };
+      uniqueNames: string[];
+      transforms: Dict<Transform[]>;
+      objType: string; // ??
+      dirty: boolean; // ??
+      asyncListeners: boolean;
+      adaptiveBinaryIndices: boolean;
+      transactional: boolean;
+      cloneObjects: boolean;
+      cloneMethod: "parse-stringify" | "??";
+      disableMeta: boolean;
+      disableChangesApi: boolean;
+      disableDeltaChangesApi: boolean;
+      autoupdate: boolean;
+      serializableIndices: boolean;
+      maxId: number;
+      DynamicViews: DynamicView[];
+      events: {};
+      changes: any[];
+    }
+
+    export interface SimplesortOptions {
+      desc?: boolean;
+      disableIndexIntersect?: boolean;
+      forceIndexIntersect?: boolean;
+      useJavascriptSorting?: boolean;
+    }
+
+    export interface DynamicView {
+      name: string;
+      rebuildPending: boolean;
+      options: {
+        persistent: true;
+        sortPriority: "passive" | "active";
+        minRebuildInterval: number;
+      };
+      resultset: ResultSet;
+      filterPipeline: ({
+        type: "find";
+        val: object; // TODO
+        uid: number
+      } | {
+        type: "where";
+        val: (doc: Doc<object>) => boolean;
+        uid: number
+      })[];
+      sortCriteria: (string | [string, boolean])[];
+      sortCriteriaSimple: {
+        propname: string;
+        options: boolean | SimplesortOptions;
+      };
+      sortDirty: boolean;
+    }
+
+    export interface ResultSet {
+      filteredrows: number[];
+      filterInitialized: boolean;
+    }
+
+    export interface Data {
+      $loki: number;
+      meta: {
+        revision: number;
+        created: number;
+        version: number;
+        updated?: number;
+      };
+    }
   }
 
-  export interface ResultSet {
-    filteredrows: number[];
-    filterInitialized: boolean;
+  export namespace V2_0 {
+    export interface Loki {
+      collections: Collection.Serialized[];
+      databaseVersion: 2.0;
+      engineVersion: number;
+      filename: string;
+    }
   }
+}
 
-  export interface Data {
-    $loki: number;
-    meta: {
-      revision: number;
-      created: number;
-      version: number;
-      updated?: number;
-    };
-  }
+export namespace LokiJS {
+
 
   export interface Serialized {
 

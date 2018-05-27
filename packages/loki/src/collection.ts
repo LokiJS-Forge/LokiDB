@@ -2226,10 +2226,10 @@ export namespace Collection {
 
   export type Transform<TData extends object = object, TNested extends object = object> = {
     type: "find";
-    value: ResultSet.Query<Doc<TData & TNested>> | string;
+    value: ResultSet.Query<Doc<TData & TNested>>;
   } | {
     type: "where";
-    value: ((obj: Doc<TData & TNested>) => boolean) | string;
+    value: ((obj: Doc<TData & TNested>) => boolean);
   } | {
     type: "simplesort";
     property: keyof (TData & TNested);

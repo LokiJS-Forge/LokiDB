@@ -384,10 +384,10 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
       switch (step.type) {
         case "find":
-          rs.find(step.value as ResultSet.Query<Doc<TData & TNested>>);
+          rs.find(step.value);
           break;
         case "where":
-          rs.where(step.value as (obj: Doc<TData & TNested>) => boolean);
+          rs.where(step.value);
           break;
         case "simplesort":
           rs.simplesort(step.property, step.options);
