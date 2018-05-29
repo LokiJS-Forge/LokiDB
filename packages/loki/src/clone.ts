@@ -125,13 +125,17 @@ function isObject(t: any): t is object {
 export function mergeRightBiasedWithProxy<TLeft, TRight>(left: TLeft, right: TRight): MergeRightBiased<TLeft, TRight> {
   return new Proxy({},
     {
-      get: (_, prop) => {
+      get: function (target, prop) {
+        if (target.hasOwnProperty(prop)) {
+          return target[prop];
+        }
         if (isObject(right) && right.hasOwnProperty(prop)) {
           if (isObject(right[prop]) && isObject(left) && isObject(left[prop])) {
             return mergeRightBiasedWithProxy(left[prop], right[prop]);
           }
           return right[prop];
-        } else if (isObject(left) && left.hasOwnProperty(prop)) {
+        }
+        if (isObject(left) && left.hasOwnProperty(prop)) {
           return left[prop];
         }
         return undefined;

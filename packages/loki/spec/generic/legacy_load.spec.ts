@@ -145,73 +145,127 @@ describe("load different database versions", function () {
     expect(merged.callback()).toEqual(1);
     expect(merged.callbackNew()).toEqual("2");
   });
+});
 
-  fit("load lokijs", () => {
+describe("load lokijs", () => {
 
-    interface Data {
-      a: number;
-      b: number;
-      c: number;
-      d: {
-        msg: string;
-      };
-    }
+  interface Data {
+    a: number;
+    b: number;
+    c: number;
+    d: {
+      msg: string;
+    };
+  }
 
-    const legacyDB = new loki();
-    {
-      const abc = legacyDB.addCollection("abc", {indices: ["a", "c"], unique: ["b"]});
-      abc.insert([
-        {
-          a: 1, b: 2, c: 1, d: {
-            msg: "hello"
-          }
-        },
-        {
-          a: 2, b: 6, c: 2, d: {
-            msg: "loki"
-          }
-        },
-        {
-          a: 3, b: 8, c: 1, d: {
-            msg: "legacy"
-          }
-        },
-      ] as Data[]);
-      const tx = [
-        {
-          type: "find",
-          value: {
-            "d.msg": "loki"
-          }
+  const legacyDB = new loki();
+  {
+    const abc = legacyDB.addCollection("abc", {indices: ["a", "c"], unique: ["b"]});
+    abc.insert([
+      {
+        a: 1, b: 2, c: 1, d: {
+          msg: "hello"
         }
-      ];
-      abc.addTransform("findLoki", tx);
+      },
+      {
+        a: 2, b: 6, c: 2, d: {
+          msg: "loki"
+        }
+      },
+      {
+        a: 3, b: 8, c: 1, d: {
+          msg: "legacy"
+        }
+      },
+    ] as Data[]);
+    const tx = [
+      {
+        type: "find",
+        value: {
+          "d.msg": "loki"
+        }
+      }
+    ];
+    abc.addTransform("findLoki", tx);
 
-      let result = abc.chain("findLoki").data();
-      expect(result.length).toEqual(1);
-      expect(result[0].d.msg).toEqual("loki");
+    const txParam = [
+      {
+        type: "limit",
+        value: "[%lktxp]param"
+      }
+    ];
+    abc.addTransform("limit", txParam);
 
-      const dyn = abc.addDynamicView("notLoki");
-      dyn.applyFind({c: 1});
-      dyn.applySimpleSort("a", true);
-      result = dyn.data();
-      expect(result.length).toEqual(2);
-      expect(result[0].d.msg).toEqual("legacy");
-      expect(result[1].d.msg).toEqual("hello");
-    }
+    const dyn = abc.addDynamicView("notLoki");
+    dyn.applyFind({c: 1});
+    dyn.applySimpleSort("a", true);
+  }
 
-    const db = new Loki();
-    db.loadJSONObject(legacyDB as Serialization.Serialized);
+  it("test lokijs", () => {
 
-    const abc = db.getCollection<Data>("abc");
+    const abc = legacyDB.getCollection("abc");
+
     let result = abc.chain("findLoki").data();
     expect(result.length).toEqual(1);
     expect(result[0].d.msg).toEqual("loki");
+
+    result = abc.chain("limit", {param: 1}).data();
+    expect(result.length).toEqual(1);
+
+
+    const dyn = abc.getDynamicView("notLoki");
+    result = dyn.data();
+    expect(result.length).toEqual(2);
+    expect(result[0].d.msg).toEqual("legacy");
+    expect(result[1].d.msg).toEqual("hello");
+  });
+
+  it("test LokiDB with serialization inflation", () => {
+    let db = new Loki();
+    db.loadJSONObject(legacyDB as Serialization.Serialized, {
+      loader: (_1, coll) => {
+        coll.nestedProperties = [{name: "d.msg", path: ["d", "msg"]}];
+        return false;
+      }
+    });
+
+    const abc = db.getCollection<Data>("abc");
+
+    let result = abc.chain("findLoki").data();
+    expect(result.length).toEqual(1);
+    expect(result[0].d.msg).toEqual("loki");
+
+    result = abc.chain("limit", {param: 1}).data();
+    expect(result.length).toEqual(1);
 
     const dyn = abc.getDynamicView("notLoki");
     dyn.applyFind({c: 1});
     dyn.applySimpleSort("a", true);
     result = dyn.data();
+    expect(result.length).toEqual(2);
+    expect(result[0].d.msg).toEqual("legacy");
+    expect(result[1].d.msg).toEqual("hello");
+  });
+
+
+  it("test LokiDB with options inflation", () => {
+    const db = new Loki();
+
+    // Transform and dynamic view will not be deserialized.
+    db.loadJSONObject(legacyDB as Serialization.Serialized, {
+      loader: (_1, _2, options) => {
+        options.nestedProperties = ["d.msg"];
+        return true;
+      }
+    });
+
+    const abc = db.getCollection<Data, {"d.msg": string}>("abc");
+
+    let result = abc.find({"d.msg": "loki"});
+    expect(result.length).toEqual(1);
+    expect(result[0].d.msg).toEqual("loki");
+
+    result = abc.chain().find({c: 1}).simplesort("a", true).data();
     expect(result.length).toEqual(2);
     expect(result[0].d.msg).toEqual("legacy");
     expect(result[1].d.msg).toEqual("hello");

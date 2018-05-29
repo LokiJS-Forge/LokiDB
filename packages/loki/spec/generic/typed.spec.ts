@@ -57,6 +57,9 @@ describe("typed", () => {
         "cloneMethod": "deep",
         "cloneObjects": false,
         "changes": [],
+        "serializableIndices": false,
+        "ttl": null,
+        "ttlInterval": null,
         "fullTextSearch": null
       }]
     };

@@ -155,7 +155,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    */
   public _ttl: Collection.TTL = {
     age: null,
-    ttlInterval: null,
+    interval: null,
     daemon: null
   };
 
@@ -325,14 +325,17 @@ export class Collection<TData extends object = object, TNested extends object = 
       disableDeltaChangesApi: this._disableDeltaChangesApi,
       cloneObjects: this._cloneObjects,
       cloneMethod: this._cloneMethod,
+      serializableIndices: this._serializableIndices,
       changes: this._changes,
+      ttl: this._ttl.age,
+      ttlInterval: this._ttl.interval,
       fullTextSearch: this._fullTextSearch ? this._fullTextSearch.toJSON() : null
     };
   }
 
 
   static fromJSONObject(obj: Collection.Serialized, options?: Collection.DeserializeOptions) {
-    let coll = new Collection<any>(obj.name, {
+    let coll = new Collection<any, any>(obj.name, {
       disableChangesApi: obj.disableChangesApi,
       disableDeltaChangesApi: obj.disableDeltaChangesApi
     });
@@ -345,8 +348,8 @@ export class Collection<TData extends object = object, TNested extends object = 
     coll._cloneObjects = obj.cloneObjects;
     coll._cloneMethod = obj.cloneMethod || "deep";
     coll._changes = obj.changes;
-    coll._nestedProperties = obj.nestedProperties as any[];
-
+    coll._nestedProperties = obj.nestedProperties;
+    coll._serializableIndices = obj.serializableIndices;
     coll._dirty = (options && options.retainDirtyFlags === true) ? obj.dirty : false;
 
     function makeLoader(coll: Collection.Serialized) {
@@ -412,6 +415,8 @@ export class Collection<TData extends object = object, TNested extends object = 
       coll._fullTextSearch = PLUGINS["FullTextSearch"].fromJSONObject(obj.fullTextSearch, options.fullTextSearch);
     }
 
+    coll.setTTL(obj.ttl || -1, obj.ttlInterval);
+
     return coll;
   }
 
@@ -460,7 +465,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       clearInterval(this._ttl.daemon);
     } else {
       this._ttl.age = age;
-      this._ttl.ttlInterval = interval;
+      this._ttl.interval = interval;
       this._ttl.daemon = setInterval(() => {
         const now = Date.now();
         const toRemove = this.chain().where((member: Doc<TData>) => {
@@ -2180,6 +2185,7 @@ export namespace Collection {
   export interface DeserializeOptions {
     retainDirtyFlags?: boolean;
     fullTextSearch?: Dict<Analyzer>;
+    loader?: (databaseVersion: number, coll: Collection.Serialized, options: Collection.Options<any, any>) => boolean;
 
     [collName: string]: any | { proto?: any; inflate?: (src: object, dest?: object) => void };
   }
@@ -2214,6 +2220,9 @@ export namespace Collection {
     disableDeltaChangesApi: boolean;
     cloneObjects: boolean;
     cloneMethod: CloneMethod;
+    serializableIndices: boolean;
+    ttl: number;
+    ttlInterval: number;
     changes: any;
     fullTextSearch: FullTextSearch.Serialized;
   }
@@ -2226,10 +2235,10 @@ export namespace Collection {
 
   export type Transform<TData extends object = object, TNested extends object = object> = {
     type: "find";
-    value: ResultSet.Query<Doc<TData & TNested>>;
+    value: ResultSet.Query<Doc<TData & TNested>> | string;
   } | {
     type: "where";
-    value: ((obj: Doc<TData & TNested>) => boolean);
+    value: ((obj: Doc<TData & TNested>) => boolean) | string;
   } | {
     type: "simplesort";
     property: keyof (TData & TNested);
@@ -2273,7 +2282,7 @@ export namespace Collection {
 
   export interface TTL {
     age: number;
-    ttlInterval: number;
+    interval: number;
     daemon: any; // setInterval Timer
   }
 }

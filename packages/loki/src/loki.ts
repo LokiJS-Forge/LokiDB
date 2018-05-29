@@ -678,6 +678,8 @@ export class Loki extends LokiEventEmitter {
               }
             })),
             nestedProperties: [],
+            ttl: undefined,
+            ttlInterval: undefined,
             fullTextSearch: null
           }))
         }) as Serialization.V2_0.Loki);
@@ -692,20 +694,59 @@ export class Loki extends LokiEventEmitter {
    * @param {boolean} options.retainDirtyFlags - whether collection dirty flags will be preserved
    */
   public loadJSONObject(obj: Serialization.Serialized, options: Collection.DeserializeOptions = {}): void {
-    // Legacy support.
-    // if (dbObject.databaseVersion === 1.5) {
-    //   dbObject = dbObject as LokiJS.Loki;
-    //
-    //   // dbObject.co
-    //
-    // }
+
+    const databaseVersion = obj.databaseVersion;
     const dbObj = this._legacySupport(obj);
 
     const len = dbObj.collections ? dbObj.collections.length : 0;
     this.filename = dbObj.filename;
     this._collections = [];
 
-    for (let i = 0; i < len; ++i) {
+    for (let i = 0; i < len; i++) {
+      let coll = null;
+      const dbColl = dbObj.collections[i];
+
+      if (options.loader) {
+        // Generate options from serialized collection.
+        const collOptions: Collection.Options<any, any> = {};
+
+        collOptions.adaptiveBinaryIndices = dbColl.adaptiveBinaryIndices;
+        collOptions.nestedProperties = dbColl.nestedProperties;
+        collOptions.asyncListeners = dbColl.asyncListeners;
+        collOptions.disableChangesApi = dbColl.disableChangesApi;
+        collOptions.disableDeltaChangesApi = dbColl.disableDeltaChangesApi;
+        collOptions.disableMeta = dbColl.disableMeta;
+        collOptions.indices = Object.keys(dbColl.binaryIndices);
+        collOptions.unique = dbColl.uniqueNames;
+        collOptions.clone = dbColl.cloneObjects;
+        collOptions.cloneMethod = dbColl.cloneMethod;
+        collOptions.serializableIndices = dbColl.serializableIndices;
+        collOptions.ttl = dbColl.ttl;
+        collOptions.ttlInterval = dbColl.ttlInterval;
+        collOptions.transactional = dbColl.transactional;
+
+        if (collOptions.fullTextSearch) {
+          collOptions.fullTextSearch = [];
+          for (let [key, value] of Object.entries(dbColl.fullTextSearch.ii)) {
+            collOptions.fullTextSearch.push({
+              field: key, store: value.store, optimizeChanges: value.optimizeChanges
+            });
+          }
+        }
+
+        if (options.loader(databaseVersion, dbColl, collOptions)) {
+          coll = this.addCollection(dbColl.name, collOptions);
+          for (let j = 0; j < dbColl.data.length; j++) {
+            delete dbColl.data[j].$loki;
+            coll.insert(dbColl.data[j]);
+          }
+        }
+      }
+
+      if (!coll) {
+        coll = Collection.fromJSONObject(dbObj.collections[i], options);
+      }
+
       this._collections.push(Collection.fromJSONObject(dbObj.collections[i], options));
     }
   }

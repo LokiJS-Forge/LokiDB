@@ -222,8 +222,8 @@ export class InvertedIndex {
   public toJSON(): InvertedIndex.Serialized {
     if (this._store) {
       return {
-        _store: true,
-        _optimizeChanges: this._optimizeChanges,
+        store: true,
+        optimizeChanges: this._optimizeChanges,
         docCount: this.docCount,
         docStore: [...this.docStore],
         totalFieldLength: this.totalFieldLength,
@@ -231,8 +231,8 @@ export class InvertedIndex {
       };
     }
     return {
-      _store: false,
-      _optimizeChanges: this._optimizeChanges,
+      store: false,
+      optimizeChanges: this._optimizeChanges,
     };
   }
 
@@ -243,12 +243,12 @@ export class InvertedIndex {
    */
   public static fromJSONObject(serialized: InvertedIndex.Serialized, analyzer?: Analyzer): InvertedIndex {
     const invIdx = new InvertedIndex({
-      store: serialized._store,
-      optimizeChanges: serialized._optimizeChanges,
+      store: serialized.store,
+      optimizeChanges: serialized.optimizeChanges,
       analyzer: analyzer
     });
 
-    if (serialized._store) {
+    if (serialized.store) {
       invIdx.docCount = serialized.docCount;
       invIdx.docStore = new Map(serialized.docStore);
       invIdx.totalFieldLength = serialized.totalFieldLength;
@@ -386,13 +386,13 @@ export namespace InvertedIndex {
   export type Serialized = SpareSerialized | FullSerialized;
 
   export type SpareSerialized = {
-    _store: false;
-    _optimizeChanges: boolean;
+    store: false;
+    optimizeChanges: boolean;
   };
 
   export type FullSerialized = {
-    _store: true;
-    _optimizeChanges: boolean;
+    store: true;
+    optimizeChanges: boolean;
     docCount: number;
     docStore: [DocumentIndex, DocStore][];
     totalFieldLength: number;
