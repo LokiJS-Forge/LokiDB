@@ -2,6 +2,10 @@
 import { Loki } from "../../../loki/src/loki";
 import { IndexedStorage } from "../../src/indexed_storage";
 
+declare var require: (moduleId: string) => any;
+const loki = require("../../../lokijs/lokijs.js");
+const indexedAdapter = require("../../../lokijs/loki-indexed-adapter.js");
+
 describe("testing indexed storage", function () {
 
   interface Name {
@@ -67,5 +71,24 @@ describe("testing indexed storage", function () {
             done();
           });
       });
+  });
+
+  it("from lokijs", (done) => {
+    const legacyDB = new loki("legacyDB", {adapter: new indexedAdapter()});
+    const coll = legacyDB.addCollection("myColl");
+    coll.insert({name: "Hello World"});
+    legacyDB.saveDatabase(() => {
+      // Load with LokiDB.
+      const db = new Loki("legacyDB");
+      return db.initializePersistence()
+        .then(() => {
+          return db.loadDatabase();
+        }).then(() => {
+          expect(db.getCollection<Name>("myColl").find()[0].name).toEqual("Hello World");
+          return db.deleteDatabase();
+        }).then(() => {
+          done();
+        });
+    });
   });
 });

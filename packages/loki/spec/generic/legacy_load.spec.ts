@@ -2,7 +2,7 @@ import {Loki, Serialization} from "../../src/loki";
 import {mergeRightBiasedWithProxy} from "../../src/clone";
 
 declare var require: (moduleId: string) => any;
-const loki = require("../lokijs.min.js");
+const loki = require("../../../lokijs/lokijs.js");
 
 describe("load different database versions", function () {
   it("mergeRightBiasedWithProxy", () => {
