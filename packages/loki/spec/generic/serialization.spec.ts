@@ -1,5 +1,5 @@
-import {Loki, Serialization} from "../../src/loki";
-import {mergeRightBiasedWithProxy} from "../../src/clone";
+import {Loki} from "../../src/loki";
+import {Serialization, mergeRightBiasedWithProxy} from "../../src/serialization/serialization";
 
 declare var require: (moduleId: string) => any;
 const loki = require("../../../lokijs/lokijs.js");
@@ -33,7 +33,8 @@ describe("load different database versions", function () {
             {
               ix: 1
             }
-          ]
+          ],
+          names: "abc" as "abc" | "def",
         },
         {
           id: 2,
@@ -44,7 +45,8 @@ describe("load different database versions", function () {
             {
               ix: 3
             }
-          ]
+          ],
+          names: "def" as "abc" | "def",
         }
       ],
       callbackOld: () => false,
@@ -70,7 +72,8 @@ describe("load different database versions", function () {
         name: coll.id + ":id",
         trans: coll.trans.map(tran => mergeRightBiasedWithProxy(tran, {
           nx: tran.ix + ":ix"
-        }))
+        })),
+        names: (coll.names === "def" ? "xyz" : coll.names) as "abc" | "xyz"
       })),
       callback: () => 1,
       callbackNew: () => "2"
@@ -107,6 +110,7 @@ describe("load different database versions", function () {
           ix: number;
           nx: string;
         }[];
+        names: "abc" | "xyz";
       }[];
       callbackOld: () => boolean;
       callback: () => number;
@@ -129,8 +133,10 @@ describe("load different database versions", function () {
     expect(merged.colls.length).toEqual(2);
     expect(merged.colls[0].id).toEqual(1);
     expect(merged.colls[0].name).toEqual("1:id");
+    expect(merged.colls[0].names).toEqual("abc");
     expect(merged.colls[1].id).toEqual(2);
     expect(merged.colls[1].name).toEqual("2:id");
+    expect(merged.colls[1].names).toEqual("xyz");
     expect(merged.colls[0].trans.length).toEqual(1);
     expect(merged.colls[1].trans.length).toEqual(2);
     expect(merged.colls[0].trans[0].ix).toEqual(1);
@@ -139,7 +145,6 @@ describe("load different database versions", function () {
     expect(merged.colls[1].trans[0].nx).toEqual("2:ix");
     expect(merged.colls[1].trans[1].ix).toEqual(3);
     expect(merged.colls[1].trans[1].nx).toEqual("3:ix");
-
 
     expect(merged.callbackOld()).toEqual(false);
     expect(merged.callback()).toEqual(1);

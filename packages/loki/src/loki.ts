@@ -1,10 +1,10 @@
 /* global global */
 import {LokiEventEmitter} from "./event_emitter";
 import {Collection} from "./collection";
-import {clone, mergeRightBiasedWithProxy} from "./clone";
-import {Dict, Doc, StorageAdapter} from "../../common/types";
+import {clone} from "./clone";
+import {Doc, StorageAdapter} from "../../common/types";
 import {PLUGINS} from "../../common/plugin";
-import {ResultSet} from "./result_set";
+import {Serialization, deserializeLegacyDB} from "./serialization/serialization";
 
 function getENV(): Loki.Environment {
   if (global !== undefined && (global["android"] || global["NSObject"])) {
@@ -323,7 +323,7 @@ export class Loki extends LokiEventEmitter {
   }
 
   // alias of serialize
-  public toJSON(): Loki.Serialized {
+  public toJSON(): Serialization.Loki {
     return {
       filename: this.filename,
       databaseVersion: this.databaseVersion,
@@ -536,7 +536,7 @@ export class Loki extends LokiEventEmitter {
       }
 
       // Otherwise we are restoring an entire partitioned db
-      const cdb: Loki.Serialized = JSON.parse(destructuredSource[0]);
+      const cdb: Serialization.Loki = JSON.parse(destructuredSource[0]);
       const collCount = cdb.collections.length;
       for (let collIndex = 0; collIndex < collCount; collIndex++) {
         // attach each collection docarray to container collection data, add 1 to collection array index since db is at 0
@@ -565,7 +565,7 @@ export class Loki extends LokiEventEmitter {
     }
 
     // first line is database and collection shells
-    const cdb: Loki.Serialized = JSON.parse(workarray[0]);
+    const cdb: Serialization.Loki = JSON.parse(workarray[0]);
     const collCount = cdb.collections.length;
     workarray[0] = null;
 
@@ -657,36 +657,6 @@ export class Loki extends LokiEventEmitter {
     this.loadJSONObject(dbObject, options);
   }
 
-  private _legacySupport(obj: Serialization.Serialized): Loki.Serialized {
-    if (obj.databaseVersion === 1.5) {
-      const dbObject = obj as Serialization.V1_5.Loki;
-      return this._legacySupport(mergeRightBiasedWithProxy(dbObject,
-        {
-          databaseVersion: 2.0,
-          collections: dbObject.collections.map(coll => mergeRightBiasedWithProxy(coll, {
-            dynamicViews: coll.DynamicViews.map(dv => mergeRightBiasedWithProxy(dv, {
-              persistent: dv.options.persistent,
-              sortPriority: dv.options.sortPriority,
-              minRebuildInterval: dv.options.minRebuildInterval,
-              resultSet: mergeRightBiasedWithProxy(dv.resultset, {
-                filteredRows: dv.resultset.filteredrows,
-                scoring: null
-              }),
-              sortByScoring: false,
-              sortCriteriaSimple: {
-                field: dv.sortCriteriaSimple.propname
-              }
-            })),
-            nestedProperties: [],
-            ttl: undefined,
-            ttlInterval: undefined,
-            fullTextSearch: null
-          }))
-        }) as Serialization.V2_0.Loki);
-    }
-    return obj as Loki.Serialized;
-  }
-
   /**
    * Inflates a loki database from a JS object
    * @param {object} obj - a serialized loki database object
@@ -696,7 +666,7 @@ export class Loki extends LokiEventEmitter {
   public loadJSONObject(obj: Serialization.Serialized, options: Collection.DeserializeOptions = {}): void {
 
     const databaseVersion = obj.databaseVersion;
-    const dbObj = this._legacySupport(obj);
+    const dbObj = deserializeLegacyDB(obj);
 
     const len = dbObj.collections ? dbObj.collections.length : 0;
     this.filename = dbObj.filename;
@@ -1117,8 +1087,6 @@ export namespace Loki {
     started?: Date;
   }
 
-  export type Serialized = Serialization.V2_0.Loki;
-
   export type LoadDatabaseOptions = Collection.DeserializeOptions & ThrottledDrainOptions;
 
   export type SerializedMethod = "normal" | "pretty" | "destructured";
@@ -1126,164 +1094,4 @@ export namespace Loki {
   export type PersistenceMethod = "fs-storage" | "local-storage" | "indexed-storage" | "memory-storage" | "adapter";
 
   export type Environment = "NATIVESCRIPT" | "NODEJS" | "CORDOVA" | "BROWSER" | "MEMORY";
-}
-
-export namespace Serialization {
-  export interface Serialized {
-    databaseVersion: number;
-  }
-
-  export namespace V1_5 {
-    export interface Loki {
-      filename: string;
-      collections: Collection[];
-      databaseVersion: 1.5;
-      engineVersion: number;
-      throttledSaves: boolean;
-      ENV: "NODEJS" | "NATIVESCRIPT" | "CORDOVA" | "BROWSER";
-    }
-
-    export interface BinaryIndex {
-      name: string;
-      dirty: boolean;
-      values: number[];
-    }
-
-    export type Transform = {
-      type: "find";
-      value: ResultSet.Query<Doc<object>> | string;
-    } | {
-      type: "where";
-      value: ((obj: Doc<object>) => boolean) | string;
-    } | {
-      type: "simplesort";
-      property: string;
-      options?: boolean | ResultSet.SimpleSortOptions;
-    } | {
-      type: "compoundsort";
-      value: (string | [string, boolean])[];
-    } | {
-      type: "sort";
-      value: (a: Doc<object>, b: Doc<object>) => number;
-    } | {
-      type: "limit";
-      value: number;
-    } | {
-      type: "offset";
-      value: number;
-    } | {
-      type: "map";
-      value: (obj: Doc<object>, index: number, array: Doc<object>[]) => any;
-      dataOptions?: ResultSet.DataOptions;
-    } | {
-      type: "eqJoin";
-      joinData: Collection | ResultSet;
-      leftJoinKey: string | ((obj: any) => string);
-      rightJoinKey: string | ((obj: any) => string);
-      mapFun?: (left: any, right: any) => any;
-      dataOptions?: ResultSet.DataOptions;
-    } | {
-      type: "mapReduce";
-      mapFunction: 2,//(item: Doc<object>, index: number, array: Doc<object>[]) => any;
-      reduceFunction: (array: any[]) => any;
-    } | {
-      type: "update";
-      value: (obj: Doc<object>) => any;
-    } | {
-      type: "remove";
-    };
-
-
-    export interface Collection {
-      name: string;
-      data: Data[];
-      idIndex: number[];
-      binaryIndices: {
-        [key: string]: BinaryIndex;
-      };
-      uniqueNames: string[];
-      transforms: Dict<Transform[]>;
-      objType: string; // ??
-      dirty: boolean; // ??
-      asyncListeners: boolean;
-      adaptiveBinaryIndices: boolean;
-      transactional: boolean;
-      cloneObjects: boolean;
-      cloneMethod: "parse-stringify" | "??";
-      disableMeta: boolean;
-      disableChangesApi: boolean;
-      disableDeltaChangesApi: boolean;
-      autoupdate: boolean;
-      serializableIndices: boolean;
-      maxId: number;
-      DynamicViews: DynamicView[];
-      events: {};
-      changes: any[];
-    }
-
-    export interface SimplesortOptions {
-      desc?: boolean;
-      disableIndexIntersect?: boolean;
-      forceIndexIntersect?: boolean;
-      useJavascriptSorting?: boolean;
-    }
-
-    export interface DynamicView {
-      name: string;
-      rebuildPending: boolean;
-      options: {
-        persistent: true;
-        sortPriority: "passive" | "active";
-        minRebuildInterval: number;
-      };
-      resultset: ResultSet;
-      filterPipeline: ({
-        type: "find";
-        val: object; // TODO
-        uid: number
-      } | {
-        type: "where";
-        val: (doc: Doc<object>) => boolean;
-        uid: number
-      })[];
-      sortCriteria: (string | [string, boolean])[];
-      sortCriteriaSimple: {
-        propname: string;
-        options: boolean | SimplesortOptions;
-      };
-      sortDirty: boolean;
-    }
-
-    export interface ResultSet {
-      filteredrows: number[];
-      filterInitialized: boolean;
-    }
-
-    export interface Data {
-      $loki: number;
-      meta: {
-        revision: number;
-        created: number;
-        version: number;
-        updated?: number;
-      };
-    }
-  }
-
-  export namespace V2_0 {
-    export interface Loki {
-      collections: Collection.Serialized[];
-      databaseVersion: 2.0;
-      engineVersion: number;
-      filename: string;
-    }
-  }
-}
-
-export namespace LokiJS {
-
-
-  export interface Serialized {
-
-  }
 }

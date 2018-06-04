@@ -1,13 +1,14 @@
-import { LokiEventEmitter } from "./event_emitter";
-import { UniqueIndex } from "./unique_index";
-import { ResultSet, LokiOps } from "./result_set";
-import { DynamicView } from "./dynamic_view";
-import { ltHelper, gtHelper, aeqHelper } from "./helper";
-import { clone, CloneMethod } from "./clone";
-import { Doc, Dict } from "../../common/types";
-import { FullTextSearch } from "../../full-text-search/src/full_text_search";
-import { PLUGINS } from "../../common/plugin";
-import { Analyzer } from "../../full-text-search/src/analyzer/analyzer";
+import {LokiEventEmitter} from "./event_emitter";
+import {UniqueIndex} from "./unique_index";
+import {ResultSet, LokiOps} from "./result_set";
+import {DynamicView} from "./dynamic_view";
+import {ltHelper, gtHelper, aeqHelper} from "./helper";
+import {clone, CloneMethod} from "./clone";
+import {Doc, Dict} from "../../common/types";
+import {FullTextSearch} from "../../full-text-search/src/full_text_search";
+import {PLUGINS} from "../../common/plugin";
+import {Analyzer} from "../../full-text-search/src/analyzer/analyzer";
+import {Serialization} from "./serialization/serialization";
 
 export {CloneMethod} from "./clone";
 
@@ -305,7 +306,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     this.flushChanges();
   }
 
-  toJSON(): Collection.Serialized {
+  toJSON(): Serialization.Collection {
     return {
       name: this.name,
       dynamicViews: this._dynamicViews.map(dV => dV.toJSON()),
@@ -334,7 +335,7 @@ export class Collection<TData extends object = object, TNested extends object = 
   }
 
 
-  static fromJSONObject(obj: Collection.Serialized, options?: Collection.DeserializeOptions) {
+  static fromJSONObject(obj: Serialization.Collection, options?: Collection.DeserializeOptions) {
     let coll = new Collection<any, any>(obj.name, {
       disableChangesApi: obj.disableChangesApi,
       disableDeltaChangesApi: obj.disableDeltaChangesApi
@@ -352,7 +353,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     coll._serializableIndices = obj.serializableIndices;
     coll._dirty = (options && options.retainDirtyFlags === true) ? obj.dirty : false;
 
-    function makeLoader(coll: Collection.Serialized) {
+    function makeLoader(coll: Serialization.Collection) {
       const collOptions = options[coll.name];
 
       if (collOptions.proto) {
@@ -2185,46 +2186,20 @@ export namespace Collection {
   export interface DeserializeOptions {
     retainDirtyFlags?: boolean;
     fullTextSearch?: Dict<Analyzer>;
-    loader?: (databaseVersion: number, coll: Collection.Serialized, options: Collection.Options<any, any>) => boolean;
+    loader?: (databaseVersion: number, coll: Serialization.Collection, options: Collection.Options<any, any>) => boolean;
 
     [collName: string]: any | { proto?: any; inflate?: (src: object, dest?: object) => void };
   }
 
   export interface BinaryIndex {
     dirty: boolean;
-    values: any;
+    values: number[];
   }
 
   export interface Change {
     name: string;
     operation: string;
     obj: any;
-  }
-
-  export interface Serialized {
-    name: string;
-    dynamicViews: DynamicView.Serialized[];
-    nestedProperties: { name: string, path: string[] }[];
-    uniqueNames: string[];
-    transforms: Dict<Transform[]>;
-    binaryIndices: Dict<Collection.BinaryIndex>;
-    data: Doc<any>[];
-    idIndex: number[];
-    maxId: number;
-    dirty: boolean;
-    adaptiveBinaryIndices: boolean;
-    transactional: boolean;
-    asyncListeners: boolean;
-    disableMeta: boolean;
-    disableChangesApi: boolean;
-    disableDeltaChangesApi: boolean;
-    cloneObjects: boolean;
-    cloneMethod: CloneMethod;
-    serializableIndices: boolean;
-    ttl: number;
-    ttlInterval: number;
-    changes: any;
-    fullTextSearch: FullTextSearch.Serialized;
   }
 
   export interface CheckIndexOptions {

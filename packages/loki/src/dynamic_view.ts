@@ -1,8 +1,9 @@
-import { LokiEventEmitter } from "./event_emitter";
-import { ResultSet } from "./result_set";
-import { Collection } from "./collection";
-import { Doc } from "../../common/types";
-import { Scorer } from "../../full-text-search/src/scorer";
+import {LokiEventEmitter} from "./event_emitter";
+import {ResultSet} from "./result_set";
+import {Collection} from "./collection";
+import {Doc} from "../../common/types";
+import {Scorer} from "../../full-text-search/src/scorer";
+import {Serialization} from "./serialization/serialization";
 
 /**
  * DynamicView class is a versatile 'live' view class which can have filters and sorts applied.
@@ -150,7 +151,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
   /**
    * Override of toJSON to avoid circular references.
    */
-  public toJSON(): DynamicView.Serialized {
+  public toJSON(): Serialization.DynamicView {
     return {
       name: this.name,
       persistent: this._persistent,
@@ -165,7 +166,7 @@ export class DynamicView<TData extends object = object, TNested extends object =
     };
   }
 
-  public static fromJSONObject(collection: Collection, obj: DynamicView.Serialized): DynamicView {
+  public static fromJSONObject(collection: Collection, obj: Serialization.DynamicView): DynamicView {
     let dv = new DynamicView(collection, obj.name);
     dv._persistent = obj.persistent;
     dv._resultDirty = true;
@@ -759,19 +760,6 @@ export namespace DynamicView {
   }
 
   export type SortPriority = "passive" | "active";
-
-  export interface Serialized {
-    name: string;
-    persistent: boolean;
-    sortPriority: SortPriority;
-    minRebuildInterval: number;
-    resultSet: ResultSet.Serialized;
-    filterPipeline: Filter<any>[];
-    sortCriteria: (string | [string, boolean])[];
-    sortCriteriaSimple: { field: string, options: boolean | ResultSet.SimpleSortOptions };
-    sortByScoring: boolean;
-    sortDirty: boolean;
-  }
 
   export type Filter<TData extends object = object, TNested extends object = object> = {
     type: "find";

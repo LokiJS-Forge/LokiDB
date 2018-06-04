@@ -4,6 +4,7 @@ import {ltHelper, gtHelper, aeqHelper, sortHelper} from "./helper";
 import {Doc} from "../../common/types";
 import {Scorer} from "../../full-text-search/src/scorer";
 import {Query as FullTextSearchQuery} from "../../full-text-search/src/query_types";
+import {Serialization} from "./serialization/serialization";
 
 // used to recursively scan hierarchical transform step object for param substitution
 function resolveTransformObject<TData extends object, TNested extends object>(subObj: Collection.Transform<TData, TNested>, params: object, depth: number = 0): Collection.Transform<TData, TNested> {
@@ -302,7 +303,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
   /**
    * Override of toJSON to avoid circular references
    */
-  public toJSON(): ResultSet.Serialized {
+  public toJSON(): Serialization.ResultSet {
     return {
       filterInitialized: this._filterInitialized,
       filteredRows: this._filteredRows,
@@ -310,7 +311,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     };
   }
 
-  public static fromJSONObject(collection: Collection, obj: ResultSet.Serialized): ResultSet {
+  public static fromJSONObject(collection: Collection, obj: Serialization.ResultSet): ResultSet {
     let rs = new ResultSet(collection);
     rs._filterInitialized = obj.filterInitialized;
     rs._filteredRows = obj.filteredRows;
@@ -493,7 +494,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
           io[this._filteredRows[i]] = true;
         }
         // grab full sorted binary index array and filter by existing results
-        this._filteredRows = this._collection._binaryIndices[propname].values.filter((n: string) => {
+        this._filteredRows = this._collection._binaryIndices[propname].values.filter((n: number) => {
           return io[n];
         });
 
@@ -1242,75 +1243,69 @@ export namespace ResultSet {
     useJavascriptSorting?: boolean;
   }
 
-  export interface Serialized {
-    filterInitialized: boolean;
-    filteredRows: number[];
-    scoring: Scorer.ScoreResults;
-  }
-
   export type ContainsHelperType<R> =
     R extends string ? string | string[] :
       R extends any[] ? R[number] | R[number][] :
         R extends object ? keyof R | (keyof R)[] : never;
 
   export type LokiOps<R> = {
-    $eq?: R;
+    $eq: R;
   } | {
-    $aeq?: R;
+    $aeq: R;
   } | {
-    $ne?: R;
+    $ne: R;
   } | {
-    $dteq?: Date;
+    $dteq: Date;
   } | {
-    $gt?: R;
+    $gt: R;
   } | {
-    $gte?: R;
+    $gte: R;
   } | {
-    $lt?: R;
+    $lt: R;
   } | {
-    $lte?: R;
+    $lte: R;
   } | {
-    $between?: [R, R];
+    $between: [R, R];
   } | {
-    $in?: R[];
+    $in: R[];
   } | {
-    $nin?: R[];
+    $nin: R[];
   } | {
-    $keyin?: object;
+    $keyin: object;
   } | {
-    $nkeyin?: object;
+    $nkeyin: object;
   } | {
-    $definedin?: object;
+    $definedin: object;
   } | {
-    $undefinedin?: object;
+    $undefinedin: object;
   } | {
-    $regex?: RegExp | string | [string, string] // string and [string, string] are better for serialization
+    $regex: RegExp | string | [string, string] // string and [string, string] are better for serialization
   } | {
-    $containsNone?: ContainsHelperType<R>;
+    $containsNone: ContainsHelperType<R>;
   } | {
-    $containsAny?: ContainsHelperType<R>;
+    $containsAny: ContainsHelperType<R>;
   } | {
-    $contains?: ContainsHelperType<R>;
+    $contains: ContainsHelperType<R>;
   } | {
-    $type?: string;
+    $type: string;
   } | {
-    $finite?: boolean;
+    $finite: boolean;
   } | {
-    $size?: number;
+    $size: number;
   } | {
-    $len?: number;
+    $len: number;
   } | {
-    $where?: (val?: R) => boolean;
+    $where: (val: R) => boolean;
   } | {
-    $jgt?: R;
+    $jgt: R;
   } | {
-    $jgte?: R;
+    $jgte: R;
   } | {
-    $jlt?: R;
+    $jlt: R;
   } | {
-    $jlte?: R;
+    $jlte: R;
   } | {
-    $jbetween?: [R, R];
+    $jbetween: [R, R];
   };
 
   export type Query<T> =

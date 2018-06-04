@@ -1,10 +1,11 @@
-import { InvertedIndex } from "./inverted_index";
-import { IndexSearcher } from "./index_searcher";
-import { Dict } from "../../common/types";
-import { PLUGINS } from "../../common/plugin";
-import { Query } from "./query_types";
-import { Scorer } from "./scorer";
-import { Analyzer } from "./analyzer/analyzer";
+import {InvertedIndex} from "./inverted_index";
+import {IndexSearcher} from "./index_searcher";
+import {Dict} from "../../common/types";
+import {PLUGINS} from "../../common/plugin";
+import {Query} from "./query_types";
+import {Scorer} from "./scorer";
+import {Analyzer} from "./analyzer/analyzer";
+import {Serialization} from "../../loki/src/serialization/serialization";
 
 export class FullTextSearch {
   /// The id field of each document.
@@ -78,7 +79,7 @@ export class FullTextSearch {
     return this._idxSearcher.search(query);
   }
 
-  public toJSON(): FullTextSearch.Serialized {
+  public toJSON(): Serialization.FullTextSearch {
     let serialized = {id: this._id, ii: {}};
     let fieldNames = Object.keys(this._invIdxs);
     for (let i = 0; i < fieldNames.length; i++) {
@@ -88,7 +89,7 @@ export class FullTextSearch {
     return serialized;
   }
 
-  public static fromJSONObject(serialized: FullTextSearch.Serialized, analyzers: Dict<Analyzer> = {}): FullTextSearch {
+  public static fromJSONObject(serialized: Serialization.FullTextSearch, analyzers: Dict<Analyzer> = {}): FullTextSearch {
     let fts = new FullTextSearch([], serialized.id);
     let fieldNames = Object.keys(serialized.ii);
     for (let i = 0; i < fieldNames.length; i++) {
@@ -102,10 +103,5 @@ export class FullTextSearch {
 export namespace FullTextSearch {
   export interface FieldOptions extends InvertedIndex.FieldOptions {
     field: string;
-  }
-
-  export interface Serialized {
-    id: string;
-    ii: Dict<InvertedIndex.Serialized>;
   }
 }

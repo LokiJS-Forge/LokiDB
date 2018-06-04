@@ -1,10 +1,11 @@
 /**
  * @hidden
  */
-import { Loki } from "../loki/src/loki";
+import {Loki} from "../loki/src";
+import {Serialization} from "../loki/src/serialization/serialization";
 
 export interface StorageAdapter {
-  loadDatabase(dbname: string): Promise<string | Loki | Loki.Serialized>;
+  loadDatabase(dbname: string): Promise<string | Loki | Serialization.Serialized>;
 
   saveDatabase?(dbname: string, serialization: string): Promise<void>;
 

@@ -1,6 +1,7 @@
 /* global describe, it, expect */
-import { Loki } from "../../src/loki";
-import { Doc } from "../../../common/types";
+import {Loki} from "../../src/loki";
+import {Doc} from "../../../common/types";
+import {Serialization} from "../../src/serialization/serialization";
 
 describe("typed", () => {
   it("works", () => {
@@ -17,7 +18,7 @@ describe("typed", () => {
       }
     }
 
-    const json: Loki.Serialized = {
+    const json: Serialization.Loki = {
       "filename": "test.json",
       "databaseVersion": 2,
       "engineVersion": 2,
@@ -62,7 +63,7 @@ describe("typed", () => {
         "ttlInterval": null,
         "fullTextSearch": null
       }]
-    };
+    } as any;
 
     // Loading only using proto:
     db.loadJSON(JSON.stringify(json), {
