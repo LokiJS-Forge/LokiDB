@@ -8,7 +8,7 @@ import {Doc, Dict} from "../../common/types";
 import {FullTextSearch} from "../../full-text-search/src/full_text_search";
 import {PLUGINS} from "../../common/plugin";
 import {Analyzer} from "../../full-text-search/src/analyzer/analyzer";
-import {Serialization} from "./serialization/serialization";
+import {Serialization} from "./serialization/migration";
 
 export {CloneMethod} from "./clone";
 

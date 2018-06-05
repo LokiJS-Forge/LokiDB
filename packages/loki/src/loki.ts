@@ -4,7 +4,7 @@ import {Collection} from "./collection";
 import {clone} from "./clone";
 import {Doc, StorageAdapter} from "../../common/types";
 import {PLUGINS} from "../../common/plugin";
-import {Serialization, deserializeLegacyDB} from "./serialization/serialization";
+import {Serialization, migrateDatabase} from "./serialization/migration";
 
 function getENV(): Loki.Environment {
   if (global !== undefined && (global["android"] || global["NSObject"])) {
@@ -49,7 +49,7 @@ export class Loki extends LokiEventEmitter {
   // currently keeping persistenceMethod and persistenceAdapter as loki level properties that
   // will not or cannot be deserialized  You are required to configure persistence every time
   // you instantiate a loki object (or use default environment detection) in order to load the database anyways.
-  private _serializationMethod: Loki.SerializedMethod;
+  private _serializationMethod: Loki.SerializationMethod;
   private _destructureDelimiter: string;
   // persistenceMethod could be 'fs', 'localStorage', or 'adapter'
   // this is optional option param, otherwise environment detection will be used
@@ -74,7 +74,7 @@ export class Loki extends LokiEventEmitter {
    * @param {string} filename - name of the file to be saved to
    * @param {object} [options={}] - options
    * @param {Loki.Environment} [options.env] - the javascript environment
-   * @param {Loki.SerializedMethod} [options.serializationMethod=NORMAL] - the serialization method
+   * @param {Loki.SerializationMethod} [options.serializationMethod=NORMAL] - the serialization method
    * @param {string} [options.destructureDelimiter="$<\n"] - string delimiter used for destructured serialization
    */
   constructor(filename = "loki.db", options: Loki.Options = {}) {
@@ -666,7 +666,7 @@ export class Loki extends LokiEventEmitter {
   public loadJSONObject(obj: Serialization.Serialized, options: Collection.DeserializeOptions = {}): void {
 
     const databaseVersion = obj.databaseVersion;
-    const dbObj = deserializeLegacyDB(obj);
+    const dbObj = migrateDatabase(obj);
 
     const len = dbObj.collections ? dbObj.collections.length : 0;
     this.filename = dbObj.filename;
@@ -1045,7 +1045,7 @@ export class Loki extends LokiEventEmitter {
 export namespace Loki {
   export interface Options {
     env?: Environment;
-    serializationMethod?: SerializedMethod;
+    serializationMethod?: SerializationMethod;
     destructureDelimiter?: string;
   }
 
@@ -1064,7 +1064,7 @@ export namespace Loki {
   }
 
   export interface SerializeOptions {
-    serializationMethod?: SerializedMethod;
+    serializationMethod?: SerializationMethod;
   }
 
   export interface SerializeDestructuredOptions {
@@ -1089,7 +1089,7 @@ export namespace Loki {
 
   export type LoadDatabaseOptions = Collection.DeserializeOptions & ThrottledDrainOptions;
 
-  export type SerializedMethod = "normal" | "pretty" | "destructured";
+  export type SerializationMethod = "normal" | "pretty" | "destructured";
 
   export type PersistenceMethod = "fs-storage" | "local-storage" | "indexed-storage" | "memory-storage" | "adapter";
 

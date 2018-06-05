@@ -1,5 +1,5 @@
 import {Analyzer, StandardAnalyzer, analyze} from "./analyzer/analyzer";
-import {Serialization} from "../../loki/src/serialization/serialization";
+import {Serialization} from "../../loki/src/serialization/migration";
 
 /**
  * Converts a string into an array of code points.

@@ -2,7 +2,7 @@
  * @hidden
  */
 import {Loki} from "../loki/src";
-import {Serialization} from "../loki/src/serialization/serialization";
+import {Serialization} from "../loki/src/serialization/migration";
 
 export interface StorageAdapter {
   loadDatabase(dbname: string): Promise<string | Loki | Serialization.Serialized>;

@@ -1,7 +1,7 @@
 /* global describe, it, expect */
 import {Loki} from "../../src/loki";
 import {Doc} from "../../../common/types";
-import {Serialization} from "../../src/serialization/serialization";
+import {Serialization} from "../../src/serialization/migration";
 
 describe("typed", () => {
   it("works", () => {

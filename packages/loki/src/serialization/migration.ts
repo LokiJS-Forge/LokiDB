@@ -57,9 +57,9 @@ export function mergeRightBiasedWithProxy<TLeft, TRight>(left: TLeft, right: TRi
   ) as any;
 }
 
-function convertV1_5toV2_0(obj: V1_5.Loki): V2_0.Loki {
+function migrateV1_5toV2_0(obj: V1_5.Loki): V2_0.Loki {
 
-  function convertCloneMethod(clone: V1_5.CloneMethod): V2_0.CloneMethod {
+  function migrateCloneMethod(clone: V1_5.CloneMethod): V2_0.CloneMethod {
     switch (clone) {
       case "jquery-extend-deep":
         return "deep";
@@ -89,7 +89,7 @@ function convertV1_5toV2_0(obj: V1_5.Loki): V2_0.Loki {
             field: dv.sortCriteriaSimple.propname
           },
         })),
-        cloneMethod: convertCloneMethod(coll.cloneMethod),
+        cloneMethod: migrateCloneMethod(coll.cloneMethod),
         transforms: coll.transforms as any as Dict<V2_0.Transform[]>, // TODO not accurate
         nestedProperties: [],
         ttl: undefined,
@@ -99,9 +99,9 @@ function convertV1_5toV2_0(obj: V1_5.Loki): V2_0.Loki {
     });
 }
 
-export function deserializeLegacyDB(obj: Serialization.Serialized): Serialization.Loki {
+export function migrateDatabase(obj: Serialization.Serialized): Serialization.Loki {
   if (obj.databaseVersion === 1.5) {
-    return deserializeLegacyDB(convertV1_5toV2_0(obj as V1_5.Loki));
+    return migrateDatabase(migrateV1_5toV2_0(obj as V1_5.Loki));
   }
   return obj as Serialization.Loki;
 }
