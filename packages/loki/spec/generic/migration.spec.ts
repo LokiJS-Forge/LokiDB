@@ -228,7 +228,7 @@ describe("load lokijs", () => {
   it("test LokiDB with serialization inflation", () => {
     let db = new Loki();
     db.loadJSONObject(legacyDB as Serialization.Serialized, {
-      loader: (_1, coll) => {
+      migrate: (_1, coll) => {
         coll.nestedProperties = [{name: "d.msg", path: ["d", "msg"]}];
         return false;
       }
@@ -258,7 +258,7 @@ describe("load lokijs", () => {
 
     // Transform and dynamic view will not be deserialized.
     db.loadJSONObject(legacyDB as Serialization.Serialized, {
-      loader: (_1, _2, options) => {
+      migrate: (_1, _2, options) => {
         options.nestedProperties = ["d.msg"];
         return true;
       }

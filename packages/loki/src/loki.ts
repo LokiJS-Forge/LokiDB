@@ -676,7 +676,7 @@ export class Loki extends LokiEventEmitter {
       let coll = null;
       const dbColl = dbObj.collections[i];
 
-      if (options.loader) {
+      if (options.migrate) {
         // Generate options from serialized collection.
         const collOptions: Collection.Options<any, any> = {};
 
@@ -704,7 +704,7 @@ export class Loki extends LokiEventEmitter {
           }
         }
 
-        if (options.loader(databaseVersion, dbColl, collOptions)) {
+        if (options.migrate(databaseVersion, dbColl, collOptions)) {
           coll = this.addCollection(dbColl.name, collOptions);
           for (let j = 0; j < dbColl.data.length; j++) {
             delete dbColl.data[j].$loki;
@@ -716,8 +716,7 @@ export class Loki extends LokiEventEmitter {
       if (!coll) {
         coll = Collection.fromJSONObject(dbObj.collections[i], options);
       }
-
-      this._collections.push(Collection.fromJSONObject(dbObj.collections[i], options));
+      this._collections.push(coll);
     }
   }
 

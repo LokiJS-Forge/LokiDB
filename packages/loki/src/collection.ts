@@ -2186,7 +2186,7 @@ export namespace Collection {
   export interface DeserializeOptions {
     retainDirtyFlags?: boolean;
     fullTextSearch?: Dict<Analyzer>;
-    loader?: (databaseVersion: number, coll: Serialization.Collection, options: Collection.Options<any, any>) => boolean;
+    migrate?: (databaseVersion: number, coll: Serialization.Collection, options: Collection.Options<any, any>) => boolean;
 
     [collName: string]: any | { proto?: any; inflate?: (src: object, dest?: object) => void };
   }
