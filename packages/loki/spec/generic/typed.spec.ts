@@ -63,7 +63,7 @@ describe("typed", () => {
         "ttlInterval": null,
         "fullTextSearch": null
       }]
-    } as any;
+    };
 
     // Loading only using proto:
     db.loadJSON(JSON.stringify(json), {

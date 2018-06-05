@@ -1,5 +1,6 @@
 import {V2_0, V2_0 as Serialization} from "./v2_0";
 import {V1_5} from "./v1_5";
+import {Dict} from "../../../common/types";
 
 export {Serialization};
 
@@ -56,10 +57,24 @@ export function mergeRightBiasedWithProxy<TLeft, TRight>(left: TLeft, right: TRi
   ) as any;
 }
 
-function V1_5toV2_0(obj: V1_5.Loki): V2_0.Loki {
+function convertV1_5toV2_0(obj: V1_5.Loki): V2_0.Loki {
+
+  function convertCloneMethod(clone: V1_5.CloneMethod): V2_0.CloneMethod {
+    switch (clone) {
+      case "jquery-extend-deep":
+        return "deep";
+      case "shallow-assign":
+        return "shallow";
+      case "shallow-recurse-objects":
+        return "shallow-recurse";
+      default:
+        return clone;
+    }
+  }
+
   return mergeRightBiasedWithProxy(obj,
     {
-      databaseVersion: 2.0,
+      databaseVersion: 2.0 as 2.0,
       collections: obj.collections.map(coll => mergeRightBiasedWithProxy(coll, {
         dynamicViews: coll.DynamicViews.map(dv => mergeRightBiasedWithProxy(dv, {
           persistent: dv.options.persistent,
@@ -72,20 +87,21 @@ function V1_5toV2_0(obj: V1_5.Loki): V2_0.Loki {
           sortByScoring: false,
           sortCriteriaSimple: {
             field: dv.sortCriteriaSimple.propname
-          }
+          },
         })),
-        cloneMethod: coll.cloneMethod,
+        cloneMethod: convertCloneMethod(coll.cloneMethod),
+        transforms: coll.transforms as any as Dict<V2_0.Transform[]>, // TODO not accurate
         nestedProperties: [],
         ttl: undefined,
         ttlInterval: undefined,
         fullTextSearch: null,
       }))
-    }) as any;
+    });
 }
 
 export function deserializeLegacyDB(obj: Serialization.Serialized): Serialization.Loki {
   if (obj.databaseVersion === 1.5) {
-    return deserializeLegacyDB(V1_5toV2_0(obj as V1_5.Loki));
+    return deserializeLegacyDB(convertV1_5toV2_0(obj as V1_5.Loki));
   }
   return obj as Serialization.Loki;
 }

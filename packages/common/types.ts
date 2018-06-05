@@ -26,11 +26,10 @@ export type Doc<T extends object = object> = T & {
   };
 };
 
-export interface Dict<T> {
+export type Dict<T> = {
   [index: string]: T;
-
   [index: number]: T;
-}
+};
 
 
 

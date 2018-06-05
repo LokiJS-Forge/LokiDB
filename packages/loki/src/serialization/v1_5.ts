@@ -2,11 +2,9 @@ import {Dict} from "../../../common/types";
 
 export namespace V1_5 {
 
-
   export interface Serialized {
     databaseVersion: number;
   }
-
 
   export type Doc = {
     $loki: number;
@@ -16,6 +14,8 @@ export namespace V1_5 {
       version: number,
       updated?: number;
     };
+    [index: string]: any;
+    [index: number]: any;
   };
 
   export interface Loki {
@@ -92,7 +92,7 @@ export namespace V1_5 {
     adaptiveBinaryIndices: boolean;
     transactional: boolean;
     cloneObjects: boolean;
-    cloneMethod: "parse-stringify" | "??";
+    cloneMethod: CloneMethod;
     disableMeta: boolean;
     disableChangesApi: boolean;
     disableDeltaChangesApi: boolean;
@@ -120,12 +120,14 @@ export namespace V1_5 {
 
     export interface DataOptions {
       forceClones: boolean;
-      forceCloneMethod: "parse-stringify" | "jquery-extend-deep" | "shallow" | "shallow-assign" | "shallow-recurse-objects" | null;
+      forceCloneMethod: CloneMethod;
       removeMeta: boolean;
     }
 
     export type Query = any;
   }
+
+  export type CloneMethod = "parse-stringify" | "jquery-extend-deep" | "shallow" | "shallow-assign" | "shallow-recurse-objects";
 
   export interface DynamicView {
     name: string;

@@ -21,6 +21,8 @@ export namespace V2_0 {
       version: number,
       updated?: number;
     };
+    [index: string]: any;
+    [index: number]: any;
   };
 
   export interface Collection {
