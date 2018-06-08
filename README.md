@@ -50,8 +50,8 @@ Check out our interactive [documentation](https://LokiJS-Forge.github.io/LokiDB/
 
 [build]: https://travis-ci.org/LokiJS-Forge/LokiDB.svg?branch=master
 [build-url]: https://travis-ci.org/LokiJS-Forge/LokiDB
-[coverage]: https://coveralls.io/repos/github/LokiJS-Forge/LokiDB/badge.svg?branch=master
-[coverage-url]: https://coveralls.io/github/LokiJS-Forge/LokiDB?branch=master
+[coverage]: https://codecov.io/gh/LokiJS-Forge/LokiDB/branch/master/graph/badge.svg
+[coverage-url]: https://codecov.io/gh/LokiJS-Forge/LokiDB/branch/master
 
 [lokijs-url]: https://github.com/techfort/LokiJS
 
