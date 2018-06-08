@@ -18,7 +18,7 @@ module.exports = (options) => {
       filename: options.filename,
       library: options.library,
       libraryTarget: "umd2",
-      umdNamedDefine: false
+      umdNamedDefine: true
     },
     externals: options.externals,
     resolve: {
