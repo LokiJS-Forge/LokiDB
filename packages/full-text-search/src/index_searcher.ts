@@ -13,7 +13,7 @@ import {analyze, Analyzer} from "./analyzer/analyzer";
  */
 export class IndexSearcher {
   private _invIdxs: Dict<InvertedIndex>;
-  private _docs: Set<number>;
+  private _docs: Set<InvertedIndex.DocumentIndex>;
   private _scorer: Scorer;
 
   /**
@@ -21,7 +21,7 @@ export class IndexSearcher {
    * @param {Dict<InvertedIndex>} invIdxs - the inverted indexes
    * @param {Set<number>} docs - the ids of the documents
    */
-  constructor(invIdxs: Dict<InvertedIndex>, docs: Set<number>) {
+  constructor(invIdxs: Dict<InvertedIndex>, docs: Set<InvertedIndex.DocumentIndex>) {
     this._invIdxs = invIdxs;
     this._docs = docs;
     this._scorer = new Scorer(this._invIdxs);
@@ -138,7 +138,8 @@ export class IndexSearcher {
         const enableScoring = query.enable_scoring !== undefined ? query.enable_scoring : false;
         const w = wildcardSearch(query, root);
         for (let i = 0; i < w.length; i++) {
-          this._scorer.score(fieldName, boost, w[i].index, doScoring && enableScoring, queryResults, w[i].term);
+          this._scorer.score(fieldName, boost, w[i].index, doScoring && enableScoring, queryResults,
+            w[i].term);
         }
         break;
       }
@@ -163,7 +164,8 @@ export class IndexSearcher {
         if (termIdx !== null) {
           const termIdxs = InvertedIndex.extendTermIndex(termIdx);
           for (let i = 0; i < termIdxs.length; i++) {
-            this._scorer.score(fieldName, boost, termIdxs[i].index, doScoring && enableScoring, queryResults, [...cps, ...termIdxs[i].term]);
+            this._scorer.score(fieldName, boost, termIdxs[i].index, doScoring && enableScoring, queryResults,
+              [...cps, ...termIdxs[i].term]);
           }
         }
         break;

@@ -39,7 +39,8 @@ export class Scorer {
     }
   }
 
-  public scoreConstant(boost: number, docId: number, queryResults: Scorer.QueryResults): Scorer.QueryResults {
+  public scoreConstant(boost: number, docId: InvertedIndex.DocumentIndex,
+                       queryResults: Scorer.QueryResults): Scorer.QueryResults {
     if (!queryResults.has(docId)) {
       queryResults.set(docId, []);
     }
@@ -62,7 +63,7 @@ export class Scorer {
         if (queryResult.tf !== undefined) {
           // BM25 scoring.
           const tf = queryResult.tf;
-          const fieldLength = Scorer._calculateFieldLength(this._invIdxs[queryResult.fieldName].docStore.get(+docId)
+          const fieldLength = Scorer._calculateFieldLength(this._invIdxs[queryResult.fieldName].docStore.get(docId)
             .fieldLength);
           const avgFieldLength = this._avgFieldLength(queryResult.fieldName);
           const tfNorm = (tf * (k1 + 1)) / (tf + k1 * (1 - b + b * (fieldLength / avgFieldLength)));
@@ -155,7 +156,7 @@ export namespace Scorer {
     term?: number[];
   }
 
-  export type QueryResults = Map<number, QueryResult[]>;
+  export type QueryResults = Map<InvertedIndex.DocumentIndex, QueryResult[]>;
 
   export interface BM25Explanation {
     boost: number;
