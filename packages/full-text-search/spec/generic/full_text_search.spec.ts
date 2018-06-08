@@ -7,7 +7,64 @@ import {FullTextSearch} from "../../src/full_text_search";
 import {Doc} from "../../../common/types";
 import {Analyzer} from "../../src/analyzer/analyzer";
 
-describe("full-text search", () => {
+describe("full-text search standalone", () => {
+
+  const doc1 = {name: "quark", ref: "#quark"};
+  const doc2 = {name: "quarrk", ref: "#quarrk"};
+  const doc3 = {name: "quak", ref: "#quak"};
+  const doc4 = {name: "quask"};
+
+  let fts: FullTextSearch;
+
+  beforeEach(() => {
+    fts = new FullTextSearch([{field: "name"}], "ref");
+    fts.addDocument(doc1);
+    fts.addDocument(doc2);
+    fts.addDocument(doc3);
+    fts.addDocument(doc4, "#quask");
+  });
+
+  it("usage", () => {
+    const query: Query = {query: {type: "fuzzy", field: "name", value: "quak", fuzziness: 1}};
+    const result = fts.search(query);
+    expect(Object.keys(result).length).toBe(3);
+    expect(result).toHaveMember("#quark");
+    expect(result).toHaveMember("#quak");
+    expect(result).toHaveMember("#quask");
+  });
+
+  it("insert", () => {
+    fts.addDocument({name: "quakk"}, "#quakk");
+
+    const query: Query = {query: {type: "fuzzy", field: "name", value: "quak", fuzziness: 1}};
+    const result = fts.search(query);
+    expect(Object.keys(result).length).toBe(4);
+    expect(result).toHaveMember("#quark");
+    expect(result).toHaveMember("#quak");
+    expect(result).toHaveMember("#quask");
+    expect(result).toHaveMember("#quakk");
+  });
+
+  it("remove", () => {
+    fts.removeDocument(doc1);
+    fts.removeDocument(doc4, "#quask");
+
+    const query: Query = {query: {type: "fuzzy", field: "name", value: "quak", fuzziness: 1}};
+    const result = fts.search(query);
+    expect(Object.keys(result).length).toBe(1);
+    expect(result).toHaveMember("#quak");
+  });
+
+  it("update", () => {
+    fts.updateDocument({name: "qualk"}, "#quarrk");
+
+    const query: Query = {query: {type: "fuzzy", field: "name", value: "quak", fuzziness: 1}};
+    const result = fts.search(query);
+    expect(Object.keys(result).length).toBe(4);
+  });
+});
+
+describe("full-text search with Loki", () => {
   FullTextSearch.register();
 
   interface User {
@@ -59,7 +116,8 @@ describe("full-text search", () => {
   });
 
   it("nested", () => {
-    const coll2 = db.addCollection<{ user: { name: string, id: number } }, { "user.name": string, "user.id": number }>("coll", {
+    const coll2 = db.addCollection<{ user: { name: string, id: number } }, { "user.name": string, "user.id": number }>(
+      "coll", {
       nestedProperties: ["user.name", "user.id"],
       fullTextSearch: [{field: "user.name"}]
     });

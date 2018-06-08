@@ -29,7 +29,7 @@ export function toCodePoints(str: string): number[] {
 export class InvertedIndex {
   public analyzer: Analyzer;
   public docCount: number = 0;
-  public docStore: Map<number, InvertedIndex.DocStore> = new Map();
+  public docStore: Map<InvertedIndex.DocumentIndex, InvertedIndex.DocStore> = new Map();
   public totalFieldLength: number = 0;
   public root: InvertedIndex.Index = new Map();
 
@@ -56,7 +56,7 @@ export class InvertedIndex {
    * @param {string} field - the field to add
    * @param {number} docId - the doc id of the field
    */
-  public insert(field: string, docId: number): void {
+  public insert(field: string, docId: InvertedIndex.DocumentIndex): void {
     if (this.docStore.has(docId)) {
       throw Error("Field already added.");
     }
@@ -116,7 +116,7 @@ export class InvertedIndex {
    * Removes all relevant terms of a document from the inverted index.
    * @param {number} docId - the document.
    */
-  public remove(docId: number): void {
+  public remove(docId: InvertedIndex.DocumentIndex): void {
     if (!this.docStore.has(docId)) {
       return;
     }
@@ -200,7 +200,8 @@ export class InvertedIndex {
    * @param {Array} termIndices - all extended indices with their term
    * @returns {Array} - Array with term indices and extension
    */
-  public static extendTermIndex(idx: InvertedIndex.Index, term: number[] = [], termIndices: InvertedIndex.IndexTerm[] = []): InvertedIndex.IndexTerm[] {
+  public static extendTermIndex(idx: InvertedIndex.Index, term: number[] = [],
+                                termIndices: InvertedIndex.IndexTerm[] = []): InvertedIndex.IndexTerm[] {
     if (idx.df !== undefined) {
       termIndices.push({index: idx, term: term.slice()});
     }
@@ -338,7 +339,7 @@ export class InvertedIndex {
    * @param {number} docId - the doc id
    * @returns {boolean} true if index is empty
    */
-  private _remove(idx: InvertedIndex.Index, docId: number): boolean {
+  private _remove(idx: InvertedIndex.Index, docId: InvertedIndex.DocumentIndex): boolean {
     for (const child of idx) {
       // Checkout branch.
       if (this._remove(child[1], docId)) {
@@ -369,14 +370,14 @@ export namespace InvertedIndex {
     analyzer?: Analyzer;
   }
 
-  export type Index = Map<number, any> & { dc?: Map<number, number>, df?: number, pa?: Index };
+  export type Index = Map<number, any> & { dc?: Map<DocumentIndex, number>, df?: number, pa?: Index };
 
   export type IndexTerm = { index: Index, term: number[] };
 
   export interface SerializedIndex {
     d?: {
       df: number;
-      dc: [number, number][]
+      dc: [DocumentIndex, number][]
     };
     k?: number[];
     v?: SerializedIndex[];
@@ -393,7 +394,7 @@ export namespace InvertedIndex {
     _store: true;
     _optimizeChanges: boolean;
     docCount: number;
-    docStore: [number, DocStore][];
+    docStore: [DocumentIndex, DocStore][];
     totalFieldLength: number;
     root: SerializedIndex;
   };
@@ -402,4 +403,6 @@ export namespace InvertedIndex {
     fieldLength?: number;
     indexRef?: Index[];
   }
+
+  export type DocumentIndex = number | string;
 }

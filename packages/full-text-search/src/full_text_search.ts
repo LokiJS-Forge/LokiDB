@@ -10,7 +10,7 @@ export class FullTextSearch {
   /// The id field of each document.
   private _id: string;
   /// Set of ids of all indexed documents.
-  private _docs: Set<number>;
+  private _docs: Set<InvertedIndex.DocumentIndex>;
   private _idxSearcher: IndexSearcher;
   private _invIdxs: Dict<InvertedIndex> = {};
 
@@ -43,7 +43,7 @@ export class FullTextSearch {
     this._idxSearcher = new IndexSearcher(this._invIdxs, this._docs);
   }
 
-  public addDocument(doc: object, id: number = doc[this._id]): void {
+  public addDocument(doc: object, id: InvertedIndex.DocumentIndex = doc[this._id]): void {
     let fieldNames = Object.keys(this._invIdxs);
     for (let i = 0, fieldName; i < fieldNames.length, fieldName = fieldNames[i]; i++) {
       if (doc[fieldName] !== undefined) {
@@ -54,7 +54,7 @@ export class FullTextSearch {
     this._idxSearcher.setDirty();
   }
 
-  public removeDocument(doc: object, id: number = doc[this._id]): void {
+  public removeDocument(doc: object, id: InvertedIndex.DocumentIndex = doc[this._id]): void {
     let fieldNames = Object.keys(this._invIdxs);
     for (let i = 0; i < fieldNames.length; i++) {
       this._invIdxs[fieldNames[i]].remove(id);
@@ -63,7 +63,7 @@ export class FullTextSearch {
     this._idxSearcher.setDirty();
   }
 
-  public updateDocument(doc: object, id: number = doc[this._id]): void {
+  public updateDocument(doc: object, id: InvertedIndex.DocumentIndex = doc[this._id]): void {
     this.removeDocument(doc, id);
     this.addDocument(doc, id);
   }
