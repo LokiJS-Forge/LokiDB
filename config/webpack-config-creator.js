@@ -27,26 +27,25 @@ module.exports = (options) => {
     },
     devtool: "source-map",
     module: {
-      rules:
-        [
-          {
-            enforce: "pre",
-            test: /\.ts$/,
-            loader: "tslint-loader",
-            exclude: /node_modules/,
-            options: {
-              failOnHint: true,
-              configFile: path.join("config", "tslint.json"),
-            }
-          },
-          {
-            test: /\.ts$/,
-            loader: "ts-loader",
-            options: {
-              configFile: path.join("config", "tsconfig.webpack.json")
-            }
+      rules: [
+        {
+          enforce: "pre",
+          test: /\.ts$/,
+          loader: "tslint-loader",
+          exclude: /node_modules/,
+          options: {
+            failOnHint: true,
+            configFile: path.join("config", "tslint.json"),
           }
-        ]
+        },
+        {
+          test: /\.ts$/,
+          loader: "ts-loader",
+          options: {
+            configFile: path.join("config", "tsconfig.webpack.json")
+          }
+        }
+      ]
     },
     optimization: {
       minimize: false
