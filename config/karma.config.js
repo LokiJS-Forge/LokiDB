@@ -25,12 +25,13 @@ module.exports = function (config) {
       "text/x-typescript": ["ts"]
     },
     webpack: {
+      mode: "development",
       resolve: {
         extensions: [".ts"],
       },
       devtool: "source-map",
       module: {
-        loaders: [
+        rules: [
           {
             enforce: "pre",
             test: /\.ts$/,
