@@ -25,12 +25,14 @@ module.exports = function (config) {
       "text/x-typescript": ["ts"]
     },
     webpack: {
+      mode: "development",
+      stats: 'errors-only',
       resolve: {
         extensions: [".ts"],
       },
       devtool: "source-map",
       module: {
-        loaders: [
+        rules: [
           {
             enforce: "pre",
             test: /\.ts$/,
@@ -61,7 +63,9 @@ module.exports = function (config) {
         ]
       }
     },
-
+    webpackMiddleware: {
+      logLevel: "warn"
+    },
     plugins: [
       "karma-chrome-launcher",
       "karma-coverage-istanbul-reporter",

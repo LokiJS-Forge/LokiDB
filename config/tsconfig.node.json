@@ -26,20 +26,5 @@
       "jasmine-expect",
       "node"
     ]
-  },
-  "typedocOptions": {
-    "mode": "file",
-    "out": "docs/api",
-    "exclude": "**/spec/**/*.ts",
-    "theme": "default",
-    "ignoreCompilerErrors": true,
-    "excludePrivate": true,
-    "excludeNotExported": true,
-    "target": "ES6",
-    "preserveConstEnums": true,
-    "stripInternal": true,
-    "suppressExcessPropertyErrors": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "module": "umd"
   }
 }

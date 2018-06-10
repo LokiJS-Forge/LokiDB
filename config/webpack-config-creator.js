@@ -13,6 +13,7 @@ module.exports = (options) => {
   }
 
   return {
+    mode: "production",
     entry: options.entry,
     output: {
       filename: options.filename,
@@ -26,7 +27,7 @@ module.exports = (options) => {
     },
     devtool: "source-map",
     module: {
-      loaders: [
+      rules: [
         {
           enforce: "pre",
           test: /\.ts$/,
@@ -45,6 +46,9 @@ module.exports = (options) => {
           }
         }
       ]
+    },
+    optimization: {
+      minimize: false
     },
   };
 };

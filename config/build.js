@@ -166,7 +166,7 @@ function build() {
     print(`======      [${PACKAGE}]: PACKING    =====`);
     remove_dir(OUT_DIR);
 
-    run("webpack", ["--config=" + SRC_WEBPACK_CONFIG, "--output-path=" + OUT_DIR]);
+    run("webpack-cli", ["--config=" + SRC_WEBPACK_CONFIG, "--output-path=" + OUT_DIR]);
 
     // Update script tag export of UMD to use default module export.
     {
