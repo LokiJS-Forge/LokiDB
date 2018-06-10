@@ -1,13 +1,8 @@
-<div align="center">
-
 [![npm status][npm]][npm-url]
-
 [![build status][build]][build-url]
 [![coverage status][coverage]][coverage-url]
 
-</div>
-
-<h1 align="center">LokiDB</h1>
+# LokiDB
 
 LokiDB is a document oriented database written in TypeScript.
 
@@ -15,7 +10,7 @@ Its purpose is to store javascript objects as documents in a blazing fast nosql 
 
 LokiDB is the official successor of [LokiJS][lokijs-url].
 
-<h2 align="center">Install</h2>
+## Install
 
 Install with npm:
 
@@ -23,13 +18,13 @@ Install with npm:
 npm install @lokidb/loki
 ```
 
-<h2 align="center">Documentation</h2>
+## Documentation
 
 Check out our interactive [documentation](https://LokiJS-Forge.github.io/LokiDB/).
 
-<h2 align="center">Plugins</h2>
+## Plugins
 
-<h3>Storage and Adapter</h3>
+### Storage and Adapter
 
 |Name|Description|
 |:---|:----------|
@@ -39,7 +34,7 @@ Check out our interactive [documentation](https://LokiJS-Forge.github.io/LokiDB/
 |[@lokidb/memory-storage][memory-storage-npm-url]                     |  A persistence adapter which persists to memory. |
 |[@lokidb/partitioning-adapter][partitioning-adapter-npm-url]         |  An adapter for adapters. Converts a non reference mode adapter into a reference mode adapter which can perform destructuring and partitioning.|
 
-<h3>Full-Text Search</h3>
+### Full-Text Search
 
 |Name|Description|
 |:---|:----------|
@@ -62,7 +57,7 @@ Check out our interactive [documentation](https://LokiJS-Forge.github.io/LokiDB/
 [fs-storage-npm-url]: https://www.npmjs.com/package/@lokidb/fs-storage
 
 [local-storage]: https://github.com/LokiJS-Forge/LokiDB
-[local-storage-npm-url]: https://www.npmjs.com/package/@lokidb/fs-storage
+[local-storage-npm-url]: https://www.npmjs.com/package/@lokidb/local-storage
 
 [indexed-storage]: https://github.com/LokiJS-Forge/LokiDB
 [indexed-storage-npm-url]: https://www.npmjs.com/package/@lokidb/indexed-storage
