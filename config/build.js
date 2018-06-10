@@ -107,7 +107,7 @@ function update_version() {
 function push() {
   run("git", ["checkout", "-b", RELEASE_BRANCH]);
   run("git", ["add", "-u"]);
-  run("git", ["add", "dist/*"]);
+  run("git", ["add", "dist/packages/*"]);
   run("git", ["commit", "-m", `Release ${VERSION}`]);
   run("git", ["remote", "set-url", "origin", `https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git`]);
   run("git", ["push", "--set-upstream", "origin", RELEASE_BRANCH]);
