@@ -4,7 +4,7 @@
     "outDir": "../types/",
     "sourceMap": true,
     "declaration": true,
-    "moduleResolution": "node",
+    "moduleResolution": "classic",
     "strictPropertyInitialization": true,
     "alwaysStrict": true,
     "noImplicitAny": true,
