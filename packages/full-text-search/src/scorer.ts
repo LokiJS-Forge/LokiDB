@@ -49,16 +49,16 @@ export class Scorer {
   }
 
   public finalScore(query: Query, queryResults: Scorer.QueryResults): Scorer.ScoreResults {
-    const result: Scorer.ScoreResults = {};
+    const finalResult: Scorer.ScoreResults = {};
     const k1 = query.bm25 !== undefined ? query.bm25.k1 : 1.2;
     const b = query.bm25 !== undefined ? query.bm25.b : 0.75;
     const explain = query.explain !== undefined ? query.explain : false;
 
-    for (const [docId, result1] of queryResults) {
+    for (const [docId, result] of queryResults) {
       let docScore = 0;
       let docExplanation: Scorer.ScoreExplanation[] = [];
-      for (let j = 0; j < result1.length; j++) {
-        const queryResult = result1[j];
+      for (let i = 0; i < result.length; i++) {
+        const queryResult = result[i];
         let score = 0;
         if (queryResult.tf !== undefined) {
           // BM25 scoring.
@@ -96,17 +96,17 @@ export class Scorer {
         docScore += score;
       }
       if (explain) {
-        result[docId] = {
+        finalResult[docId] = {
           score: docScore,
           explanation: docExplanation
         };
       } else {
-        result[docId] = {
+        finalResult[docId] = {
           score: docScore
         };
       }
     }
-    return result;
+    return finalResult;
   }
 
   private static _calculateFieldLength(fieldLength: number): number {

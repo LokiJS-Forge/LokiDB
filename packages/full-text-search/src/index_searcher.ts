@@ -111,6 +111,14 @@ export class IndexSearcher {
             }
           }
         }
+        // Boost query results afterwards.
+        if (boost !== 1) {
+          for (const [_, result] of queryResults) {
+            for (let i = 0; i < result.length; i++) {
+              result[i].boost *= boost;
+            }
+          }
+        }
         break;
       }
       case "term": {
@@ -201,8 +209,10 @@ export class IndexSearcher {
           let extended = query.extended !== undefined ? query.extended : false;
           // Add each fuzzy.
           for (let i = 0; i < terms.length; i++) {
-            subQueries.push({type: "fuzzy", field: fieldName, value: terms[i], fuzziness: query.fuzziness,
-              prefix_length: prefixLength, extended: extended} as FuzzyQuery);
+            subQueries.push({
+              type: "fuzzy", field: fieldName, value: terms[i], fuzziness: query.fuzziness,
+              prefix_length: prefixLength, extended: extended
+            } as FuzzyQuery);
           }
         } else {
           // Add each term.
