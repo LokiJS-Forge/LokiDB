@@ -195,6 +195,26 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean }[] = [
   },
   {
     fts: {
+      type: "fuzzy",
+      field: FIELD_NAME_1,
+      value: "js",
+      fuzziness: 2,
+      boost: 5
+    },
+    es: {
+      fuzzy: {
+        [FIELD_NAME_1]: {
+          value: "js",
+          fuzziness: 2,
+          prefix_length: 0,
+          transpositions: true,
+          boost: 5
+        }
+      }
+    }
+  },
+  {
+    fts: {
       type: "wildcard",
       field: FIELD_NAME_1,
       value: "a?"
@@ -337,21 +357,26 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean }[] = [
         {
           type: "term",
           field: FIELD_NAME_1,
-          value: "a"
+          value: "a",
+          boost: 2
         },
         {
           type: "term",
           field: FIELD_NAME_1,
           value: "ac"
         }
-      ]
+      ],
+      boost: 10
     },
     es: {
       bool: {
         must: [
           {
             term: {
-              [FIELD_NAME_1]: "a"
+              [FIELD_NAME_1]: {
+                value: "a",
+                boost: 2
+              }
             }
           },
           {
@@ -359,7 +384,8 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean }[] = [
               [FIELD_NAME_1]: "ac"
             }
           }
-        ]
+        ],
+        boost: 10
       }
     }
   },
@@ -732,7 +758,8 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean }[] = [
         {
           type: "term",
           field: FIELD_NAME_1,
-          value: "ac"
+          value: "ac",
+          boost: 10
         },
         {
           type: "term",
@@ -762,7 +789,10 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean }[] = [
         should: [
           {
             term: {
-              [FIELD_NAME_1]: "ac"
+              [FIELD_NAME_1]: {
+                value: "ac",
+                boost: 10
+              }
             }
           },
           {
@@ -940,6 +970,22 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean }[] = [
             query: "orci est in",
             minimum_should_match: "33%"
           }
+      }
+    }
+  },
+  {
+    fts: {
+      type: "match",
+      field: FIELD_NAME_1,
+      value: "orci est in",
+      boost: 10
+    },
+    es: {
+      match: {
+        [FIELD_NAME_1]: {
+          query: "orci est in",
+          boost: 10
+        }
       }
     }
   }
