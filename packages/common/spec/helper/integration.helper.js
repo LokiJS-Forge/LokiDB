@@ -25,8 +25,15 @@ function loadScript(name) {
   }
 }
 
-function loadLibrary(name) {
-  return loadScript(name)
+function loadLibrary(name, dependencies) {
+
+  let promise = Promise.resolve();
+  for (let dependency of dependencies) {
+    promise = promise.then(() => loadScript(dependency));
+  }
+
+  return promise
+    .then(() => loadScript(name))
     .then((script) => {
       if (ENVIRONMENT === "browser") {
         return this[`@lokidb/${name}`];
@@ -36,12 +43,12 @@ function loadLibrary(name) {
     });
 }
 
-test_integration = function (name, tests) {
+test_integration = function (name, dependencies, tests) {
   describe(name, () => {
 
     let loaded = null;
     beforeEach(() => {
-      loaded = loadLibrary(name);
+      loaded = loadLibrary(name, dependencies);
     });
 
     for (let [name, test] of Object.entries(tests)) {
@@ -51,6 +58,10 @@ test_integration = function (name, tests) {
             const target = parent[name];
             expect(target).toBeDefined();
             test(target);
+            done();
+          })
+          .catch((e) => {
+            fail(e);
             done();
           });
       });
@@ -65,6 +76,10 @@ test_integration = function (name, tests) {
 
           // All exported properties must be tested.
           expect(remaining).toBeEmptyArray();
+          done();
+        })
+        .catch((e) => {
+          fail(e);
           done();
         })
     });

@@ -1,4 +1,5 @@
 test_integration("loki",
+  [],
   {
     "Loki": (Loki) => {
       expect(Loki.Collection).toBeDefined();
