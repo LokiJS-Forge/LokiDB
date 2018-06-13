@@ -1,8 +1,7 @@
 {
   "spec_dir": "packages/*/spec",
   "spec_files": [
-    "generic/**/*.spec.[jt]s",
-    "node/**/*.spec.[jt]s"
+    "integration.spec.js"
   ],
   "helpers": [
     "helper/**/*.js",

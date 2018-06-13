@@ -9,8 +9,9 @@
     "json"
   ],
   "exclude": [
-    "**/*.spec.ts",
-    "**/spec/**/*.ts"
+    "**/*.helper.[jt]s",
+    "**/*.spec.[jt]s",
+    "**/spec/**/*.[jt]s"
   ],
   "report-dir": "./coverage/node/"
 }

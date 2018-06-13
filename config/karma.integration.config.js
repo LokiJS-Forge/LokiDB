@@ -4,11 +4,11 @@ const path = require("path");
 module.exports = function (config) {
   const configuration = {
     frameworks: ["jasmine", "jasmine-matchers"],
-    browsers: ["Chrome"],
+    browsers: ["ChromeHeadless"],
     basePath: "../",
     files: [
-      {pattern: "packages/common/integration/helpers/**/*.helper.js"},
-      {pattern: "packages/*/integration/web/**/*.int.js", watched: false},
+      {pattern: "packages/common/spec/helper/**/*.helper.js"},
+      {pattern: "packages/*/spec/integration.spec.js", watched: false},
       {pattern: 'dist/packages/**/*.js', watched: false, included: false, served: true, nocache: true}
     ],
     reporters: ["progress"],
