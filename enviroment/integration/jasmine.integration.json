@@ -1,0 +1,12 @@
+{
+  "spec_dir": "enviroment/integration/",
+  "spec_files": [
+    "spec/*.spec.js"
+  ],
+  "helpers": [
+    "integration.helper.js",
+    "../../node_modules/jasmine-expect/index.js"
+  ],
+  "stopSpecOnExpectationFailure": false,
+  "random": false
+}

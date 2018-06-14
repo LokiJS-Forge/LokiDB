@@ -1,15 +1,13 @@
 /* global process, require, module, require */
-const path = require("path");
-
 module.exports = function (config) {
   const configuration = {
     frameworks: ["jasmine", "jasmine-matchers"],
-    browsers: ["ChromeHeadless"],
-    basePath: "../",
+    browsers: ["Chrome"],
+    basePath: "",
     files: [
-      {pattern: "packages/common/spec/helper/**/*.helper.js"},
-      {pattern: "packages/*/spec/integration.spec.js", watched: false},
-      {pattern: 'dist/packages/**/*.js', watched: false, included: false, served: true, nocache: true}
+      {pattern: "integration.helper.js"},
+      {pattern: "spec/*.spec.js", watched: false},
+      {pattern: "node_modules/@lokidb/**/lokidb.*.js", watched: false, included: false, served: true, nocache: true}
     ],
     reporters: ["progress"],
     mime: {

@@ -1,5 +1,5 @@
 test_integration("full-text-search-language-de",
-  ["full-text-search"],
+  ["full-text-search-language"],
   {
     "GermanAnalyzer": (GermanAnalyzer) => {
       const ga = new GermanAnalyzer();

@@ -12,8 +12,8 @@
     "test:web:watch": "karma start config/karma.config.js",
     "test:node": "nyc --nycrc-path config/nycrc.json --report-dir coverage/node ts-node -P config/tsconfig.node.json ./node_modules/.bin/jasmine --config=\"config/jasmine.json\"",
     "test:integration": "npm run test:integration:web && npm run test:integration:node",
-    "test:integration:web": "karma start config/karma.integration.config.js --single-run",
-    "test:integration:node": "./node_modules/.bin/jasmine --config=\"config/jasmine.integration.json\"",
+    "test:integration:web": "karma start enviroment/integration/karma.integration.config.js --single-run",
+    "test:integration:node": "./node_modules/.bin/jasmine --config=\"enviroment/integration/jasmine.integration.json\"",
     "coverage": "istanbul report html lcov json text-summary",
     "docs": "typedoc --tsconfig config/tsconfig.webpack.json packages/",
     "build": "ts-node -P config/tsconfig.node.json scripts/build.ts",
@@ -67,5 +67,6 @@
     "vrsource-tslint-rules": "^5.8.2",
     "webpack": "^4.12.0",
     "webpack-cli": "^3.0.3"
-  }
+  },
+  "dependencies": {}
 }
