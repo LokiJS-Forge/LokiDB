@@ -7,16 +7,26 @@
     "type": "git",
     "url": "git+https://github.com/LokiJS-Forge/LokiDB.git"
   },
+  "scripts": {
+    "test:integration": "npm run test:integration:web && npm run test:integration:node",
+    "test:integration:web": "karma start karma.integration.config.js --single-run",
+    "test:integration:node": "jasmine --config=\"jasmine.integration.json\""
+  },
   "dependencies": {
-    "@lokidb/fs-storage": "../../dist/packages-dist/fs-storage",
-    "@lokidb/full-text-search": "../../dist/packages-dist/full-text-search",
-    "@lokidb/full-text-search-language": "../../dist/packages-dist/full-text-search-language",
-    "@lokidb/full-text-search-language-de": "../../dist/packages-dist/full-text-search-language-de",
-    "@lokidb/full-text-search-language-en": "../../dist/packages-dist/full-text-search-language-en",
-    "@lokidb/indexed-storage": "../../dist/packages-dist/indexed-storage",
-    "@lokidb/local-storage": "../../dist/packages-dist/local-storage",
-    "@lokidb/loki": "../../dist/packages-dist/loki",
-    "@lokidb/memory-storage": "../../dist/packages-dist/memory-storage",
-    "@lokidb/partitioning-adapter": "../../dist/packages-dist/partitioning-adapter"
+    "@lokidb/fs-storage": "../../dist/packages-dist/fs-storage/fs-storage",
+    "@lokidb/full-text-search": "../../dist/packages-dist/full-text-search/full-text-search",
+    "@lokidb/full-text-search-language": "../../dist/packages-dist/full-text-search-language/full-text-search-language",
+    "@lokidb/full-text-search-language-de": "../../dist/packages-dist/full-text-search-language-de/full-text-search-lagnuage-de",
+    "@lokidb/full-text-search-language-en": "../../dist/packages-dist/full-text-search-language-en/full-text-search-language-en",
+    "@lokidb/indexed-storage": "../../dist/packages-dist/indexed-storage/indexed-storage",
+    "@lokidb/local-storage": "../../dist/packages-dist/local-storage/local-storage",
+    "@lokidb/loki": "../../dist/packages-dist/loki/loki",
+    "@lokidb/memory-storage": "../../dist/packages-dist/memory-storage/memory-storage",
+    "@lokidb/partitioning-adapter": "../../dist/packages-dist/partitioning-adapter/partitioning-adapter",
+    "jasmine": "^3.1.0",
+    "jasmine-expect": "^3.8.3",
+    "karma": "^2.0.2",
+    "karma-jasmine": "^1.1.2",
+    "karma-jasmine-matchers": "^3.7.0"
   }
 }

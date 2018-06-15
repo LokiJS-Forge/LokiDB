@@ -21,7 +21,8 @@ function loadScript(name) {
   if (ENVIRONMENT === "browser") {
     return loadScriptByTag(`base/node_modules/@lokidb/${name}/${name}/lokidb.${name}.js`);
   } else if (ENVIRONMENT === "node") {
-    return Promise.resolve(require(`./node_modules/@lokidb/${name}/${name}/lokidb.${name}.js`))
+    // return Promise.resolve(require(`./node_modules/@lokidb/${name}/${name}/lokidb.${name}.js`))
+    return Promise.resolve(require(`@lokidb/${name}`))
   }
 }
 
