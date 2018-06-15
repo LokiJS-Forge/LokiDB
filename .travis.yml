@@ -29,6 +29,8 @@ script:
     - npm test || travis_terminate 1
     - npm run docs || travis_terminate 1
     - npm run build || travis_terminate 1
+    - npm install --prefix integration
+    - npm run test:integration || travis_terminate 1
     - npm run deploy || travis_terminate 1
 
 after_success:
