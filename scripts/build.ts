@@ -1,32 +1,27 @@
 import * as fs from "fs";
 import * as path from "path";
-import {BuildInformation, getBuildInformation} from "./release";
-import {PACKAGES, run, copy, make_dir, remove_dir, print, print_error} from "./common";
+import {getBuildInformation} from "./release";
+import {PACKAGES, run, copy, make_dir, remove_dir, print} from "./common";
 
-try {
-  main();
-} catch (e) {
-  print_error(e.message);
-  process.exit(1);
-}
+const BUILD_INFO = getBuildInformation();
+
+main();
 
 function main() {
-  const buildInfo = getBuildInformation();
-
-  if (buildInfo.release) {
-    print("> Release build.");
+  if (BUILD_INFO.release) {
+    print("+++ Release build +++");
     // Update npm package version.
-    run("npm", ["version", buildInfo.version, "--no-git-tag-version"]);
+    run("npm", ["version", BUILD_INFO.version, "--no-git-tag-version"]);
   }
 
-  build(buildInfo);
+  build();
 }
 
-function build(buildInfo: BuildInformation) {
+function build() {
   const ROOT_DIR = process.cwd();
   const UGLIFYJS = path.join(ROOT_DIR, "node_modules", "uglify-es", "bin", "uglifyjs");
 
-  print(`====== BUILDING: Version ${buildInfo.version}`);
+  print(`====== BUILDING: Version ${BUILD_INFO.version}`);
 
   const README = `${ROOT_DIR}/README.md`;
 
@@ -90,19 +85,19 @@ function build(buildInfo: BuildInformation) {
     print(`======      [${PACKAGE}]: VERSIONING =====`);
     const data = fs.readFileSync(NPM_PACKAGE_JSON).toString("utf8");
     let json = JSON.parse(data);
-    json.version = buildInfo.version;
+    json.version = BUILD_INFO.version;
     // Update version of other needed LokiDB packages
     if (json.dependencies) {
       for (let pack of Object.keys(json.dependencies)) {
         if (pack.startsWith("@lokidb/")) {
-          json.dependencies[pack] = buildInfo.version;
+          json.dependencies[pack] = BUILD_INFO.version;
         }
       }
     }
     if (json.optionalDependencies) {
       for (let pack of Object.keys(json.optionalDependencies)) {
         if (pack.startsWith("@lokidb/")) {
-          json.optionalDependencies[pack] = buildInfo.version;
+          json.optionalDependencies[pack] = BUILD_INFO.version;
         }
       }
     }
