@@ -1,26 +1,32 @@
 import * as fs from "fs";
 import * as path from "path";
-import {PACKAGES, getBuildInformation, run, copy, make_dir, remove_dir, print} from "./common";
+import {BuildInformation, getBuildInformation} from "./release";
+import {PACKAGES, run, copy, make_dir, remove_dir, print, print_error} from "./common";
 
-const BUILD_INFO = getBuildInformation();
-
-main();
-
-function main() {
-  if (BUILD_INFO.release) {
-    print("+++ Release build +++");
-    // Update npm package version.
-    run("npm", ["version", BUILD_INFO.version, "--no-git-tag-version"]);
-  }
-
-  build();
+try {
+  main();
+} catch (e) {
+  print_error(e.message);
+  process.exit(1);
 }
 
-function build() {
+function main() {
+  const buildInfo = getBuildInformation();
+
+  if (buildInfo.release) {
+    print("> Release build.");
+    // Update npm package version.
+    run("npm", ["version", buildInfo.version, "--no-git-tag-version"]);
+  }
+
+  build(buildInfo);
+}
+
+function build(buildInfo: BuildInformation) {
   const ROOT_DIR = process.cwd();
   const UGLIFYJS = path.join(ROOT_DIR, "node_modules", "uglify-es", "bin", "uglifyjs");
 
-  print(`====== BUILDING: Version ${BUILD_INFO.version}`);
+  print(`====== BUILDING: Version ${buildInfo.version}`);
 
   const README = `${ROOT_DIR}/README.md`;
 
@@ -33,7 +39,7 @@ function build() {
     const OUT_DIR = path.join(OUT_PACKAGES_DIR, PACKAGE);
     const OUT_DIR_FILENAME = path.join(OUT_DIR, `lokidb.${PACKAGE}.js`);
     const OUT_DIR_FILENAME_MINIFIED = path.join(OUT_DIR, `lokidb.${PACKAGE}.min.js`);
-    const NPM_PACKAGES_DIR = path.join(ROOT_DIR, "dist", "packages-dist");
+    const NPM_PACKAGES_DIR = path.join(ROOT_DIR, "dist", "packages-npm");
     const NPM_DIR = path.join(NPM_PACKAGES_DIR, PACKAGE);
     const NPM_PACKAGE_JSON = path.join(NPM_DIR, "package.json");
 
@@ -84,19 +90,19 @@ function build() {
     print(`======      [${PACKAGE}]: VERSIONING =====`);
     const data = fs.readFileSync(NPM_PACKAGE_JSON).toString("utf8");
     let json = JSON.parse(data);
-    json.version = BUILD_INFO.version;
+    json.version = buildInfo.version;
     // Update version of other needed LokiDB packages
     if (json.dependencies) {
       for (let pack of Object.keys(json.dependencies)) {
         if (pack.startsWith("@lokidb/")) {
-          json.dependencies[pack] = BUILD_INFO.version;
+          json.dependencies[pack] = buildInfo.version;
         }
       }
     }
     if (json.optionalDependencies) {
       for (let pack of Object.keys(json.optionalDependencies)) {
         if (pack.startsWith("@lokidb/")) {
-          json.optionalDependencies[pack] = BUILD_INFO.version;
+          json.optionalDependencies[pack] = buildInfo.version;
         }
       }
     }
