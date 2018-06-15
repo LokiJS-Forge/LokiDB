@@ -1,7 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import {getBuildInformation} from "./release";
-import {PACKAGES, run, copy, make_dir, remove_dir, print} from "./common";
+import {PACKAGES, getBuildInformation, run, copy, make_dir, remove_dir, print} from "./common";
 
 const BUILD_INFO = getBuildInformation();
 

@@ -1,8 +1,7 @@
+import * as child_process from "child_process";
 import * as fs from "fs";
 import * as stream from "stream";
-import {PACKAGES, print, print_error, run} from "./common";
-import {getBuildInformation} from "./release";
-import * as child_process from "child_process";
+import {PACKAGES, getBuildInformation, print, print_error, run} from "./common";
 
 const RELEASE_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 
