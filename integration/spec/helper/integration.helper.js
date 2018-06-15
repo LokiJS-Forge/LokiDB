@@ -3,11 +3,10 @@ const ENVIRONMENT = (() => {
   if (typeof exports === 'object' && typeof module === 'object') {
     return "node";
   } else if (typeof define === 'function' && define.amd) {
-    // TODO: Handle AMD.
     return "amd";
   } else if (typeof exports === 'object') {
-    // TODO: Handle CommonJS.
-    return "commonjs"
+    /// TODO: Define integration test.
+    return null;
   }
   return "browser";
 })();
@@ -27,6 +26,8 @@ function loadScript(name) {
     return loadScriptByTag(`base/node_modules/@lokidb/${name}/lokidb.${name}.js`);
   } else if (ENVIRONMENT === "node") {
     return Promise.resolve(require(`@lokidb/${name}`))
+  } else if (ENVIRONMENT === "amd") {
+    return new Promise((resolve) => require([`@lokidb/${name}`], (rq) => resolve(rq)));
   }
 }
 
