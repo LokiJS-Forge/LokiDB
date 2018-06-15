@@ -34,7 +34,7 @@ function build() {
     const OUT_DIR = path.join(OUT_PACKAGES_DIR, PACKAGE);
     const OUT_DIR_FILENAME = path.join(OUT_DIR, `lokidb.${PACKAGE}.js`);
     const OUT_DIR_FILENAME_MINIFIED = path.join(OUT_DIR, `lokidb.${PACKAGE}.min.js`);
-    const NPM_PACKAGES_DIR = path.join(ROOT_DIR, "dist", "packages-npm");
+    const NPM_PACKAGES_DIR = path.join(ROOT_DIR, "dist", "packages-dist");
     const NPM_DIR = path.join(NPM_PACKAGES_DIR, PACKAGE);
     const NPM_PACKAGE_JSON = path.join(NPM_DIR, "package.json");
 
