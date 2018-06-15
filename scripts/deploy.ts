@@ -1,13 +1,18 @@
-import {print, print_error, run} from "./common";
+import * as fs from "fs";
+import * as stream from "stream";
+import {PACKAGES, print, print_error, run} from "./common";
+import {getBuildInformation} from "./release";
+import * as child_process from 'child_process';
 
-const stream = require("stream");
 const conventionalChangelog = require("conventional-changelog");
 
 const RELEASE_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 let RELEASE_BRANCH = "";
 
 const GH_TOKEN = process.env.GH_TOKEN;
+const COMMIT_TAG = process.env.TRAVIS_TAG;
 const TRAVIS_REPO_SLUG = process.env.TRAVIS_REPO_SLUG;
+
 const CHANGELOG = {
   file: "CHANGELOG.md",
   header: "",
@@ -33,7 +38,28 @@ const CHANGELOG = {
   }
 };
 
-function npm_login() {
+const BUILD_INFO = getBuildInformation();
+
+main();
+
+function main() {
+  if (BUILD_INFO.release) {
+    RELEASE_BRANCH = "Releasing_" + BUILD_INFO.release;
+
+    updateChangelog()
+      .then(() => prepareReleaseBranch())
+      .then(() => delayRelease())
+      .then(() => loginToNPM())
+      .then(() => {
+        publishToNPM();
+        mergeReleaseBranch();
+      });
+  } else {
+    print("Nothing to deploy...");
+  }
+}
+
+function loginToNPM() {
   return new Promise((resolve, reject) => {
     // Login to npm.
     const username = process.env.NPM_USERNAME;
@@ -45,7 +71,7 @@ function npm_login() {
     }
 
     // Write to stdin to login.
-    const npmLogin = spawn("npm", ["login"]);
+    const npmLogin = child_process.spawn("npm", ["login"]);
     npmLogin.stdout.on("data", (data) => {
       const msg = data.toString();
       if (msg.startsWith("Username")) {
@@ -71,17 +97,17 @@ function npm_login() {
   });
 }
 
-function npm_publish() {
-  print(`====== PUBLISHING: Version ${VERSION}`);
+function publishToNPM() {
+  print(`====== PUBLISHING: Version ${BUILD_INFO.version}`);
 
   for (const PACKAGE of PACKAGES) {
-    run("npm", ["publish", `${ROOT_DIR}/dist/packages-dist/${PACKAGE}`, "--access=public"]);
+    // run("npm", ["publish", `${ROOT_DIR}/dist/packages-dist/${PACKAGE}`, "--access=public"]);
     print(`======      [${PACKAGE}]: PUBLISHED =====`);
   }
 }
 
-async function update_changelog() {
-  await generate_changelog();
+async function updateChangelog() {
+  await generateChangelog();
   if (fs.existsSync(CHANGELOG.file)) {
     const data = fs.readFileSync(CHANGELOG.file);
     fs.writeFileSync(CHANGELOG.file, CHANGELOG.log + data);
@@ -90,7 +116,7 @@ async function update_changelog() {
   }
 }
 
-function generate_changelog() {
+function generateChangelog() {
   return new Promise((resolve, reject) => {
     // Initiate the source
     let changelog_buffer = new stream.PassThrough();
@@ -126,7 +152,7 @@ function generate_changelog() {
   });
 }
 
-function delay_release() {
+function delayRelease() {
   // Delay the release to cancel.
   print("Delayed release for " + (RELEASE_TIMEOUT / 60000) + " minutes.");
   const current_time = new Date().getTime();
@@ -145,21 +171,23 @@ function delay_release() {
   });
 }
 
-function push() {
+function prepareReleaseBranch() {
+  if (!process.env.ABC) return;
   run("git", ["checkout", "-b", RELEASE_BRANCH]);
   run("git", ["add", "-u"]);
   run("git", ["add", "dist/packages/*"]);
-  run("git", ["commit", "-m", `Release ${VERSION}`]);
+  run("git", ["commit", "-m", `Release ${BUILD_INFO.version}`]);
   run("git", ["remote", "set-url", "origin", `https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git`]);
   run("git", ["push", "--set-upstream", "origin", RELEASE_BRANCH]);
 }
 
-function merge() {
+function mergeReleaseBranch() {
+  if (!process.env.ABC) return;
   run("git", ["checkout", "master"]);
   run("git", ["merge", RELEASE_BRANCH]);
 
   run("git", ["push", "origin", `:refs/tags/${COMMIT_TAG}`]);
-  run("git", ["tag", VERSION]);
+  run("git", ["tag", BUILD_INFO.version]);
 
   run("git", ["push"]);
   run("git", ["tag", "-d", COMMIT_TAG]);
@@ -172,7 +200,7 @@ function merge() {
   print("====== Create GitHub release documentation");
 
   const release = {
-    "tag_name": VERSION,
+    "tag_name": BUILD_INFO.version,
     "target_commitish": "master",
     "name": CHANGELOG.version_and_date,
     "body": CHANGELOG.log_without_head,

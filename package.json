@@ -13,7 +13,8 @@
     "test:node": "nyc --nycrc-path config/nycrc.json  --report-dir coverage/node ts-node -P config/tsconfig.node.json ./node_modules/.bin/jasmine --config=\"config/jasmine.json\"",
     "coverage": "istanbul report html lcov json text-summary",
     "docs": "typedoc --tsconfig config/tsconfig.webpack.json packages/",
-    "build": "node config/build.js"
+    "build": "ts-node -P config/tsconfig.node.json scripts/build.ts",
+    "deploy": "ts-node -P config/tsconfig.node.json scripts/deploy.ts"
   },
   "repository": {
     "type": "git",
