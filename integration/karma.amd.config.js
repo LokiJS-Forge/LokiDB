@@ -5,7 +5,7 @@ module.exports = function (config) {
     browsers: ["ChromeHeadless"],
     files: [
       {pattern: "node_modules/requirejs/require.js", watched: false},
-      {pattern: "spec/helper/*.helper.js"},
+      {pattern: "spec/helper/*.helper.js", watched: false},
       {pattern: "spec/generic/*.spec.js", watched: false},
       {pattern: "spec/web/*.spec.js", watched: false},
       {pattern: "node_modules/@lokidb/**/lokidb.*.js", watched: false}

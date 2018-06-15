@@ -4,7 +4,7 @@ module.exports = function (config) {
     frameworks: ["jasmine", "jasmine-matchers"],
     browsers: ["ChromeHeadless"],
     files: [
-      {pattern: "spec/helper/*.helper.js"},
+      {pattern: "spec/helper/*.helper.js", watched: false},
       {pattern: "spec/generic/*.spec.js", watched: false},
       {pattern: "spec/web/*.spec.js", watched: false},
       {pattern: "node_modules/@lokidb/**/lokidb.*.js", watched: false, included: false, served: true, nocache: true}
