@@ -1,0 +1,22 @@
+{
+  "name": "@lokidb/integration",
+  "version": "0.0.1",
+  "description": "Internal integration environment.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LokiJS-Forge/LokiDB.git"
+  },
+  "dependencies": {
+    "@lokidb/fs-storage": "../dist/packages-npm/fs-storage",
+    "@lokidb/full-text-search": "../dist/packages-npm/full-text-search",
+    "@lokidb/full-text-search-language": "../dist/packages-npm/full-text-search-language",
+    "@lokidb/full-text-search-language-de": "../dist/packages-npm/full-text-search-language-de",
+    "@lokidb/full-text-search-language-en": "../dist/packages-npm/full-text-search-language-en",
+    "@lokidb/indexed-storage": "../dist/packages-npm/indexed-storage",
+    "@lokidb/local-storage": "../dist/packages-npm/local-storage",
+    "@lokidb/loki": "../dist/packages-npm/loki",
+    "@lokidb/memory-storage": "../dist/packages-npm/memory-storage",
+    "@lokidb/partitioning-adapter": "../dist/packages-npm/partitioning-adapter"
+  }
+}

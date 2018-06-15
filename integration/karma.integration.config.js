@@ -2,11 +2,11 @@
 module.exports = function (config) {
   const configuration = {
     frameworks: ["jasmine", "jasmine-matchers"],
-    browsers: ["Chrome"],
-    basePath: "",
+    browsers: ["ChromeHeadless"],
     files: [
-      {pattern: "integration.helper.js"},
-      {pattern: "spec/*.spec.js", watched: false},
+      {pattern: "spec/helper/*.helper.js"},
+      {pattern: "spec/generic/*.spec.js", watched: false},
+      {pattern: "spec/web/*.spec.js", watched: false},
       {pattern: "node_modules/@lokidb/**/lokidb.*.js", watched: false, included: false, served: true, nocache: true}
     ],
     reporters: ["progress"],
