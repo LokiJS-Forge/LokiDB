@@ -1,13 +1,16 @@
 // Determine environment.
-let ENVIRONMENT = "browser";
-if (typeof exports === 'object' && typeof module === 'object') {
-  ENVIRONMENT = "node";
-} else if (typeof define === 'function' && define.amd) {
-  ENVIRONMENT = "amd";
-} else if (typeof exports === 'object') {
-  // TODO.
-  ENVIRONMENT = "commonjs"
-}
+const ENVIRONMENT = (() => {
+  if (typeof exports === 'object' && typeof module === 'object') {
+    return "node";
+  } else if (typeof define === 'function' && define.amd) {
+    // TODO: Handle AMD.
+    return "amd";
+  } else if (typeof exports === 'object') {
+    // TODO: Handle CommonJS.
+    return "commonjs"
+  }
+  return "browser";
+})();
 
 function loadScriptByTag(src) {
   const script = document.createElement("script");
