@@ -22,12 +22,15 @@ function loadScriptByTag(src) {
 }
 
 function loadScript(name) {
-  if (ENVIRONMENT === "browser") {
+  if (ENVIRONMENT === "browser" || ENVIRONMENT === "amd") {
     return loadScriptByTag(`base/node_modules/@lokidb/${name}/lokidb.${name}.js`);
   } else if (ENVIRONMENT === "node") {
     return Promise.resolve(require(`@lokidb/${name}`))
   } else if (ENVIRONMENT === "amd") {
-    return new Promise((resolve) => require([`@lokidb/${name}`], (rq) => resolve(rq)));
+    // return new Promise((resolve) => require([`base/node_modules/@lokidb/${name}/lokidb.${name}`], (rq) => {
+    //   console.log(rq)
+    //   resolve(rq)
+    // }));
   }
 }
 
@@ -39,7 +42,7 @@ function loadScript(name) {
  */
 function loadLibrary(name, dependencies) {
   let promise = Promise.resolve();
-  if (ENVIRONMENT === "browser") {
+  if (ENVIRONMENT === "browser" || ENVIRONMENT === "amd") {
     for (let dependency of dependencies) {
       promise = promise.then(() => loadScript(dependency));
     }
@@ -50,8 +53,14 @@ function loadLibrary(name, dependencies) {
     .then((script) => {
       if (ENVIRONMENT === "browser") {
         return this[`@lokidb/${name}`];
-      } else {
+      } else if (ENVIRONMENT === "node") {
         return script;
+      } else if (ENVIRONMENT === "amd") {
+        return new Promise((resolve) => {
+          require([`@lokidb/${name}`], (rq) => {
+            resolve(rq);
+          });
+        });
       }
     });
 }

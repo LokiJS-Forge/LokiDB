@@ -8,7 +8,7 @@ module.exports = function (config) {
       {pattern: "spec/helper/*.helper.js", watched: false},
       {pattern: "spec/generic/*.spec.js", watched: false},
       {pattern: "spec/web/*.spec.js", watched: false},
-      {pattern: "node_modules/@lokidb/**/lokidb.*.js", watched: false}
+      {pattern: "node_modules/@lokidb/**/lokidb.*.js", watched: false, included: false, served: true, nocache: true}
     ],
     reporters: ["progress"],
     mime: {
