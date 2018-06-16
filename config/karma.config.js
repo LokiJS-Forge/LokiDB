@@ -5,15 +5,15 @@ module.exports = function (config) {
   const configuration = {
     frameworks: ["jasmine", "jasmine-matchers"],
     browsers: ["ChromeHeadless"],
+    basePath: "../",
     files: [
-      {pattern: "../packages/*/spec/generic/**/*.spec.ts", watched: false},
-      {pattern: "../packages/*/spec/web/**/*.spec.ts", watched: false}
+      {pattern: "packages/*/spec/generic/**/*.spec.ts", watched: false},
+      {pattern: "packages/*/spec/web/**/*.spec.ts", watched: false}
     ],
     preprocessors: {
-      "../packages/*/spec/generic/**/*.spec.ts": ["webpack"],
-      "../packages/*/spec/web/**/*.spec.ts": ["webpack"]
+      "packages/*/spec/generic/**/*.spec.ts": ["webpack"],
+      "packages/*/spec/web/**/*.spec.ts": ["webpack"]
     },
-
     // coverage reporter generates the coverage
     reporters: ["progress", "coverage-istanbul"],
     coverageIstanbulReporter: {

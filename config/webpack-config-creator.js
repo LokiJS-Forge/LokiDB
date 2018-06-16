@@ -19,7 +19,8 @@ module.exports = (options) => {
       filename: options.filename,
       library: options.library,
       libraryTarget: "umd2",
-      umdNamedDefine: true
+      umdNamedDefine: true,
+      globalObject: "typeof self !== 'undefined' ? self : this"
     },
     externals: options.externals,
     resolve: {

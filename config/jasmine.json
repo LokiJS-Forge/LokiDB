@@ -1,13 +1,14 @@
 {
-	"spec_dir": "packages/*/spec",
-	"spec_files": [
-		"generic/**/*.spec.[jt]s",
-		"node/**/*.spec.[jt]s"
-	],
-	"helpers": [
-		"helpers/**/*.js",
-		"../../../node_modules/jasmine-expect/index.js"
-	],
-	"stopSpecOnExpectationFailure": false,
-	"random": false
+  "spec_dir": "packages/*/spec",
+  "spec_files": [
+    "generic/**/*.spec.[jt]s",
+    "node/**/*.spec.[jt]s"
+  ],
+  "helpers": [
+    "helper/**/*.js",
+    "../../common/spec/helper/**/*helper.[jt]s",
+    "../../../node_modules/jasmine-expect/index.js"
+  ],
+  "stopSpecOnExpectationFailure": false,
+  "random": false
 }
