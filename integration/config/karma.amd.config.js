@@ -3,7 +3,9 @@ module.exports = function (config) {
   const configuration = {
     frameworks: ["jasmine", "jasmine-matchers"],
     browsers: ["ChromeHeadless"],
+    basePath: "../",
     files: [
+      {pattern: "node_modules/requirejs/require.js", watched: false},
       {pattern: "spec/helper/*.helper.js", watched: false},
       {pattern: "spec/generic/*.spec.js", watched: false},
       {pattern: "spec/web/*.spec.js", watched: false},

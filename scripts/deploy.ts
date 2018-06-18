@@ -1,7 +1,7 @@
 import * as child_process from "child_process";
 import * as fs from "fs";
 import * as stream from "stream";
-import {PACKAGES, getBuildInformation, print, print_error, run} from "./common";
+import {PACKAGES, getBuildInformation, print, printError, run} from "./common";
 
 const RELEASE_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 
@@ -49,7 +49,7 @@ function main() {
         mergeReleaseBranch();
       })
       .catch((e) => {
-        print_error(e);
+        printError(e);
         process.exit(1);
       });
   } else {
@@ -80,7 +80,7 @@ function loginToNPM() {
       }
     });
     npmLogin.stderr.on("data", (data) => {
-      print_error(data.toString());
+      printError(data.toString());
       npmLogin.stdout.destroy();
       npmLogin.stderr.destroy();
       npmLogin.stdin.end();

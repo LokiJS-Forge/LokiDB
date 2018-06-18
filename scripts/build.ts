@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import {PACKAGES, getBuildInformation, run, copy, make_dir, remove_dir, print} from "./common";
+import {PACKAGES, getBuildInformation, run, copy, makeDir, remove_dir, print} from "./common";
 
 const BUILD_INFO = getBuildInformation();
 
@@ -71,7 +71,7 @@ function build() {
 
     print(`======      [${PACKAGE}]: BUNDLING   =====`);
     remove_dir(NPM_DIR);
-    make_dir(NPM_DIR);
+    makeDir(NPM_DIR);
 
     // Copy files to dist and npm dist.
     copy(OUT_DIR, NPM_PACKAGES_DIR, true);

@@ -7,17 +7,10 @@
     "type": "git",
     "url": "git+https://github.com/LokiJS-Forge/LokiDB.git"
   },
+  "scripts": {
+    "postinstall": "../node_modules/.bin/ts-node -P ../config/tsconfig.node.json scripts/install_lokidb.ts"
+  },
   "devDependencies": {
-    "@lokidb/fs-storage": "../dist/packages-dist/fs-storage",
-    "@lokidb/full-text-search": "../dist/packages-dist/full-text-search",
-    "@lokidb/full-text-search-language": "../dist/packages-dist/full-text-search-language",
-    "@lokidb/full-text-search-language-de": "../dist/packages-dist/full-text-search-language-de",
-    "@lokidb/full-text-search-language-en": "../dist/packages-dist/full-text-search-language-en",
-    "@lokidb/indexed-storage": "../dist/packages-dist/indexed-storage",
-    "@lokidb/local-storage": "../dist/packages-dist/local-storage",
-    "@lokidb/loki": "../dist/packages-dist/loki",
-    "@lokidb/memory-storage": "../dist/packages-dist/memory-storage",
-    "@lokidb/partitioning-adapter": "../dist/packages-dist/partitioning-adapter",
     "requirejs": "^2.3.5"
   }
 }
