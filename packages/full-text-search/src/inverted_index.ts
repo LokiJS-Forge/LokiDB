@@ -32,7 +32,7 @@ export class InvertedIndex {
   public docCount: number = 0;
   public docStore: Map<InvertedIndex.DocumentIndex, InvertedIndex.DocStore> = new Map();
   public totalFieldLength: number = 0;
-  public root: InvertedIndex.Index = new Map();
+  public root: InvertedIndex.Index = new Map() as InvertedIndex.Index;
 
   private _store: boolean;
   private _optimizeChanges: boolean;
@@ -286,7 +286,7 @@ export class InvertedIndex {
   }
 
   private static _deserializeIndex(serialized: Serialization.FullTextSearch.Index): InvertedIndex.Index {
-    const idx: InvertedIndex.Index = new Map();
+    const idx: InvertedIndex.Index = new Map() as InvertedIndex.Index;
 
     if (serialized.k !== undefined) {
       for (let i = 0; i < serialized.k.length; i++) {

@@ -222,12 +222,14 @@ export namespace V2_0 {
   }
 
   export namespace FullTextSearch {
+    export type DocumentIndex = number | string;
+
     export type InvertedIndex = SpareSerialized | FullSerialized;
 
     export interface Index {
       d?: {
         df: number;
-        dc: [number, number][]
+        dc: [DocumentIndex, number][]
       };
       k?: number[];
       v?: Index[];
@@ -242,7 +244,7 @@ export namespace V2_0 {
       store: true;
       optimizeChanges: boolean;
       docCount: number;
-      docStore: [number, DocStore][];
+      docStore: [DocumentIndex, DocStore][];
       totalFieldLength: number;
       root: Index;
     };
