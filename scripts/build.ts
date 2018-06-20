@@ -39,37 +39,43 @@ function build() {
     const NPM_PACKAGES_DIR = path.join(ROOT_DIR, "dist", "packages-dist");
     const NPM_DIR = path.join(NPM_PACKAGES_DIR, PACKAGE);
     const NPM_PACKAGE_JSON = path.join(NPM_DIR, "package.json");
+    const IS_REGULAR_PACKAGE = fs.existsSync(SRC_WEBPACK_CONFIG);
 
     print(`======      [${PACKAGE}]: PACKING    =====`);
     remove_dir(OUT_DIR);
 
-    run("webpack-cli", ["--config=" + SRC_WEBPACK_CONFIG, "--output-path=" + OUT_DIR]);
-
-    // Update script tag export of UMD to use default module export.
-    {
-      const bundle = fs.readFileSync(OUT_DIR_FILENAME).toString();
-
-      // Split on script export of UMD.
-      const script_start = bundle.search(/root\[.+] = factory.+\);/);
-      const script_end = script_start + bundle.slice(script_start).indexOf(";") + 1;
-
-      const umd_part = bundle.slice(0, script_start);
-      let script_part = bundle.slice(script_start, script_end);
-      const library_part = bundle.slice(script_end);
+    if (IS_REGULAR_PACKAGE) {
+      run("webpack-cli", ["--config=" + SRC_WEBPACK_CONFIG, "--output-path=" + OUT_DIR]);
 
       // Update script tag export of UMD to use default module export.
-      let library_name = script_part.match(/root\["@lokidb\/(.+?)"/)[1];
-      // Transform library name to Loki<LibraryName>.
-      let simple_name = library_name.replace(/(?:-|^)([a-z])/ig, (_, letter) => {
-        return letter.toUpperCase();
-      });
-      if (!simple_name.startsWith("Loki")) {
-        simple_name = "Loki" + simple_name;
-      }
+      {
+        const bundle = fs.readFileSync(OUT_DIR_FILENAME).toString();
 
-      // Add default export to script.
-      script_part = `{ ${script_part} root["${simple_name}"] = root["@lokidb/${library_name}"].default; }`;
-      fs.writeFileSync(OUT_DIR_FILENAME, umd_part + script_part + library_part);
+        // Split on script export of UMD.
+        const script_start = bundle.search(/root\[.+] = factory.+\);/);
+        const script_end = script_start + bundle.slice(script_start).indexOf(";") + 1;
+
+        const umd_part = bundle.slice(0, script_start);
+        let script_part = bundle.slice(script_start, script_end);
+        const library_part = bundle.slice(script_end);
+
+        // Update script tag export of UMD to use default module export.
+        let library_name = script_part.match(/root\["@lokidb\/(.+?)"/)[1];
+        // Transform library name to Loki<LibraryName>.
+        let simple_name = library_name.replace(/(?:-|^)([a-z])/ig, (_, letter) => {
+          return letter.toUpperCase();
+        });
+        if (!simple_name.startsWith("Loki")) {
+          simple_name = "Loki" + simple_name;
+        }
+
+        // Add default export to script.
+        script_part = `{ ${script_part} root["${simple_name}"] = root["@lokidb/${library_name}"].default; }`;
+        fs.writeFileSync(OUT_DIR_FILENAME, umd_part + script_part + library_part);
+      }
+    } else {
+      makeDir(OUT_DIR);
+      copy(SRC_DIR, OUT_PACKAGES_DIR, true);
     }
 
     print(`======      [${PACKAGE}]: BUNDLING   =====`);
@@ -81,8 +87,11 @@ function build() {
     copy(SRC_PACKAGE_JSON, NPM_DIR);
     copy(README, NPM_DIR);
 
-    print(`======      [${PACKAGE}]: MINIFY     =====`);
-    run("node", [UGLIFYJS, OUT_DIR_FILENAME, "--output", OUT_DIR_FILENAME_MINIFIED]);
+
+    if (IS_REGULAR_PACKAGE) {
+      print(`======      [${PACKAGE}]: MINIFY     =====`);
+      run("node", [UGLIFYJS, OUT_DIR_FILENAME, "--output", OUT_DIR_FILENAME_MINIFIED]);
+    }
 
     print(`======      [${PACKAGE}]: VERSIONING =====`);
     const data = fs.readFileSync(NPM_PACKAGE_JSON).toString("utf8");
