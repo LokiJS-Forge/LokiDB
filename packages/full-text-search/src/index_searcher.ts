@@ -46,7 +46,7 @@ export class IndexSearcher {
     this._scorer.setDirty();
   }
 
-  private _recursive(query: any, doScoring: boolean) {
+  private _recursive(query: any, doScoring: boolean | null) {
     let queryResults: QueryResults = new Map();
     const boost = query.boost !== undefined ? query.boost : 1;
     const fieldName = query.field !== undefined ? query.field : null;
@@ -65,16 +65,10 @@ export class IndexSearcher {
           queryResults = this._getUnique(query.must, doScoring, queryResults);
         }
         if (query.filter !== undefined) {
-          queryResults = this._getUnique(query.filter, false, queryResults);
+          queryResults = this._getUnique(query.filter, null, queryResults);
         }
         if (query.should !== undefined) {
-          let shouldDocs = this._getAll(query.should, doScoring);
-
-          let empty = false;
-          if (queryResults === null) {
-            queryResults = new Map();
-            empty = true;
-          }
+          const shouldDocs = this._getAll(query.should, doScoring);
 
           let msm = 1;
           // TODO: Enable percent and ranges.
@@ -89,22 +83,38 @@ export class IndexSearcher {
               msm = Math.floor(shouldLength * msm);
             }
           }
-          // Remove all docs with fewer matches.
-          for (const [docId, res] of shouldDocs) {
-            if (res.length >= msm) {
-              if (queryResults.has(docId)) {
-                queryResults.get(docId).push(...res);
-              } else if (empty) {
-                queryResults.set(docId, res);
-              } else {
-                queryResults.delete(docId);
+
+          let empty = false;
+          if (queryResults === null) {
+            empty = true;
+            queryResults = new Map();
+          }
+
+          if (empty && msm === 1) {
+            // Take all documents.
+            queryResults = shouldDocs;
+          } else {
+            // Remove documents with fewer matches.
+            for (const [docId, res] of shouldDocs) {
+              if (res.length >= msm) {
+                if (queryResults.has(docId)) {
+                  queryResults.get(docId).push(...res);
+                } else if (empty) {
+                  queryResults.set(docId, res);
+                } else {
+                  queryResults.delete(docId);
+                }
               }
             }
           }
         }
+        // Match all documents if must/filter/should is not defined.
+        if (queryResults === null) {
+          queryResults = this._recursive({type: "match_all"}, false);
+        }
         if (query.not !== undefined) {
-          let notDocs = this._getAll(query.not, false);
-          // Remove all docs.
+          let notDocs = this._getAll(query.not, null);
+          // Remove all matching documents.
           for (const docId of notDocs.keys()) {
             if (queryResults.has(docId)) {
               queryResults.delete(docId);
@@ -230,7 +240,7 @@ export class IndexSearcher {
     return queryResults;
   }
 
-  private _getUnique(queries: any[], doScoring: boolean, queryResults: QueryResults): QueryResults {
+  private _getUnique(queries: any[], doScoring: boolean | null, queryResults: QueryResults): QueryResults {
     if (queries.length === 0) {
       return queryResults;
     }
@@ -253,8 +263,7 @@ export class IndexSearcher {
     return queryResults;
   }
 
-  private _getAll(queries: any[], doScoring: boolean): QueryResults {
-    let queryResults: QueryResults = new Map();
+  private _getAll(queries: any[], doScoring: boolean | null, queryResults: QueryResults = new Map()): QueryResults {
     for (let i = 0; i < queries.length; i++) {
       let currDocs = this._recursive(queries[i], doScoring);
       for (const docId of currDocs.keys()) {

@@ -2,7 +2,7 @@ import {QueryTypes} from "../../src/query_types";
 
 const FIELD_NAME_1 = "msg";
 
-export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean }[] = [
+export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boolean }[] = [
   {
     fts: {
       type: "term",
@@ -566,6 +566,68 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean }[] = [
           value: "est"
         }
       ],
+      filter: [
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "ac"
+        }
+      ]
+    },
+    es: {
+      bool: {
+        must: [
+          {
+            term: {
+              [FIELD_NAME_1]: "est"
+            }
+          }
+        ],
+        filter:
+          [
+            {
+              term: {
+                [FIELD_NAME_1]: "ac"
+              }
+            }
+          ]
+      }
+    },
+  },
+  {
+    fts: {
+      type: "bool",
+      filter: [
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "ac"
+        }
+      ]
+    },
+    es: {
+      bool: {
+        filter:
+          [
+            {
+              term: {
+                [FIELD_NAME_1]: "ac"
+              }
+            }
+          ]
+      }
+    },
+  },
+  {
+    fts: {
+      type: "bool",
+      must: [
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "est"
+        }
+      ],
       should: [
         {
           type: "term",
@@ -848,6 +910,41 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean }[] = [
               }
             }
           ]
+      }
+    }
+  },
+  {
+    fts: {
+      type: "bool",
+      boost: 2,
+      not: [{
+        type: "term",
+        field: FIELD_NAME_1,
+        value: "ac"
+      }],
+    },
+    es: {
+      bool: {
+        must_not:
+          [
+            {
+              term: {
+                [FIELD_NAME_1]: "ac"
+              }
+            }
+          ],
+        boost: 2
+      }
+    }
+  },
+  {
+    fts: {
+      type: "bool",
+      boost: 2,
+    },
+    es: {
+      bool: {
+        boost: 2
       }
     }
   },
