@@ -854,6 +854,41 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean }[] = [
   {
     fts: {
       type: "bool",
+      boost: 2,
+      not: [{
+        type: "term",
+        field: FIELD_NAME_1,
+        value: "ac"
+      }],
+    },
+    es: {
+      bool: {
+        must_not:
+          [
+            {
+              term: {
+                [FIELD_NAME_1]: "ac"
+              }
+            }
+          ],
+        boost: 2
+      }
+    }
+  },
+  {
+    fts: {
+      type: "bool",
+      boost: 2,
+    },
+    es: {
+      bool: {
+        boost: 2
+      }
+    }
+  },
+  {
+    fts: {
+      type: "bool",
       must: [{
         type: "term",
         field: FIELD_NAME_1,

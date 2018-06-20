@@ -108,6 +108,10 @@ export class IndexSearcher {
             }
           }
         }
+        // Match all documents if must/filter/should is not defined.
+        if (queryResults === null) {
+          queryResults = this._recursive({type: "match_all"}, false);
+        }
         if (query.not !== undefined) {
           let notDocs = this._getAll(query.not, false);
           // Remove all matching documents.
