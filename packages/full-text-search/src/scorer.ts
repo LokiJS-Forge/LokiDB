@@ -17,7 +17,7 @@ export class Scorer {
     this._cache = {};
   }
 
-  public score(fieldName: string, boost: number, termIdx: InvertedIndex.Index, doScoring: boolean,
+  public score(fieldName: string, boost: number, termIdx: InvertedIndex.Index, doScoring: boolean | null,
                queryResults: Scorer.QueryResults, term: number[], df: number = 0): void {
     if (termIdx === null || termIdx.dc === undefined) {
       return;
@@ -29,12 +29,15 @@ export class Scorer {
         queryResults.set(docId, []);
       }
 
-      if (doScoring) {
+      if (doScoring === true) {
         // BM25 scoring.
         queryResults.get(docId).push({tf, idf, boost, fieldName, term});
-      } else {
+      } else if (doScoring === false) {
         // Constant scoring.
         queryResults.set(docId, [{boost}]);
+      } else {
+        // Zero scoring.
+        queryResults.set(docId, [{boost: 0}]);
       }
     }
   }

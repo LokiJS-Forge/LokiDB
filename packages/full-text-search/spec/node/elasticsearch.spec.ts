@@ -161,8 +161,8 @@ describe("Compare scoring against elasticsearch", () => {
   });
 
   for (let i = 0; i < QUERIES.length; i++) {
-    let query: any = QUERIES[i];
-    it(" -> " + i + ": " + JSON.stringify(query), (done) => {
+    let query = QUERIES[i];
+    (query.focus ? fit : it)(" -> " + i + ": " + JSON.stringify(query), (done) => {
       if (es_not_available) {
         done();
         return;

@@ -46,7 +46,7 @@ export class IndexSearcher {
     this._scorer.setDirty();
   }
 
-  private _recursive(query: any, doScoring: boolean) {
+  private _recursive(query: any, doScoring: boolean | null) {
     let queryResults: QueryResults = new Map();
     const boost = query.boost !== undefined ? query.boost : 1;
     const fieldName = query.field !== undefined ? query.field : null;
@@ -65,7 +65,7 @@ export class IndexSearcher {
           queryResults = this._getUnique(query.must, doScoring, queryResults);
         }
         if (query.filter !== undefined) {
-          queryResults = this._getUnique(query.filter, false, queryResults);
+          queryResults = this._getUnique(query.filter, null, queryResults);
         }
         if (query.should !== undefined) {
           const shouldDocs = this._getAll(query.should, doScoring);
@@ -113,7 +113,7 @@ export class IndexSearcher {
           queryResults = this._recursive({type: "match_all"}, false);
         }
         if (query.not !== undefined) {
-          let notDocs = this._getAll(query.not, false);
+          let notDocs = this._getAll(query.not, null);
           // Remove all matching documents.
           for (const docId of notDocs.keys()) {
             if (queryResults.has(docId)) {
@@ -240,7 +240,7 @@ export class IndexSearcher {
     return queryResults;
   }
 
-  private _getUnique(queries: any[], doScoring: boolean, queryResults: QueryResults): QueryResults {
+  private _getUnique(queries: any[], doScoring: boolean | null, queryResults: QueryResults): QueryResults {
     if (queries.length === 0) {
       return queryResults;
     }
@@ -263,7 +263,7 @@ export class IndexSearcher {
     return queryResults;
   }
 
-  private _getAll(queries: any[], doScoring: boolean, queryResults: QueryResults = new Map()): QueryResults {
+  private _getAll(queries: any[], doScoring: boolean | null, queryResults: QueryResults = new Map()): QueryResults {
     for (let i = 0; i < queries.length; i++) {
       let currDocs = this._recursive(queries[i], doScoring);
       for (const docId of currDocs.keys()) {
