@@ -697,8 +697,7 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
             }
           }
         ],
-        minimum_should_match:
-          2,
+        minimum_should_match: 2,
       }
     }
   },
@@ -777,7 +776,7 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
           value: "sed"
         },
       ],
-      minimum_should_match: 0.75
+      minimum_should_match: "75%"
     },
     es: {
       bool: {
@@ -808,8 +807,76 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
             }
           }
         ],
-        minimum_should_match:
-          "75%",
+        minimum_should_match: "75%",
+      }
+    },
+  },
+  {
+    fts: {
+      type: "bool",
+      should: [
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "ac",
+          boost: 10
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "enim"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "est"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "at"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "sed"
+        },
+      ],
+      minimum_should_match: "-25%"
+    },
+    es: {
+      bool: {
+        should: [
+          {
+            term: {
+              [FIELD_NAME_1]: {
+                value: "ac",
+                boost: 10
+              }
+            }
+          },
+          {
+            term: {
+              [FIELD_NAME_1]: "enim"
+            }
+          },
+          {
+            term: {
+              [FIELD_NAME_1]: "est"
+            }
+          },
+          {
+            term: {
+              [FIELD_NAME_1]: "at"
+            }
+          },
+          {
+            term: {
+              [FIELD_NAME_1]: "sed"
+            }
+          }
+        ],
+        minimum_should_match: "-25%",
       }
     }
   },
@@ -844,7 +911,7 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
           value: "sed"
         },
       ],
-      minimum_should_match: -0.25
+      minimum_should_match: "3<50%"
     },
     es: {
       bool: {
@@ -878,10 +945,147 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
             }
           }
         ],
-        minimum_should_match:
-          "-25%",
+        minimum_should_match: "3<50%",
       }
-    }
+    },
+  },
+  {
+    fts: {
+      type: "bool",
+      should: [
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "ac",
+          boost: 10
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "enim"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "est"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "at"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "sed"
+        },
+      ],
+      minimum_should_match: "2<-2"
+    },
+    es: {
+      bool: {
+        should: [
+          {
+            term: {
+              [FIELD_NAME_1]: {
+                value: "ac",
+                boost: 10
+              }
+            }
+          },
+          {
+            term: {
+              [FIELD_NAME_1]: "enim"
+            }
+          },
+          {
+            term: {
+              [FIELD_NAME_1]: "est"
+            }
+          },
+          {
+            term: {
+              [FIELD_NAME_1]: "at"
+            }
+          },
+          {
+            term: {
+              [FIELD_NAME_1]: "sed"
+            }
+          }
+        ],
+        minimum_should_match: "2<-2",
+      }
+    },
+  },
+  {
+    fts: {
+      type: "bool",
+      should: [
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "ac",
+          boost: 10
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "enim"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "est"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "at"
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "sed"
+        },
+      ],
+      minimum_should_match: "3<50% 4<-4"
+    },
+    es: {
+      bool: {
+        should: [
+          {
+            term: {
+              [FIELD_NAME_1]: {
+                value: "ac",
+                boost: 10
+              }
+            }
+          },
+          {
+            term: {
+              [FIELD_NAME_1]: "enim"
+            }
+          },
+          {
+            term: {
+              [FIELD_NAME_1]: "est"
+            }
+          },
+          {
+            term: {
+              [FIELD_NAME_1]: "at"
+            }
+          },
+          {
+            term: {
+              [FIELD_NAME_1]: "sed"
+            }
+          }
+        ],
+        minimum_should_match: "3<50% 4<-4",
+      }
+    },
   },
   {
     fts: {
@@ -1058,7 +1262,7 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
       type: "match",
       field: FIELD_NAME_1,
       value: "orci est in",
-      minimum_should_match: 0.33
+      minimum_should_match: "33%"
     },
     es: {
       match: {
@@ -1075,7 +1279,7 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
       type: "match",
       field: FIELD_NAME_1,
       value: "orci est in",
-      boost: 10
+      boost: 10,
     },
     es: {
       match: {
