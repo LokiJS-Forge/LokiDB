@@ -947,7 +947,7 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
         ],
         minimum_should_match: "3<50%",
       }
-    },
+    }
   },
   {
     fts: {
@@ -1015,6 +1015,45 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
           }
         ],
         minimum_should_match: "2<-2",
+      }
+    }
+  },
+  {
+    fts: {
+      type: "bool",
+      should: [
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "ac",
+          boost: 10
+        },
+        {
+          type: "term",
+          field: FIELD_NAME_1,
+          value: "enim"
+        }
+      ],
+      minimum_should_match: "2<50%"
+    },
+    es: {
+      bool: {
+        should: [
+          {
+            term: {
+              [FIELD_NAME_1]: {
+                value: "ac",
+                boost: 10
+              }
+            }
+          },
+          {
+            term: {
+              [FIELD_NAME_1]: "enim"
+            }
+          },
+        ],
+        minimum_should_match: "2<50%",
       }
     },
   },
