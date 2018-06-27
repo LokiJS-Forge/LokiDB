@@ -71,8 +71,10 @@
 								<li class="tsd-kind-class"><a href="classes/among.html" class="tsd-kind-icon">Among</a></li>
 								<li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/collection.html" class="tsd-kind-icon">Collection</a></li>
 								<li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/dynamicview.html" class="tsd-kind-icon">Dynamic<wbr>View</a></li>
+								<li class="tsd-kind-class"><a href="classes/englishanalyzer.html" class="tsd-kind-icon">English<wbr>Analyzer</a></li>
 								<li class="tsd-kind-class"><a href="classes/fsstorage.html" class="tsd-kind-icon">FSStorage</a></li>
 								<li class="tsd-kind-class"><a href="classes/fulltextsearch.html" class="tsd-kind-icon">Full<wbr>Text<wbr>Search</a></li>
+								<li class="tsd-kind-class"><a href="classes/germananalyzer.html" class="tsd-kind-icon">German<wbr>Analyzer</a></li>
 								<li class="tsd-kind-class"><a href="classes/indexedstorage.html" class="tsd-kind-icon">Indexed<wbr>Storage</a></li>
 								<li class="tsd-kind-class"><a href="classes/localstorage.html" class="tsd-kind-icon">Local<wbr>Storage</a></li>
 								<li class="tsd-kind-class"><a href="classes/loki.html" class="tsd-kind-icon">Loki</a></li>
@@ -111,7 +113,7 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-type-alias"><a href="globals.html#characterfilter" class="tsd-kind-icon">Character<wbr>Filter</a></li>
 								<li class="tsd-kind-type-alias"><a href="globals.html#clonemethod" class="tsd-kind-icon">Clone<wbr>Method</a></li>
-								<li class="tsd-kind-type-alias"><a href="globals.html#doc" class="tsd-kind-icon">Doc</a></li>
+								<li class="tsd-kind-type-alias tsd-has-type-parameter"><a href="globals.html#doc" class="tsd-kind-icon">Doc</a></li>
 								<li class="tsd-kind-type-alias"><a href="globals.html#querytypes" class="tsd-kind-icon">Query<wbr>Types</a></li>
 								<li class="tsd-kind-type-alias"><a href="globals.html#tokenfilter" class="tsd-kind-icon">Token<wbr>Filter</a></li>
 								<li class="tsd-kind-type-alias"><a href="globals.html#tokenizer" class="tsd-kind-icon">Tokenizer</a></li>
@@ -128,13 +130,6 @@
 								<li class="tsd-kind-function"><a href="globals.html#whitespacetokenizer" class="tsd-kind-icon">whitespace<wbr>Tokenizer</a></li>
 							</ul>
 						</section>
-						<section class="tsd-index-section ">
-							<h3>Object literals</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-object-literal"><a href="globals.html#englishanalyzer" class="tsd-kind-icon">English<wbr>Analyzer</a></li>
-								<li class="tsd-kind-object-literal"><a href="globals.html#germananalyzer" class="tsd-kind-icon">German<wbr>Analyzer</a></li>
-							</ul>
-						</section>
 					</div>
 				</section>
 			</section>
@@ -146,7 +141,7 @@
 					<div class="tsd-signature tsd-kind-icon">Character<wbr>Filter<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search/src/analyzer/character_filter.ts#L4">full-text-search/src/analyzer/character_filter.ts:4</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/full-text-search/src/analyzer/character_filter.ts#L4">full-text-search/src/analyzer/character_filter.ts:4</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -179,20 +174,20 @@
 				<section class="tsd-panel tsd-member tsd-kind-type-alias">
 					<a name="clonemethod" class="tsd-anchor"></a>
 					<h3>Clone<wbr>Method</h3>
-					<div class="tsd-signature tsd-kind-icon">Clone<wbr>Method<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"parse-stringify"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"deep"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"shallow"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"shallow-recurse-objects"</span></div>
+					<div class="tsd-signature tsd-kind-icon">Clone<wbr>Method<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"parse-stringify"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"deep"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"shallow"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"shallow-recurse"</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/loki/src/clone.ts#L1">loki/src/clone.ts:1</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/clone.ts#L1">loki/src/clone.ts:1</a></li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-type-alias">
+				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-has-type-parameter">
 					<a name="doc" class="tsd-anchor"></a>
 					<h3>Doc</h3>
 					<div class="tsd-signature tsd-kind-icon">Doc<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">T</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">object</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/common/types.ts#L18">common/types.ts:18</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/common/types.ts#L18">common/types.ts:18</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -202,7 +197,7 @@
 					<div class="tsd-signature tsd-kind-icon">Query<wbr>Types<span class="tsd-signature-symbol">:</span> <a href="interfaces/boolquery.html" class="tsd-signature-type">BoolQuery</a><span class="tsd-signature-symbol"> | </span><a href="interfaces/constantscorequery.html" class="tsd-signature-type">ConstantScoreQuery</a><span class="tsd-signature-symbol"> | </span><a href="interfaces/termquery.html" class="tsd-signature-type">TermQuery</a><span class="tsd-signature-symbol"> | </span><a href="interfaces/termsquery.html" class="tsd-signature-type">TermsQuery</a><span class="tsd-signature-symbol"> | </span><a href="interfaces/wildcardquery.html" class="tsd-signature-type">WildcardQuery</a><span class="tsd-signature-symbol"> | </span><a href="interfaces/fuzzyquery.html" class="tsd-signature-type">FuzzyQuery</a><span class="tsd-signature-symbol"> | </span><a href="interfaces/matchquery.html" class="tsd-signature-type">MatchQuery</a><span class="tsd-signature-symbol"> | </span><a href="interfaces/matchqueryall.html" class="tsd-signature-type">MatchQueryAll</a><span class="tsd-signature-symbol"> | </span><a href="interfaces/prefixquery.html" class="tsd-signature-type">PrefixQuery</a><span class="tsd-signature-symbol"> | </span><a href="interfaces/existsquery.html" class="tsd-signature-type">ExistsQuery</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search/src/query_types.ts#L133">full-text-search/src/query_types.ts:133</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/full-text-search/src/query_types.ts#L133">full-text-search/src/query_types.ts:133</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -217,7 +212,7 @@
 					<div class="tsd-signature tsd-kind-icon">Token<wbr>Filter<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search/src/analyzer/token_filter.ts#L4">full-text-search/src/analyzer/token_filter.ts:4</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/full-text-search/src/analyzer/token_filter.ts#L4">full-text-search/src/analyzer/token_filter.ts:4</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -259,7 +254,7 @@
 					<div class="tsd-signature tsd-kind-icon">Tokenizer<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search/src/analyzer/tokenizer.ts#L4">full-text-search/src/analyzer/tokenizer.ts:4</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/full-text-search/src/analyzer/tokenizer.ts#L4">full-text-search/src/analyzer/tokenizer.ts:4</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -302,7 +297,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search/src/analyzer/analyzer.ts#L29">full-text-search/src/analyzer/analyzer.ts:29</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/full-text-search/src/analyzer/analyzer.ts#L29">full-text-search/src/analyzer/analyzer.ts:29</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -342,7 +337,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search-language/src/language.ts#L10">full-text-search-language/src/language.ts:10</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/full-text-search-language/src/language.ts#L10">full-text-search-language/src/language.ts:10</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -365,7 +360,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search-language/src/language.ts#L5">full-text-search-language/src/language.ts:5</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/full-text-search-language/src/language.ts#L5">full-text-search-language/src/language.ts:5</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -388,7 +383,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search/src/analyzer/token_filter.ts#L11">full-text-search/src/analyzer/token_filter.ts:11</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/full-text-search/src/analyzer/token_filter.ts#L11">full-text-search/src/analyzer/token_filter.ts:11</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -422,7 +417,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search/src/analyzer/token_filter.ts#L20">full-text-search/src/analyzer/token_filter.ts:20</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/full-text-search/src/analyzer/token_filter.ts#L20">full-text-search/src/analyzer/token_filter.ts:20</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -456,7 +451,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search/src/analyzer/tokenizer.ts#L11">full-text-search/src/analyzer/tokenizer.ts:11</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/full-text-search/src/analyzer/tokenizer.ts#L11">full-text-search/src/analyzer/tokenizer.ts:11</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -481,69 +476,6 @@
 					</ul>
 				</section>
 			</section>
-			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Object literals</h2>
-				<section class="tsd-panel tsd-member tsd-kind-object-literal">
-					<a name="englishanalyzer" class="tsd-anchor"></a>
-					<h3>English<wbr>Analyzer</h3>
-					<div class="tsd-signature tsd-kind-icon">English<wbr>Analyzer<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search-language-en/src/english_analyzer.ts#L254">full-text-search-language-en/src/english_analyzer.ts:254</a></li>
-						</ul>
-					</aside>
-					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-						<a name="englishanalyzer.token_filter" class="tsd-anchor"></a>
-						<h3>token_<wbr>filter</h3>
-						<div class="tsd-signature tsd-kind-icon">token_<wbr>filter<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">(Anonymous function)</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[trimmer, stemmer, stopWordFilter]</span></div>
-						<aside class="tsd-sources">
-							<ul>
-								<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search-language-en/src/english_analyzer.ts#L256">full-text-search-language-en/src/english_analyzer.ts:256</a></li>
-							</ul>
-						</aside>
-					</section>
-					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-						<a name="englishanalyzer.tokenizer" class="tsd-anchor"></a>
-						<h3>tokenizer</h3>
-						<div class="tsd-signature tsd-kind-icon">tokenizer<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">splitter</span><span class="tsd-signature-symbol"> =&nbsp;splitter</span></div>
-						<aside class="tsd-sources">
-							<ul>
-								<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search-language-en/src/english_analyzer.ts#L255">full-text-search-language-en/src/english_analyzer.ts:255</a></li>
-							</ul>
-						</aside>
-					</section>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-object-literal">
-					<a name="germananalyzer" class="tsd-anchor"></a>
-					<h3>German<wbr>Analyzer</h3>
-					<div class="tsd-signature tsd-kind-icon">German<wbr>Analyzer<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search-language-de/src/german_analyzer.ts#L339">full-text-search-language-de/src/german_analyzer.ts:339</a></li>
-						</ul>
-					</aside>
-					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-						<a name="germananalyzer.token_filter" class="tsd-anchor"></a>
-						<h3>token_<wbr>filter</h3>
-						<div class="tsd-signature tsd-kind-icon">token_<wbr>filter<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">(Anonymous function)</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[trimmer, stemmer, stopWordFilter]</span></div>
-						<aside class="tsd-sources">
-							<ul>
-								<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search-language-de/src/german_analyzer.ts#L341">full-text-search-language-de/src/german_analyzer.ts:341</a></li>
-							</ul>
-						</aside>
-					</section>
-					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
-						<a name="germananalyzer.tokenizer" class="tsd-anchor"></a>
-						<h3>tokenizer</h3>
-						<div class="tsd-signature tsd-kind-icon">tokenizer<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">splitter</span><span class="tsd-signature-symbol"> =&nbsp;splitter</span></div>
-						<aside class="tsd-sources">
-							<ul>
-								<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/d486e4d/packages/full-text-search-language-de/src/german_analyzer.ts#L340">full-text-search-language-de/src/german_analyzer.ts:340</a></li>
-							</ul>
-						</aside>
-					</section>
-				</section>
-			</section>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 			<nav class="tsd-navigation primary">
@@ -565,10 +497,16 @@
 						<a href="classes/dynamicview.html" class="tsd-kind-icon">Dynamic<wbr>View</a>
 					</li>
 					<li class=" tsd-kind-class">
+						<a href="classes/englishanalyzer.html" class="tsd-kind-icon">English<wbr>Analyzer</a>
+					</li>
+					<li class=" tsd-kind-class">
 						<a href="classes/fsstorage.html" class="tsd-kind-icon">FSStorage</a>
 					</li>
 					<li class=" tsd-kind-class">
 						<a href="classes/fulltextsearch.html" class="tsd-kind-icon">Full<wbr>Text<wbr>Search</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/germananalyzer.html" class="tsd-kind-icon">German<wbr>Analyzer</a>
 					</li>
 					<li class=" tsd-kind-class">
 						<a href="classes/indexedstorage.html" class="tsd-kind-icon">Indexed<wbr>Storage</a>
@@ -654,7 +592,7 @@
 					<li class=" tsd-kind-type-alias">
 						<a href="globals.html#clonemethod" class="tsd-kind-icon">Clone<wbr>Method</a>
 					</li>
-					<li class=" tsd-kind-type-alias">
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
 						<a href="globals.html#doc" class="tsd-kind-icon">Doc</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
@@ -683,12 +621,6 @@
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#whitespacetokenizer" class="tsd-kind-icon">whitespace<wbr>Tokenizer</a>
-					</li>
-					<li class=" tsd-kind-object-literal">
-						<a href="globals.html#englishanalyzer" class="tsd-kind-icon">English<wbr>Analyzer</a>
-					</li>
-					<li class=" tsd-kind-object-literal">
-						<a href="globals.html#germananalyzer" class="tsd-kind-icon">German<wbr>Analyzer</a>
 					</li>
 				</ul>
 			</nav>

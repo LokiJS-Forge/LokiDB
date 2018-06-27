@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>CopyOptions | @lokidb/lokidb-src</title>
+	<title>GermanAnalyzer | @lokidb/lokidb-src</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,13 +54,10 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../classes/loki.html">Loki</a>
-				</li>
-				<li>
-					<a href="loki.copyoptions.html">CopyOptions</a>
+					<a href="germananalyzer.html">GermanAnalyzer</a>
 				</li>
 			</ul>
-			<h1>Interface CopyOptions</h1>
+			<h1>Class GermanAnalyzer</h1>
 		</div>
 	</div>
 </header>
@@ -71,8 +68,14 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">CopyOptions</span>
+						<span class="target">GermanAnalyzer</span>
 					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel">
+				<h3>Implements</h3>
+				<ul class="tsd-hierarchy">
+					<li><a href="../interfaces/analyzer.html" class="tsd-signature-type">Analyzer</a></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -82,7 +85,8 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="loki.copyoptions.html#removenonserializable" class="tsd-kind-icon">remove<wbr>Non<wbr>Serializable</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="germananalyzer.html#token_filter" class="tsd-kind-icon">token_<wbr>filter</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="germananalyzer.html#tokenizer" class="tsd-kind-icon">tokenizer</a></li>
 							</ul>
 						</section>
 					</div>
@@ -90,13 +94,25 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="removenonserializable" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> remove<wbr>Non<wbr>Serializable</h3>
-					<div class="tsd-signature tsd-kind-icon">remove<wbr>Non<wbr>Serializable<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="token_filter" class="tsd-anchor"></a>
+					<h3>token_<wbr>filter</h3>
+					<div class="tsd-signature tsd-kind-icon">token_<wbr>filter<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">(Anonymous function)</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[trimmer, stemmer, stopWordFilter]</span></div>
 					<aside class="tsd-sources">
+						<p>Implementation of <a href="../interfaces/analyzer.html">Analyzer</a>.<a href="../interfaces/analyzer.html#token_filter">token_filter</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/loki.ts#L1044">loki/src/loki.ts:1044</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/full-text-search-language-de/src/german_analyzer.ts#L341">full-text-search-language-de/src/german_analyzer.ts:341</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="tokenizer" class="tsd-anchor"></a>
+					<h3>tokenizer</h3>
+					<div class="tsd-signature tsd-kind-icon">tokenizer<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">splitter</span><span class="tsd-signature-symbol"> =&nbsp;splitter</span></div>
+					<aside class="tsd-sources">
+						<p>Implementation of <a href="../interfaces/analyzer.html">Analyzer</a>.<a href="../interfaces/analyzer.html#tokenizer">tokenizer</a></p>
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/full-text-search-language-de/src/german_analyzer.ts#L340">full-text-search-language-de/src/german_analyzer.ts:340</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -115,15 +131,13 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class">
-						<a href="../classes/loki.html" class="tsd-kind-icon">Loki</a>
+						<a href="germananalyzer.html" class="tsd-kind-icon">German<wbr>Analyzer</a>
 						<ul>
-							<li class="current tsd-kind-interface tsd-parent-kind-class">
-								<a href="loki.copyoptions.html" class="tsd-kind-icon">Copy<wbr>Options</a>
-								<ul>
-									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="loki.copyoptions.html#removenonserializable" class="tsd-kind-icon">remove<wbr>Non<wbr>Serializable</a>
-									</li>
-								</ul>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="germananalyzer.html#token_filter" class="tsd-kind-icon">token_<wbr>filter</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="germananalyzer.html#tokenizer" class="tsd-kind-icon">tokenizer</a>
 							</li>
 						</ul>
 					</li>
