@@ -87,7 +87,7 @@ export interface MatchQuery extends BaseQuery<"match"> {
   /// The text.
   value: string;
   /// The amount of minimum matching sub queries.
-  minimum_should_match?: number;
+  minimum_should_match?: number | string;
   /// The boolean operator.
   operator?: "and" | "or";
   /// The the maximal allowed fuzziness.
@@ -124,7 +124,7 @@ export interface BoolQuery extends BaseQuery<"bool"> {
   // The array of not queries.
   not?: QueryTypes[];
   /// The amount of minimum matching sub queries.
-  minimum_should_match?: number;
+  minimum_should_match?: number | string;
 }
 
 /**

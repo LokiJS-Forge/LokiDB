@@ -11,7 +11,6 @@ import {lowercaseTokenFilter} from "../../src/analyzer/token_filter";
 const INDEX_NAME = "test_index";
 const INDEX_TYPE = "MockUp";
 const FIELD_NAME_1 = "msg";
-const COMPARE_PRECISION = 1e3;
 
 function fieldLengthES5(fieldLength: number) {
   // Lucene 5 uses a SmallFloat (size of 1 byte) to store the field length in scoring.
@@ -212,10 +211,7 @@ describe("Compare scoring against elasticsearch", () => {
               continue;
             }
 
-            let ftsScore = Math.round(ftsHits[esID].score * COMPARE_PRECISION) / COMPARE_PRECISION;
-            let esScore = Math.round(esHits[j]._score * COMPARE_PRECISION) / COMPARE_PRECISION;
-
-            expect(ftsScore).toEqual(esScore);
+            expect(ftsHits[esID].score).toBeCloseTo(esHits[j]._score, 4);
           }
           done();
         })

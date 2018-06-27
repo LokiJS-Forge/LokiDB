@@ -8,6 +8,42 @@ import QueryResults = Scorer.QueryResults;
 import Index = InvertedIndex.Index;
 import {analyze, Analyzer} from "./analyzer/analyzer";
 
+function calculateMinShouldMatch(optionalClauseCount: number, spec: undefined | number | string): number {
+  if (spec === undefined)  {
+    return 1;
+  }
+  if (typeof spec === "number") {
+    return (spec < 0) ? optionalClauseCount + spec : spec;
+  }
+
+  let result = optionalClauseCount;
+  if (spec.includes("<")) {
+    // Parse conditional minimumShouldMatch.;
+    for (const s of spec.split(" ")) {
+      const parts = s.split("<");
+      const upperBound = parseInt(parts[0]);
+      if (optionalClauseCount <= upperBound) {
+        return result;
+      } else {
+        result = calculateMinShouldMatch(optionalClauseCount, parts[1]);
+      }
+    }
+    return result;
+  }
+
+  if (spec.includes("%")) {
+    // Parse percentage.
+    const percent = parseInt(spec.slice(0, -1));
+    const calc = (result * percent) * (1 / 100);
+    result = (calc < 0) ? result + Math.ceil(calc) : Math.floor(calc);
+  } else {
+    const calc = parseInt(spec);
+    result = (calc < 0) ? result + calc : calc;
+  }
+
+  return (result < 1) ? 1 : result;
+}
+
 /**
  * @hidden
  */
@@ -70,26 +106,13 @@ export class IndexSearcher {
         if (query.should !== undefined) {
           const shouldDocs = this._getAll(query.should, doScoring);
 
-          let msm = 1;
-          // TODO: Enable percent and ranges.
-          if (query.minimum_should_match !== undefined) {
-            msm = query.minimum_should_match;
-            let shouldLength = query.should.length;
-            if (msm <= -1) {
-              msm = shouldLength + msm;
-            } else if (msm < 0) {
-              msm = shouldLength - Math.floor(shouldLength * -msm);
-            } else if (msm < 1) {
-              msm = Math.floor(shouldLength * msm);
-            }
-          }
-
           let empty = false;
           if (queryResults === null) {
             empty = true;
             queryResults = new Map();
           }
 
+          const msm = Math.max(1, calculateMinShouldMatch(query.should.length, query.minimum_should_match));
           if (empty && msm === 1) {
             // Take all documents.
             queryResults = shouldDocs;
