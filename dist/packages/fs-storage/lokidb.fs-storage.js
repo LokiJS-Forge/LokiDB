@@ -2,12 +2,12 @@
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory(require("fs"));
 	else if(typeof define === 'function' && define.amd)
-		define(["fs"], factory);
+		define("@lokidb/fs-storage", ["fs"], factory);
 	else if(typeof exports === 'object')
 		exports["@lokidb/fs-storage"] = factory(require("fs"));
 	else
-{		root["@lokidb/fs-storage"] = factory(root["fs"]); root["LokiFsStorage"] = root["@lokidb/fs-storage"].default;}
-})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE_3__) {
+		{ root["@lokidb/fs-storage"] = factory(root["fs"]); root["LokiFsStorage"] = root["@lokidb/fs-storage"].default; }
+})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE__0__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -46,12 +46,32 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
 /******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
 /******/ 	};
 /******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
@@ -69,19 +89,81 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
 /******/
+/******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE__0__;
+
+/***/ }),
+/* 1 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__common_plugin__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_fs__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_fs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_fs__);
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return PLUGINS; });
+function getGlobal() {
+    let glob;
+    (function (global) {
+        glob = global;
+    })(global !== undefined && global || this);
+    return glob;
+}
+function create() {
+    const global = getGlobal();
+    const sym = Symbol.for("LOKI");
+    if (global[sym] === undefined) {
+        global[sym] = {};
+    }
+    return global[sym];
+}
+/**
+ * @hidden
+ */
+const PLUGINS = create();
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(2)))
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1, eval)("this");
+} catch (e) {
+	// This works if the window reference is available
+	if (typeof window === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FSStorage", function() { return FSStorage; });
+/* harmony import */ var _common_plugin__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(0);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_1__);
 
 
 /**
@@ -92,13 +174,13 @@ class FSStorage {
      * Registers the fs storage as plugin.
      */
     static register() {
-        __WEBPACK_IMPORTED_MODULE_0__common_plugin__["a" /* PLUGINS */]["FSStorage"] = FSStorage;
+        _common_plugin__WEBPACK_IMPORTED_MODULE_0__[/* PLUGINS */ "a"]["FSStorage"] = FSStorage;
     }
     /**
      * Deregisters the fs storage as plugin.
      */
     static deregister() {
-        delete __WEBPACK_IMPORTED_MODULE_0__common_plugin__["a" /* PLUGINS */]["FSStorage"];
+        delete _common_plugin__WEBPACK_IMPORTED_MODULE_0__[/* PLUGINS */ "a"]["FSStorage"];
     }
     /**
      * Load data from file, will throw an error if the file does not exist
@@ -107,9 +189,9 @@ class FSStorage {
      */
     loadDatabase(dbname) {
         return new Promise((resolve, reject) => {
-            __WEBPACK_IMPORTED_MODULE_1_fs__["stat"](dbname, (err, stats) => {
+            fs__WEBPACK_IMPORTED_MODULE_1__["stat"](dbname, (err, stats) => {
                 if (!err && stats.isFile()) {
-                    __WEBPACK_IMPORTED_MODULE_1_fs__["readFile"](dbname, {
+                    fs__WEBPACK_IMPORTED_MODULE_1__["readFile"](dbname, {
                         encoding: "utf8"
                     }, function readFileCallback(err, data) {
                         if (err) {
@@ -135,12 +217,12 @@ class FSStorage {
     saveDatabase(dbname, dbstring) {
         const tmpdbname = dbname + "~";
         return new Promise((resolve, reject) => {
-            __WEBPACK_IMPORTED_MODULE_1_fs__["writeFile"](tmpdbname, dbstring, (err) => {
+            fs__WEBPACK_IMPORTED_MODULE_1__["writeFile"](tmpdbname, dbstring, (err) => {
                 if (err) {
                     reject(err);
                 }
                 else {
-                    __WEBPACK_IMPORTED_MODULE_1_fs__["rename"](tmpdbname, dbname, (err) => {
+                    fs__WEBPACK_IMPORTED_MODULE_1__["rename"](tmpdbname, dbname, (err) => {
                         if (err) {
                             reject(err);
                         }
@@ -160,7 +242,7 @@ class FSStorage {
      */
     deleteDatabase(dbname) {
         return new Promise((resolve, reject) => {
-            __WEBPACK_IMPORTED_MODULE_1_fs__["unlink"](dbname, function deleteDatabaseCallback(err) {
+            fs__WEBPACK_IMPORTED_MODULE_1__["unlink"](dbname, function deleteDatabaseCallback(err) {
                 if (err) {
                     reject(err);
                 }
@@ -171,71 +253,7 @@ class FSStorage {
         });
     }
 }
-/* harmony export (immutable) */ __webpack_exports__["FSStorage"] = FSStorage;
 
-
-
-/***/ }),
-/* 1 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {function getGlobal() {
-    let glob;
-    (function (global) {
-        glob = global;
-    })(global !== undefined && global || this);
-    return glob;
-}
-function create() {
-    const global = getGlobal();
-    const sym = Symbol.for("LOKI");
-    if (global[sym] === undefined) {
-        global[sym] = {};
-    }
-    return global[sym];
-}
-/**
- * @hidden
- */
-const PLUGINS = create();
-/* harmony export (immutable) */ __webpack_exports__["a"] = PLUGINS;
-
-
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(2)))
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1,eval)("this");
-} catch(e) {
-	// This works if the window reference is available
-	if(typeof window === "object")
-		g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports) {
-
-module.exports = __WEBPACK_EXTERNAL_MODULE_3__;
 
 /***/ })
 /******/ ]);

@@ -59,7 +59,7 @@ export interface ExistsQuery extends BaseQuery<"exists"> {
 export interface MatchQuery extends BaseQuery<"match"> {
     field: string;
     value: string;
-    minimum_should_match?: number;
+    minimum_should_match?: number | string;
     operator?: "and" | "or";
     fuzziness?: 0 | 1 | 2 | "AUTO";
     prefix_length?: number;
@@ -84,7 +84,7 @@ export interface BoolQuery extends BaseQuery<"bool"> {
     filter?: QueryTypes[];
     should?: QueryTypes[];
     not?: QueryTypes[];
-    minimum_should_match?: number;
+    minimum_should_match?: number | string;
 }
 /**
  * Union type of possible query types.

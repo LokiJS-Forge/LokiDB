@@ -9,8 +9,8 @@ export declare class Scorer {
     private _cache;
     constructor(invIdxs: Dict<InvertedIndex>);
     setDirty(): void;
-    score(fieldName: string, boost: number, termIdx: InvertedIndex.Index, doScoring: boolean, queryResults: Scorer.QueryResults, term: number[], df?: number): void;
-    scoreConstant(boost: number, docId: number, queryResults: Scorer.QueryResults): Map<number, Scorer.QueryResult[]>;
+    score(fieldName: string, boost: number, termIdx: InvertedIndex.Index, doScoring: boolean | null, queryResults: Scorer.QueryResults, term: number[], df?: number): void;
+    scoreConstant(boost: number, docId: InvertedIndex.DocumentIndex, queryResults: Scorer.QueryResults): Scorer.QueryResults;
     finalScore(query: Query, queryResults: Scorer.QueryResults): Scorer.ScoreResults;
     private static _calculateFieldLength(fieldLength);
     private _getCache(fieldName);
@@ -36,7 +36,7 @@ export declare namespace Scorer {
         fieldName?: string;
         term?: number[];
     }
-    type QueryResults = Map<number, QueryResult[]>;
+    type QueryResults = Map<InvertedIndex.DocumentIndex, QueryResult[]>;
     interface BM25Explanation {
         boost: number;
         score: number;

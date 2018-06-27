@@ -9,38 +9,33 @@ export declare class LokiEventEmitter {
     /**
      * A map, with each property being an array of callbacks.
      */
-    protected events: object;
+    protected _events: object;
     /**
      * Determines whether or not the callbacks associated with each event should happen in an async fashion or not.
      * Default is false, which means events are synchronous
      */
-    protected asyncListeners: boolean;
-    constructor();
+    protected _asyncListeners: boolean;
     /**
-     * on(eventName, listener) - adds a listener to the queue of callbacks associated to an event
+     * Adds a listener to the queue of callbacks associated to an event
      * @param {string|string[]} eventName - the name(s) of the event(s) to listen to
      * @param {function} listener - callback function of listener to attach
      * @returns {int} the index of the callback in the array of listeners for a particular event
      */
     on(eventName: string | string[], listener: Function): Function;
     /**
-     * emit(eventName, data) - emits a particular event
+     * Emits a particular event
      * with the option of passing optional parameters which are going to be processed by the callback
      * provided signatures match (i.e. if passing emit(event, arg0, arg1) the listener should take two parameters)
      * @param {string} eventName - the name of the event
      * @param {object} data - optional object passed with the event
      */
-    emit(eventName: string, ...data: any[]): void;
+    protected emit(eventName: string, ...data: any[]): void;
     /**
-     * Alias of LokiEventEmitter.prototype.on
-     * addListener(eventName, listener) - adds a listener to the queue of callbacks associated to an event
-     * @param {string|string[]} eventName - the name(s) of the event(s) to listen to
-     * @param {function} listener - callback function of listener to attach
-     * @returns {int} the index of the callback in the array of listeners for a particular event
+     * Alias of EventEmitter.on().
      */
     addListener(eventName: string | string[], listener: Function): Function;
     /**
-     * removeListener() - removes the listener at position 'index' from the event 'eventName'
+     * Removes the listener at position 'index' from the event 'eventName'
      * @param {string|string[]} eventName - the name(s) of the event(s) which the listener is attached to
      * @param {function} listener - the listener callback function to remove from emitter
      */

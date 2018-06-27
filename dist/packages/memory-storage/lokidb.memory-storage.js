@@ -2,11 +2,11 @@
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
 	else if(typeof define === 'function' && define.amd)
-		define([], factory);
+		define("@lokidb/memory-storage", [], factory);
 	else if(typeof exports === 'object')
 		exports["@lokidb/memory-storage"] = factory();
 	else
-{		root["@lokidb/memory-storage"] = factory(); root["LokiMemoryStorage"] = root["@lokidb/memory-storage"].default;}
+		{ root["@lokidb/memory-storage"] = factory(); root["LokiMemoryStorage"] = root["@lokidb/memory-storage"].default; }
 })(typeof self !== 'undefined' ? self : this, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -46,12 +46,32 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
 /******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
 /******/ 	};
 /******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
@@ -69,8 +89,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
 /******/
+/******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -78,37 +99,57 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__memory_storage__ = __webpack_require__(1);
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "MemoryStorage", function() { return __WEBPACK_IMPORTED_MODULE_0__memory_storage__["a"]; });
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return PLUGINS; });
+function getGlobal() {
+    let glob;
+    (function (global) {
+        glob = global;
+    })(global !== undefined && global || this);
+    return glob;
+}
+function create() {
+    const global = getGlobal();
+    const sym = Symbol.for("LOKI");
+    if (global[sym] === undefined) {
+        global[sym] = {};
+    }
+    return global[sym];
+}
+/**
+ * @hidden
+ */
+const PLUGINS = create();
 
-
-/* harmony default export */ __webpack_exports__["default"] = (__WEBPACK_IMPORTED_MODULE_0__memory_storage__["a" /* MemoryStorage */]);
-
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(2)))
 
 /***/ }),
 /* 1 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__common_plugin__ = __webpack_require__(2);
+__webpack_require__.r(__webpack_exports__);
+
+// EXTERNAL MODULE: ./packages/common/plugin.ts
+var common_plugin = __webpack_require__(0);
+
+// CONCATENATED MODULE: ./packages/memory-storage/src/memory_storage.ts
 
 /**
  * An in-memory persistence adapter for an in-memory database.
  * This simple 'key/value' adapter is intended for unit testing and diagnostics.
  */
-class MemoryStorage {
+class memory_storage_MemoryStorage {
     /**
      * Registers the local storage as plugin.
      */
     static register() {
-        __WEBPACK_IMPORTED_MODULE_0__common_plugin__["a" /* PLUGINS */]["MemoryStorage"] = MemoryStorage;
+        common_plugin["a" /* PLUGINS */]["MemoryStorage"] = memory_storage_MemoryStorage;
     }
     /**
      * Deregisters the local storage as plugin.
      */
     static deregister() {
-        delete __WEBPACK_IMPORTED_MODULE_0__common_plugin__["a" /* PLUGINS */]["MemoryStorage"];
+        delete common_plugin["a" /* PLUGINS */]["MemoryStorage"];
     }
     /**
      * @param {object} options - memory storage options
@@ -198,41 +239,16 @@ class MemoryStorage {
         return Promise.resolve();
     }
 }
-/* harmony export (immutable) */ __webpack_exports__["a"] = MemoryStorage;
 
+// CONCATENATED MODULE: ./packages/memory-storage/src/index.ts
+/* concated harmony reexport */__webpack_require__.d(__webpack_exports__, "MemoryStorage", function() { return memory_storage_MemoryStorage; });
+
+
+/* harmony default export */ var src = __webpack_exports__["default"] = (memory_storage_MemoryStorage);
 
 
 /***/ }),
 /* 2 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {function getGlobal() {
-    let glob;
-    (function (global) {
-        glob = global;
-    })(global !== undefined && global || this);
-    return glob;
-}
-function create() {
-    const global = getGlobal();
-    const sym = Symbol.for("LOKI");
-    if (global[sym] === undefined) {
-        global[sym] = {};
-    }
-    return global[sym];
-}
-/**
- * @hidden
- */
-const PLUGINS = create();
-/* harmony export (immutable) */ __webpack_exports__["a"] = PLUGINS;
-
-
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(3)))
-
-/***/ }),
-/* 3 */
 /***/ (function(module, exports) {
 
 var g;
@@ -244,11 +260,10 @@ g = (function() {
 
 try {
 	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1,eval)("this");
-} catch(e) {
+	g = g || Function("return this")() || (1, eval)("this");
+} catch (e) {
 	// This works if the window reference is available
-	if(typeof window === "object")
-		g = window;
+	if (typeof window === "object") g = window;
 }
 
 // g can still be undefined, but nothing to do about it...

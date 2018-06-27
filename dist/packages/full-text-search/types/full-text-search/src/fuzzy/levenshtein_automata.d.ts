@@ -17,5 +17,5 @@ export declare class LevenshteinAutomata {
      * @returns {Automaton}
      */
     toAutomaton(): Automaton;
-    private getVector(x, pos, end);
+    private _getVector(x, pos, end);
 }

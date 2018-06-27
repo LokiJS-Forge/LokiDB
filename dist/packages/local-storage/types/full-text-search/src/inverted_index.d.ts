@@ -1,4 +1,3 @@
-import Index = InvertedIndex.Index;
 import { Analyzer } from "./analyzer/analyzer";
 /**
  * Converts a string into an array of code points.
@@ -12,36 +11,30 @@ export declare function toCodePoints(str: string): number[];
  * @hidden
  */
 export declare class InvertedIndex {
+    analyzer: Analyzer;
+    docCount: number;
+    docStore: Map<InvertedIndex.DocumentIndex, InvertedIndex.DocStore>;
+    totalFieldLength: number;
+    root: InvertedIndex.Index;
     private _store;
     private _optimizeChanges;
-    private _analyzer;
-    private _docCount;
-    private _docStore;
-    private _totalFieldLength;
-    private _root;
     /**
      * @param {boolean} [options.store=true] - inverted index will be stored at serialization rather than rebuilt on load
      * @param {boolean} [options.optimizeChanges=true] - flag to
      * @param {Analyzer} [options.analyzer=] - the analyzer of this inverted index
      */
     constructor(options?: InvertedIndex.FieldOptions);
-    store: boolean;
-    readonly analyzer: Analyzer;
-    readonly documentCount: number;
-    readonly documentStore: Map<number, InvertedIndex.DocStore>;
-    readonly totalFieldLength: number;
-    readonly root: Index;
     /**
      * Adds defined fields of a document to the inverted index.
      * @param {string} field - the field to add
      * @param {number} docId - the doc id of the field
      */
-    insert(field: string, docId: number): void;
+    insert(field: string, docId: InvertedIndex.DocumentIndex): void;
     /**
      * Removes all relevant terms of a document from the inverted index.
      * @param {number} docId - the document.
      */
-    remove(docId: number): void;
+    remove(docId: InvertedIndex.DocumentIndex): void;
     /**
      * Gets the term index of a term.
      * @param {string} term - the term
@@ -49,7 +42,7 @@ export declare class InvertedIndex {
      * @param {number} start - the position of the term string to start from
      * @return {object} - The term index or null if the term is not in the term tree.
      */
-    static getTermIndex(term: number[], root: Index, start?: number): Index;
+    static getTermIndex(term: number[], root: InvertedIndex.Index, start?: number): InvertedIndex.Index;
     /**
      * Extends a term index to all available term leafs.
      * @param {object} idx - the term index to start from
@@ -57,34 +50,20 @@ export declare class InvertedIndex {
      * @param {Array} termIndices - all extended indices with their term
      * @returns {Array} - Array with term indices and extension
      */
-    static extendTermIndex(idx: Index, term?: number[], termIndices?: InvertedIndex.IndexTerm[]): InvertedIndex.IndexTerm[];
+    static extendTermIndex(idx: InvertedIndex.Index, term?: number[], termIndices?: InvertedIndex.IndexTerm[]): InvertedIndex.IndexTerm[];
     /**
      * Serialize the inverted index.
      * @returns {{docStore: *, _fields: *, index: *}}
      */
-    toJSON(): {
-        _store: boolean;
-        _optimizeChanges: boolean;
-        _docCount: number;
-        _docStore: [number, InvertedIndex.DocStore][];
-        _totalFieldLength: number;
-        _root: InvertedIndex.SerializedIndex;
-    } | {
-        _store: boolean;
-        _optimizeChanges: boolean;
-        _docCount?: undefined;
-        _docStore?: undefined;
-        _totalFieldLength?: undefined;
-        _root?: undefined;
-    };
+    toJSON(): InvertedIndex.Serialization;
     /**
      * Deserialize the inverted index.
      * @param {{docStore: *, _fields: *, index: *}} serialized - The serialized inverted index.
      * @param {Analyzer} analyzer[undefined] - an analyzer
      */
     static fromJSONObject(serialized: InvertedIndex.Serialization, analyzer?: Analyzer): InvertedIndex;
-    private static serializeIndex(idx);
-    private static deserializeIndex(serialized);
+    private static _serializeIndex(idx);
+    private static _deserializeIndex(serialized);
     /**
      * Set parent of to each index and regenerate the indexRef.
      * @param {Index} index - the index
@@ -108,7 +87,7 @@ export declare namespace InvertedIndex {
         analyzer?: Analyzer;
     }
     type Index = Map<number, any> & {
-        dc?: Map<number, number>;
+        dc?: Map<DocumentIndex, number>;
         df?: number;
         pa?: Index;
     };
@@ -119,21 +98,27 @@ export declare namespace InvertedIndex {
     interface SerializedIndex {
         d?: {
             df: number;
-            dc: [number, number][];
+            dc: [DocumentIndex, number][];
         };
         k?: number[];
         v?: SerializedIndex[];
     }
-    interface Serialization {
-        _store: boolean;
+    type Serialization = SpareSerialization | FullSerialization;
+    type SpareSerialization = {
+        _store: false;
         _optimizeChanges: boolean;
-        _docCount?: number;
-        _docStore?: Map<number, DocStore>;
-        _totalFieldLength?: number;
-        _root?: SerializedIndex;
-    }
+    };
+    type FullSerialization = {
+        _store: true;
+        _optimizeChanges: boolean;
+        docCount: number;
+        docStore: [DocumentIndex, DocStore][];
+        totalFieldLength: number;
+        root: SerializedIndex;
+    };
     interface DocStore {
         fieldLength?: number;
         indexRef?: Index[];
     }
+    type DocumentIndex = number | string;
 }

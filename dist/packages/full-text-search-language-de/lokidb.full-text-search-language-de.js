@@ -2,12 +2,12 @@
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory(require("@lokidb/full-text-search-language"));
 	else if(typeof define === 'function' && define.amd)
-		define(["@lokidb/full-text-search-language"], factory);
+		define("@lokidb/full-text-search-language-de", ["@lokidb/full-text-search-language"], factory);
 	else if(typeof exports === 'object')
 		exports["@lokidb/full-text-search-language-de"] = factory(require("@lokidb/full-text-search-language"));
 	else
-{		root["@lokidb/full-text-search-language-de"] = factory(root["@lokidb/full-text-search-language"]); root["LokiFullTextSearchLanguageDe"] = root["@lokidb/full-text-search-language-de"].default;}
-})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE_2__) {
+		{ root["@lokidb/full-text-search-language-de"] = factory(root["@lokidb/full-text-search-language"]); root["LokiFullTextSearchLanguageDe"] = root["@lokidb/full-text-search-language-de"].default; }
+})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE__0__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -46,12 +46,32 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
 /******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
 /******/ 	};
 /******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
@@ -69,57 +89,55 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
 /******/
+/******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ (function(module, exports) {
 
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__german_analyzer__ = __webpack_require__(1);
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "GermanAnalyzer", function() { return __WEBPACK_IMPORTED_MODULE_0__german_analyzer__["a"]; });
-
-
-/* harmony default export */ __webpack_exports__["default"] = (__WEBPACK_IMPORTED_MODULE_0__german_analyzer__["a" /* GermanAnalyzer */]);
-
+module.exports = __WEBPACK_EXTERNAL_MODULE__0__;
 
 /***/ }),
 /* 1 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__);
+__webpack_require__.r(__webpack_exports__);
 
-class GermanStemmer {
+// EXTERNAL MODULE: external "@lokidb/full-text-search-language"
+var full_text_search_language_ = __webpack_require__(0);
+
+// CONCATENATED MODULE: ./packages/full-text-search-language-de/src/german_analyzer.ts
+
+class german_analyzer_GermanStemmer {
     constructor() {
         // Write everything in the constructor to reduce code size and increase performance.
         // The original implementation uses a ES5 anonymous function class.
-        let a_0 = [new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("", -1, 6), new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("U", 0, 2),
-            new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("Y", 0, 1), new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("\u00E4", 0, 3),
-            new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("\u00F6", 0, 4), new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("\u00FC", 0, 5)
+        let a_0 = [new full_text_search_language_["Among"]("", -1, 6), new full_text_search_language_["Among"]("U", 0, 2),
+            new full_text_search_language_["Among"]("Y", 0, 1), new full_text_search_language_["Among"]("\u00E4", 0, 3),
+            new full_text_search_language_["Among"]("\u00F6", 0, 4), new full_text_search_language_["Among"]("\u00FC", 0, 5)
         ];
         let a_1 = [
-            new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("e", -1, 2), new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("em", -1, 1),
-            new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("en", -1, 2), new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("ern", -1, 1),
-            new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("er", -1, 1), new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("s", -1, 3),
-            new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("es", 5, 2)
+            new full_text_search_language_["Among"]("e", -1, 2), new full_text_search_language_["Among"]("em", -1, 1),
+            new full_text_search_language_["Among"]("en", -1, 2), new full_text_search_language_["Among"]("ern", -1, 1),
+            new full_text_search_language_["Among"]("er", -1, 1), new full_text_search_language_["Among"]("s", -1, 3),
+            new full_text_search_language_["Among"]("es", 5, 2)
         ];
-        let a_2 = [new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("en", -1, 1),
-            new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("er", -1, 1), new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("st", -1, 2),
-            new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("est", 2, 1)
+        let a_2 = [new full_text_search_language_["Among"]("en", -1, 1),
+            new full_text_search_language_["Among"]("er", -1, 1), new full_text_search_language_["Among"]("st", -1, 2),
+            new full_text_search_language_["Among"]("est", 2, 1)
         ];
-        let a_3 = [new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("ig", -1, 1),
-            new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("lich", -1, 1)
+        let a_3 = [new full_text_search_language_["Among"]("ig", -1, 1),
+            new full_text_search_language_["Among"]("lich", -1, 1)
         ];
-        let a_4 = [new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("end", -1, 1),
-            new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("ig", -1, 2), new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("ung", -1, 1),
-            new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("lich", -1, 3), new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("isch", -1, 2),
-            new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("ik", -1, 2), new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("heit", -1, 3),
-            new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["Among"]("keit", -1, 4)
+        let a_4 = [new full_text_search_language_["Among"]("end", -1, 1),
+            new full_text_search_language_["Among"]("ig", -1, 2), new full_text_search_language_["Among"]("ung", -1, 1),
+            new full_text_search_language_["Among"]("lich", -1, 3), new full_text_search_language_["Among"]("isch", -1, 2),
+            new full_text_search_language_["Among"]("ik", -1, 2), new full_text_search_language_["Among"]("heit", -1, 3),
+            new full_text_search_language_["Among"]("keit", -1, 4)
         ];
         let g_v = [17, 65, 16, 1, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 8, 0, 32, 8
@@ -131,7 +149,7 @@ class GermanStemmer {
         let I_x;
         let I_p2;
         let I_p1;
-        let sbp = new __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["SnowballProgram"]();
+        let sbp = new full_text_search_language_["SnowballProgram"]();
         this.setCurrent = (word) => {
             sbp.setCurrent(word);
         };
@@ -385,28 +403,28 @@ function splitter(str) {
     }
     return trimmedTokens;
 }
-const st = new GermanStemmer();
+const st = new german_analyzer_GermanStemmer();
 function stemmer(token) {
     st.setCurrent(token);
     st.stem();
     return st.getCurrent();
 }
-const trimmer = Object(__WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["generateTrimmer"])("A-Za-z\xAA\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02B8\u02E0-\u02E4\u1D00-\u1D25\u1D2C-\u1D5C\u1D62-\u1D65\u1D6B-\u1D77\u1D79-\u1DBE\u1E00-\u1EFF\u2071\u207F\u2090-\u209C\u212A\u212B\u2132\u214E\u2160-\u2188\u2C60-\u2C7F\uA722-\uA787\uA78B-\uA7AD\uA7B0-\uA7B7\uA7F7-\uA7FF\uAB30-\uAB5A\uAB5C-\uAB64\uFB00-\uFB06\uFF21-\uFF3A\uFF41-\uFF5A");
-const stopWordFilter = Object(__WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["generateStopWordFilter"])(["aber", "alle", "allem", "allen", "aller", "alles", "als", "also", "am", "an", "ander", "andere", "anderem", "anderen", "anderer", "anderes", "anderm", "andern", "anderr", "anders", "auch", "auf", "aus", "bei", "bin", "bis", "bist", "da", "damit", "dann", "das", "dasselbe", "dazu", "daß", "dein", "deine", "deinem", "deinen", "deiner", "deines", "dem", "demselben", "den", "denn", "denselben", "der", "derer", "derselbe", "derselben", "des", "desselben", "dessen", "dich", "die", "dies", "diese", "dieselbe", "dieselben", "diesem", "diesen", "dieser", "dieses", "dir", "doch", "dort", "du", "durch", "ein", "eine", "einem", "einen", "einer", "eines", "einig", "einige", "einigem", "einigen", "einiger", "einiges", "einmal", "er", "es", "etwas", "euch", "euer", "eure", "eurem", "euren", "eurer", "eures", "für", "gegen", "gewesen", "hab", "habe", "haben", "hat", "hatte", "hatten", "hier", "hin", "hinter", "ich", "ihm", "ihn", "ihnen", "ihr", "ihre", "ihrem", "ihren", "ihrer", "ihres", "im", "in", "indem", "ins", "ist", "jede", "jedem", "jeden", "jeder", "jedes", "jene", "jenem", "jenen", "jener", "jenes", "jetzt", "kann", "kein", "keine", "keinem", "keinen", "keiner", "keines", "können", "könnte", "machen", "man", "manche", "manchem", "manchen", "mancher", "manches", "mein", "meine", "meinem", "meinen", "meiner", "meines", "mich", "mir", "mit", "muss", "musste", "nach", "nicht", "nichts", "noch", "nun", "nur", "ob", "oder", "ohne", "sehr", "sein", "seine", "seinem", "seinen", "seiner", "seines", "selbst", "sich", "sie", "sind", "so", "solche", "solchem", "solchen", "solcher", "solches", "soll", "sollte", "sondern", "sonst", "um", "und", "uns", "unse", "unsem", "unsen", "unser", "unses", "unter", "viel", "vom", "von", "vor", "war", "waren", "warst", "was", "weg", "weil", "weiter", "welche", "welchem", "welchen", "welcher", "welches", "wenn", "werde", "werden", "wie", "wieder", "will", "wir", "wird", "wirst", "wo", "wollen", "wollte", "während", "würde", "würden", "zu", "zum", "zur", "zwar", "zwischen", "über"]);
-// Create, configure and export the tokenizer.
-const GermanAnalyzer = {
-    tokenizer: splitter,
-    token_filter: [trimmer, stemmer, stopWordFilter]
-};
-/* harmony export (immutable) */ __webpack_exports__["a"] = GermanAnalyzer;
+const trimmer = Object(full_text_search_language_["generateTrimmer"])("A-Za-z\xAA\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02B8\u02E0-\u02E4\u1D00-\u1D25\u1D2C-\u1D5C\u1D62-\u1D65\u1D6B-\u1D77\u1D79-\u1DBE\u1E00-\u1EFF\u2071\u207F\u2090-\u209C\u212A\u212B\u2132\u214E\u2160-\u2188\u2C60-\u2C7F\uA722-\uA787\uA78B-\uA7AD\uA7B0-\uA7B7\uA7F7-\uA7FF\uAB30-\uAB5A\uAB5C-\uAB64\uFB00-\uFB06\uFF21-\uFF3A\uFF41-\uFF5A");
+const stopWordFilter = Object(full_text_search_language_["generateStopWordFilter"])(["aber", "alle", "allem", "allen", "aller", "alles", "als", "also", "am", "an", "ander", "andere", "anderem", "anderen", "anderer", "anderes", "anderm", "andern", "anderr", "anders", "auch", "auf", "aus", "bei", "bin", "bis", "bist", "da", "damit", "dann", "das", "dasselbe", "dazu", "daß", "dein", "deine", "deinem", "deinen", "deiner", "deines", "dem", "demselben", "den", "denn", "denselben", "der", "derer", "derselbe", "derselben", "des", "desselben", "dessen", "dich", "die", "dies", "diese", "dieselbe", "dieselben", "diesem", "diesen", "dieser", "dieses", "dir", "doch", "dort", "du", "durch", "ein", "eine", "einem", "einen", "einer", "eines", "einig", "einige", "einigem", "einigen", "einiger", "einiges", "einmal", "er", "es", "etwas", "euch", "euer", "eure", "eurem", "euren", "eurer", "eures", "für", "gegen", "gewesen", "hab", "habe", "haben", "hat", "hatte", "hatten", "hier", "hin", "hinter", "ich", "ihm", "ihn", "ihnen", "ihr", "ihre", "ihrem", "ihren", "ihrer", "ihres", "im", "in", "indem", "ins", "ist", "jede", "jedem", "jeden", "jeder", "jedes", "jene", "jenem", "jenen", "jener", "jenes", "jetzt", "kann", "kein", "keine", "keinem", "keinen", "keiner", "keines", "können", "könnte", "machen", "man", "manche", "manchem", "manchen", "mancher", "manches", "mein", "meine", "meinem", "meinen", "meiner", "meines", "mich", "mir", "mit", "muss", "musste", "nach", "nicht", "nichts", "noch", "nun", "nur", "ob", "oder", "ohne", "sehr", "sein", "seine", "seinem", "seinen", "seiner", "seines", "selbst", "sich", "sie", "sind", "so", "solche", "solchem", "solchen", "solcher", "solches", "soll", "sollte", "sondern", "sonst", "um", "und", "uns", "unse", "unsem", "unsen", "unser", "unses", "unter", "viel", "vom", "von", "vor", "war", "waren", "warst", "was", "weg", "weil", "weiter", "welche", "welchem", "welchen", "welcher", "welches", "wenn", "werde", "werden", "wie", "wieder", "will", "wir", "wird", "wirst", "wo", "wollen", "wollte", "während", "würde", "würden", "zu", "zum", "zur", "zwar", "zwischen", "über"]);
+// Export the analyzer.
+class GermanAnalyzer {
+    constructor() {
+        this.tokenizer = splitter;
+        this.token_filter = [trimmer, stemmer, stopWordFilter];
+    }
+}
+
+// CONCATENATED MODULE: ./packages/full-text-search-language-de/src/index.ts
+/* concated harmony reexport */__webpack_require__.d(__webpack_exports__, "GermanAnalyzer", function() { return GermanAnalyzer; });
 
 
+/* harmony default export */ var src = __webpack_exports__["default"] = (GermanAnalyzer);
 
-/***/ }),
-/* 2 */
-/***/ (function(module, exports) {
-
-module.exports = __WEBPACK_EXTERNAL_MODULE_2__;
 
 /***/ })
 /******/ ]);

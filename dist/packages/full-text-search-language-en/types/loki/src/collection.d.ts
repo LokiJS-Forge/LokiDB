@@ -16,15 +16,15 @@ export { CloneMethod } from "./clone";
 export declare class Collection<TData extends object = object, TNested extends object = object> extends LokiEventEmitter {
     name: string;
     _data: Doc<TData & TNested>[];
-    private idIndex;
-    binaryIndices: {
+    private _idIndex;
+    _binaryIndices: {
         [P in keyof (TData & TNested)]?: Collection.BinaryIndex;
     };
     /**
      * Unique constraints contain duplicate object references, so they are not persisted.
      * We will keep track of properties which have unique constraints applied here, and regenerate on load.
      */
-    constraints: {
+    _constraints: {
         unique: {
             [P in keyof (TData & TNested)]?: UniqueIndex<TData & TNested>;
         };
@@ -33,49 +33,49 @@ export declare class Collection<TData extends object = object, TNested extends o
      * Transforms will be used to store frequently used query chains as a series of steps which itself can be stored along
      * with the database.
      */
-    transforms: Dict<Collection.Transform<TData, TNested>[]>;
+    _transforms: Dict<Collection.Transform<TData, TNested>[]>;
     /**
      * In autosave scenarios we will use collection level dirty flags to determine whether save is needed.
      * currently, if any collection is dirty we will autosave the whole database if autosave is configured.
      * Defaulting to true since this is called from addCollection and adding a collection should trigger save.
      */
-    dirty: boolean;
+    _dirty: boolean;
     private _cached;
     /**
      * If set to true we will optimally keep indices 'fresh' during insert/update/remove ops (never dirty/never needs rebuild).
      * If you frequently intersperse insert/update/remove ops between find ops this will likely be significantly faster option.
      */
-    adaptiveBinaryIndices: boolean;
+    _adaptiveBinaryIndices: boolean;
     /**
      * Is collection transactional.
      */
-    private transactional;
+    private _transactional;
     /**
      * Options to clone objects when inserting them.
      */
-    cloneObjects: boolean;
+    _cloneObjects: boolean;
     /**
      * Default clone method (if enabled) is parse-stringify.
      */
-    cloneMethod: CloneMethod;
+    _cloneMethod: CloneMethod;
     /**
      * If set to true we will not maintain a meta property for a document.
      */
-    private disableMeta;
+    private _disableMeta;
     /**
      * Disable track changes.
      */
-    private disableChangesApi;
+    private _disableChangesApi;
     /**
      * Disable delta update object style on changes.
      */
-    disableDeltaChangesApi: boolean;
+    _disableDeltaChangesApi: boolean;
     /**
      * By default, if you insert a document into a collection with binary indices, if those indexed properties contain
      * a DateTime we will convert to epoch time format so that (across serializations) its value position will be the
      * same 'after' serialization as it was 'before'.
      */
-    private serializableIndices;
+    private _serializableIndices;
     /**
      * Name of path of used nested properties.
      */
@@ -83,26 +83,19 @@ export declare class Collection<TData extends object = object, TNested extends o
     /**
      * Option to activate a cleaner daemon - clears "aged" documents at set intervals.
      */
-    ttl: Collection.TTL;
-    private maxId;
+    _ttl: Collection.TTL;
+    private _maxId;
     private _dynamicViews;
     /**
      * Changes are tracked by collection and aggregated by the db.
      */
-    private changes;
-    private insertHandler;
-    private updateHandler;
-    console: {
-        log(...args: any[]): void;
-        warn(...args: any[]): void;
-        error(...args: any[]): void;
-    };
+    private _changes;
     /**
      * stages: a map of uniquely identified 'stages', which hold copies of objects to be
      * manipulated without affecting the data in the original collection
      */
-    private stages;
-    private commitLog;
+    private _stages;
+    private _commitLog;
     _fullTextSearch: FullTextSearch;
     /**
      * @param {string} name - collection name
@@ -324,19 +317,16 @@ export declare class Collection<TData extends object = object, TNested extends o
      */
     private _getChangeDelta(obj, old);
     /**
-     * This method creates a clone of the current status of an object and associates operation and collection name,
+     * Creates a clone of the current status of an object and associates operation and collection name,
      * so the parent db can aggregate and generate a changes object for the entire db
      */
     private _createChange(name, op, obj, old?);
     private _createInsertChange(obj);
-    /**
-     * If the changes API is disabled make sure only metadata is added without re-evaluating everytime if the changesApi is enabled
-     */
-    private _insertMeta(obj);
-    private _updateMeta(obj);
     private _createUpdateChange(obj, old);
     private _insertMetaWithChange(obj);
     private _updateMetaWithChange(obj, old);
+    private _insertMeta(obj);
+    private _updateMeta(obj);
     /**
      * Get by Id - faster than other methods because of the searching algorithm
      * @param {int} id - $loki id of document you want to retrieve
@@ -620,7 +610,7 @@ export declare namespace Collection {
         _data: Doc<any>[];
         idIndex: number[];
         maxId: number;
-        dirty: boolean;
+        _dirty: boolean;
         adaptiveBinaryIndices: boolean;
         transactional: boolean;
         asyncListeners: boolean;

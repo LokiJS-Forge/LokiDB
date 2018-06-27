@@ -14,10 +14,10 @@ export declare class IndexSearcher {
      * @param {Dict<InvertedIndex>} invIdxs - the inverted indexes
      * @param {Set<number>} docs - the ids of the documents
      */
-    constructor(invIdxs: Dict<InvertedIndex>, docs: Set<number>);
+    constructor(invIdxs: Dict<InvertedIndex>, docs: Set<InvertedIndex.DocumentIndex>);
     search(query: Query): Scorer.ScoreResults;
     setDirty(): void;
     private _recursive(query, doScoring);
     private _getUnique(queries, doScoring, queryResults);
-    private _getAll(queries, doScoring);
+    private _getAll(queries, doScoring, queryResults?);
 }

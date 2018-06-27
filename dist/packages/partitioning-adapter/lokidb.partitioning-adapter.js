@@ -2,12 +2,12 @@
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory(require("@lokidb/loki"));
 	else if(typeof define === 'function' && define.amd)
-		define(["@lokidb/loki"], factory);
+		define("@lokidb/partitioning-adapter", ["@lokidb/loki"], factory);
 	else if(typeof exports === 'object')
 		exports["@lokidb/partitioning-adapter"] = factory(require("@lokidb/loki"));
 	else
-{		root["@lokidb/partitioning-adapter"] = factory(root["@lokidb/loki"]); root["LokiPartitioningAdapter"] = root["@lokidb/partitioning-adapter"].default;}
-})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE_2__) {
+		{ root["@lokidb/partitioning-adapter"] = factory(root["@lokidb/loki"]); root["LokiPartitioningAdapter"] = root["@lokidb/partitioning-adapter"].default; }
+})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE__1__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -46,12 +46,32 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
 /******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
 /******/ 	};
 /******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
@@ -69,8 +89,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
 /******/
+/******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -78,22 +99,49 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__partitioning_adapter__ = __webpack_require__(1);
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "PartitioningAdapter", function() { return __WEBPACK_IMPORTED_MODULE_0__partitioning_adapter__["a"]; });
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return PLUGINS; });
+function getGlobal() {
+    let glob;
+    (function (global) {
+        glob = global;
+    })(global !== undefined && global || this);
+    return glob;
+}
+function create() {
+    const global = getGlobal();
+    const sym = Symbol.for("LOKI");
+    if (global[sym] === undefined) {
+        global[sym] = {};
+    }
+    return global[sym];
+}
+/**
+ * @hidden
+ */
+const PLUGINS = create();
 
-
-/* harmony default export */ __webpack_exports__["default"] = (__WEBPACK_IMPORTED_MODULE_0__partitioning_adapter__["a" /* PartitioningAdapter */]);
-
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(3)))
 
 /***/ }),
 /* 1 */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE__1__;
+
+/***/ }),
+/* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__loki_src_loki__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__loki_src_loki___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__loki_src_loki__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__common_plugin__ = __webpack_require__(3);
+__webpack_require__.r(__webpack_exports__);
+
+// EXTERNAL MODULE: external "@lokidb/loki"
+var loki_ = __webpack_require__(1);
+
+// EXTERNAL MODULE: ./packages/common/plugin.ts
+var common_plugin = __webpack_require__(0);
+
+// CONCATENATED MODULE: ./packages/partitioning-adapter/src/partitioning_adapter.ts
 
 
 /**
@@ -106,18 +154,18 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
  * single IndexedDB row. If a single document update causes the collection to be flagged as dirty, all
  * of that collection's pages will be written on next save.
  */
-class PartitioningAdapter {
+class partitioning_adapter_PartitioningAdapter {
     /**
      * Registers the partitioning adapter as plugin.
      */
     static register() {
-        __WEBPACK_IMPORTED_MODULE_1__common_plugin__["a" /* PLUGINS */]["PartitioningAdapter"] = PartitioningAdapter;
+        common_plugin["a" /* PLUGINS */]["PartitioningAdapter"] = partitioning_adapter_PartitioningAdapter;
     }
     /**
      * Deregisters the partitioning storage as plugin.
      */
     static deregister() {
-        delete __WEBPACK_IMPORTED_MODULE_1__common_plugin__["a" /* PLUGINS */]["PartitioningAdapter"];
+        delete common_plugin["a" /* PLUGINS */]["PartitioningAdapter"];
     }
     /**
      * @param {object} adapter - reference to a 'non-reference' mode loki adapter instance.
@@ -156,7 +204,7 @@ class PartitioningAdapter {
      */
     loadDatabase(dbname) {
         this._dbname = dbname;
-        this._dbref = new __WEBPACK_IMPORTED_MODULE_0__loki_src_loki__["Loki"](dbname);
+        this._dbref = new loki_["Loki"](dbname);
         // load the db container (without data)
         return this._adapter.loadDatabase(dbname).then((result) => {
             if (typeof result !== "string") {
@@ -166,7 +214,7 @@ class PartitioningAdapter {
             let db = JSON.parse(result);
             this._dbref.loadJSONObject(db);
             db = null;
-            if (this._dbref["_collections"].length === 0) {
+            if (this._dbref._collections.length === 0) {
                 return this._dbref;
             }
             this._pageIterator = {
@@ -189,12 +237,13 @@ class PartitioningAdapter {
         }
         const keyname = this._dbname + "." + partition;
         return this._adapter.loadDatabase(keyname).then((result) => {
-            this._dbref["_collections"][partition]._data = this._dbref.deserializeCollection(result, {
+            this._dbref._collections[partition]._data = this._dbref.deserializeCollection(result, {
                 delimited: true
             });
-            if (++partition < this._dbref["_collections"].length) {
+            if (++partition < this._dbref._collections.length) {
                 return this._loadNextPartition(partition);
             }
+            return Promise.resolve();
         });
     }
     /**
@@ -223,14 +272,14 @@ class PartitioningAdapter {
             }
             // convert stringified array elements to object instances and push to collection data
             for (let idx = 0; idx < dlen; idx++) {
-                this._dbref["_collections"][this._pageIterator.collection]._data.push(JSON.parse(data[idx]));
+                this._dbref._collections[this._pageIterator.collection]._data.push(JSON.parse(data[idx]));
                 data[idx] = null;
             }
             data = [];
             // if last page, we are done with this partition
             if (isLastPage) {
                 // if there are more partitions, kick off next partition load
-                if (++this._pageIterator.collection < this._dbref["_collections"].length) {
+                if (++this._pageIterator.collection < this._dbref._collections.length) {
                     return this._loadNextPartition(this._pageIterator.collection);
                 }
             }
@@ -238,6 +287,7 @@ class PartitioningAdapter {
                 this._pageIterator.pageIndex++;
                 return this._loadNextPage();
             }
+            return Promise.resolve();
         });
     }
     /**
@@ -254,8 +304,8 @@ class PartitioningAdapter {
         this._dbname = dbname;
         // queue up dirty partitions to be saved
         this._dirtyPartitions = [-1];
-        for (let idx = 0; idx < dbref["_collections"].length; idx++) {
-            if (dbref["_collections"][idx].dirty) {
+        for (let idx = 0; idx < dbref._collections.length; idx++) {
+            if (dbref._collections[idx]._dirty) {
                 this._dirtyPartitions.push(idx);
             }
         }
@@ -281,6 +331,7 @@ class PartitioningAdapter {
                 if (this._dirtyPartitions.length !== 0) {
                     return this._saveNextPartition();
                 }
+                return Promise.resolve();
             });
         }
         // otherwise this is 'non-paged' partioning...
@@ -293,6 +344,7 @@ class PartitioningAdapter {
             if (this._dirtyPartitions.length !== 0) {
                 return this._saveNextPartition();
             }
+            return Promise.resolve();
         });
     }
     /**
@@ -301,7 +353,7 @@ class PartitioningAdapter {
      * @returns {Promise} a Promise that resolves after the next partition is saved
      */
     _saveNextPage() {
-        const coll = this._dbref["_collections"][this._pageIterator.collection];
+        const coll = this._dbref._collections[this._pageIterator.collection];
         const keyname = this._dbname + "." + this._pageIterator.collection + "." + this._pageIterator.pageIndex;
         let pageLen = 0;
         const cdlen = coll._data.length;
@@ -317,6 +369,7 @@ class PartitioningAdapter {
                 this._pageIterator.pageIndex++;
                 return this._saveNextPage();
             }
+            return Promise.resolve();
         };
         if (coll._data.length === 0) {
             doneWithPartition = true;
@@ -345,47 +398,16 @@ class PartitioningAdapter {
         return this._adapter.saveDatabase(keyname, pageBuilder).then(pageSaveCallback);
     }
 }
-/* harmony export (immutable) */ __webpack_exports__["a"] = PartitioningAdapter;
+
+// CONCATENATED MODULE: ./packages/partitioning-adapter/src/index.ts
+/* concated harmony reexport */__webpack_require__.d(__webpack_exports__, "PartitioningAdapter", function() { return partitioning_adapter_PartitioningAdapter; });
 
 
+/* harmony default export */ var src = __webpack_exports__["default"] = (partitioning_adapter_PartitioningAdapter);
 
-/***/ }),
-/* 2 */
-/***/ (function(module, exports) {
-
-module.exports = __WEBPACK_EXTERNAL_MODULE_2__;
 
 /***/ }),
 /* 3 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {function getGlobal() {
-    let glob;
-    (function (global) {
-        glob = global;
-    })(global !== undefined && global || this);
-    return glob;
-}
-function create() {
-    const global = getGlobal();
-    const sym = Symbol.for("LOKI");
-    if (global[sym] === undefined) {
-        global[sym] = {};
-    }
-    return global[sym];
-}
-/**
- * @hidden
- */
-const PLUGINS = create();
-/* harmony export (immutable) */ __webpack_exports__["a"] = PLUGINS;
-
-
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(4)))
-
-/***/ }),
-/* 4 */
 /***/ (function(module, exports) {
 
 var g;
@@ -397,11 +419,10 @@ g = (function() {
 
 try {
 	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1,eval)("this");
-} catch(e) {
+	g = g || Function("return this")() || (1, eval)("this");
+} catch (e) {
 	// This works if the window reference is available
-	if(typeof window === "object")
-		g = window;
+	if (typeof window === "object") g = window;
 }
 
 // g can still be undefined, but nothing to do about it...

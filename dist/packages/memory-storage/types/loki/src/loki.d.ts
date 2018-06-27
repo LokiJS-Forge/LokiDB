@@ -2,11 +2,10 @@ import { LokiEventEmitter } from "./event_emitter";
 import { Collection } from "./collection";
 import { Doc, StorageAdapter } from "../../common/types";
 export declare class Loki extends LokiEventEmitter {
-    private filename;
+    filename: string;
     private databaseVersion;
     private engineVersion;
-    private _collections;
-    private _verbose;
+    _collections: Collection[];
     private _env;
     private _serializationMethod;
     private _destructureDelimiter;
@@ -17,7 +16,8 @@ export declare class Loki extends LokiEventEmitter {
     private _throttledSavePending;
     private _autosave;
     private _autosaveInterval;
-    private _autosaveHandle;
+    private _autosaveRunning;
+    private _autosaveHandler;
     /**
      * Constructs the main database class.
      * @param {string} filename - name of the file to be saved to
@@ -25,7 +25,6 @@ export declare class Loki extends LokiEventEmitter {
      * @param {Loki.Environment} [options.env] - the javascript environment
      * @param {Loki.SerializationMethod} [options.serializationMethod=NORMAL] - the serialization method
      * @param {string} [options.destructureDelimiter="$<\n"] - string delimiter used for destructured serialization
-     * @param {boolean} [options.verbose=false] - enable console output
      */
     constructor(filename?: string, options?: Loki.Options);
     /**
@@ -90,7 +89,6 @@ export declare class Loki extends LokiEventEmitter {
      * @param {string} collectionName - name of collection to remove
      */
     removeCollection(collectionName: string): void;
-    getName(): string;
     /**
      * Serialize database to a string which can be loaded via {@link Loki#loadJSON}
      *
@@ -256,6 +254,9 @@ export declare class Loki extends LokiEventEmitter {
      * @returns {Promise} a Promise that resolves after the database is deleted
      */
     deleteDatabase(): Promise<void>;
+    /****************
+     * Autosave API
+     ****************/
     /**
      * Check whether any collections are "dirty" meaning we need to save the (entire) database
      * @returns {boolean} - true if database has changed since last autosave, otherwise false
@@ -279,7 +280,6 @@ export declare namespace Loki {
         env?: Environment;
         serializationMethod?: SerializationMethod;
         destructureDelimiter?: string;
-        verbose?: boolean;
     }
     interface PersistenceOptions {
         adapter?: StorageAdapter;
@@ -325,7 +325,6 @@ export declare namespace Loki {
         _persistenceAdapter: StorageAdapter;
         _persistenceMethod: PersistenceMethod;
         _throttledSaves: boolean;
-        _verbose: boolean;
     }
     type LoadDatabaseOptions = Collection.DeserializeOptions & ThrottledDrainOptions;
     type SerializationMethod = "normal" | "pretty" | "destructured";

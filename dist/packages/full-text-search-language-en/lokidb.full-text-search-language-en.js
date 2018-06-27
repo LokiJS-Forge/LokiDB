@@ -2,12 +2,12 @@
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory(require("@lokidb/full-text-search-language"));
 	else if(typeof define === 'function' && define.amd)
-		define(["@lokidb/full-text-search-language"], factory);
+		define("@lokidb/full-text-search-language-en", ["@lokidb/full-text-search-language"], factory);
 	else if(typeof exports === 'object')
 		exports["@lokidb/full-text-search-language-en"] = factory(require("@lokidb/full-text-search-language"));
 	else
-{		root["@lokidb/full-text-search-language-en"] = factory(root["@lokidb/full-text-search-language"]); root["LokiFullTextSearchLanguageEn"] = root["@lokidb/full-text-search-language-en"].default;}
-})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE_2__) {
+		{ root["@lokidb/full-text-search-language-en"] = factory(root["@lokidb/full-text-search-language"]); root["LokiFullTextSearchLanguageEn"] = root["@lokidb/full-text-search-language-en"].default; }
+})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE__0__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -46,12 +46,32 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
 /******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
 /******/ 	};
 /******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
@@ -69,30 +89,28 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
 /******/
+/******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ (function(module, exports) {
 
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__english_analyzer__ = __webpack_require__(1);
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "EnglishAnalyzer", function() { return __WEBPACK_IMPORTED_MODULE_0__english_analyzer__["a"]; });
-
-
-/* harmony default export */ __webpack_exports__["default"] = (__WEBPACK_IMPORTED_MODULE_0__english_analyzer__["a" /* EnglishAnalyzer */]);
-
+module.exports = __WEBPACK_EXTERNAL_MODULE__0__;
 
 /***/ }),
 /* 1 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__);
+__webpack_require__.r(__webpack_exports__);
+
+// EXTERNAL MODULE: external "@lokidb/full-text-search-language"
+var full_text_search_language_ = __webpack_require__(0);
+
+// CONCATENATED MODULE: ./packages/full-text-search-language-en/src/english_analyzer.ts
 
 class EnglishStemmer {
     constructor() {
@@ -149,7 +167,7 @@ class EnglishStemmer {
         const re_1b_2 = /.$/;
         const re2_1b_2 = /(at|bl|iz)$/;
         const re3_1b_2 = new RegExp("([^aeiouylsz])\\1$");
-        const re4_1b_2 = new RegExp("^" + C + v + "[^aeiouwxy]$");
+        const re4_1b_2 = new RegExp(`^${C}${v}[^aeiouwxy]$`);
         const re_1c = /^(.+?[^aeiou])y$/;
         const re_2 = /^(.+?)(ational|tional|enci|anci|izer|bli|alli|entli|eli|ousli|ization|ation|ator|alism|iveness|fulness|ousness|aliti|iviti|biliti|logi)$/;
         const re_3 = /^(.+?)(icate|ative|alize|iciti|ical|ful|ness)$/;
@@ -303,22 +321,22 @@ const st = new EnglishStemmer();
 function stemmer(token) {
     return st.porterStemmer(token);
 }
-const trimmer = Object(__WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["generateTrimmer"])("A-Za-z\xAA\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02B8\u02E0-\u02E4\u1D00-\u1D25\u1D2C-\u1D5C\u1D62-\u1D65\u1D6B-\u1D77\u1D79-\u1DBE\u1E00-\u1EFF\u2071\u207F\u2090-\u209C\u212A\u212B\u2132\u214E\u2160-\u2188\u2C60-\u2C7F\uA722-\uA787\uA78B-\uA7AD\uA7B0-\uA7B7\uA7F7-\uA7FF\uAB30-\uAB5A\uAB5C-\uAB64\uFB00-\uFB06\uFF21-\uFF3A\uFF41-\uFF5A");
-const stopWordFilter = Object(__WEBPACK_IMPORTED_MODULE_0__full_text_search_language_src_language__["generateStopWordFilter"])(["a", "able", "about", "across", "after", "all", "almost", "also", "am", "among", "an", "and", "any", "are", "as", "at", "be", "because", "been", "but", "by", "can", "cannot", "could", "dear", "did", "do", "does", "either", "else", "ever", "every", "for", "from", "get", "got", "had", "has", "have", "he", "her", "hers", "him", "his", "how", "however", "i", "if", "in", "into", "is", "it", "its", "just", "least", "let", "like", "likely", "may", "me", "might", "most", "must", "my", "neither", "no", "nor", "not", "of", "off", "often", "on", "only", "or", "other", "our", "own", "rather", "said", "say", "says", "she", "should", "since", "so", "some", "than", "that", "the", "their", "them", "then", "there", "these", "they", "this", "tis", "to", "too", "twas", "us", "wants", "was", "we", "were", "what", "when", "where", "which", "while", "who", "whom", "why", "will", "with", "would", "yet", "you", "your"]);
-// Create, configure and export the tokenizer.
-const EnglishAnalyzer = {
-    tokenizer: splitter,
-    token_filter: [trimmer, stemmer, stopWordFilter]
-};
-/* harmony export (immutable) */ __webpack_exports__["a"] = EnglishAnalyzer;
+const trimmer = Object(full_text_search_language_["generateTrimmer"])("A-Za-z\xAA\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02B8\u02E0-\u02E4\u1D00-\u1D25\u1D2C-\u1D5C\u1D62-\u1D65\u1D6B-\u1D77\u1D79-\u1DBE\u1E00-\u1EFF\u2071\u207F\u2090-\u209C\u212A\u212B\u2132\u214E\u2160-\u2188\u2C60-\u2C7F\uA722-\uA787\uA78B-\uA7AD\uA7B0-\uA7B7\uA7F7-\uA7FF\uAB30-\uAB5A\uAB5C-\uAB64\uFB00-\uFB06\uFF21-\uFF3A\uFF41-\uFF5A");
+const stopWordFilter = Object(full_text_search_language_["generateStopWordFilter"])(["a", "able", "about", "across", "after", "all", "almost", "also", "am", "among", "an", "and", "any", "are", "as", "at", "be", "because", "been", "but", "by", "can", "cannot", "could", "dear", "did", "do", "does", "either", "else", "ever", "every", "for", "from", "get", "got", "had", "has", "have", "he", "her", "hers", "him", "his", "how", "however", "i", "if", "in", "into", "is", "it", "its", "just", "least", "let", "like", "likely", "may", "me", "might", "most", "must", "my", "neither", "no", "nor", "not", "of", "off", "often", "on", "only", "or", "other", "our", "own", "rather", "said", "say", "says", "she", "should", "since", "so", "some", "than", "that", "the", "their", "them", "then", "there", "these", "they", "this", "tis", "to", "too", "twas", "us", "wants", "was", "we", "were", "what", "when", "where", "which", "while", "who", "whom", "why", "will", "with", "would", "yet", "you", "your"]);
+// Export the analyzer.
+class EnglishAnalyzer {
+    constructor() {
+        this.tokenizer = splitter;
+        this.token_filter = [trimmer, stemmer, stopWordFilter];
+    }
+}
+
+// CONCATENATED MODULE: ./packages/full-text-search-language-en/src/index.ts
+/* concated harmony reexport */__webpack_require__.d(__webpack_exports__, "EnglishAnalyzer", function() { return EnglishAnalyzer; });
 
 
+/* harmony default export */ var src = __webpack_exports__["default"] = (EnglishAnalyzer);
 
-/***/ }),
-/* 2 */
-/***/ (function(module, exports) {
-
-module.exports = __WEBPACK_EXTERNAL_MODULE_2__;
 
 /***/ })
 /******/ ]);

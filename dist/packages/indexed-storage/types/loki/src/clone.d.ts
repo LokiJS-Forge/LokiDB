@@ -1,4 +1,4 @@
-export declare type CloneMethod = "parse-stringify" | "deep" | "shallow" | "shallow-recurse-objects";
+export declare type CloneMethod = "parse-stringify" | "deep" | "shallow" | "shallow-recurse";
 /**
  * @hidden
  */

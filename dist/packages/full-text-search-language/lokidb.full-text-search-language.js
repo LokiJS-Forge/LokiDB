@@ -2,11 +2,11 @@
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
 	else if(typeof define === 'function' && define.amd)
-		define([], factory);
+		define("@lokidb/full-text-search-language", [], factory);
 	else if(typeof exports === 'object')
 		exports["@lokidb/full-text-search-language"] = factory();
 	else
-{		root["@lokidb/full-text-search-language"] = factory(); root["LokiFullTextSearchLanguage"] = root["@lokidb/full-text-search-language"].default;}
+		{ root["@lokidb/full-text-search-language"] = factory(); root["LokiFullTextSearchLanguage"] = root["@lokidb/full-text-search-language"].default; }
 })(typeof self !== 'undefined' ? self : this, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -46,12 +46,32 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
 /******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
 /******/ 	};
 /******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
@@ -69,6 +89,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
 /******/
+/******/
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(__webpack_require__.s = 0);
 /******/ })
@@ -78,28 +99,15 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__language__ = __webpack_require__(1);
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "generateStopWordFilter", function() { return __WEBPACK_IMPORTED_MODULE_0__language__["c"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "generateTrimmer", function() { return __WEBPACK_IMPORTED_MODULE_0__language__["d"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Among", function() { return __WEBPACK_IMPORTED_MODULE_0__language__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "SnowballProgram", function() { return __WEBPACK_IMPORTED_MODULE_0__language__["b"]; });
+__webpack_require__.r(__webpack_exports__);
 
-
-
-/***/ }),
-/* 1 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (immutable) */ __webpack_exports__["d"] = generateTrimmer;
-/* harmony export (immutable) */ __webpack_exports__["c"] = generateStopWordFilter;
+// CONCATENATED MODULE: ./packages/full-text-search-language/src/language.ts
 /*
  * From MihaiValentin/lunr-languages.
  * Last update from 2017/04/16 - 19af41fb9bd644d9081ad274f96f700b21464290
  */
 function generateTrimmer(wordCharacters) {
-    const regex = new RegExp("^[^" + wordCharacters + "]+|[^" + wordCharacters + "]+$", "g");
+    const regex = new RegExp(`^[^${wordCharacters}]+|[^${wordCharacters}]+$`, "g");
     return (token) => token.replace(regex, "");
 }
 function generateStopWordFilter(stopWords) {
@@ -122,8 +130,6 @@ class Among {
         }
     }
 }
-/* harmony export (immutable) */ __webpack_exports__["a"] = Among;
-
 class SnowballProgram {
     constructor() {
         this.current = null;
@@ -380,7 +386,12 @@ class SnowballProgram {
         return this.eq_s_b(s.length, s);
     }
 }
-/* harmony export (immutable) */ __webpack_exports__["b"] = SnowballProgram;
+
+// CONCATENATED MODULE: ./packages/full-text-search-language/src/index.ts
+/* concated harmony reexport */__webpack_require__.d(__webpack_exports__, "generateStopWordFilter", function() { return generateStopWordFilter; });
+/* concated harmony reexport */__webpack_require__.d(__webpack_exports__, "generateTrimmer", function() { return generateTrimmer; });
+/* concated harmony reexport */__webpack_require__.d(__webpack_exports__, "Among", function() { return Among; });
+/* concated harmony reexport */__webpack_require__.d(__webpack_exports__, "SnowballProgram", function() { return SnowballProgram; });
 
 
 

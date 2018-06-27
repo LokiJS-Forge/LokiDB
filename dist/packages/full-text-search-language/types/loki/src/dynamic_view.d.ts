@@ -22,11 +22,11 @@ import { Scorer } from "../../full-text-search/src/scorer";
  * @param <TNested> - nested properties of data type
  */
 export declare class DynamicView<TData extends object = object, TNested extends object = object> extends LokiEventEmitter {
+    readonly name: string;
     private _collection;
     private _persistent;
     private _sortPriority;
     private _minRebuildInterval;
-    name: string;
     private _rebuildPending;
     private _resultSet;
     private _resultData;
@@ -58,9 +58,7 @@ export declare class DynamicView<TData extends object = object, TNested extends 
      * @returns {DynamicView} This dynamic view for further chained ops.
      * @fires DynamicView.rebuild
      */
-    _rematerialize({removeWhereFilters}: {
-        removeWhereFilters?: boolean;
-    }): this;
+    private _rematerialize({removeWhereFilters});
     /**
      * Makes a copy of the internal ResultSet for branched queries.
      * Unlike this dynamic view, the branched ResultSet will not be 'live' updated,

@@ -21,5 +21,5 @@ export declare class ParametricDescription {
      * This is the minimal boundary for the state.
      */
     getPosition(absState: number): number;
-    unpack(data: Long[], index: number, bitsPerValue: number): number;
+    static unpack(data: Long[], index: number, bitsPerValue: number): number;
 }

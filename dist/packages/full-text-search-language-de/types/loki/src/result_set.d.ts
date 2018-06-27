@@ -28,7 +28,6 @@ export declare const LokiOps: {
     $definedin(a: string, b: object): boolean;
     $undefinedin(a: string, b: object): boolean;
     $regex(a: string, b: RegExp): boolean;
-    $containsString(a: any, b: string): boolean;
     $containsNone(a: any, b: any): boolean;
     $containsAny(a: any, b: any): boolean;
     $contains(a: any, b: any): boolean;
@@ -65,14 +64,12 @@ export declare class ResultSet<TData extends object = object, TNested extends ob
      */
     constructor(collection: Collection<TData, TNested>);
     /**
-     * reset() - Reset the ResultSet to its initial state.
-     *
+     * Reset the ResultSet to its initial state.
      * @returns {ResultSet} Reference to this ResultSet, for future chain operations.
      */
     reset(): this;
     /**
      * Override of toJSON to avoid circular references
-     *
      */
     toJSON(): ResultSet<TData, TNested>;
     /**
@@ -237,7 +234,7 @@ export declare class ResultSet<TData extends object = object, TNested extends ob
      * @param {string} dataOptions.forceCloneMethod - allows overriding the default or collection specified cloning method
      * @returns {ResultSet} A ResultSet with data in the format [{left: leftObj, right: rightObj}]
      */
-    eqJoin(joinData: Collection<any> | ResultSet<any> | any[], leftJoinKey: string | ((obj: any) => string), rightJoinKey: string | ((obj: any) => string), mapFun?: (left: any, right: any) => any, dataOptions?: ResultSet.DataOptions): ResultSet<any>;
+    eqJoin(joinData: Collection<any> | ResultSet<any> | any[], leftJoinKey: string | ((obj: any) => string), rightJoinKey: string | ((obj: any) => string), mapFun?: (left: any, right: any) => any, dataOptions?: ResultSet.DataOptions): ResultSet<any, any>;
     /**
      * Applies a map function into a new collection for further chaining.
      * @param {function} mapFun - javascript map function
@@ -261,6 +258,7 @@ export declare namespace ResultSet {
         forceIndexIntersect?: boolean;
         useJavascriptSorting?: boolean;
     }
+    type ContainsHelperType<R> = R extends string ? string | string[] : R extends any[] ? R[number] | R[number][] : R extends object ? keyof R | (keyof R)[] : never;
     type LokiOps<R> = {
         $eq?: R;
     } | {
@@ -268,7 +266,7 @@ export declare namespace ResultSet {
     } | {
         $ne?: R;
     } | {
-        $dteq?: R;
+        $dteq?: Date;
     } | {
         $gt?: R;
     } | {
@@ -294,13 +292,11 @@ export declare namespace ResultSet {
     } | {
         $regex?: RegExp | string | [string, string];
     } | {
-        $containsString?: string;
+        $containsNone?: ContainsHelperType<R>;
     } | {
-        $containsNone?: R[] | R;
+        $containsAny?: ContainsHelperType<R>;
     } | {
-        $containsAny?: R[] | R;
-    } | {
-        $contains?: any;
+        $contains?: ContainsHelperType<R>;
     } | {
         $type?: string;
     } | {

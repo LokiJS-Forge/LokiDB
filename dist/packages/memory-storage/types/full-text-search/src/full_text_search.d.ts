@@ -24,9 +24,9 @@ export declare class FullTextSearch {
      * @param {string} [id] - the property name of the document index
      */
     constructor(fieldOptions?: FullTextSearch.FieldOptions[], id?: string);
-    addDocument(doc: object, id?: number): void;
-    removeDocument(doc: object, id?: number): void;
-    updateDocument(doc: object, id?: number): void;
+    addDocument(doc: object, id?: InvertedIndex.DocumentIndex): void;
+    removeDocument(doc: object, id?: InvertedIndex.DocumentIndex): void;
+    updateDocument(doc: object, id?: InvertedIndex.DocumentIndex): void;
     clear(): void;
     search(query: Query): Scorer.ScoreResults;
     toJSON(): FullTextSearch.Serialization;
