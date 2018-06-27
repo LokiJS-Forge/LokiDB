@@ -10,7 +10,7 @@ const COMMIT_TAG = process.env.TRAVIS_TAG;
 const TRAVIS_REPO_SLUG = process.env.TRAVIS_REPO_SLUG;
 
 const BUILD_INFO = getBuildInformation();
-const RELEASE_BRANCH = "Releasing_" + BUILD_INFO.release;
+const RELEASE_BRANCH = "Releasing_" + BUILD_INFO.version;
 
 const CHANGELOG = {
   file: "CHANGELOG.md",
