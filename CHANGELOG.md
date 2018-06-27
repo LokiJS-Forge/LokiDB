@@ -4,7 +4,7 @@
 
 ### Bug Fixes
 
-* **fts:** apply bool query boost to subquery results ([#122](https://github.com/LokiJS-Forge/LokiDB/issues/122)) ([5548fe5](https://github.com/LokiJS-Forge/LokiDB/commit/5548fe5))
+* **full-text-search:** apply bool query boost to subquery results ([#122](https://github.com/LokiJS-Forge/LokiDB/issues/122)) ([5548fe5](https://github.com/LokiJS-Forge/LokiDB/commit/5548fe5))
 * **full-text-search:** handle not and filter bool queries right ([#128](https://github.com/LokiJS-Forge/LokiDB/issues/128)) ([98d0cd8](https://github.com/LokiJS-Forge/LokiDB/commit/98d0cd8))
 * **loki:** fix autosave and autoload of the database ([#112](https://github.com/LokiJS-Forge/LokiDB/issues/112)) ([ef260fd](https://github.com/LokiJS-Forge/LokiDB/commit/ef260fd))
 * **loki:** when cloning, meta will be applied correctly and clones emitted ([#111](https://github.com/LokiJS-Forge/LokiDB/issues/111)) ([d287a2d](https://github.com/LokiJS-Forge/LokiDB/commit/d287a2d)), closes [techfort/LokiJS#666](https://github.com/techfort/LokiJS/issues/666)
@@ -13,9 +13,9 @@
 ### Features
 
 * improve type notation ([#109](https://github.com/LokiJS-Forge/LokiDB/issues/109)) ([3b60c9f](https://github.com/LokiJS-Forge/LokiDB/commit/3b60c9f))
-* **fts:** allow number or string as document id ([#115](https://github.com/LokiJS-Forge/LokiDB/issues/115)) ([1d81e25](https://github.com/LokiJS-Forge/LokiDB/commit/1d81e25))
-* **fts:** export function analyze ([#102](https://github.com/LokiJS-Forge/LokiDB/issues/102)) ([c1dd78c](https://github.com/LokiJS-Forge/LokiDB/commit/c1dd78c))
-* **fts:** if elasticsearch is not available, disable its unit test ([#98](https://github.com/LokiJS-Forge/LokiDB/issues/98)) ([a1c7d8d](https://github.com/LokiJS-Forge/LokiDB/commit/a1c7d8d))
+* **full-text-search:** allow number or string as document id ([#115](https://github.com/LokiJS-Forge/LokiDB/issues/115)) ([1d81e25](https://github.com/LokiJS-Forge/LokiDB/commit/1d81e25))
+* **full-text-search:** export function analyze ([#102](https://github.com/LokiJS-Forge/LokiDB/issues/102)) ([c1dd78c](https://github.com/LokiJS-Forge/LokiDB/commit/c1dd78c))
+* **full-text-search:** if elasticsearch is not available, disable its unit test ([#98](https://github.com/LokiJS-Forge/LokiDB/issues/98)) ([a1c7d8d](https://github.com/LokiJS-Forge/LokiDB/commit/a1c7d8d))
 * **full-text-search:** implement conditional minimum should match parameter ([#129](https://github.com/LokiJS-Forge/LokiDB/issues/129)) ([baa6311](https://github.com/LokiJS-Forge/LokiDB/commit/baa6311))
 * **full-text-search:** make analyzers classes instead of objects ([#123](https://github.com/LokiJS-Forge/LokiDB/issues/123)) ([1959688](https://github.com/LokiJS-Forge/LokiDB/commit/1959688))
 
