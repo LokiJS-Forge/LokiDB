@@ -6,21 +6,11 @@ repo_name: GitHub
 
 extra_css:
   - css/auto-complete.css
-  - css/javascript_editor.css
-  - css/codemirror/codemirror.css
-  - css/codemirror/foldgutter.css
 
 extra_javascript:
   - js/auto-complete.js
   - js/gitter.js
   - js/sidecar.js
-  - js/javascript_editor.js
-  - js/codemirror/lib/codemirror.js
-  - js/codemirror/addon/fold/brace-fold.js
-  - js/codemirror/addon/fold/foldcode.js
-  - js/codemirror/addon/fold/foldgutter.js
-  - js/codemirror/addon/edit/matchbrackets.js
-  - js/codemirror/mode/javascript/javascript.js
 #  - js/@lokidb/lokidb.fs-storage.min.js
 #  - js/@lokidb/lokidb.full-text-search.min.js
 #  - js/@lokidb/lokidb.full-text-search-language.min.js
