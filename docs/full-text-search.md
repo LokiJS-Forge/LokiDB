@@ -1,4 +1,6 @@
-# Introduction
+# Full-Text Search
+
+## Introduction
 
 <div id="container" style="width:800px;height:600px;border:1px solid grey"> </div>
 
@@ -11,7 +13,7 @@ database itself.
 
 To fit all your needs, the full-text search can also be used as a standalone library.
 
-## Technical concept
+### Technical concept
 
 The technical concept is very similar to [Apache Lucene][Lucene] and
 [Elasticsearch].
@@ -94,12 +96,12 @@ Section [Analyzer](#analyzer) explains how to control which words should be inde
 <div id="fts-demo-example"></div>
 <script>$(document).ready(() => { $("#fts-demo-example").load("../../example/fts-demo.html"); });</script>
 
-# Quick Start
+## Quick Start
 
 The library functionality can be imported with `import {<...>} from "@lokidb/full-text-search`.
 If the library is included directly with a html-script tag, the global variable `LokiFullTextSearch` is available.
 
-## Standalone
+### Standalone
 
 ```javascript
 // Runnable code
@@ -123,7 +125,7 @@ const result = fts.search(query);
 cout(result);
 ```
 
-## With LokiDB
+### With LokiDB
 
 ```javascript
 // Runnable code
@@ -154,7 +156,7 @@ cout(result);
 
 ```
 
-# Query types
+## Query types
 
 The full-text search queries are simple javascript objects following an easy to understand language specification
 similar to the [Query DSL of Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html).
@@ -223,7 +225,7 @@ from a previous query. Each query (if [caching](#caching) is disabled) will alwa
 As opposed to this, non-indexed queries (like some LokiDB's queries) could speed up because of fewer documents after a
 full-text search query.
 
-# Scoring
+## Scoring
 
 Each matching document of a query will be ranked with a numeric score, depending on their relevance towards to the query
 clauses inside the query context.
@@ -234,7 +236,7 @@ BM25 is a state-of-the-art TF-IDF bases similarity with tf-normalization.
 To configure BM25, disable scoring or to get a detailed explanation of the scoring result from your query, use the
 properties described in the [API](api/interfaces/query.html).
 
-# Analyzer
+## Analyzer
 
 A given document string will be analyzed to extract only relevant tokens, which should be indexed.
 
@@ -277,7 +279,7 @@ const result = LokiFullTextSearch.Analyzer.analyze(custom_analyzer, text);
 cout(result);
 ```
 
-## Character filters
+### Character filters
 
 A character filter modifies a given string by adding, changing or removing characters.
 A typical example is a character filter to strip html tags:
@@ -286,7 +288,7 @@ A typical example is a character filter to strip html tags:
 
 LokiDB does not provide any character filters yet.
 
-## Tokenizer
+### Tokenizer
 
 A tokenizer breaks a given string into individual tokens. For example, a whitespace tokenizer splits a string at
 whitespace:
@@ -298,7 +300,7 @@ Available tokenizers are:
 - [Whitespace tokenizer](whitespaceTokenizer)
 - Word tokenizer TODO?
 
-## Token filters
+### Token filters
 
 A token filter takes the tokens form a tokenizer and can modify tokens (e.g. lowercasing), delete tokens (e.g. remove
 stopwords) or add tokens (e.g. synonyms). For example, the lowercase token filter:
@@ -310,6 +312,6 @@ Available token filters are:
 - [Lowercase token filter](api/globals.html#lowercasetokenfilter)
 - [Uppercase token filter](api/globals.html#uppercasetokenfilter)
 
-# Caching
+## Caching
 
 Coming soon.
