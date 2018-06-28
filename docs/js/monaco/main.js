@@ -71,7 +71,9 @@ document.addEventListener("DOMContentLoaded", function () {
   ];
 
   for (const file of files) {
-    fetch(`js/@lokidb/types/${file}`)
+    fetch(`../js/@lokidb/types/${file}`)
+      .then((data) => data.body.getReader().read())
+      .then((data) => new TextDecoder("utf-8").decode(data.value))
       .then((data) => {
         monaco.languages.typescript.typescriptDefaults.addExtraLib(data,
           `node_modules/@lokidb/${file.replace("/src/", "/")}`)
@@ -91,12 +93,12 @@ document.addEventListener("DOMContentLoaded", function () {
     "lokidb.partitioning-adapter.min.js"
   ];
 
-  for (const lib of libs) {
-    const s = document.createElement('script');
-    s.setAttribute('src', `js/@lokidb/${lib}`);
-    // s.onload = callback;
-    document.body.appendChild(s);
-  }
+  // for (const lib of libs) {
+  //   const s = document.createElement('script');
+  //   s.setAttribute('src', `../js/@lokidb/${lib}`);
+  //   s.onload = callback;
+    // document.body.appendChild(s);
+  // }
 
   monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
     noSemanticValidation: false,
