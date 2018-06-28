@@ -2,7 +2,9 @@
 
 ## Introduction
 
-<div id="container" style="width:800px;height:600px;border:1px solid grey"> </div>
+<form>
+<div id="container" style="width:100%;height:600px;border:1px solid grey"></div>
+</form>
 
 LokiDB provides a fast and powerful open-source full-text search engine.
 
