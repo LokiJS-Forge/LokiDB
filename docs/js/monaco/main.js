@@ -1,6 +1,6 @@
 let model = null;
 
-$(document).ready(function () {
+document.addEventListener("DOMContentLoaded", function () {
   self.MonacoEnvironment = {
     getWorkerUrl: function (moduleId, label) {
       console.log(moduleId, label);
@@ -71,7 +71,7 @@ $(document).ready(function () {
   ];
 
   for (const file of files) {
-    $.get(`js/@lokidb/types/${file}`)
+    fetch(`js/@lokidb/types/${file}`)
       .then((data) => {
         monaco.languages.typescript.typescriptDefaults.addExtraLib(data,
           `node_modules/@lokidb/${file.replace("/src/", "/")}`)

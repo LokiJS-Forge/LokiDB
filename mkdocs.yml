@@ -34,4 +34,5 @@ extra_javascript:
   - js/monaco/app.bundle.js
   - js/monaco/main.js
 
-theme: readthedocs
+theme:
+  name: "material"

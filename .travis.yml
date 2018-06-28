@@ -24,6 +24,7 @@ addons:
 before_install:
   - curl -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.4.0.deb && sudo dpkg -i --force-confnew elasticsearch-5.4.0.deb && sudo service elasticsearch start
   - pip3 install mkdocs
+  - pip3 install mkdocs-material
 script:
     - npm run lint || travis_terminate 1
     - npm test || travis_terminate 1
@@ -31,4 +32,4 @@ script:
     - npm run build || travis_terminate 1
 
 after_success:
-  - codecov 
+  - codecov
