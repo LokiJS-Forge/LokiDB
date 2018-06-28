@@ -30,7 +30,7 @@ For example, the given text:
 
 will be tokenized into these tokens:
 
-> *peter, piper, picked, a, peck, of, pickled, peppers, how, many, did*
+> *peter, piper, picked, a, peck, of, pickled, peppers, how, many, did, pick*
 
 and then used as an 1-gram inverted index tree (reduced to the **p** branch):
 
