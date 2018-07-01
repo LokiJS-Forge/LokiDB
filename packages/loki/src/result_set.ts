@@ -803,6 +803,10 @@ export class ResultSet<TData extends object = object, TNested extends object = o
       searchByIndex = true;
     }
 
+    if (doIndexCheck && this._collection._binaryTreeIndexes[property] && indexedOps[operator]) {
+      searchByIndex = true;
+    }
+
     // the comparison function
     const fun = LokiOps[operator];
 
@@ -877,6 +881,39 @@ export class ResultSet<TData extends object = object, TNested extends object = o
           }
         }
       }
+      return this;
+    }
+
+    // If we have BinaryTreeIndex, use that and bail
+    // -NOTE- probably need implement '$in' operator iteration using '$eq' implementation
+    if (this._collection._binaryTreeIndexes[property]) {
+
+      if (operator === "$between") {
+        let idResult = this._collection._binaryTreeIndexes[property].rangeRequest({
+          op: operator,
+          val: value[0],
+          high: value[1]
+        });
+
+        // for now we will have to 'shim' the binary tree index's $loki ids back
+        // into data array indices, ideally i would like to repurpose filteredrows to use loki ids
+        for (let id of idResult) {
+          result.push(this._collection.get(id, true)[1]);
+        }
+      }
+      else {
+        let idResult = this._collection._binaryTreeIndexes[property].rangeRequest({
+          op: operator,
+          val: value
+        });
+
+        // for now we will have to 'shim' the binary tree index's $loki ids back
+        // into data array indices, ideally i would like to repurpose filteredrows to use loki ids
+        for(let id of idResult) {
+          result.push(this._collection.get(id, true)[1]);
+        }
+      }
+
       return this;
     }
 
