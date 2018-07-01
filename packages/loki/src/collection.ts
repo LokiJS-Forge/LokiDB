@@ -2,12 +2,13 @@ import {LokiEventEmitter} from "./event_emitter";
 import {UniqueIndex} from "./unique_index";
 import {ResultSet, LokiOps} from "./result_set";
 import {DynamicView} from "./dynamic_view";
-import {ltHelper, gtHelper, aeqHelper} from "./helper";
+import {ILokiRangedComparer,CreateJavascriptComparator,ltHelper, gtHelper, aeqHelper} from "./helper";
 import {clone, CloneMethod} from "./clone";
 import {Doc, Dict} from "../../common/types";
 import {FullTextSearch} from "../../full-text-search/src/full_text_search";
 import {PLUGINS} from "../../common/plugin";
 import {Analyzer} from "../../full-text-search/src/analyzer/analyzer";
+import {BinaryTreeIndex} from "./btree_index";
 
 export {CloneMethod} from "./clone";
 
@@ -71,6 +72,7 @@ export class Collection<TData extends object = object, TNested extends object = 
   private _idIndex: number[] = [];
   // user defined indexes
   public _binaryIndices: { [P in keyof (TData & TNested)]?: Collection.BinaryIndex } = {}; // user defined indexes
+  public _binaryTreeIndexes: { [P in keyof (TData & TNested)]?: BinaryTreeIndex<any> } = {};
 
   /**
    * Unique constraints contain duplicate object references, so they are not persisted.
@@ -183,6 +185,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {string[]} [options.unique=[]] - array of property names to define unique constraints for
    * @param {string[]} [options.exact=[]] - array of property names to define exact constraints for
    * @param {string[]} [options.indices=[]] - array property names to define binary indexes for
+   * @param {string[]} [options.btreeIndexes[]]
    * @param {boolean} [options.adaptiveBinaryIndices=true] - collection indices will be actively rebuilt rather than lazily
    * @param {boolean} [options.asyncListeners=false] - whether listeners are invoked asynchronously
    * @param {boolean} [options.disableMeta=false] - set to true to disable meta property on documents
@@ -297,6 +300,11 @@ export class Collection<TData extends object = object, TNested extends object = 
     let indices = options.indices ? options.indices : [];
     for (let idx = 0; idx < indices.length; idx++) {
       this.ensureIndex(options.indices[idx]);
+    }
+    let btindexes = options.btreeIndexes ? options.btreeIndexes: [];
+    for (let idx = 0; idx < btindexes.length; idx++) {
+      // Todo: any way to type annotate this as typesafe generic?
+      this.ensureBTIndex(btindexes[idx]);
     }
 
     this.setChangesApi(this._disableChangesApi, this._disableDeltaChangesApi);
@@ -656,6 +664,21 @@ export class Collection<TData extends object = object, TNested extends object = 
     return results;
   }
 
+  public ensureBTIndex(field: keyof (TData & TNested), comparator?: ILokiRangedComparer<any>) {
+    if (!comparator) {
+      comparator = CreateJavascriptComparator<any>();
+    }
+
+    let index = new BinaryTreeIndex<any>(field, comparator);
+
+    this._binaryTreeIndexes[field] = index;
+    for(let i = 0; i < this._data.length; i++) {
+      index.insert(this._data[i].$loki, this._data[i][field]);
+    }
+
+    return index;
+  }
+
   public ensureUniqueIndex(field: keyof (TData & TNested)) {
     let index = new UniqueIndex<TData & TNested>(field);
 
@@ -1006,6 +1029,11 @@ export class Collection<TData extends object = object, TNested extends object = 
         this.flagBinaryIndexesDirty();
       }
 
+      // Notify all binary tree indexes of (possible) value update
+      for (let bti in this._binaryTreeIndexes) {
+        this._binaryTreeIndexes[bti].update(doc.$loki, doc[bti]);
+      }
+
       this._idIndex[position] = newInternal.$loki;
 
       // FullTextSearch.
@@ -1100,6 +1128,11 @@ export class Collection<TData extends object = object, TNested extends object = 
         }
       } else {
         this.flagBinaryIndexesDirty();
+      }
+
+      // add id/val kvp to binary tree index
+      for (let bti in this._binaryTreeIndexes) {
+        this._binaryTreeIndexes[bti].insert(obj["$loki"], obj[bti]);
       }
 
       // FullTextSearch.
@@ -1200,6 +1233,11 @@ export class Collection<TData extends object = object, TNested extends object = 
       // remove id from idIndex
       this._idIndex.splice(position, 1);
 
+      // remove id/val kvp from binary tree index
+      for (let bti in this._binaryTreeIndexes) {
+        this._binaryTreeIndexes[bti].remove(doc.$loki);
+      }
+      
       // FullTextSearch.
       if (this._fullTextSearch !== null) {
         this._fullTextSearch.removeDocument(doc, position);
@@ -2161,6 +2199,7 @@ export namespace Collection {
   export interface Options<TData extends object, TNested extends object = {}> {
     unique?: (keyof (TData & TNested))[];
     indices?: (keyof (TData & TNested))[];
+    btreeIndexes?: (keyof (TData & TNested))[];
     adaptiveBinaryIndices?: boolean;
     asyncListeners?: boolean;
     disableMeta?: boolean;
