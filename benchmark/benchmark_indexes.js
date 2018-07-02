@@ -15,7 +15,7 @@
  */
 
 
-var Loki = require('../dist/packages-dist/loki/loki/lokidb.loki.js').default,
+var Loki = require('../dist/packages/loki/lokidb.loki.js').default,
    crypto = require("crypto"), // for random string generation
    db = new Loki('binary index perf'),
    samplecoll = null,

@@ -698,4 +698,35 @@ describe("binary tree index tests", () => {
       expect(result[0].name).toEqual("harrison");
       expect(result[1].name).toEqual("patterson");
    });
+
+   it("simplesort works on collection with btree index", () => {
+      interface TestUserType {
+         name: string;
+         age: number;
+         location: string;
+      }
+
+      const db = new Loki("idxtest");
+      const items = db.addCollection<TestUserType>("users", { btreeIndexes: ["name"] });
+      items.insert([
+         { name: "patterson", age: 10, location: "a" },
+         { name: "gilbertson", age: 20, location: "b" },
+         { name: "smith", age: 30, location: "c" },
+         { name: "donaldson", age: 40, location: "d" },
+         { name: "harrison", age: 50, location: "e" },
+         { name: "thompson", age: 60, location: "f" },
+         { name: "albertson", age: 70, location: "g" },
+      ]);
+
+      let result: TestUserType[] = items.chain().simplesort("name").data();
+
+      expect(result.length).toEqual(7);
+      expect(result[0].name).toEqual("albertson");
+      expect(result[1].name).toEqual("donaldson");
+      expect(result[2].name).toEqual("gilbertson");
+      expect(result[3].name).toEqual("harrison");
+      expect(result[4].name).toEqual("patterson");
+      expect(result[5].name).toEqual("smith");
+      expect(result[6].name).toEqual("thompson");
+   });
 });
