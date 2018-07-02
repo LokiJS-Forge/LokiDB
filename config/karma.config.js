@@ -56,6 +56,8 @@ module.exports = function (config) {
               /node_modules/,
               /\.spec\.ts$/,
               /.*\/spec\/.+\.ts/,
+              /\.helper\.ts$/,
+              /.*\/helper\/.+\.ts/
             ],
             loader: "istanbul-instrumenter-loader?esModules=true",
             test: /\.ts$/
