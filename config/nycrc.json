@@ -6,5 +6,5 @@
     "html"
   ],
   "report-dir": "./coverage/",
-  "temp-directory": "./coverage/tmp/"
+  "temp-directory": "./coverage/"
 }

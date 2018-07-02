@@ -15,7 +15,7 @@
     "test:integration:browser": "karma start integration/config/karma.browser.config.js --single-run",
     "test:integration:amd": "karma start integration/config/karma.amd.config.js --single-run",
     "test:integration:node": "jasmine --config=\"integration/config/jasmine.json\"",
-    "coverage": "ts-node -P config/tsconfig.node.json scripts/copy_coverage.ts && nyc merge coverage/tmp coverage/combined/combined.json && nyc report --nycrc-path config/nycrc.json",
+    "coverage": "istanbul report json && nyc report --nycrc-path config/nycrc.json",
     "docs": "typedoc --tsconfig config/tsconfig.webpack.json packages/",
     "build": "ts-node -P config/tsconfig.node.json scripts/build.ts",
     "deploy": "ts-node -P config/tsconfig.node.json scripts/deploy.ts"
