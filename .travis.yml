@@ -27,7 +27,6 @@ before_install:
 script:
     - npm run lint
     - npm test
-    - ./node_modules/.bin/nyc report --temp-directory coverage --reporter=text-lcov > coverage.lcov
     - codecov
     - npm run docs
     - npm run build
