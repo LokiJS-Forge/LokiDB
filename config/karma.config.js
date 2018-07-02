@@ -17,8 +17,8 @@ module.exports = function (config) {
     // coverage reporter generates the coverage
     reporters: ["progress", "coverage-istanbul"],
     coverageIstanbulReporter: {
-      dir: "./coverage/karma/",
-      reports: ["text-summary", "lcov", "html", "json"],
+      dir: "coverage/karma/",
+      reports: ["text-summary", "json"],
       fixWebpackSourcePaths: true
     },
     mime: {

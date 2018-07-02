@@ -1,17 +1,10 @@
 {
-  "extension": [
-    ".ts"
-  ],
   "reporter": [
-    "lcov",
     "text-summary",
-    "html",
-    "json"
+    "json",
+    "lcov",
+    "html"
   ],
-  "exclude": [
-    "**/*.helper.[jt]s",
-    "**/*.spec.[jt]s",
-    "**/spec/**/*.[jt]s"
-  ],
-  "report-dir": "./coverage/node/"
+  "report-dir": "./coverage/",
+  "temp-directory": "./coverage/tmp/"
 }
