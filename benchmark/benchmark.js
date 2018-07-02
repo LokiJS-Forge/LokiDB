@@ -1,4 +1,4 @@
-var Loki = require('../dist/packages-dist/loki/loki/lokidb.loki.js').default,
+var Loki = require('../dist/packages/loki/lokidb.loki.js').default,
    db = new Loki('perftest'),
    samplecoll = null,
    uniquecoll = null,
