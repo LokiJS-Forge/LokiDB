@@ -1,5 +1,6 @@
 import * as child_process from "child_process";
 import * as fs from "fs";
+import * as process from "process";
 import * as stream from "stream";
 import {PACKAGES, getBuildInformation, print, printError, run} from "./common";
 
@@ -55,6 +56,7 @@ function main() {
   } else {
     print("Nothing to deploy...");
   }
+  process.exit(0);
 }
 
 function loginToNPM() {
