@@ -5,9 +5,10 @@
     "node/**/*.spec.[jt]s"
   ],
   "helpers": [
-    "helper/**/*.js",
+    "../../../scripts/ts-jasmine.js",
+    "../../../node_modules/jasmine-expect/index.js",
     "../../common/spec/helper/**/*helper.[jt]s",
-    "../../../node_modules/jasmine-expect/index.js"
+    "helper/**/*.[jt]s"
   ],
   "stopSpecOnExpectationFailure": false,
   "random": false

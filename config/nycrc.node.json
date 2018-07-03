@@ -1,0 +1,15 @@
+{
+  "extension": [
+    ".ts"
+  ],
+  "reporter": [
+    "text-summary",
+    "json"
+  ],
+  "exclude": [
+    "**/*.helper.[jt]s",
+    "**/*.spec.[jt]s",
+    "**/spec/**/*.[jt]s"
+  ],
+  "report-dir": "./coverage/node/"
+}

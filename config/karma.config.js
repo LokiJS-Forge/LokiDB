@@ -17,8 +17,8 @@ module.exports = function (config) {
     // coverage reporter generates the coverage
     reporters: ["progress", "coverage-istanbul"],
     coverageIstanbulReporter: {
-      dir: "./coverage/karma/",
-      reports: ["text-summary", "lcov", "html", "json"],
+      dir: "coverage/karma/",
+      reports: ["text-summary", "json"],
       fixWebpackSourcePaths: true
     },
     mime: {
@@ -56,6 +56,8 @@ module.exports = function (config) {
               /node_modules/,
               /\.spec\.ts$/,
               /.*\/spec\/.+\.ts/,
+              /\.helper\.ts$/,
+              /.*\/helper\/.+\.ts/
             ],
             loader: "istanbul-instrumenter-loader?esModules=true",
             test: /\.ts$/
