@@ -8,7 +8,7 @@
     "url": "git+https://github.com/LokiJS-Forge/LokiDB.git"
   },
   "scripts": {
-    "postinstall": "../node_modules/.bin/ts-node -P ../config/tsconfig.node.json scripts/install_lokidb.ts"
+    "postinstall": "../node_modules/.bin/ts-node -P ../tsconfig.json scripts/install_lokidb.ts"
   },
   "devDependencies": {
     "requirejs": "^2.3.5"
