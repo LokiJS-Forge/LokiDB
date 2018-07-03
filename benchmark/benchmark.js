@@ -1,10 +1,9 @@
-var Loki = require('../dist/packages/loki/lokidb.loki.js').default,
+let Loki = require('../dist/packages/loki/lokidb.loki.js').default,
    db = new Loki('perftest'),
    samplecoll = null,
    uniquecoll = null,
    arraySize = 5000, // how large of a dataset to generate
    totalIterations = 20000, // how many times we search it
-   results = [],
    getIterations = 2000000; // get is crazy fast due to binary search so this needs separate scale
 
 function genRandomVal() {
@@ -302,42 +301,92 @@ function testperfDV(multiplier) {
    console.log("loki dynamic view subsequent finds : " + totalMS2 + "ms (" + rate2 + " ops/s) " + loopIterations + " iterations");
 }
 
-var steps = [ 
-   () => initializeDB(),
-   () => initializeUnique(),
-   () => testperfGet(),
-   () => benchUniquePerf(),
-   () => {
-      console.log("");
-      console.log("-- Benchmarking query on NON-INDEXED column --");
-      initializeDB("none");
-   },
-   () => testperfFind(),
-   () => testperfRS(),
-   () => testperfDV(),
-   () => {
-      console.log("")
-      console.log("-- ADDING BINARY INDEX to query column and repeating benchmarks --");
-      initializeDB("bidx");
-   },
-   () => testperfFind(20),
-   () => testperfRS(15),
-   () => testperfDV(15),
-   () => {
-      console.log("")
-      console.log("-- ADDING BINARY TREE INDEX to query column and repeating benchmarks --");
-      initializeDB("btree");
-   },
+/**
+ * Attempt to free up global variables and invoke node garbage collector (if enabled)
+ */
+function cleanup() {
+   db.close(); 
+   samplecoll = null;
+   uniquecoll = null; 
+   db = null; 
+   if (global.gc) { 
+      global.gc() 
+   }
+   else {
+      console.log("!! WARNING: Launch node with --expose-gc flag for more accurate results !!")
+   }
+}
+
+var corePerf = [
+   initializeDB,
+   initializeUnique,
+   testperfGet,
+   benchUniquePerf,
+];
+
+var nonIndexedSteps = [
+   initializeDB,
+   testperfFind,
+   testperfRS,
+   testperfDV
+];
+
+var binaryIndexSteps = [
+   () => initializeDB("bidx"),
+   () => {}, // after heavy memory alloc, wait a sec for cpu to settle
    () => testperfFind(20),
    () => testperfRS(15),
    () => testperfDV(15)
 ];
 
-function execNext() {
-   var f = steps.shift();
-   if (!f) return;
-   f();
-   setTimeout(execNext, 400);
+var btreeIndexSteps = [
+   () => initializeDB("btree"),
+   () => {}, // after heavy memory alloc, wait a sec for cpu to settle
+   () => testperfFind(20),
+   () => testperfRS(15),
+   () => testperfDV(15)
+];
+
+var perfGroups = [
+   { name: "Benchmarking Core Id lookup performance", steps: corePerf },
+   { name: "Benchmarking NON-INDEX query performance", steps: nonIndexedSteps},
+   { name: "Benchmarking BINARY INDEX query performance", steps: binaryIndexSteps },
+   { name: "Benchmarking BINARY TREE INDEX query performance", steps: btreeIndexSteps }
+];
+
+/**
+ * Executes steps within a benchmark group, pausing in between steps.
+ * Once the benchmark group steps are depleted, we initiate next group.
+ * @param {*} steps 
+ */
+function execSteps(steps) {
+   // if we are finished with this group's steps...
+   if (steps.length === 0) {
+      // wait a few seconds in between benchmark groups
+      setTimeout(execGroups, 4000);
+      return;
+   }
+
+   var s = steps.shift();
+
+   s();
+
+   setTimeout(() => { execSteps(steps); }, 1000);
 }
 
-execNext();
+/**
+ * Kicks off a group of benchmarks, cleaning up in between
+ */
+function execGroups() {
+   var g = perfGroups.shift();
+   if (!g) return;
+
+   cleanup();
+
+   console.log("");
+   console.log("## " + g.name + " ##");
+   console.log("");
+   execSteps(g.steps);
+}
+
+execGroups();

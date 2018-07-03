@@ -15,16 +15,12 @@
  */
 
 
-var Loki = require('../dist/packages/loki/lokidb.loki.js').default,
-   crypto = require("crypto"), // for random string generation
+let Loki = require('../dist/packages/loki/lokidb.loki.js').default,
+   crypto = require("crypto"), // for less 'leaky' random string generation
    db = new Loki('binary index perf'),
    samplecoll = null,
-   uniquecoll = null,
    arraySize = 5000, // default, we usually override when calling init functions
-   keysToRemove = [], // when inserting docs, we will store rng keys
-   totalIterations = 20000, // how many times we search it
-   results = [],
-   getIterations = 2000000; // get is crazy fast due to binary search so this needs separate scale
+   keysToRemove = []; // when inserting docs, we will store rng keys
 
 function genRandomVal() {
    return crypto.randomBytes(50).toString('hex');
@@ -83,9 +79,9 @@ function shuffle(array) {
 
 // scenario for many individual, consecutive inserts
 function initializeDatabase(silent, docCount) {
-   var start, end, totalTime;
-   var totalTimes = [];
-   var totalMS = 0.0;
+   let start, end, totalTime;
+   let totalTimes = [];
+   let totalMS = 0.0;
 
    if (typeof docCount === "undefined") {
       docCount = 5000;
@@ -94,8 +90,8 @@ function initializeDatabase(silent, docCount) {
    arraySize = docCount;
    keysToRemove = [];
 
-   var id, va;
-   for (var idx = 0; idx < arraySize; idx++) {
+   let id;
+   for (let idx = 0; idx < arraySize; idx++) {
       id = genRandomVal();
       v1 = genRandomVal();
 
@@ -117,7 +113,7 @@ function initializeDatabase(silent, docCount) {
       return;
    }
 
-   for (var idx = 0; idx < totalTimes.length; idx++) {
+   for (let idx = 0; idx < totalTimes.length; idx++) {
       totalMS += totalTimes[idx][0] * 1e3 + totalTimes[idx][1] / 1e6;
    }
 
@@ -127,9 +123,8 @@ function initializeDatabase(silent, docCount) {
    end = process.hrtime(start);
    totalTimes.push(end);
 
-   //var totalMS = end[0] * 1e3 + end[1]/1e6;
    totalMS = totalMS.toFixed(2);
-   var rate = arraySize * 1000 / totalMS;
+   let rate = arraySize * 1000 / totalMS;
    rate = rate.toFixed(2);
    console.log("load (individual inserts) : " + totalMS + "ms (" + rate + ") ops/s (" + arraySize + " documents)");
 }
@@ -137,10 +132,10 @@ function initializeDatabase(silent, docCount) {
 // silent : if true we wont log timing info to console
 // docCount : number of random documents to generate collection with
 function initializeDatabaseBatch(silent, docCount) {
-   var start, end, totalTime;
-   var totalTimes = [];
-   var totalMS = 0.0;
-   var batch = [];
+   let start, end;
+   let totalTimes = [];
+   let totalMS = 0.0;
+   let batch = [];
 
    if (typeof docCount === "undefined") {
       docCount = 5000;
@@ -149,8 +144,8 @@ function initializeDatabaseBatch(silent, docCount) {
    arraySize = docCount;
    keysToRemove = [];
 
-   var id, v1;
-   for (var idx = 0; idx < arraySize; idx++) {
+   let id, v1;
+   for (let idx = 0; idx < arraySize; idx++) {
       id = genRandomVal();
       v1 = genRandomVal();
 
@@ -174,40 +169,36 @@ function initializeDatabaseBatch(silent, docCount) {
       return;
    }
 
-   for (var idx = 0; idx < totalTimes.length; idx++) {
+   for (let idx = 0; idx < totalTimes.length; idx++) {
       totalMS += totalTimes[idx][0] * 1e3 + totalTimes[idx][1] / 1e6;
    }
 
-   //var totalMS = end[0] * 1e3 + end[1]/1e6;
    totalMS = totalMS.toFixed(2);
-   var rate = arraySize * 1000 / totalMS;
+   let rate = arraySize * 1000 / totalMS;
    rate = rate.toFixed(2);
    console.log("load (batch insert) : " + totalMS + "ms (" + rate + ") ops/s (" + arraySize + " documents)");
 }
 
 function formatBytes(bytes, decimals) {
    if (bytes == 0) return '0 Byte';
-   var k = 1000; // or 1024 for binary
-   var dm = decimals + 1 || 3;
-   var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-   var i = Math.floor(Math.log(bytes) / Math.log(k));
+   let k = 1000; // or 1024 for binary
+   let dm = decimals + 1 || 3;
+   let sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+   let i = Math.floor(Math.log(bytes) / Math.log(k));
    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
 function logMemoryUsage(msg) {
-   var pmu = process.memoryUsage();
+   let pmu = process.memoryUsage();
    console.log(msg + " => rss : " + formatBytes(pmu.rss) + " heapTotal : " + formatBytes(pmu.heapTotal) + " heapUsed : " + formatBytes(pmu.heapUsed));
 }
 
 function profileDatabaseMemory(indexType) {
    let mdb = new Loki("memprof");
    let coll;
-   let hu1, hu2;
-
-   hu1 = process.memoryUsage().heapUsed;
 
    switch (indexType) {
-      case "none":
+      case "unindexed":
          coll = mdb.addCollection('samplecoll');
          break;
       case "lazy":
@@ -242,69 +233,67 @@ function profileDatabaseMemory(indexType) {
       });
    }
 
-   hu2 = process.memoryUsage().heapUsed;
-   //console.log("heap used (" + indexType + ") : " + formatBytes(hu2-hu1));
    logMemoryUsage(indexType);
 }
 
 function perfFind(multiplier) {
-   var start, end;
-   var totalTimes = [];
-   var totalMS = 0;
+   let start, end;
+   let totalTimes = [];
+   let totalMS = 0;
 
-   var loopIterations = arraySize;
+   let loopIterations = arraySize;
    if (typeof (multiplier) != "undefined") {
       loopIterations = loopIterations * multiplier;
    }
 
-   var customIdx, findId;
+   let customIdx, findId;
 
-   for (var idx = 0; idx < loopIterations; idx++) {
+   for (let idx = 0; idx < loopIterations; idx++) {
       customIdx = Math.floor(Math.random() * keysToRemove.length) + 1;
       findId = keysToRemove[customIdx];
 
       start = process.hrtime();
-      var results = samplecoll.find({
+      let results = samplecoll.find({
          'customId': customIdx
       });
       end = process.hrtime(start);
       totalTimes.push(end);
    }
 
-   for (var idx = 0; idx < totalTimes.length; idx++) {
+   for (let idx = 0; idx < totalTimes.length; idx++) {
       totalMS += totalTimes[idx][0] * 1e3 + totalTimes[idx][1] / 1e6;
    }
 
    totalMS = totalMS.toFixed(2);
-   var rate = loopIterations * 1000 / totalMS;
+   let rate = loopIterations * 1000 / totalMS;
    rate = rate.toFixed(2);
    console.log("random coll.find() : " + totalMS + "ms (" + rate + " ops/s) " + loopIterations + " iterations");
 }
 
 //  Find Interlaced Inserts ->  insert 5000, for 5000 more iterations insert same test obj after
 function perfFindInterlacedInserts(multiplier) {
-   var start, end;
-   var totalTimes = [];
-   var totalMS = 0;
+   let start, end;
+   let totalTimes = [];
+   let totalMS = 0;
 
-   var loopIterations = arraySize;
+   let loopIterations = arraySize;
    if (typeof (multiplier) != "undefined") {
       loopIterations = loopIterations * multiplier;
    }
 
-   var customIdx, findId, insertId;
+   let customIdx, findId, insertId;
 
-   for (var idx = 0; idx < loopIterations; idx++) {
+   for (let idx = 0; idx < loopIterations; idx++) {
       customIdx = Math.floor(Math.random() * keysToRemove.length) + 1;
       findId = keysToRemove[customIdx];
       insertId = genRandomVal();
 
       start = process.hrtime();
-      var results = samplecoll.find({
+      let results = samplecoll.find({
          'customId': findId
       });
       // insert junk record, now (outside timing routine) to force index rebuild
-      var obj = samplecoll.insert({
+      let obj = samplecoll.insert({
          customId: insertId,
          val: 999,
          val2: 999,
@@ -317,12 +306,12 @@ function perfFindInterlacedInserts(multiplier) {
       keysToRemove.push(insertId);
    }
 
-   for (var idx = 0; idx < totalTimes.length; idx++) {
+   for (let idx = 0; idx < totalTimes.length; idx++) {
       totalMS += totalTimes[idx][0] * 1e3 + totalTimes[idx][1] / 1e6;
    }
 
    totalMS = totalMS.toFixed(2);
-   var rate = loopIterations * 1000 / totalMS;
+   let rate = loopIterations * 1000 / totalMS;
    rate = rate.toFixed(2);
    console.log("interlaced inserts + coll.find() : " + totalMS + "ms (" + rate + " ops/s) " + loopIterations + " iterations");
 
@@ -330,17 +319,17 @@ function perfFindInterlacedInserts(multiplier) {
 
 //  Find Interlaced Removes -> use linear customid for() loop find() and delete that obj when found
 function perfFindInterlacedRemoves() {
-   var start, end;
-   var totalTimes = [];
-   var totalMS = 0;
+   let start, end;
+   let totalTimes = [];
+   let totalMS = 0;
 
-   var removeId;
+   let removeId;
 
-   for (var idx = 0; idx < arraySize; idx++) {
+   for (let idx = 0; idx < arraySize; idx++) {
       removeId = keysToRemove[idx];
 
       start = process.hrtime();
-      var result = samplecoll.findOne({
+      let result = samplecoll.findOne({
          'customId': removeId
       });
       samplecoll.remove(result);
@@ -349,30 +338,30 @@ function perfFindInterlacedRemoves() {
       totalTimes.push(end);
    }
 
-   for (var idx = 0; idx < totalTimes.length; idx++) {
+   for (let idx = 0; idx < totalTimes.length; idx++) {
       totalMS += totalTimes[idx][0] * 1e3 + totalTimes[idx][1] / 1e6;
    }
 
    totalMS = totalMS.toFixed(2);
-   var rate = arraySize * 1000 / totalMS;
+   let rate = arraySize * 1000 / totalMS;
    rate = rate.toFixed(2);
    console.log("interlaced removes + coll.find() : " + totalMS + "ms (" + rate + " ops/s) " + arraySize + " iterations");
 }
 
 //  Find Interlaced Updates -> same as now except mix up customId val (increment by 10000?)
 function perfFindInterlacesUpdates() {
-   var start, end;
-   var totalTimes = [];
-   var totalMS = 0;
+   let start, end;
+   let totalTimes = [];
+   let totalMS = 0;
 
-   var findId, updateId;
+   let findId, updateId;
 
-   for (var idx = 0; idx < arraySize; idx++) {
+   for (let idx = 0; idx < arraySize; idx++) {
       findId = keysToRemove.pop();
       updateId = genRandomVal();
 
       start = process.hrtime();
-      var results = samplecoll.findOne({
+      let results = samplecoll.findOne({
          'customId': findId
       });
       results.customId = updateId;
@@ -384,115 +373,89 @@ function perfFindInterlacesUpdates() {
       keysToRemove.push(updateId);
    }
 
-   for (var idx = 0; idx < totalTimes.length; idx++) {
+   for (let idx = 0; idx < totalTimes.length; idx++) {
       totalMS += totalTimes[idx][0] * 1e3 + totalTimes[idx][1] / 1e6;
    }
 
    totalMS = totalMS.toFixed(2);
-   var rate = arraySize * 1000 / totalMS;
+   let rate = arraySize * 1000 / totalMS;
    rate = rate.toFixed(2);
    console.log("interlaced updates + coll.find() : " + totalMS + "ms (" + rate + " ops/s) " + arraySize + " iterations");
 }
 
-var steps = [
-   () => {
-      console.log("Memory Profile (database population along with index overhead) ----")
-   },
+/**
+ * Attempt to free up global variables and invoke node garbage collector (if enabled)
+ */
+function cleanup() {
+   if (db) db.close();
+   samplecoll = null;
+   db = null;
+   keysToRemove = [];
+
+   if (global.gc) {
+      global.gc();
+   }
+}
+
+let memoryProfileSteps = [
    () => logMemoryUsage("baseline"),
+   cleanup,
    () => {},
+   () => profileDatabaseMemory("unindexed"),
+   cleanup,
    () => {},
-   () => {
-      //console.log("Memory Profile (Unindexed) ------------------")
-      profileDatabaseMemory("none");
-   },
-   () => {},
-   () => {},
-   () => {
-      //console.log("Memory Profile (Adaptive) ------------------")
-      profileDatabaseMemory("adaptive");
-   },
-   () => {},
-   () => {},
-   () => {},
-   () => {
-      //console.log("Memory Profile (BTree) ------------------")
-      profileDatabaseMemory("btree");
-   },
-   () => {},
-   () => {},
-   () => {},
-   () => { console.log("2nd pass --------------") },
    () => logMemoryUsage("baseline"),
+   () => profileDatabaseMemory("adaptive"),
+   cleanup,
    () => {},
-   () => {},
-   () => {
-      //console.log("Memory Profile (Unindexed) ------------------")
-      profileDatabaseMemory("none");
-   },
-   () => {},
-   () => {},
-   () => {
-      //console.log("Memory Profile (Adaptive) ------------------")
-      profileDatabaseMemory("adaptive");
-   },
-   () => {},
-   () => {},
-   () => {},
-   () => {
-      //console.log("Memory Profile (BTree) ------------------")
-      profileDatabaseMemory("btree");
-   },
-   () => {},
-   () => {},
-   () => {},
-   () => { console.log("3rd pass --------------") },
    () => logMemoryUsage("baseline"),
-   () => {},
-   () => {},
-   () => {
-      //console.log("Memory Profile (Unindexed) ------------------")
-      profileDatabaseMemory("none");
-   },
-   () => {},
-   () => {},
-   () => {
-      //console.log("Memory Profile (Adaptive) ------------------")
-      profileDatabaseMemory("adaptive");
-   },
-   () => {},
-   () => {},
-   () => {},
-   () => {
-      //console.log("Memory Profile (BTree) ------------------")
-      profileDatabaseMemory("btree");
-   },
-   () => {},
-   () => {},
-   () => {},
-   () => {
-      console.log("");
-      console.log("Perf: Unindexed Inserts---------------------");
-      createDatabase("none");
-   },
+   () => profileDatabaseMemory("btree")
+];
+
+let insertionProfileSteps = [
+   // Unindexed Inserts
+   () => console.log("no index"),
+   () => createDatabase("none"),
    () => initializeDatabase(false, 100000),
+   cleanup,
+   () => {},
+   // Unindexed Batch Inserts
    () => createDatabase("none"),
    () => initializeDatabaseBatch(false, 100000),
-   () => {
-      console.log("");
-      console.log("Perf: Indexed Inserts (Lazy) ------------------------");
-      createDatabase("lazy");
-   },
+   cleanup,
+   () => {},
+   // Indexed (lazy) inserts
+   () => console.log("lazy binary"),
+   () => createDatabase("lazy"),
    () => initializeDatabase(false, 100000),
+   cleanup,
+   () => {},
+   // Indexed (lazy) batch inserts
    () => createDatabase("lazy"),
    () => initializeDatabaseBatch(false, 100000),
-   () => {
-      console.log("");
-      console.log("Perf: Indexed Inserts (Adaptive) ------------------------");
-      createDatabase("adaptive");
-   },
+   cleanup,
+   () => {},
+   // Indexed (Adaptive) inserts
+   () => console.log("adaptive binary"),
+   () => createDatabase("adaptive"),
    () => initializeDatabase(false, 100000),
+   cleanup,
+   () => {},
+   // Indexed (Adaptive) batch inserts
    () => createDatabase("adaptive"),
    () => initializeDatabaseBatch(false, 100000),
+   cleanup,
+   () => {},
+   () => console.log("btree"),
+   () => createDatabase("btree"),
+   () => initializeDatabase(false, 100000),
+   cleanup,
+   () => {},
+   () => createDatabase("btree"),
+   () => initializeDatabaseBatch(false, 100000)
+];
+
+let nightmareUnindexedLowSteps = [
    () => {
       console.log("");
       console.log("------------ Beginning Nightmare Benchmarks ------------");
@@ -500,136 +463,190 @@ var steps = [
       console.log("to remove any bias and show weaknesses that each indexing strategy may be leveraging, ");
       console.log("such as placing all emphasis on find() performance to detriment of index maintenance costs.");
       console.log("");
-
    },
    () => {
-      console.log("");
-      console.log("Perf: Unindexed Nightmare (Lower Scale @ 5,000) ------------------------");
+      console.log("Perf: Unindexed Nightmare (Lower Scale @ 5,000 docs/iterations) ------------------------");
       createDatabase("none");
    },
    () => initializeDatabase(true, 5000),
    () => perfFind(),
+   cleanup,
    () => createDatabase("none"),
    () => initializeDatabase(true, 5000),
    () => perfFindInterlacedInserts(),
+   cleanup,
    () => createDatabase("none"),
    () => initializeDatabase(true, 5000),
    () => perfFindInterlacedRemoves(),
+   cleanup,
    () => createDatabase("none"),
    () => initializeDatabase(true, 5000),
-   () => perfFindInterlacesUpdates(),
-   () => {
-      console.log("");
-      console.log("Perf: Unindexed Nightmare (Higher Scale @ 10,000) ------------------------");
-      createDatabase("none");
-   },
-   () => initializeDatabase(true, 10000),
-   () => perfFind(),
-   () => createDatabase("none"),
-   () => initializeDatabase(true, 10000),
-   () => perfFindInterlacedInserts(),
-   () => createDatabase("none"),
-   () => initializeDatabase(true, 10000),
-   () => perfFindInterlacedRemoves(),
-   () => createDatabase("none"),
-   () => initializeDatabase(true, 10000),
-   () => perfFindInterlacesUpdates(),
-   // Uncomment the below if you wish to compare nightmare lazy with subsequent nightmare adaptive.
-   // At this point i don't think many people will be using the (non-default) lazy binary indices
-   //() => {
-   //   console.log("");
-   //   console.log("Perf: Indexed finds (Nightmare Lazy Index Thrashing Test) ------");
-   //   createDatabaseIndexed(false);
-   //},
-   //() => initializeDatabase(true, 80000),
-   //() => perfFind(),
-   //() => createDatabaseIndexed(false),
-   //() => initializeDatabase(true, 3000),
-   //() => perfFindInterlacedInserts(1),
-   //() => createDatabaseIndexed(false),
-   //() => initializeDatabase(true, 3000),
-   //() => perfFindInterlacedRemoves(),
-   //() => createDatabaseIndexed(false),
-   //() => initializeDatabase(true, 3000),
-   //() => perfFindInterlacesUpdates(),
-   () => {
-      console.log("");
-      console.log("Perf: Adaptive Indexed Nightmare (Lower Scale @ 10,000) ---");
-
-      createDatabase("adaptive");
-   },
-   () => initializeDatabase(true, 10000),
-   () => perfFind(),
-   () => createDatabase("adaptive"),
-   () => initializeDatabase(true, 10000),
-   () => perfFindInterlacedInserts(1),
-   () => createDatabase("adaptive"),
-   () => initializeDatabase(true, 10000),
-   () => perfFindInterlacedRemoves(),
-   () => createDatabase("adaptive"),
-   () => initializeDatabase(true, 10000),
-   () => perfFindInterlacesUpdates(),
-   () => {
-      console.log("");
-      console.log("Perf: Adaptive Indexed Nightmare (Higher Scale @ 40,000) ---");
-
-      createDatabase("adaptive");
-   },
-   () => initializeDatabase(true, 40000),
-   () => perfFind(),
-   () => createDatabase("adaptive"),
-   () => initializeDatabase(true, 40000),
-   () => perfFindInterlacedInserts(1),
-   () => createDatabase("adaptive"),
-   () => initializeDatabase(true, 40000),
-   () => perfFindInterlacedRemoves(),
-   () => createDatabase("adaptive"),
-   () => initializeDatabase(true, 40000),
-   () => perfFindInterlacesUpdates(),
-   () => {
-      console.log("");
-      console.log("Perf: BTree Indexed Nightmare (Lower Scale @ 40,000) ---");
-
-      createDatabase("btree");
-   },
-   () => initializeDatabase(true, 40000),
-   () => perfFind(),
-   () => createDatabase("btree"),
-   () => initializeDatabase(true, 40000),
-   () => perfFindInterlacedInserts(1),
-   () => createDatabase("btree"),
-   () => initializeDatabase(true, 40000),
-   //() => console.log("btree index height : " + db.getCollection("samplecoll")._binaryTreeIndexes.customId.nodes[db.getCollection("samplecoll")._binaryTreeIndexes.customId.apex].height),
-   () => perfFindInterlacedRemoves(),
-   () => createDatabase("btree"),
-   () => initializeDatabase(true, 40000),
-   () => perfFindInterlacesUpdates(),
-   () => {
-      console.log("");
-      console.log("Perf: BTree Indexed Nightmare (Higher Scale @ 80,000) ---");
-
-      createDatabase("btree");
-   },
-   () => initializeDatabase(true, 100000),
-   () => perfFind(),
-   () => createDatabase("btree"),
-   () => initializeDatabase(true, 100000),
-   () => perfFindInterlacedInserts(1),
-   () => createDatabase("btree"),
-   () => initializeDatabase(true, 100000),
-   //() => console.log("btree index height : " + db.getCollection("samplecoll")._binaryTreeIndexes.customId.nodes[db.getCollection("samplecoll")._binaryTreeIndexes.customId.apex].height),
-   () => perfFindInterlacedRemoves(),
-   () => createDatabase("btree"),
-   () => initializeDatabase(true, 100000),
    () => perfFindInterlacesUpdates()
 ];
 
-function execNext() {
-   var f = steps.shift();
-   if (!f) return;
-   f();
-   setTimeout(execNext, 500);
+let nightmareUnindexedHighSteps = [
+   () => {
+      console.log("Perf: Unindexed Nightmare (Higher Scale @ 10,000 docs/iterations) ------------------------");
+      createDatabase("none");
+   },
+   () => initializeDatabase(true, 10000),
+   () => {},
+   () => perfFind(),
+   cleanup,
+   () => createDatabase("none"),
+   () => initializeDatabase(true, 10000),
+   () => {},
+   () => perfFindInterlacedInserts(),
+   cleanup,
+   () => createDatabase("none"),
+   () => initializeDatabase(true, 10000),
+   () => {},
+   () => perfFindInterlacedRemoves(),
+   cleanup,
+   () => createDatabase("none"),
+   () => initializeDatabase(true, 10000),
+   () => {},
+   () => perfFindInterlacesUpdates(),
+];
+
+let nightmareAdaptiveLowSteps = [
+   () => {
+      console.log("Perf: Adaptive Indexed Nightmare (Lower Scale @ 10,000 docs/iterations) ---");
+
+      createDatabase("adaptive");
+   },
+   () => initializeDatabase(true, 10000),
+   () => {},
+   () => perfFind(),
+   cleanup,
+   () => createDatabase("adaptive"),
+   () => initializeDatabase(true, 10000),
+   () => {},
+   () => perfFindInterlacedInserts(1),
+   cleanup,
+   () => createDatabase("adaptive"),
+   () => initializeDatabase(true, 10000),
+   () => {},
+   () => perfFindInterlacedRemoves(),
+   cleanup,
+   () => createDatabase("adaptive"),
+   () => initializeDatabase(true, 10000),
+   () => {},
+   () => perfFindInterlacesUpdates(),
+];
+
+let nightmareAdaptiveHighSteps = [
+   () => {
+      console.log("Perf: Adaptive Indexed Nightmare (Higher Scale @ 40,000 docs/iterations) ---");
+
+      createDatabase("adaptive");
+   },
+   () => initializeDatabase(true, 40000),
+   () => {},
+   () => perfFind(),
+   cleanup,
+   () => createDatabase("adaptive"),
+   () => initializeDatabase(true, 40000),
+   () => {},
+   () => perfFindInterlacedInserts(1),
+   cleanup,
+   () => createDatabase("adaptive"),
+   () => initializeDatabase(true, 40000),
+   () => {},
+   () => perfFindInterlacedRemoves(),
+   cleanup,
+   () => createDatabase("adaptive"),
+   () => initializeDatabase(true, 40000),
+   () => {},
+   () => perfFindInterlacesUpdates(),
+];
+
+let nightmareBtreeLowSteps = [
+   () => {
+      console.log("Perf: BTree Indexed Nightmare (Lower Scale @ 40,000 docs/iterations) ---");
+
+      createDatabase("btree");
+   },
+   () => initializeDatabase(true, 40000),
+   () => {},
+   () => perfFind(),
+   () => createDatabase("btree"),
+   () => initializeDatabase(true, 40000),
+   () => {},
+   () => perfFindInterlacedInserts(1),
+   () => createDatabase("btree"),
+   () => initializeDatabase(true, 40000),
+   () => {},
+   () => perfFindInterlacedRemoves(),
+   () => createDatabase("btree"),
+   () => initializeDatabase(true, 40000),
+   () => {},
+   () => perfFindInterlacesUpdates(),
+];
+
+let nightmareBtreeHighSteps = [
+   () => {
+      console.log("Perf: BTree Indexed Nightmare (Higher Scale @ 100,000 docs/iterations) ---");
+
+      createDatabase("btree");
+   },
+   () => initializeDatabase(true, 100000),
+   () => {},
+   () => perfFind(),
+   () => createDatabase("btree"),
+   () => initializeDatabase(true, 100000),
+   () => {},
+   () => perfFindInterlacedInserts(1),
+   () => createDatabase("btree"),
+   () => initializeDatabase(true, 100000),
+   () => {},
+   () => perfFindInterlacedRemoves(),
+   () => createDatabase("btree"),
+   () => initializeDatabase(true, 100000),
+   () => {},
+   () => perfFindInterlacesUpdates()
+];
+
+let perfGroups = [
+   { name: "Memory Profiling of database with various indexing", steps: memoryProfileSteps },
+   { name: "Document Insertion rates with various indexes", steps: insertionProfileSteps },
+   { name: "Nightmare Unindexed (Low Range)", steps: nightmareUnindexedLowSteps },
+   { name: "Nightmare Unindexed (High Range)", steps: nightmareUnindexedHighSteps },
+   { name: "Nightmare Adaptive (Low Range)", steps: nightmareAdaptiveLowSteps },
+   { name: "Nightmare Adaptive (Low Range)", steps: nightmareAdaptiveHighSteps },
+   { name: "Nightmare Btree (Low Range)", steps: nightmareBtreeLowSteps },
+   { name: "Nightmare Btree (High Range)", steps: nightmareBtreeHighSteps }
+];
+
+function execSteps(steps) {
+   if (steps.length === 0) {
+      setTimeout(execGroups, 4000);
+      return;
+   }
+
+   let s = steps.shift();
+
+   s();
+
+   setTimeout(() => { execSteps(steps); }, 1000);
 }
 
-console.log("");
-execNext();
+function execGroups() {
+   let g = perfGroups.shift();
+   if (!g) return;
+
+   cleanup();
+
+   console.log("");
+   console.log("## " + g.name + " ##");
+   console.log("");
+   execSteps(g.steps);
+}
+
+if (!global.gc) {
+   console.warn("##");
+   console.warn("## IMPORTANT! : For accuracy of results, launch node with --expose-gc flag");
+   console.warn("##");
+}
+
+execGroups();
