@@ -178,7 +178,7 @@ function prepareReleaseBranch() {
   print("====== Prepare release branch");
   run("git", ["checkout", "-b", RELEASE_BRANCH]);
   run("git", ["add", "-u"]);
-  run("git", ["add", "dist/packages/*"]);
+  run("git", ["add", "-f", "dist/packages/*"]);
   run("git", ["commit", "-m", `"Release ${BUILD_INFO.version}"`]);
   run("git", ["remote", "set-url", "origin", `https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git`]);
   run("git", ["push", "--set-upstream", "origin", RELEASE_BRANCH]);

@@ -12,5 +12,5 @@ coverage/
 .ts/
 
 # Publish
-dist/packages-dist/
+dist/
 site/
