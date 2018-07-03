@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
+import * as process from "process";
 import {PACKAGES, getBuildInformation, run, copy, makeDir, remove_dir, print} from "./common";
 
 const BUILD_INFO = getBuildInformation();
@@ -14,6 +15,8 @@ function main() {
   }
 
   build();
+
+  process.exit(0);
 }
 
 function build() {
