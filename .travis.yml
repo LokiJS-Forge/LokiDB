@@ -1,34 +1,36 @@
 language: node_js
 node_js:
     - "8"
-group: deprecated-2017Q3
+
+dist: trusty
+sudo: required
+
 env:
     global:
         - GIT_NAME: Travis CI
         - GIT_EMAIL: builds@travis-ci.org
         - GIT_BRANCH: master
 
-sudo: required
-dist: trusty
+services:
+  - elasticsearch
 
 addons:
-  code_climate:
-    repo_token: ${CODE_CLIMATE_TOKEN}
+  chrome: stable
   apt:
-    chrome: stable
     packages:
-    - oracle-java8-set-default
-    - python3
-    - python3-pip
+      - python3
+      - python3-pip
 
 before_install:
-  - curl -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.4.0.deb && sudo dpkg -i --force-confnew elasticsearch-5.4.0.deb && sudo service elasticsearch start
-  - pip3 install mkdocs
+  - pip3 install --user mkdocs
+  - pip3 install --user mkdocs-material
+
 script:
     - npm run lint
     - npm test
     - codecov
     - npm run docs
+    - mkdocs build
     - npm run build
     - npm install --prefix integration
     - npm run test:integration
