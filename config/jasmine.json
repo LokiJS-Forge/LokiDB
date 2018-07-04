@@ -5,7 +5,7 @@
     "node/**/*.spec.[jt]s"
   ],
   "helpers": [
-    "../../../scripts/ts-jasmine.js",
+    "../../../node_modules/ts-node/register/index.js",
     "../../../node_modules/jasmine-expect/index.js",
     "../../common/spec/helper/**/*helper.[jt]s",
     "helper/**/*.[jt]s"

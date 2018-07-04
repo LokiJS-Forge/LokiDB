@@ -5,8 +5,8 @@
   "author": "Various authors",
   "license": "(MIT OR Apache-2.0)",
   "scripts": {
-    "lint": "tslint -p config/tsconfig.webpack.json -c config/tslint.json",
-    "lint:fix": "tslint -p config/tsconfig.webpack.json -c config/tslint.json --fix",
+    "lint": "tslint -p tsconfig.json -c config/tslint.json",
+    "lint:fix": "tslint -p tsconfig.json -c config/tslint.json --fix",
     "test": "npm run test:web && npm run test:node && npm run coverage",
     "test:web": "karma start config/karma.config.js --single-run",
     "test:web:watch": "karma start config/karma.config.js",
@@ -16,9 +16,9 @@
     "test:integration:amd": "karma start integration/config/karma.amd.config.js --single-run",
     "test:integration:node": "jasmine --config=\"integration/config/jasmine.json\"",
     "coverage": "istanbul report json lcov && nyc report --nycrc-path config/nycrc.json",
-    "docs": "typedoc --tsconfig config/tsconfig.webpack.json packages/",
-    "build": "ts-node -P config/tsconfig.node.json scripts/build.ts",
-    "deploy": "ts-node -P config/tsconfig.node.json scripts/deploy.ts"
+    "docs": "typedoc --tsconfig tsconfig.json packages/",
+    "build": "ts-node scripts/build.ts",
+    "deploy": "ts-node scripts/deploy.ts"
   },
   "repository": {
     "type": "git",
