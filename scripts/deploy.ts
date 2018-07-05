@@ -39,6 +39,7 @@ const CHANGELOG = {
 };
 
 main();
+process.exit(0);
 
 function main() {
   if (BUILD_INFO.release) {
@@ -56,7 +57,6 @@ function main() {
   } else {
     print("Nothing to deploy...");
   }
-  process.exit(0);
 }
 
 function loginToNPM() {

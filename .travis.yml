@@ -32,6 +32,7 @@ script:
     - npm run docs
     - mkdocs build
     - npm run build
+    - npm run build -- --dist
     - npm install --prefix integration
     - npm run test:integration
 
