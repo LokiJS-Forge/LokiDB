@@ -3,20 +3,20 @@ import * as path from "path";
 import * as process from "process";
 import {PACKAGES, getBuildInformation, run, copy, makeDir, remove_dir, print} from "./common";
 
+const BUILD_DIST = process.argv.includes("--dist");
 const BUILD_INFO = getBuildInformation();
 
 main();
+process.exit(0);
 
 function main() {
-  if (BUILD_INFO.release) {
+  if (BUILD_INFO.release && BUILD_DIST) {
     print("+++ Release build +++");
     // Update npm package version.
     run("npm", ["version", BUILD_INFO.version, "--no-git-tag-version"]);
   }
 
   build();
-
-  process.exit(0);
 }
 
 function build() {
@@ -32,13 +32,13 @@ function build() {
     const SRC_DIR = path.join(ROOT_DIR, "packages", PACKAGE);
     const SRC_PACKAGE_JSON = path.join(SRC_DIR, "package.json");
     const SRC_WEBPACK_CONFIG = path.join(SRC_DIR, "webpack.config.js");
-    const OUT_PACKAGES_DIR = path.join(ROOT_DIR, "dist", "packages");
+    const OUT_PACKAGES_DIR = BUILD_DIST ? path.join(ROOT_DIR, "dist", "packages") : path.join(ROOT_DIR, "build", "packages");
     const OUT_DIR = path.join(OUT_PACKAGES_DIR, PACKAGE);
     const OUT_DIR_FILENAME = path.join(OUT_DIR, `lokidb.${PACKAGE}.js`);
     const OUT_DIR_FILENAME_MINIFIED = path.join(OUT_DIR, `lokidb.${PACKAGE}.min.js`);
-    const NPM_PACKAGES_DIR = path.join(ROOT_DIR, "dist", "packages-dist");
-    const NPM_DIR = path.join(NPM_PACKAGES_DIR, PACKAGE);
-    const NPM_PACKAGE_JSON = path.join(NPM_DIR, "package.json");
+    const NPM_PACKAGES_DIR = BUILD_DIST ? path.join(ROOT_DIR, "dist", "packages-dist") : null;
+    const NPM_DIR = BUILD_DIST ? path.join(NPM_PACKAGES_DIR, PACKAGE) : null;
+    const NPM_PACKAGE_JSON = BUILD_DIST ? path.join(NPM_DIR, "package.json") : null;
 
     print(`======      [${PACKAGE}]: PACKING    =====`);
     remove_dir(OUT_DIR);
@@ -72,37 +72,41 @@ function build() {
       fs.writeFileSync(OUT_DIR_FILENAME, umd_part + script_part + library_part);
     }
 
-    print(`======      [${PACKAGE}]: BUNDLING   =====`);
-    remove_dir(NPM_DIR);
-    makeDir(NPM_DIR);
+    if (BUILD_DIST) {
+      print(`======      [${PACKAGE}]: BUNDLING   =====`);
+      remove_dir(NPM_DIR);
+      makeDir(NPM_DIR);
 
-    // Copy files to dist and npm dist.
-    copy(OUT_DIR, NPM_PACKAGES_DIR, true);
-    copy(SRC_PACKAGE_JSON, NPM_DIR);
-    copy(README, NPM_DIR);
+      // Copy files to dist and npm dist.
+      copy(OUT_DIR, NPM_PACKAGES_DIR, true);
+      copy(SRC_PACKAGE_JSON, NPM_DIR);
+      copy(README, NPM_DIR);
+    }
 
     print(`======      [${PACKAGE}]: MINIFY     =====`);
     run("node", [UGLIFYJS, OUT_DIR_FILENAME, "--output", OUT_DIR_FILENAME_MINIFIED]);
 
-    print(`======      [${PACKAGE}]: VERSIONING =====`);
-    const data = fs.readFileSync(NPM_PACKAGE_JSON).toString("utf8");
-    let json = JSON.parse(data);
-    json.version = BUILD_INFO.version;
-    // Update version of other needed LokiDB packages
-    if (json.dependencies) {
-      for (let pack of Object.keys(json.dependencies)) {
-        if (pack.startsWith("@lokidb/")) {
-          json.dependencies[pack] = BUILD_INFO.version;
+    if (BUILD_DIST) {
+      print(`======      [${PACKAGE}]: VERSIONING =====`);
+      const data = fs.readFileSync(NPM_PACKAGE_JSON).toString("utf8");
+      let json = JSON.parse(data);
+      json.version = BUILD_INFO.version;
+      // Update version of other needed LokiDB packages
+      if (json.dependencies) {
+        for (let pack of Object.keys(json.dependencies)) {
+          if (pack.startsWith("@lokidb/")) {
+            json.dependencies[pack] = BUILD_INFO.version;
+          }
         }
       }
-    }
-    if (json.optionalDependencies) {
-      for (let pack of Object.keys(json.optionalDependencies)) {
-        if (pack.startsWith("@lokidb/")) {
-          json.optionalDependencies[pack] = BUILD_INFO.version;
+      if (json.optionalDependencies) {
+        for (let pack of Object.keys(json.optionalDependencies)) {
+          if (pack.startsWith("@lokidb/")) {
+            json.optionalDependencies[pack] = BUILD_INFO.version;
+          }
         }
       }
+      fs.writeFileSync(NPM_PACKAGE_JSON, JSON.stringify(json, null, 2));
     }
-    fs.writeFileSync(NPM_PACKAGE_JSON, JSON.stringify(json, null, 2));
   }
 }

@@ -11,6 +11,8 @@ coverage/
 # Typescript
 .ts/
 
-# Publish
-dist/
+# Build artifacts
+build/
+dist/packages-dist/
 site/
+
