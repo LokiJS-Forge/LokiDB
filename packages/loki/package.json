@@ -1,6 +1,6 @@
 {
   "name": "@lokidb/loki",
-  "description": "Fast document oriented javascript in-memory database",
+  "description": "A fast and feature-rich document oriented in-memory database.",
   "author": "Various authors",
   "license": "MIT",
   "repository": {

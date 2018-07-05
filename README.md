@@ -1,4 +1,4 @@
-[![npm status][npm]][npm-url]
+[![npm status][npm]][lokidb-npm-url]
 [![build status][build]][build-url]
 [![coverage status][coverage]][coverage-url]
 
@@ -12,23 +12,27 @@ LokiDB is the official successor of [LokiJS][lokijs-url].
 
 ## Install
 
-Install with npm:
+Install all packages at once with:
 
-```bash
-npm install @lokidb/loki
+```
+npm install lokidb
 ```
 
 ## Documentation
 
 Check out our interactive [documentation](https://LokiJS-Forge.github.io/LokiDB/).
 
-## Plugins
+## Packages
+
+|Name|Description|
+|:---|:----------|
+|[@lokidb/lokidb][loki-npm-url]                             |  A fast and feature-rich document oriented in-memory database. |
 
 ### Storage and Adapter
 
 |Name|Description|
 |:---|:----------|
-|[@lokidb/fs-storage][fs-storage-npm-url]                             |  A persistence adapter which persists to node fs module storage. |
+|[@lokidb/fs-storage][fs-storage-npm-url]                             |  A persistence adapter which persists to node's filesystem storage. |
 |[@lokidb/local-storage][local-storage-npm-url]                       |  A persistence adapter which persists to web browser's local storage. |
 |[@lokidb/indexed-storage][indexed-storage-npm-url]                   |  A persistence adapter which persists to web browser's indexed db storage. |
 |[@lokidb/memory-storage][memory-storage-npm-url]                     |  A persistence adapter which persists to memory. |
@@ -48,10 +52,13 @@ Check out our interactive [documentation](https://LokiJS-Forge.github.io/LokiDB/
 [coverage]: https://codecov.io/gh/LokiJS-Forge/LokiDB/branch/master/graph/badge.svg
 [coverage-url]: https://codecov.io/gh/LokiJS-Forge/LokiDB/branch/master
 
+[npm]: https://img.shields.io/npm/v/lokidb.svg
+[lokidb-npm-url]: https://www.npmjs.com/package/lokidb
+
 [lokijs-url]: https://github.com/techfort/LokiJS
 
-[npm]: https://img.shields.io/npm/v/@lokidb/loki.svg
-[npm-url]: https://www.npmjs.com/package/@lokidb/loki
+[loki]: https://github.com/LokiJS-Forge/LokiDB
+[loki-npm-url]: https://www.npmjs.com/package/@lokidb/loki
 
 [fs-storage]: https://github.com/LokiJS-Forge/LokiDB
 [fs-storage-npm-url]: https://www.npmjs.com/package/@lokidb/fs-storage

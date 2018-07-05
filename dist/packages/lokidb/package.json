@@ -1,0 +1,27 @@
+{
+  "name": "lokidb",
+  "version": "0.0.2-beta.1",
+  "description": "Metapackage for LokiDB.",
+  "author": "Various authors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LokiJS-Forge/LokiDB.git"
+  },
+  "scripts": {
+    "postinstall": "node install.js",
+    "preuninstall": "node uninstall.js"
+  },
+  "dependencies": {
+    "@lokidb/fs-storage": "^2.0.0-beta.7",
+    "@lokidb/full-text-search": "^2.0.0-beta.7",
+    "@lokidb/full-text-search-language": "^2.0.0-beta.7",
+    "@lokidb/full-text-search-language-de": "^2.0.0-beta.7",
+    "@lokidb/full-text-search-language-en": "^2.0.0-beta.7",
+    "@lokidb/indexed-storage": "^2.0.0-beta.7",
+    "@lokidb/local-storage": "^2.0.0-beta.7",
+    "@lokidb/loki": "^2.0.0-beta.7",
+    "@lokidb/memory-storage": "^2.0.0-beta.7",
+    "@lokidb/partitioning-adapter": "^2.0.0-beta.7"
+  }
+}

@@ -1,7 +1,7 @@
 {
-  "name": "@lokidb/lokidb-src",
+  "name": "@lokidb/sources",
   "version": "2.0.0-beta.7",
-  "description": "Fast document oriented javascript in-memory database",
+  "description": "Top-level scripts and dependencies for the LokiDB monorepo. Not meant to be published to npm.",
   "author": "Various authors",
   "license": "(MIT OR Apache-2.0)",
   "scripts": {
@@ -26,12 +26,14 @@
   },
   "keywords": [
     "javascript",
+    "typescript",
     "document-oriented",
     "mmdb",
     "database",
+    "in-memory",
     "json",
     "lokidb",
-    "in-memory"
+    "lokijs"
   ],
   "bugs": {
     "url": "https://github.com/LokiJS-Forge/LokiDB/issues"

@@ -1,6 +1,6 @@
 {
   "name": "@lokidb/fs-storage",
-  "description": "A persistence adapter which persists to node fs module storage.",
+  "description": "A persistence adapter which persists to node's filesystem storage.",
   "author": "Various authors",
   "license": "MIT",
   "repository": {

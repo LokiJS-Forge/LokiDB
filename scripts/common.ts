@@ -3,16 +3,17 @@ import {spawnSync} from "child_process";
 const cash = require("cash");
 
 export const PACKAGES = [
-  "loki",
-  "partitioning-adapter",
-  "local-storage",
-  "indexed-storage",
   "fs-storage",
-  "memory-storage",
   "full-text-search",
   "full-text-search-language",
   "full-text-search-language-de",
   "full-text-search-language-en",
+  "indexed-storage",
+  "local-storage",
+  "loki",
+  "lokidb",
+  "memory-storage",
+  "partitioning-adapter",
 ];
 
 export function run(command: string, args: string[] = [], object: { shell?: boolean } = {}) {
