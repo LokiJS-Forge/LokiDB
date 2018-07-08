@@ -52,7 +52,9 @@ function createDatabase(indexType) {
          break;
       case "btree":
          samplecoll = db.addCollection('samplecoll', {
-            btreeIndexes: ['customId']
+            rangedIndexes: {
+               customId: { indexTypeName: "btree", comparatorName: "js" }
+            }
          });
          break;
    }
@@ -400,14 +402,14 @@ function cleanup() {
 let memoryProfileSteps = [
    () => logMemoryUsage("baseline"),
    cleanup,
-   () => {},
+   () => { },
    () => profileDatabaseMemory("unindexed"),
    cleanup,
-   () => {},
+   () => { },
    () => logMemoryUsage("baseline"),
    () => profileDatabaseMemory("adaptive"),
    cleanup,
-   () => {},
+   () => { },
    () => logMemoryUsage("baseline"),
    () => profileDatabaseMemory("btree")
 ];
@@ -418,39 +420,39 @@ let insertionProfileSteps = [
    () => createDatabase("none"),
    () => initializeDatabase(false, 100000),
    cleanup,
-   () => {},
+   () => { },
    // Unindexed Batch Inserts
    () => createDatabase("none"),
    () => initializeDatabaseBatch(false, 100000),
    cleanup,
-   () => {},
+   () => { },
    // Indexed (lazy) inserts
    () => console.log("lazy binary"),
    () => createDatabase("lazy"),
    () => initializeDatabase(false, 100000),
    cleanup,
-   () => {},
+   () => { },
    // Indexed (lazy) batch inserts
    () => createDatabase("lazy"),
    () => initializeDatabaseBatch(false, 100000),
    cleanup,
-   () => {},
+   () => { },
    // Indexed (Adaptive) inserts
    () => console.log("adaptive binary"),
    () => createDatabase("adaptive"),
    () => initializeDatabase(false, 100000),
    cleanup,
-   () => {},
+   () => { },
    // Indexed (Adaptive) batch inserts
    () => createDatabase("adaptive"),
    () => initializeDatabaseBatch(false, 100000),
    cleanup,
-   () => {},
+   () => { },
    () => console.log("btree"),
    () => createDatabase("btree"),
    () => initializeDatabase(false, 100000),
    cleanup,
-   () => {},
+   () => { },
    () => createDatabase("btree"),
    () => initializeDatabaseBatch(false, 100000)
 ];
@@ -490,22 +492,22 @@ let nightmareUnindexedHighSteps = [
       createDatabase("none");
    },
    () => initializeDatabase(true, 10000),
-   () => {},
+   () => { },
    () => perfFind(),
    cleanup,
    () => createDatabase("none"),
    () => initializeDatabase(true, 10000),
-   () => {},
+   () => { },
    () => perfFindInterlacedInserts(),
    cleanup,
    () => createDatabase("none"),
    () => initializeDatabase(true, 10000),
-   () => {},
+   () => { },
    () => perfFindInterlacedRemoves(),
    cleanup,
    () => createDatabase("none"),
    () => initializeDatabase(true, 10000),
-   () => {},
+   () => { },
    () => perfFindInterlacesUpdates(),
 ];
 
@@ -516,22 +518,22 @@ let nightmareAdaptiveLowSteps = [
       createDatabase("adaptive");
    },
    () => initializeDatabase(true, 10000),
-   () => {},
+   () => { },
    () => perfFind(),
    cleanup,
    () => createDatabase("adaptive"),
    () => initializeDatabase(true, 10000),
-   () => {},
+   () => { },
    () => perfFindInterlacedInserts(1),
    cleanup,
    () => createDatabase("adaptive"),
    () => initializeDatabase(true, 10000),
-   () => {},
+   () => { },
    () => perfFindInterlacedRemoves(),
    cleanup,
    () => createDatabase("adaptive"),
    () => initializeDatabase(true, 10000),
-   () => {},
+   () => { },
    () => perfFindInterlacesUpdates(),
 ];
 
@@ -542,22 +544,22 @@ let nightmareAdaptiveHighSteps = [
       createDatabase("adaptive");
    },
    () => initializeDatabase(true, 40000),
-   () => {},
+   () => { },
    () => perfFind(),
    cleanup,
    () => createDatabase("adaptive"),
    () => initializeDatabase(true, 40000),
-   () => {},
+   () => { },
    () => perfFindInterlacedInserts(1),
    cleanup,
    () => createDatabase("adaptive"),
    () => initializeDatabase(true, 40000),
-   () => {},
+   () => { },
    () => perfFindInterlacedRemoves(),
    cleanup,
    () => createDatabase("adaptive"),
    () => initializeDatabase(true, 40000),
-   () => {},
+   () => { },
    () => perfFindInterlacesUpdates(),
 ];
 
@@ -568,19 +570,19 @@ let nightmareBtreeLowSteps = [
       createDatabase("btree");
    },
    () => initializeDatabase(true, 40000),
-   () => {},
+   () => { },
    () => perfFind(),
    () => createDatabase("btree"),
    () => initializeDatabase(true, 40000),
-   () => {},
+   () => { },
    () => perfFindInterlacedInserts(1),
    () => createDatabase("btree"),
    () => initializeDatabase(true, 40000),
-   () => {},
+   () => { },
    () => perfFindInterlacedRemoves(),
    () => createDatabase("btree"),
    () => initializeDatabase(true, 40000),
-   () => {},
+   () => { },
    () => perfFindInterlacesUpdates(),
 ];
 
@@ -591,19 +593,19 @@ let nightmareBtreeHighSteps = [
       createDatabase("btree");
    },
    () => initializeDatabase(true, 100000),
-   () => {},
+   () => { },
    () => perfFind(),
    () => createDatabase("btree"),
    () => initializeDatabase(true, 100000),
-   () => {},
+   () => { },
    () => perfFindInterlacedInserts(1),
    () => createDatabase("btree"),
    () => initializeDatabase(true, 100000),
-   () => {},
+   () => { },
    () => perfFindInterlacedRemoves(),
    () => createDatabase("btree"),
    () => initializeDatabase(true, 100000),
-   () => {},
+   () => { },
    () => perfFindInterlacesUpdates()
 ];
 
@@ -613,7 +615,7 @@ let perfGroups = [
    { name: "Nightmare Unindexed (Low Range)", steps: nightmareUnindexedLowSteps },
    { name: "Nightmare Unindexed (High Range)", steps: nightmareUnindexedHighSteps },
    { name: "Nightmare Adaptive (Low Range)", steps: nightmareAdaptiveLowSteps },
-   { name: "Nightmare Adaptive (Low Range)", steps: nightmareAdaptiveHighSteps },
+   { name: "Nightmare Adaptive (High Range)", steps: nightmareAdaptiveHighSteps },
    { name: "Nightmare Btree (Low Range)", steps: nightmareBtreeLowSteps },
    { name: "Nightmare Btree (High Range)", steps: nightmareBtreeHighSteps }
 ];

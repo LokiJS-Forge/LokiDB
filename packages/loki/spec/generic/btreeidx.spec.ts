@@ -567,7 +567,12 @@ describe("binary tree index tests", () => {
       }
 
       const db = new Loki("idxtest");
-      const items = db.addCollection<TestUserType>("users", { btreeIndexes: ["name"] });
+      const items = db.addCollection<TestUserType>("users", { 
+         rangedIndexes: {
+            name: { indexTypeName: "btree", comparatorName: "js" } 
+         }
+      });
+
       items.insert([
          { name: "patterson", age: 10, location: "a" },
          { name: "gilbertson", age: 20, location: "b" },
@@ -641,7 +646,12 @@ describe("binary tree index tests", () => {
       };
 
       const db = new Loki("idxtest");
-      const items = db.addCollection<TestUserType>("users", { btreeIndexes: ["name"] });
+      const items = db.addCollection<TestUserType>("users", { 
+         rangedIndexes: {
+            name: { indexTypeName: "btree", comparatorName: "js" } 
+         }
+      });
+
       items.insert([
          { name: "patterson", age: 10, location: "a" },
          { name: "gilbertson", age: 20, location: "b" },
@@ -680,7 +690,12 @@ describe("binary tree index tests", () => {
       }
 
       const db = new Loki("idxtest");
-      const items = db.addCollection<TestUserType>("users", { btreeIndexes: ["name"] });
+      const items = db.addCollection<TestUserType>("users", { 
+         rangedIndexes: {
+            name: { indexTypeName: "btree", comparatorName: "js" } 
+         }
+      });
+
       items.insert([
          { name: "patterson", age: 10, location: "a" },
          { name: "gilbertson", age: 20, location: "b" },
@@ -707,7 +722,12 @@ describe("binary tree index tests", () => {
       }
 
       const db = new Loki("idxtest");
-      const items = db.addCollection<TestUserType>("users", { btreeIndexes: ["name"] });
+      const items = db.addCollection<TestUserType>("users", { 
+         rangedIndexes: {
+            name: { indexTypeName: "btree", comparatorName: "js" } 
+         }
+      });
+
       items.insert([
          { name: "patterson", age: 10, location: "a" },
          { name: "gilbertson", age: 20, location: "b" },

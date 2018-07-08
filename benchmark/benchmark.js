@@ -33,7 +33,11 @@ function initializeDB(mode) {
          samplecoll = db.addCollection('samplecoll', { indices: ["customId"] });
          break;
       case "btree":
-         samplecoll = db.addCollection('samplecoll', { btreeIndexes: ["customId"] });
+         samplecoll = db.addCollection('samplecoll', {
+            rangedIndexes: {
+               "customId": { indexTypeName: "btree", comparatorName: "js" }
+            }
+         });
          break;
       case "none":
       default:
@@ -305,12 +309,12 @@ function testperfDV(multiplier) {
  * Attempt to free up global variables and invoke node garbage collector (if enabled)
  */
 function cleanup() {
-   db.close(); 
+   db.close();
    samplecoll = null;
-   uniquecoll = null; 
-   db = null; 
-   if (global.gc) { 
-      global.gc() 
+   uniquecoll = null;
+   db = null;
+   if (global.gc) {
+      global.gc()
    }
    else {
       console.log("!! WARNING: Launch node with --expose-gc flag for more accurate results !!")
@@ -333,7 +337,7 @@ var nonIndexedSteps = [
 
 var binaryIndexSteps = [
    () => initializeDB("bidx"),
-   () => {}, // after heavy memory alloc, wait a sec for cpu to settle
+   () => { }, // after heavy memory alloc, wait a sec for cpu to settle
    () => testperfFind(20),
    () => testperfRS(15),
    () => testperfDV(15)
@@ -341,7 +345,7 @@ var binaryIndexSteps = [
 
 var btreeIndexSteps = [
    () => initializeDB("btree"),
-   () => {}, // after heavy memory alloc, wait a sec for cpu to settle
+   () => { }, // after heavy memory alloc, wait a sec for cpu to settle
    () => testperfFind(20),
    () => testperfRS(15),
    () => testperfDV(15)
@@ -349,7 +353,7 @@ var btreeIndexSteps = [
 
 var perfGroups = [
    { name: "Benchmarking Core Id lookup performance", steps: corePerf },
-   { name: "Benchmarking NON-INDEX query performance", steps: nonIndexedSteps},
+   { name: "Benchmarking NON-INDEX query performance", steps: nonIndexedSteps },
    { name: "Benchmarking BINARY INDEX query performance", steps: binaryIndexSteps },
    { name: "Benchmarking BINARY TREE INDEX query performance", steps: btreeIndexSteps }
 ];

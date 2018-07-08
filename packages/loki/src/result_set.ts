@@ -464,8 +464,8 @@ export class ResultSet<TData extends object = object, TNested extends object = o
       };
     }
 
-    if (!this._filterInitialized && this._collection._binaryTreeIndexes.hasOwnProperty(propname)) {
-      let sortedIds: number[] = this._collection._binaryTreeIndexes[propname].rangeRequest();
+    if (!this._filterInitialized && this._collection._rangedIndexes.hasOwnProperty(propname)) {
+      let sortedIds: number[] = this._collection._rangedIndexes[propname].index.rangeRequest();
       let dataPositions: number[] = [];
       
       // until we refactor resultset to store $loki ids in filteredrows, 
@@ -819,7 +819,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
       searchByIndex = true;
     }
 
-    if (doIndexCheck && this._collection._binaryTreeIndexes[property] && indexedOps[operator]) {
+    if (doIndexCheck && this._collection._rangedIndexes[property] && indexedOps[operator]) {
       searchByIndex = true;
     }
 
@@ -902,10 +902,10 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
     // If we have BinaryTreeIndex, use that and bail
     // -NOTE- probably need implement '$in' operator iteration using '$eq' implementation
-    if (this._collection._binaryTreeIndexes[property]) {
+    if (this._collection._rangedIndexes[property]) {
 
       if (operator === "$between") {
-        let idResult = this._collection._binaryTreeIndexes[property].rangeRequest({
+        let idResult = this._collection._rangedIndexes[property].index.rangeRequest({
           op: operator,
           val: value[0],
           high: value[1]
@@ -918,7 +918,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
         }
       }
       else {
-        let idResult = this._collection._binaryTreeIndexes[property].rangeRequest({
+        let idResult = this._collection._rangedIndexes[property].index.rangeRequest({
           op: operator,
           val: value
         });

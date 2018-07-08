@@ -3,6 +3,7 @@ import {LokiEventEmitter} from "./event_emitter";
 import {Collection} from "./collection";
 import {Doc, StorageAdapter} from "../../common/types";
 import {PLUGINS} from "../../common/plugin";
+import { IComparatorMap, IRangedIndexFactoryMap, ComparatorMap, RangedIndexFactoryMap } from "./helper";
 
 function getENV(): Loki.Environment {
   if (global !== undefined && (global["android"] || global["NSObject"])) {
@@ -97,6 +98,20 @@ export class Loki extends LokiEventEmitter {
       "changes": [],
       "warning": []
     };
+
+    // allow users to inject their own comparators
+    if (options.comparatorMap) {
+      for (let c in options.comparatorMap) {
+        ComparatorMap[c] = options.comparatorMap[c];
+      }
+    }
+
+    // allow users to register their own rangedIndex factory functions
+    if (options.rangedIndexFactoryMap) {
+      for (let rif in options.rangedIndexFactoryMap) {
+        RangedIndexFactoryMap[rif] = options.rangedIndexFactoryMap[rif];
+      }
+    }
 
     this.on("init", this.clearChanges);
   }
@@ -1028,6 +1043,8 @@ export namespace Loki {
     env?: Environment;
     serializationMethod?: SerializationMethod;
     destructureDelimiter?: string;
+    comparatorMap?: IComparatorMap;
+    rangedIndexFactoryMap?: IRangedIndexFactoryMap;
   }
 
   export interface PersistenceOptions {

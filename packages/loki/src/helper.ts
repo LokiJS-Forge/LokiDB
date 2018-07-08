@@ -3,6 +3,8 @@
  * Not sure how these might change or where they might be relocated to.
  */
 
+import { BinaryTreeIndex } from "./btree_index";
+
 /* valid range ops that the index must directly support */
 export type RangedValueOperator = "$gt" | "$gte" | "$lt" | "$lte" | "$eq" | "$neq" | "$between";
 
@@ -17,12 +19,30 @@ export interface IRangedIndexRequest<T> {
   high?: T;
 }
 
-//export type RangedInitializer<T> = [ keyof T, ILokiRangedComparer<T> ];
+export interface IComparatorMap {
+  [name: string]: ILokiRangedComparer<any>;
+}
+
+/* global (for now) comparator hashmap... static registry rather than factory */
+export let ComparatorMap: IComparatorMap = {
+  "js": CreateJavascriptComparator<any>(),
+  "loki": CreateLokiComparator()
+};
+
+export interface IRangedIndexFactoryMap {
+  [name: string]: (name: string, comparator: ILokiRangedComparer<any>) => IRangedIndex<any>;
+}
+
+/* global rangedIndex factory hashmap */
+export let RangedIndexFactoryMap: IRangedIndexFactoryMap = {
+  "btree": (name: string, comparator: ILokiRangedComparer<any>) => { return new BinaryTreeIndex(name, comparator); }
+};
 
 export interface IRangedIndex<T> {
   insert(id:number, val:T): void;  
   update(id: number, val: T): void;
   remove(id: number): void;
+  restore(tree: any) : void;
 
   rangeRequest(range?: IRangedIndexRequest<T>): number[];
 
@@ -39,7 +59,7 @@ export function CreateJavascriptComparator<T>(): ILokiRangedComparer<T> {
   };
 }
 
-export function createLokiComparator() : ILokiRangedComparer<any> {
+export function CreateLokiComparator() : ILokiRangedComparer<any> {
   return {
     compare(val: any, val2: any) {
       if (aeqHelper(val, val2)) return 0;

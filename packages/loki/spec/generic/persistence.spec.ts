@@ -114,6 +114,93 @@ describe("testing nested binary index serialization", () => {
   });
 });
 
+describe("testing btree index serialization", function() {
+  it("collection find ops on btree index work", (done) => {
+    interface TestUserType {
+       name: string;
+       age: number;
+       location: string;
+    }
+
+    const memAdapter = new MemoryStorage();
+    const db = new Loki("idxtest");
+    db.initializePersistence({adapter: memAdapter});
+
+    const items = db.addCollection<TestUserType>("users", { 
+       rangedIndexes: {
+          name: { indexTypeName: "btree", comparatorName: "js" } 
+       }
+    });
+
+    items.insert([
+       { name: "patterson", age: 10, location: "a" },
+       { name: "gilbertson", age: 20, location: "b" },
+       { name: "smith", age: 30, location: "c" },
+       { name: "donaldson", age: 40, location: "d" },
+       { name: "harrison", age: 50, location: "e" },
+       { name: "thompson", age: 60, location: "f" },
+       { name: "albertson", age: 70, location: "g" },
+       { name: "fiset", age: 80, location: "h" }
+    ]);
+
+    db.saveDatabase().then(() => {
+      // now deserialize via loadDatabase() and ensure index is functional
+      const db2 = new Loki("idxtest");
+      db2.initializePersistence({adapter: memAdapter});
+      db2.loadDatabase({}).then(() => {
+        let items2 = db.getCollection<TestUserType>("users");
+
+        // $eq
+        let results: TestUserType[] = items2.find({ name: "donaldson" });
+        expect(results.length).toEqual(1);
+        expect(results[0].name).toEqual("donaldson");
+        expect(results[0].age).toEqual(40);
+        expect(results[0].location).toEqual("d");
+
+        // $lt
+        results = items2.find({ name: { $lt: "giraffe" } });
+        expect(results.length).toEqual(4);
+        expect(results[0].name).toEqual("albertson");
+        expect(results[1].name).toEqual("donaldson");
+        expect(results[2].name).toEqual("fiset");
+        expect(results[3].name).toEqual("gilbertson");
+
+        // $lte
+        results = items2.find({ name: { $lte: "fiset" } });
+        expect(results.length).toEqual(3);
+        expect(results[0].name).toEqual("albertson");
+        expect(results[1].name).toEqual("donaldson");
+        expect(results[2].name).toEqual("fiset");
+
+        // $gt
+        results = items2.find({ name: { $gt: "giraffe" } });
+        expect(results.length).toEqual(4);
+        expect(results[0].name).toEqual("harrison");
+        expect(results[1].name).toEqual("patterson");
+        expect(results[2].name).toEqual("smith");
+        expect(results[3].name).toEqual("thompson");
+
+        // $gte
+        results = items2.find({ name: { $gte: "patterson" } });
+        expect(results.length).toEqual(3);
+        expect(results[0].name).toEqual("patterson");
+        expect(results[1].name).toEqual("smith");
+        expect(results[2].name).toEqual("thompson");
+
+        // $between
+        results = items2.find({ name: { $between: ["faraday", "samuel"] } });
+        expect(results.length).toEqual(4);
+        expect(results[0].name).toEqual("fiset");
+        expect(results[1].name).toEqual("gilbertson");
+        expect(results[2].name).toEqual("harrison");
+        expect(results[3].name).toEqual("patterson");
+
+        done();
+      });
+    });
+  });
+});
+
 describe("testing disable meta serialization", function () {
   it("should have meta disabled", function () {
     const db = new Loki();
