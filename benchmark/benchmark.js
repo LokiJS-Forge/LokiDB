@@ -1,4 +1,4 @@
-let Loki = require('../dist/packages/loki/lokidb.loki.js').default,
+let Loki = require('../build/packages/loki/lokidb.loki.js').default,
    db = new Loki('perftest'),
    samplecoll = null,
    uniquecoll = null,
@@ -392,5 +392,9 @@ function execGroups() {
    console.log("");
    execSteps(g.steps);
 }
+
+console.log("");
+console.log("Note: run 'npm run build' before benchmarking after getting latest or modifying code");
+console.log("");
 
 execGroups();

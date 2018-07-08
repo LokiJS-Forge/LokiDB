@@ -15,7 +15,7 @@
  */
 
 
-let Loki = require('../dist/packages/loki/lokidb.loki.js').default,
+let Loki = require('../build/packages/loki/lokidb.loki.js').default,
    crypto = require("crypto"), // for less 'leaky' random string generation
    db = new Loki('binary index perf'),
    samplecoll = null,
@@ -650,5 +650,9 @@ if (!global.gc) {
    console.warn("## IMPORTANT! : For accuracy of results, launch node with --expose-gc flag");
    console.warn("##");
 }
+
+console.log("");
+console.log("Note: run 'npm run build' before benchmarking after getting latest or modifying code");
+console.log("");
 
 execGroups();
