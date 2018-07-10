@@ -1,5 +1,5 @@
-import {PLUGINS} from "../../common/plugin";
-import {Dict, StorageAdapter} from "../../common/types";
+import { PLUGINS } from "../../common/plugin";
+import { Dict, StorageAdapter } from "../../common/types";
 
 /**
  * An in-memory persistence adapter for an in-memory database.
