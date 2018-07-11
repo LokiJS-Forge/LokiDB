@@ -1,6 +1,6 @@
-import {CharacterFilter} from "./character_filter";
-import {Tokenizer, whitespaceTokenizer} from "./tokenizer";
-import {lowercaseTokenFilter, TokenFilter} from "./token_filter";
+import { CharacterFilter } from "./character_filter";
+import { Tokenizer, whitespaceTokenizer } from "./tokenizer";
+import { lowercaseTokenFilter, TokenFilter } from "./token_filter";
 
 /**
  * A analyzer converts a string into tokens which are added to the inverted index for searching.

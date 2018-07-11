@@ -1,5 +1,5 @@
-import {PLUGINS} from "../../common/plugin";
-import {StorageAdapter} from "../../common/types";
+import { PLUGINS } from "../../common/plugin";
+import { StorageAdapter } from "../../common/types";
 
 /**
  * A loki persistence adapter which persists to web browser's local storage object

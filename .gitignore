@@ -15,4 +15,5 @@ coverage/
 build/
 dist/packages-dist/
 site/
+docs/api/
 

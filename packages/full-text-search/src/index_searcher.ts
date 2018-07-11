@@ -1,15 +1,15 @@
-import {Scorer} from "./scorer";
-import {InvertedIndex, toCodePoints} from "./inverted_index";
-import {BoolQuery, FuzzyQuery, Query, QueryTypes, TermQuery, WildcardQuery} from "./query_types";
-import {Dict} from "../../common/types";
-import {RunAutomaton} from "./fuzzy/run_automaton";
-import {LevenshteinAutomata} from "./fuzzy/levenshtein_automata";
+import { Scorer } from "./scorer";
+import { InvertedIndex, toCodePoints } from "./inverted_index";
+import { BoolQuery, FuzzyQuery, Query, QueryTypes, TermQuery, WildcardQuery } from "./query_types";
+import { Dict } from "../../common/types";
+import { RunAutomaton } from "./fuzzy/run_automaton";
+import { LevenshteinAutomata } from "./fuzzy/levenshtein_automata";
 import QueryResults = Scorer.QueryResults;
 import Index = InvertedIndex.Index;
-import {analyze, Analyzer} from "./analyzer/analyzer";
+import { analyze, Analyzer } from "./analyzer/analyzer";
 
 function calculateMinShouldMatch(optionalClauseCount: number, spec: undefined | number | string): number {
-  if (spec === undefined)  {
+  if (spec === undefined) {
     return 1;
   }
   if (typeof spec === "number") {

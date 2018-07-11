@@ -1,8 +1,8 @@
 /* global global */
-import {LokiEventEmitter} from "./event_emitter";
-import {Collection} from "./collection";
-import {Doc, StorageAdapter} from "../../common/types";
-import {PLUGINS} from "../../common/plugin";
+import { LokiEventEmitter } from "./event_emitter";
+import { Collection } from "./collection";
+import { Doc, StorageAdapter } from "../../common/types";
+import { PLUGINS } from "../../common/plugin";
 
 function getENV(): Loki.Environment {
   if (global !== undefined && (global["android"] || global["NSObject"])) {

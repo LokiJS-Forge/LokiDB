@@ -15,17 +15,13 @@
     "semicolon": [true],
     "variable-name": [true, "ban-keywords"],
     "no-inner-declarations": [true, "function"],
-    "quotemark": [true, "double"]
-  },
-  "jsRules": {
-    "no-console": [true, "log"],
-    "no-duplicate-imports": true,
-    "no-duplicate-variable": true,
-    "no-jasmine-focus": true,
-    "require-internal-with-underscore": true,
-    "semicolon": [true],
-    "variable-name": [true, "ban-keywords"],
-    "no-inner-declarations": [true, "function"],
-    "quotemark": [true, "double"]
+    "quotemark": [true, "double"],
+    "eofline": true,
+    "ter-indent": [true, 2, {
+      "SwitchCase": 1
+    }],
+    "whitespace": [true, "check-branch", "check-decl", "check-operator", "check-module", "check-separator",
+      "check-rest-spread", "check-type", "check-type", "check-typecast", "check-type-operator", "check-preblock"],
+    "no-trailing-whitespace": true
   }
 }
