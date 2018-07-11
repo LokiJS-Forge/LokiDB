@@ -3,12 +3,13 @@ import { Loki } from "../../../loki/src/loki";
 import { MemoryStorage } from "../../../memory-storage/src/memory_storage";
 import { PartitioningAdapter } from "../../src/partitioning_adapter";
 
+declare var require: (moduleId: string) => any;
+const loki = require("../../../lokijs/lokijs.js");
 
 interface AB {
   a: number;
   b: number;
 }
-
 
 interface User {
   name: string;
@@ -262,8 +263,30 @@ describe("partitioning adapter", () => {
               });
             });
           });
+        }).catch((e) => {
+          done.fail(e);
         });
       });
+    });
+  });
+
+  it("from lokijs", (done) => {
+    const legacyMemAdapter = new loki.LokiMemoryAdapter();
+    const legacyDB = new loki("legacyDB", {adapter: new loki.LokiPartitioningAdapter(legacyMemAdapter)});
+    const coll = legacyDB.addCollection("myColl");
+    coll.insert({name: "Hello World"});
+    legacyDB.saveDatabase(() => {
+      // Load with LokiDB.
+      const memStorage = new MemoryStorage();
+      memStorage.hashStore = legacyMemAdapter.hashStore;
+      const db = new Loki("legacyDB");
+      return db.initializePersistence( {adapter: new PartitioningAdapter(memStorage)})
+        .then(() => {
+          return db.loadDatabase();
+        }).then(() => {
+          expect(db.getCollection<{name: string}>("myColl").find()[0].name).toEqual("Hello World");
+          done();
+        });
     });
   });
 });

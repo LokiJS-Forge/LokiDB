@@ -8,6 +8,7 @@ import { Doc, Dict } from "../../common/types";
 import { FullTextSearch } from "../../full-text-search/src/full_text_search";
 import { PLUGINS } from "../../common/plugin";
 import { Analyzer } from "../../full-text-search/src/analyzer/analyzer";
+import { Serialization } from "./serialization/migration";
 
 export {CloneMethod} from "./clone";
 
@@ -155,7 +156,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    */
   public _ttl: Collection.TTL = {
     age: null,
-    ttlInterval: null,
+    interval: null,
     daemon: null
   };
 
@@ -305,18 +306,18 @@ export class Collection<TData extends object = object, TNested extends object = 
     this.flushChanges();
   }
 
-  toJSON(): Collection.Serialized {
+  toJSON(): Serialization.Collection {
     return {
       name: this.name,
-      _dynamicViews: this._dynamicViews,
+      dynamicViews: this._dynamicViews.map(dV => dV.toJSON()),
       uniqueNames: Object.keys(this._constraints.unique),
       transforms: this._transforms as any,
       binaryIndices: this._binaryIndices as any,
-      _data: this._data,
+      data: this._data,
       idIndex: this._idIndex,
       maxId: this._maxId,
-      _dirty: this._dirty,
-      _nestedProperties: this._nestedProperties,
+      dirty: this._dirty,
+      nestedProperties: this._nestedProperties,
       adaptiveBinaryIndices: this._adaptiveBinaryIndices,
       transactional: this._transactional,
       asyncListeners: this._asyncListeners,
@@ -325,13 +326,17 @@ export class Collection<TData extends object = object, TNested extends object = 
       disableDeltaChangesApi: this._disableDeltaChangesApi,
       cloneObjects: this._cloneObjects,
       cloneMethod: this._cloneMethod,
+      serializableIndices: this._serializableIndices,
       changes: this._changes,
-      _fullTextSearch: this._fullTextSearch
+      ttl: this._ttl.age,
+      ttlInterval: this._ttl.interval,
+      fullTextSearch: this._fullTextSearch ? this._fullTextSearch.toJSON() : null
     };
   }
 
-  static fromJSONObject(obj: Collection.Serialized, options?: Collection.DeserializeOptions) {
-    let coll = new Collection<any>(obj.name, {
+
+  static fromJSONObject(obj: Serialization.Collection, options?: Collection.DeserializeOptions) {
+    let coll = new Collection<any, any>(obj.name, {
       disableChangesApi: obj.disableChangesApi,
       disableDeltaChangesApi: obj.disableDeltaChangesApi
     });
@@ -344,11 +349,11 @@ export class Collection<TData extends object = object, TNested extends object = 
     coll._cloneObjects = obj.cloneObjects;
     coll._cloneMethod = obj.cloneMethod || "deep";
     coll._changes = obj.changes;
-    coll._nestedProperties = obj._nestedProperties as any[];
+    coll._nestedProperties = obj.nestedProperties;
+    coll._serializableIndices = obj.serializableIndices;
+    coll._dirty = (options && options.retainDirtyFlags === true) ? obj.dirty : false;
 
-    coll._dirty = (options && options.retainDirtyFlags === true) ? obj._dirty : false;
-
-    function makeLoader(coll: Collection.Serialized) {
+    function makeLoader(coll: Serialization.Collection) {
       const collOptions = options[coll.name];
 
       if (collOptions.proto) {
@@ -372,12 +377,12 @@ export class Collection<TData extends object = object, TNested extends object = 
     if (options && options[obj.name] !== undefined) {
       let loader = makeLoader(obj);
 
-      for (let j = 0; j < obj._data.length; j++) {
-        coll._data[j] = coll._defineNestedProperties(loader(obj._data[j]));
+      for (let j = 0; j < obj.data.length; j++) {
+        coll._data[j] = coll._defineNestedProperties(loader(obj.data[j]));
       }
     } else {
-      for (let j = 0; j < obj._data.length; j++) {
-        coll._data[j] = coll._defineNestedProperties(obj._data[j]);
+      for (let j = 0; j < obj.data.length; j++) {
+        coll._data[j] = coll._defineNestedProperties(obj.data[j]);
       }
     }
 
@@ -400,16 +405,18 @@ export class Collection<TData extends object = object, TNested extends object = 
     }
 
     // in case they are loading a database created before we added dynamic views, handle undefined
-    if (obj._dynamicViews !== undefined) {
+    if (obj.dynamicViews !== undefined) {
       // reinflate DynamicViews and attached ResultSets
-      for (let idx = 0; idx < obj._dynamicViews.length; idx++) {
-        coll._dynamicViews.push(DynamicView.fromJSONObject(coll, obj._dynamicViews[idx] as any));
+      for (let idx = 0; idx < obj.dynamicViews.length; idx++) {
+        coll._dynamicViews.push(DynamicView.fromJSONObject(coll, obj.dynamicViews[idx]));
       }
     }
 
-    if (obj._fullTextSearch) {
-      coll._fullTextSearch = PLUGINS["FullTextSearch"].fromJSONObject(obj._fullTextSearch, options.fullTextSearch);
+    if (obj.fullTextSearch) {
+      coll._fullTextSearch = PLUGINS["FullTextSearch"].fromJSONObject(obj.fullTextSearch, options.fullTextSearch);
     }
+
+    coll.setTTL(obj.ttl || -1, obj.ttlInterval);
 
     return coll;
   }
@@ -459,7 +466,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       clearInterval(this._ttl.daemon);
     } else {
       this._ttl.age = age;
-      this._ttl.ttlInterval = interval;
+      this._ttl.interval = interval;
       this._ttl.daemon = setInterval(() => {
         const now = Date.now();
         const toRemove = this.chain().where((member: Doc<TData>) => {
@@ -2179,42 +2186,20 @@ export namespace Collection {
   export interface DeserializeOptions {
     retainDirtyFlags?: boolean;
     fullTextSearch?: Dict<Analyzer>;
+    migrate?: (databaseVersion: number, coll: Serialization.Collection, options: Collection.Options<any, any>) => boolean;
 
     [collName: string]: any | { proto?: any; inflate?: (src: object, dest?: object) => void };
   }
 
   export interface BinaryIndex {
     dirty: boolean;
-    values: any;
+    values: number[];
   }
 
   export interface Change {
     name: string;
     operation: string;
     obj: any;
-  }
-
-  export interface Serialized {
-    name: string;
-    _dynamicViews: DynamicView[];
-    _nestedProperties: { name: string, path: string[] }[];
-    uniqueNames: string[];
-    transforms: Dict<Transform[]>;
-    binaryIndices: Dict<Collection.BinaryIndex>;
-    _data: Doc<any>[];
-    idIndex: number[];
-    maxId: number;
-    _dirty: boolean;
-    adaptiveBinaryIndices: boolean;
-    transactional: boolean;
-    asyncListeners: boolean;
-    disableMeta: boolean;
-    disableChangesApi: boolean;
-    disableDeltaChangesApi: boolean;
-    cloneObjects: boolean;
-    cloneMethod: CloneMethod;
-    changes: any;
-    _fullTextSearch: FullTextSearch;
   }
 
   export interface CheckIndexOptions {
@@ -2272,7 +2257,7 @@ export namespace Collection {
 
   export interface TTL {
     age: number;
-    ttlInterval: number;
+    interval: number;
     daemon: any; // setInterval Timer
   }
 }

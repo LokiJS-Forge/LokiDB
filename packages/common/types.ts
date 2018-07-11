@@ -1,10 +1,11 @@
 /**
  * @hidden
  */
-import { Loki } from "../loki/src/loki";
+import { Loki } from "../loki/src";
+import { Serialization } from "../loki/src/serialization/migration";
 
 export interface StorageAdapter {
-  loadDatabase(dbname: string): Promise<any>;
+  loadDatabase(dbname: string): Promise<string | Loki | Serialization.Serialized>;
 
   saveDatabase?(dbname: string, serialization: string): Promise<void>;
 
@@ -25,11 +26,10 @@ export type Doc<T extends object = object> = T & {
   };
 };
 
-export interface Dict<T> {
+export type Dict<T> = {
   [index: string]: T;
-
   [index: number]: T;
-}
+};
 
 
 

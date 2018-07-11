@@ -427,7 +427,6 @@ describe("testing adapter functionality", () => {
         expect(typeof(dbname)).toEqual("string");
         expect(dbref.constructor.name).toEqual("Loki");
 
-        expect(dbref["_persistenceAdapter"]).toEqual(null);
         expect(dbref["_collections"].length).toEqual(2);
         // these changes should not affect original database
         dbref["filename"] = "somethingelse";

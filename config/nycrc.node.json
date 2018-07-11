@@ -9,7 +9,8 @@
   "exclude": [
     "**/*.helper.[jt]s",
     "**/*.spec.[jt]s",
-    "**/spec/**/*.[jt]s"
+    "**/spec/**/*.[jt]s",
+    "**/lokijs/**/*.js"
   ],
   "report-dir": "./coverage/node/"
 }

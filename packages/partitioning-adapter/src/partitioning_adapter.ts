@@ -5,9 +5,9 @@ import { PLUGINS } from "../../common/plugin";
 /**
  * An adapter for adapters. Converts a non reference mode adapter into a reference mode adapter
  * which can perform destructuring and partitioning. Each collection will be stored in its own key/save and
- * only dirty collections will be saved. If you  turn on paging with default page size of 25megs and save
+ * only dirty collections will be saved. If you turn on paging with default page size of 25megs and save
  * a 75 meg collection it should use up roughly 3 save slots (key/value pairs sent to inner adapter).
- * A dirty collection that spans three pages will save all three pages again
+ * A dirty collection that spans three pages will save all three pages again.
  * Paging mode was added mainly because Chrome has issues saving 'too large' of a string within a
  * single IndexedDB row. If a single document update causes the collection to be flagged as dirty, all
  * of that collection's pages will be written on next save.
@@ -74,20 +74,15 @@ export class PartitioningAdapter implements StorageAdapter {
    * @param {string} dbname - name of the database (filename/keyname)
    * @returns {Promise} a Promise that resolves after the database was loaded
    */
-  public loadDatabase(dbname: string): Promise<any> {
+  public loadDatabase(dbname: string): Promise<Loki> {
     this._dbname = dbname;
     this._dbref = new Loki(dbname);
 
     // load the db container (without data)
     return this._adapter.loadDatabase(dbname).then((result: string) => {
-      if (typeof result !== "string") {
-        throw new Error("LokiPartitioningAdapter received an unexpected response from inner adapter loadDatabase()");
-      }
-
       // I will want to use loki destructuring helper methods so i will inflate into typed instance
-      let db = JSON.parse(result);
-      this._dbref.loadJSONObject(db);
-      db = null;
+      this._dbref.loadJSON(result);
+      result = null; // free up memory
 
       if (this._dbref._collections.length === 0) {
         return this._dbref;
@@ -98,7 +93,8 @@ export class PartitioningAdapter implements StorageAdapter {
         pageIndex: 0
       };
 
-      return this._loadNextPartition(0).then(() => this._dbref);
+      return this._loadNextPartition(0)
+        .then(() => this._dbref);
     });
   }
 
@@ -119,6 +115,7 @@ export class PartitioningAdapter implements StorageAdapter {
       this._dbref._collections[partition]._data = this._dbref.deserializeCollection(result, {
         delimited: true
       });
+      result = null; // free up memory
 
       if (++partition < this._dbref._collections.length) {
         return this._loadNextPartition(partition);
@@ -139,7 +136,7 @@ export class PartitioningAdapter implements StorageAdapter {
     // load whatever page is next in sequence
     return this._adapter.loadDatabase(keyname).then((result: string) => {
       let data = result.split(this._delimiter);
-      result = ""; // free up memory now that we have split it into array
+      result = null; // free up memory
       let dlen = data.length;
 
       // detect if last page by presence of final empty string element and remove it if so
@@ -159,7 +156,7 @@ export class PartitioningAdapter implements StorageAdapter {
         this._dbref._collections[this._pageIterator.collection]._data.push(JSON.parse(data[idx]));
         data[idx] = null;
       }
-      data = [];
+      data = null; // free up memory
 
       // if last page, we are done with this partition
       if (isLastPage) {
@@ -195,7 +192,6 @@ export class PartitioningAdapter implements StorageAdapter {
         this._dirtyPartitions.push(idx);
       }
     }
-
     return this._saveNextPartition();
   }
 
@@ -226,13 +222,15 @@ export class PartitioningAdapter implements StorageAdapter {
     }
 
     // otherwise this is 'non-paged' partioning...
-    const result = this._dbref.serializeDestructured({
+    let result = this._dbref.serializeDestructured({
       partitioned: true,
       delimited: true,
       partition
     });
 
     return this._adapter.saveDatabase(keyname, result as string).then(() => {
+      result = null; // free up memory
+
       if (this._dirtyPartitions.length !== 0) {
         return this._saveNextPartition();
       }

@@ -1,4 +1,5 @@
 import { Analyzer, StandardAnalyzer, analyze } from "./analyzer/analyzer";
+import { Serialization } from "../../loki/src/serialization/migration";
 
 /**
  * Converts a string into an array of code points.
@@ -31,7 +32,7 @@ export class InvertedIndex {
   public docCount: number = 0;
   public docStore: Map<InvertedIndex.DocumentIndex, InvertedIndex.DocStore> = new Map();
   public totalFieldLength: number = 0;
-  public root: InvertedIndex.Index = new Map();
+  public root: InvertedIndex.Index = new Map() as InvertedIndex.Index;
 
   private _store: boolean;
   private _optimizeChanges: boolean;
@@ -219,11 +220,11 @@ export class InvertedIndex {
    * Serialize the inverted index.
    * @returns {{docStore: *, _fields: *, index: *}}
    */
-  public toJSON(): InvertedIndex.Serialization {
+  public toJSON(): Serialization.FullTextSearch.InvertedIndex {
     if (this._store) {
       return {
-        _store: true,
-        _optimizeChanges: this._optimizeChanges,
+        store: true,
+        optimizeChanges: this._optimizeChanges,
         docCount: this.docCount,
         docStore: [...this.docStore],
         totalFieldLength: this.totalFieldLength,
@@ -231,8 +232,8 @@ export class InvertedIndex {
       };
     }
     return {
-      _store: false,
-      _optimizeChanges: this._optimizeChanges,
+      store: false,
+      optimizeChanges: this._optimizeChanges,
     };
   }
 
@@ -241,14 +242,14 @@ export class InvertedIndex {
    * @param {{docStore: *, _fields: *, index: *}} serialized - The serialized inverted index.
    * @param {Analyzer} analyzer[undefined] - an analyzer
    */
-  public static fromJSONObject(serialized: InvertedIndex.Serialization, analyzer?: Analyzer): InvertedIndex {
+  public static fromJSONObject(serialized: Serialization.FullTextSearch.InvertedIndex, analyzer?: Analyzer): InvertedIndex {
     const invIdx = new InvertedIndex({
-      store: serialized._store,
-      optimizeChanges: serialized._optimizeChanges,
+      store: serialized.store,
+      optimizeChanges: serialized.optimizeChanges,
       analyzer: analyzer
     });
 
-    if (serialized._store) {
+    if (serialized.store) {
       invIdx.docCount = serialized.docCount;
       invIdx.docStore = new Map(serialized.docStore);
       invIdx.totalFieldLength = serialized.totalFieldLength;
@@ -262,8 +263,8 @@ export class InvertedIndex {
     return invIdx;
   }
 
-  private static _serializeIndex(idx: InvertedIndex.Index): InvertedIndex.SerializedIndex {
-    const serialized: InvertedIndex.SerializedIndex = {};
+  private static _serializeIndex(idx: InvertedIndex.Index): Serialization.FullTextSearch.Index {
+    const serialized: Serialization.FullTextSearch.Index = {};
     if (idx.dc !== undefined) {
       serialized.d = {df: idx.df, dc: [...idx.dc]};
     }
@@ -284,8 +285,8 @@ export class InvertedIndex {
     return serialized;
   }
 
-  private static _deserializeIndex(serialized: InvertedIndex.SerializedIndex): InvertedIndex.Index {
-    const idx: InvertedIndex.Index = new Map();
+  private static _deserializeIndex(serialized: Serialization.FullTextSearch.Index): InvertedIndex.Index {
+    const idx: InvertedIndex.Index = new Map() as InvertedIndex.Index;
 
     if (serialized.k !== undefined) {
       for (let i = 0; i < serialized.k.length; i++) {
@@ -373,31 +374,6 @@ export namespace InvertedIndex {
   export type Index = Map<number, any> & { dc?: Map<DocumentIndex, number>, df?: number, pa?: Index };
 
   export type IndexTerm = { index: Index, term: number[] };
-
-  export interface SerializedIndex {
-    d?: {
-      df: number;
-      dc: [DocumentIndex, number][]
-    };
-    k?: number[];
-    v?: SerializedIndex[];
-  }
-
-  export type Serialization = SpareSerialization | FullSerialization;
-
-  export type SpareSerialization = {
-    _store: false;
-    _optimizeChanges: boolean;
-  };
-
-  export type FullSerialization = {
-    _store: true;
-    _optimizeChanges: boolean;
-    docCount: number;
-    docStore: [DocumentIndex, DocStore][];
-    totalFieldLength: number;
-    root: SerializedIndex;
-  };
 
   export interface DocStore {
     fieldLength?: number;

@@ -63,6 +63,9 @@ module.exports = function (config) {
             test: /\.ts$/
           }
         ]
+      },
+      externals: {
+        fs: "fs"
       }
     },
     webpackMiddleware: {

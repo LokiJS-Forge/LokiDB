@@ -2,6 +2,9 @@
 import { Loki } from "../../../loki/src/loki";
 import { FSStorage } from "../../src/fs_storage";
 
+declare var require: (moduleId: string) => any;
+const loki = require("../../../lokijs/lokijs.js");
+
 describe("testing fs storage", function () {
 
   interface Name {
@@ -67,5 +70,24 @@ describe("testing fs storage", function () {
             done();
           });
       });
+  });
+
+  it("from lokijs", (done) => {
+    const legacyDB = new loki("legacyDB", {persistenceMethod: "fs"});
+    const coll = legacyDB.addCollection("myColl");
+    coll.insert({name: "Hello World"});
+    legacyDB.saveDatabase(() => {
+      // Load with LokiDB.
+      const db = new Loki("legacyDB");
+      return db.initializePersistence()
+        .then(() => {
+          return db.loadDatabase();
+        }).then(() => {
+          expect(db.getCollection<Name>("myColl").find()[0].name).toEqual("Hello World");
+          return db.deleteDatabase();
+        }).then(() => {
+          done();
+        });
+    });
   });
 });

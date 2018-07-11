@@ -90,3 +90,4 @@ export function clone<T>(data: T, method: CloneMethod = "parse-stringify"): T {
 
   return cloned as any as T;
 }
+
