@@ -1,6 +1,6 @@
 /* global describe, it, expect */
-import {Loki} from "../../../loki/src/loki";
-import {MemoryStorage} from "../../src/memory_storage";
+import { Loki } from "../../../loki/src/loki";
+import { MemoryStorage } from "../../src/memory_storage";
 
 describe("testing memory storage", function () {
 

@@ -1,7 +1,7 @@
 /* global describe, it, expect */
-import {Loki} from "../../../loki/src/loki";
-import {MemoryStorage} from "../../../memory-storage/src/memory_storage";
-import {PartitioningAdapter} from "../../src/partitioning_adapter";
+import { Loki } from "../../../loki/src/loki";
+import { MemoryStorage } from "../../../memory-storage/src/memory_storage";
+import { PartitioningAdapter } from "../../src/partitioning_adapter";
 
 
 interface AB {

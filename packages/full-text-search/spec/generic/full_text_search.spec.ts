@@ -1,11 +1,11 @@
 /* global describe, ddescribe, it, expect */
-import {Loki} from "../../../loki/src/loki";
-import {Query} from "../../src/query_types";
-import {MemoryStorage} from "../../../memory-storage/src/memory_storage";
-import {Collection} from "../../../loki/src/collection";
-import {FullTextSearch} from "../../src/full_text_search";
-import {Doc} from "../../../common/types";
-import {Analyzer} from "../../src/analyzer/analyzer";
+import { Loki } from "../../../loki/src/loki";
+import { Query } from "../../src/query_types";
+import { MemoryStorage } from "../../../memory-storage/src/memory_storage";
+import { Collection } from "../../../loki/src/collection";
+import { FullTextSearch } from "../../src/full_text_search";
+import { Doc } from "../../../common/types";
+import { Analyzer } from "../../src/analyzer/analyzer";
 
 describe("full-text search standalone", () => {
 
@@ -118,9 +118,9 @@ describe("full-text search with Loki", () => {
   it("nested", () => {
     const coll2 = db.addCollection<{ user: { name: string, id: number } }, { "user.name": string, "user.id": number }>(
       "coll", {
-      nestedProperties: ["user.name", "user.id"],
-      fullTextSearch: [{field: "user.name"}]
-    });
+        nestedProperties: ["user.name", "user.id"],
+        fullTextSearch: [{field: "user.name"}]
+      });
     for (let i of coll.find()) {
       coll2.insert({user: i});
     }

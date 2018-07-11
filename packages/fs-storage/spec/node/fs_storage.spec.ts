@@ -1,6 +1,6 @@
 /* global describe, it, expect */
-import {Loki} from "../../../loki/src/loki";
-import {FSStorage} from "../../src/fs_storage";
+import { Loki } from "../../../loki/src/loki";
+import { FSStorage } from "../../src/fs_storage";
 
 describe("testing fs storage", function () {
 

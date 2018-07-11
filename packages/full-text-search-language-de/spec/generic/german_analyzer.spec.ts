@@ -1,5 +1,5 @@
-import {GermanAnalyzer} from "../../src/german_analyzer";
-import {createLanguageTest, LanguageTestData} from "../../../full-text-search-language/spec/helper/create_lanuage_test.helper";
+import { GermanAnalyzer } from "../../src/german_analyzer";
+import { createLanguageTest, LanguageTestData } from "../../../full-text-search-language/spec/helper/create_lanuage_test.helper";
 
 export const de: LanguageTestData = {
   analyzer: new GermanAnalyzer(),

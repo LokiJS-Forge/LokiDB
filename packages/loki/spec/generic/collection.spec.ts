@@ -1,7 +1,7 @@
 /* global describe, it, expect */
-import {Loki} from "../../src/loki";
-import {Collection} from "../../src/collection";
-import {Doc} from "../../../common/types";
+import { Loki } from "../../src/loki";
+import { Collection } from "../../src/collection";
+import { Doc } from "../../../common/types";
 
 describe("collection", () => {
   interface CL {

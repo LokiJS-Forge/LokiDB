@@ -1,5 +1,5 @@
-import {EnglishAnalyzer} from "../../src/english_analyzer";
-import {createLanguageTest, LanguageTestData} from "../../../full-text-search-language/spec/helper/create_lanuage_test.helper";
+import { EnglishAnalyzer } from "../../src/english_analyzer";
+import { createLanguageTest, LanguageTestData } from "../../../full-text-search-language/spec/helper/create_lanuage_test.helper";
 
 export const en: LanguageTestData = {
   analyzer: new EnglishAnalyzer(),
@@ -11,7 +11,7 @@ export const en: LanguageTestData = {
     what: "find the word",
     search: "announcing",
     expected: [0]
-  },{
+  }, {
     what: "find the word",
     search: "believe",
     expected: [1]

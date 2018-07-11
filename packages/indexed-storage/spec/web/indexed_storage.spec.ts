@@ -1,6 +1,6 @@
 /* global describe, it, expect */
-import {Loki} from "../../../loki/src/loki";
-import {IndexedStorage} from "../../src/indexed_storage";
+import { Loki } from "../../../loki/src/loki";
+import { IndexedStorage } from "../../src/indexed_storage";
 
 describe("testing indexed storage", function () {
 

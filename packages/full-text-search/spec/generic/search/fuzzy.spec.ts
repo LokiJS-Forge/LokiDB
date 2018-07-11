@@ -1,6 +1,6 @@
 /* global describe, it, expect */
-import {FullTextSearch} from "../../../src/full_text_search";
-import {FuzzyQuery, MatchQuery, Query, QueryTypes} from "../../../src/query_types";
+import { FullTextSearch } from "../../../src/full_text_search";
+import { FuzzyQuery, MatchQuery, Query, QueryTypes } from "../../../src/query_types";
 
 describe("fuzzy query", () => {
   // from lucene 6.4.0 core: TestFuzzyQuery
