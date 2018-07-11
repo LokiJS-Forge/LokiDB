@@ -1,5 +1,5 @@
 /* global describe, it, expect */
-import {InvertedIndex, toCodePoints} from "../../src/inverted_index";
+import { InvertedIndex, toCodePoints } from "../../src/inverted_index";
 
 describe("inverted index", () => {
 

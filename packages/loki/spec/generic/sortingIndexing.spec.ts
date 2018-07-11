@@ -1,6 +1,6 @@
 /* global describe, beforeEach, it, expect */
-import {Loki} from "../../src/loki";
-import {LokiOps} from "../../src/result_set";
+import { Loki } from "../../src/loki";
+import { LokiOps } from "../../src/result_set";
 
 describe("sorting and indexing", () => {
   let db: Loki;

@@ -1,5 +1,5 @@
 /* global describe, it, expect */
-import {lowercaseTokenFilter, uppercaseTokenFilter} from "../../../src/analyzer/token_filter";
+import { lowercaseTokenFilter, uppercaseTokenFilter } from "../../../src/analyzer/token_filter";
 
 describe("token filter", () => {
 

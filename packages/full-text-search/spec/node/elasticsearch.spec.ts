@@ -1,12 +1,12 @@
 /* global describe, it, expect, beforeEach */
-import {DATA} from "./MOCK_DATA";
-import {QUERIES} from "./QUERIES";
-import {FullTextSearch} from "../../src/full_text_search";
-import {Client} from "elasticsearch";
-import {Scorer} from "../../src/scorer";
-import {Analyzer} from "../../src/analyzer/analyzer";
-import {whitespaceTokenizer} from "../../src/analyzer/tokenizer";
-import {lowercaseTokenFilter} from "../../src/analyzer/token_filter";
+import { DATA } from "./MOCK_DATA";
+import { QUERIES } from "./QUERIES";
+import { FullTextSearch } from "../../src/full_text_search";
+import { Client } from "elasticsearch";
+import { Scorer } from "../../src/scorer";
+import { Analyzer } from "../../src/analyzer/analyzer";
+import { whitespaceTokenizer } from "../../src/analyzer/tokenizer";
+import { lowercaseTokenFilter } from "../../src/analyzer/token_filter";
 
 const INDEX_NAME = "test_index";
 const INDEX_TYPE = "MockUp";
@@ -41,7 +41,7 @@ function fieldLengthES6(fieldLength: number) {
   // Lucene also includes the field boost, but field boost is deprecated and not supported by Loki.
 
   function leading(value: number) {
-    let result = 0;//could be a char or int8_t instead
+    let result = 0; //could be a char or int8_t instead
     if (value) {//this assumes the value is 64bit
       if (0xFFFFFFFF00000000 & value) {
         value >>= (1 << 5);

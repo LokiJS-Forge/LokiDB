@@ -1,4 +1,4 @@
-import {QueryTypes} from "../../src/query_types";
+import { QueryTypes } from "../../src/query_types";
 
 const FIELD_NAME_1 = "msg";
 
@@ -506,14 +506,13 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
             }
           }
         ],
-        must_not:
-          [
-            {
-              term: {
-                [FIELD_NAME_1]: "ac"
-              }
+        must_not: [
+          {
+            term: {
+              [FIELD_NAME_1]: "ac"
             }
-          ]
+          }
+        ]
       }
     }
   },
@@ -544,14 +543,13 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
             }
           }
         ],
-        must_not:
-          [
-            {
-              term: {
-                [FIELD_NAME_1]: "ac"
-              }
+        must_not: [
+          {
+            term: {
+              [FIELD_NAME_1]: "ac"
             }
-          ]
+          }
+        ]
       }
     },
     empty: true
@@ -583,14 +581,13 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
             }
           }
         ],
-        filter:
-          [
-            {
-              term: {
-                [FIELD_NAME_1]: "ac"
-              }
+        filter: [
+          {
+            term: {
+              [FIELD_NAME_1]: "ac"
             }
-          ]
+          }
+        ]
       }
     },
   },
@@ -607,14 +604,13 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
     },
     es: {
       bool: {
-        filter:
-          [
-            {
-              term: {
-                [FIELD_NAME_1]: "ac"
-              }
+        filter: [
+          {
+            term: {
+              [FIELD_NAME_1]: "ac"
             }
-          ]
+          }
+        ]
       }
     },
   },
@@ -645,14 +641,13 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
             }
           }
         ],
-        should:
-          [
-            {
-              term: {
-                [FIELD_NAME_1]: "ac"
-              }
+        should: [
+          {
+            term: {
+              [FIELD_NAME_1]: "ac"
             }
-          ]
+          }
+        ]
       }
     }
   },
@@ -1145,14 +1140,13 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
             match_all: {}
           }
         ],
-        must_not:
-          [
-            {
-              term: {
-                [FIELD_NAME_1]: "ac"
-              }
+        must_not: [
+          {
+            term: {
+              [FIELD_NAME_1]: "ac"
             }
-          ]
+          }
+        ]
       }
     }
   },
@@ -1168,14 +1162,13 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
     },
     es: {
       bool: {
-        must_not:
-          [
-            {
-              term: {
-                [FIELD_NAME_1]: "ac"
-              }
+        must_not: [
+          {
+            term: {
+              [FIELD_NAME_1]: "ac"
             }
-          ],
+          }
+        ],
         boost: 2
       }
     }
@@ -1217,18 +1210,17 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
             }
           }
         ],
-        should:
-          [
-            {
-              constant_score: {
-                filter: {
-                  wildcard: {
-                    [FIELD_NAME_1]: "a?"
-                  }
+        should: [
+          {
+            constant_score: {
+              filter: {
+                wildcard: {
+                  [FIELD_NAME_1]: "a?"
                 }
               }
             }
-          ]
+          }
+        ]
       }
     }
   },
@@ -1253,11 +1245,10 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
     },
     es: {
       match: {
-        [FIELD_NAME_1]:
-          {
-            query: "orci habitasse eget",
-            operator: "and"
-          }
+        [FIELD_NAME_1]: {
+          query: "orci habitasse eget",
+          operator: "and"
+        }
       }
     }
   },
@@ -1270,11 +1261,10 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
     },
     es: {
       match: {
-        [FIELD_NAME_1]:
-          {
-            query: "orca este",
-            fuzziness: "AUTO"
-          }
+        [FIELD_NAME_1]: {
+          query: "orca este",
+          fuzziness: "AUTO"
+        }
       }
     }
   },
@@ -1287,12 +1277,11 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
     },
     es: {
       match: {
-        [FIELD_NAME_1]:
-          {
-            query: "orci est",
-            operator:
-              "and"
-          }
+        [FIELD_NAME_1]: {
+          query: "orci est",
+          operator:
+            "and"
+        }
       }
     }
   },
@@ -1305,11 +1294,10 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
     },
     es: {
       match: {
-        [FIELD_NAME_1]:
-          {
-            query: "orci est in",
-            minimum_should_match: "33%"
-          }
+        [FIELD_NAME_1]: {
+          query: "orci est in",
+          minimum_should_match: "33%"
+        }
       }
     }
   },

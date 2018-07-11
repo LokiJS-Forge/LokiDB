@@ -1,6 +1,6 @@
 /* global describe, it, expect */
-import {Loki} from "../../src/loki";
-import {MemoryStorage} from "../../../memory-storage/src/memory_storage";
+import { Loki } from "../../src/loki";
+import { MemoryStorage } from "../../../memory-storage/src/memory_storage";
 
 describe("Constraints", () => {
 

@@ -1,5 +1,5 @@
 /* global describe, it, expect */
-import {whitespaceTokenizer} from "../../../src/analyzer/tokenizer";
+import { whitespaceTokenizer } from "../../../src/analyzer/tokenizer";
 
 describe("tokenizer", () => {
 

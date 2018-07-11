@@ -1,5 +1,5 @@
 /* global describe, it, expect */
-import {Loki} from "../../src/loki";
+import { Loki } from "../../src/loki";
 
 describe("changesApi", () => {
 

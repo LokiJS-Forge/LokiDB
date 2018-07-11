@@ -1,7 +1,7 @@
 /* global describe, it, expect */
-import {FullTextSearch} from "../../../src/full_text_search";
-import {Query, QueryTypes, WildcardQuery} from "../../../src/query_types";
-import {Analyzer} from "../../../src/analyzer/analyzer";
+import { FullTextSearch } from "../../../src/full_text_search";
+import { Query, QueryTypes, WildcardQuery } from "../../../src/query_types";
+import { Analyzer } from "../../../src/analyzer/analyzer";
 
 describe("wildcard query", () => {
   // from lucene 6.4.0 core: TestWildCard

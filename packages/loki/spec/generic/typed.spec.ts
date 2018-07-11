@@ -1,6 +1,6 @@
 /* global describe, it, expect */
-import {Loki} from "../../src/loki";
-import {Doc} from "../../../common/types";
+import { Loki } from "../../src/loki";
+import { Doc } from "../../../common/types";
 
 describe("typed", () => {
   it("works", () => {

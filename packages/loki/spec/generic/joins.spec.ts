@@ -1,8 +1,8 @@
 /* global describe, beforeEach, it, expect */
-import {Loki} from "../../src/loki";
-import {Collection} from "../../src/collection";
-import {ResultSet} from "../../src/result_set";
-import {Doc} from "../../../common/types";
+import { Loki } from "../../src/loki";
+import { Collection } from "../../src/collection";
+import { ResultSet } from "../../src/result_set";
+import { Doc } from "../../../common/types";
 
 interface Director {
   name: string;
