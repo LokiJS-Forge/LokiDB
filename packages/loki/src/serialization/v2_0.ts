@@ -1,4 +1,4 @@
-import {Dict} from "../../../common/types";
+import { Dict } from "../../../common/types";
 
 export namespace V2_0 {
 
@@ -212,9 +212,9 @@ export namespace V2_0 {
 
   export type Query =
     { [P: string]: LokiOps | any }
-    & { $and?: Query[] }
-    & { $or?: Query[] }
-    & { $fts?: FullTextSearch.Query };
+    | { $and?: Query[] }
+    | { $or?: Query[] }
+    | { $fts?: FullTextSearch.Query };
 
   export interface FullTextSearch {
     id: string;

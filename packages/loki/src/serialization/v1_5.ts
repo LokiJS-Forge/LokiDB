@@ -1,4 +1,4 @@
-import {Dict} from "../../../common/types";
+import { Dict } from "../../../common/types";
 
 export namespace V1_5 {
 
@@ -68,7 +68,7 @@ export namespace V1_5 {
     dataOptions?: ResultSet.DataOptions;
   } | {
     type: "mapReduce";
-    mapFunction: 2,//(item: Doc<object>, index: number, array: Doc<object>[]) => any;
+    mapFunction: 2, //(item: Doc<object>, index: number, array: Doc<object>[]) => any;
     reduceFunction: (array: any[]) => any;
   } | {
     type: "update";

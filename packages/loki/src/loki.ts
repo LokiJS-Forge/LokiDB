@@ -1,10 +1,10 @@
 /* global global */
-import {LokiEventEmitter} from "./event_emitter";
-import {Collection} from "./collection";
-import {clone} from "./clone";
-import {Doc, StorageAdapter} from "../../common/types";
-import {PLUGINS} from "../../common/plugin";
-import {Serialization, migrateDatabase} from "./serialization/migration";
+import { LokiEventEmitter } from "./event_emitter";
+import { Collection } from "./collection";
+import { clone } from "./clone";
+import { Doc, StorageAdapter } from "../../common/types";
+import { PLUGINS } from "../../common/plugin";
+import { Serialization, migrateDatabase } from "./serialization/migration";
 
 function getENV(): Loki.Environment {
   if (global !== undefined && (global["android"] || global["NSObject"])) {

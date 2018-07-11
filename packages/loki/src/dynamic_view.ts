@@ -1,9 +1,9 @@
-import {LokiEventEmitter} from "./event_emitter";
-import {ResultSet} from "./result_set";
-import {Collection} from "./collection";
-import {Doc} from "../../common/types";
-import {Scorer} from "../../full-text-search/src/scorer";
-import {Serialization} from "./serialization/migration";
+import { LokiEventEmitter } from "./event_emitter";
+import { ResultSet } from "./result_set";
+import { Collection } from "./collection";
+import { Doc } from "../../common/types";
+import { Scorer } from "../../full-text-search/src/scorer";
+import { Serialization } from "./serialization/migration";
 
 /**
  * DynamicView class is a versatile 'live' view class which can have filters and sorts applied.

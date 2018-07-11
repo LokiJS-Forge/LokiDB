@@ -1,10 +1,10 @@
-import {Collection} from "./collection";
-import {clone, CloneMethod} from "./clone";
-import {ltHelper, gtHelper, aeqHelper, sortHelper} from "./helper";
-import {Doc} from "../../common/types";
-import {Scorer} from "../../full-text-search/src/scorer";
-import {Query as FullTextSearchQuery} from "../../full-text-search/src/query_types";
-import {Serialization} from "./serialization/migration";
+import { Collection } from "./collection";
+import { clone, CloneMethod } from "./clone";
+import { ltHelper, gtHelper, aeqHelper, sortHelper } from "./helper";
+import { Doc } from "../../common/types";
+import { Scorer } from "../../full-text-search/src/scorer";
+import {Query as FullTextSearchQuery } from "../../full-text-search/src/query_types";
+import { Serialization } from "./serialization/migration";
 
 // used to recursively scan hierarchical transform step object for param substitution
 function resolveTransformObject<TData extends object, TNested extends object>(subObj: Collection.Transform<TData, TNested>, params: object, depth: number = 0): Collection.Transform<TData, TNested> {

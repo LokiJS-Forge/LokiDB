@@ -1,6 +1,6 @@
-import {V2_0, V2_0 as Serialization} from "./v2_0";
-import {V1_5} from "./v1_5";
-import {Dict} from "../../../common/types";
+import { V2_0, V2_0 as Serialization } from "./v2_0";
+import { V1_5 } from "./v1_5";
+import { Dict } from "../../../common/types";
 
 export {Serialization};
 

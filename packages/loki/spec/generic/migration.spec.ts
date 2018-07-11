@@ -1,5 +1,5 @@
-import {Loki} from "../../src/loki";
-import {Serialization, mergeRightBiasedWithProxy} from "../../src/serialization/migration";
+import { Loki } from "../../src/loki";
+import { Serialization, mergeRightBiasedWithProxy } from "../../src/serialization/migration";
 
 declare var require: (moduleId: string) => any;
 const loki = require("../../../lokijs/lokijs.js");

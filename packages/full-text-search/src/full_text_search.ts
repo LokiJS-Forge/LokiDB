@@ -1,11 +1,11 @@
-import {InvertedIndex} from "./inverted_index";
-import {IndexSearcher} from "./index_searcher";
-import {Dict} from "../../common/types";
-import {PLUGINS} from "../../common/plugin";
-import {Query} from "./query_types";
-import {Scorer} from "./scorer";
-import {Analyzer} from "./analyzer/analyzer";
-import {Serialization} from "../../loki/src/serialization/migration";
+import { InvertedIndex } from "./inverted_index";
+import { IndexSearcher } from "./index_searcher";
+import { Dict } from "../../common/types";
+import { PLUGINS } from "../../common/plugin";
+import { Query } from "./query_types";
+import { Scorer } from "./scorer";
+import { Analyzer } from "./analyzer/analyzer";
+import { Serialization } from "../../loki/src/serialization/migration";
 
 export class FullTextSearch {
   /// The id field of each document.
