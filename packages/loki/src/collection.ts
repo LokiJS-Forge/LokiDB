@@ -399,16 +399,21 @@ export class Collection<TData extends object = object, TNested extends object = 
       coll._transforms = obj.transforms;
     }
 
-    // inflate rangedindexes, possibly keep hashmap of indexes as well as comparators
-    //for (let ri in obj.rangedIndexes) {
-    //  switch(obj.rangedIndexes[ri].indexTypeName) {
-    //    case "btree" :
-    //      coll._rangedIndexes[ri].index = new BinaryTreeIndex<any>(ri, CreateJavascriptComparator());
-          // convert json object to obj reinflation
-   //       coll._rangedIndexes[ri].index.restore(obj.rangedIndexes[ri].index);
-   //       break;
-   //   }
-   // }
+    // inflate rangedindexes
+    for (let ri in obj.rangedIndexes) {
+      // shortcut reference to serialized meta
+      let sri = obj.rangedIndexes[ri];
+      // lookup index factory function in map based on index type name
+      let rif = RangedIndexFactoryMap[sri.indexTypeName];
+      // lookup comparator function in map based on comparator name
+      let ricmp = ComparatorMap[sri.comparatorName];
+      // using index type (from meta), index factory and comparator... create instance of ranged index
+      let rii = rif(ri, ricmp);
+      // now ask new index instance to inflate from plain object
+      rii.restore(sri.index);
+      // attach class instance to our collection's ranged index's (index) instance property
+      coll._rangedIndexes[ri].index = rii;
+    }
 
     coll._ensureId();
 

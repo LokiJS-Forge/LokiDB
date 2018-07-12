@@ -3,6 +3,8 @@ import { Loki } from "../../src/loki";
 import { MemoryStorage } from "../../../memory-storage/src/memory_storage";
 import { Collection } from "../../src/collection";
 import { StorageAdapter } from "../../../common/types";
+import { BinaryTreeIndex } from "../../src/btree_index";
+import { CreateJavascriptComparator } from "../../src/helper";
 
 interface AB {
   a: number;
@@ -195,9 +197,40 @@ describe("testing btree index serialization", function() {
         expect(results[2].name).toEqual("harrison");
         expect(results[3].name).toEqual("patterson");
 
+        // make sure we are acutally using binary tree index
+        expect(items2._rangedIndexes["name"].indexTypeName).toEqual("btree");
+        expect(items2._rangedIndexes["name"].comparatorName).toEqual("js");
+        expect(typeof items2._rangedIndexes["name"].index.rangeRequest).toEqual("function");
+        expect(items2._rangedIndexes["name"].index.constructor.name).toEqual("BinaryTreeIndex");
+
         done();
       });
     });
+  });
+
+  it("btree backup and restore work correctly", function() {
+    let bst = new BinaryTreeIndex("test", CreateJavascriptComparator());
+    bst.insert(1, "f");
+    bst.insert(2, "b");
+    bst.insert(3, "c");
+    bst.insert(4, "a");
+    bst.insert(5, "d");
+
+    let bkp = bst.backup();
+
+    // add another to original to ensure backup does not include it
+    bst.insert(6, "g");
+
+    let bst2 = new BinaryTreeIndex("test", CreateJavascriptComparator());
+    bst2.restore(JSON.parse(JSON.stringify(bkp)));
+
+    let results = bst2.rangeRequest();
+    expect(results.length).toEqual(5);
+    expect(results[0]).toEqual(4);
+    expect(results[1]).toEqual(2);
+    expect(results[2]).toEqual(3);
+    expect(results[3]).toEqual(5);
+    expect(results[4]).toEqual(1);
   });
 });
 
