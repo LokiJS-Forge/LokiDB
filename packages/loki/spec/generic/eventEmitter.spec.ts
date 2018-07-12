@@ -1,5 +1,5 @@
 /* global describe, beforeEach, it, expect */
-import {Loki} from "../../src/loki";
+import { Loki } from "../../src/loki";
 
 describe("eventEmitter", () => {
   let db: Loki;

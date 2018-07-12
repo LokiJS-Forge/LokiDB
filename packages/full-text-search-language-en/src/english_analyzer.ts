@@ -2,7 +2,7 @@
  * From olivernn/lunr.js.
  * Last update from 2017/10/14 - 2dc9c6c6c41b1f5850f2bed0a82d8cd45835d166
  */
-import {Analyzer} from "../../full-text-search/src/analyzer/analyzer";
+import { Analyzer } from "../../full-text-search/src/analyzer/analyzer";
 import {
   generateTrimmer,
   generateStopWordFilter,

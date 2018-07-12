@@ -1,4 +1,4 @@
-import {Dict, Doc} from "../../common/types";
+import { Dict, Doc } from "../../common/types";
 
 export class UniqueIndex<T extends object = object> {
   // The property field to index.

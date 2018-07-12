@@ -1,6 +1,6 @@
 /* global describe, beforeEach, it, expect */
-import {Loki} from "../../src/loki";
-import {Collection} from "../../src/collection";
+import { Loki } from "../../src/loki";
+import { Collection } from "../../src/collection";
 import Transform = Collection.Transform;
 
 describe("transforms", () => {

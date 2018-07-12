@@ -1,8 +1,7 @@
-/* global global */
-import {LokiEventEmitter} from "./event_emitter";
-import {Collection} from "./collection";
-import {Doc, StorageAdapter} from "../../common/types";
-import {PLUGINS} from "../../common/plugin";
+import { LokiEventEmitter } from "./event_emitter";
+import { Collection } from "./collection";
+import { Doc, StorageAdapter } from "../../common/types";
+import { PLUGINS } from "../../common/plugin";
 import { IComparatorMap, IRangedIndexFactoryMap, ComparatorMap, RangedIndexFactoryMap } from "./helper";
 
 function getENV(): Loki.Environment {

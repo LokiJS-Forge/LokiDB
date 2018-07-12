@@ -1,6 +1,6 @@
-import {FullTextSearch} from "../../../full-text-search/src/index";
-import {Query} from "../../../full-text-search/src/query_types";
-import {Analyzer} from "../../../full-text-search/src/analyzer/analyzer";
+import { FullTextSearch } from "../../../full-text-search/src/index";
+import { Query } from "../../../full-text-search/src/query_types";
+import { Analyzer } from "../../../full-text-search/src/analyzer/analyzer";
 
 export interface LanguageTestData {
   analyzer: Analyzer;

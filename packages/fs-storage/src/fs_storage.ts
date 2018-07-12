@@ -1,5 +1,5 @@
-import {PLUGINS} from "../../common/plugin";
-import {StorageAdapter} from "../../common/types";
+import { PLUGINS } from "../../common/plugin";
+import { StorageAdapter } from "../../common/types";
 import * as fs from "fs";
 
 /**

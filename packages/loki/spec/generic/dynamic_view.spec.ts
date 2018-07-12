@@ -1,9 +1,9 @@
 /* global describe, beforeEach, it, expect */
-import {Loki} from "../../src/loki";
-import {MemoryStorage} from "../../../memory-storage/src/memory_storage";
-import {Collection} from "../../src/collection";
-import {Doc} from "../../../common/types";
-import {LokiOps} from "../../src/result_set";
+import { Loki } from "../../src/loki";
+import { MemoryStorage } from "../../../memory-storage/src/memory_storage";
+import { Collection } from "../../src/collection";
+import { Doc } from "../../../common/types";
+import { LokiOps } from "../../src/result_set";
 
 describe("dynamicviews", () => {
   interface User {

@@ -1,4 +1,4 @@
-import {Long} from "./long";
+import { Long } from "./long";
 
 const MASKS = [new Long(0x1), new Long(0x3), new Long(0x7), new Long(0xf),
   new Long(0x1f), new Long(0x3f), new Long(0x7f), new Long(0xff),

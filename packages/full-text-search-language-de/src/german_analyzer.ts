@@ -2,7 +2,7 @@
  * From MihaiValentin/lunr-languages.
  * Last update from 2017/04/16 - 19af41fb9bd644d9081ad274f96f700b21464290
  */
-import {Analyzer} from "../../full-text-search/src/analyzer/analyzer";
+import { Analyzer } from "../../full-text-search/src/analyzer/analyzer";
 import {
   generateTrimmer,
   generateStopWordFilter,

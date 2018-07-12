@@ -5,8 +5,8 @@
   "author": "Various authors",
   "license": "(MIT OR Apache-2.0)",
   "scripts": {
-    "lint": "tslint -p tsconfig.json -c config/tslint.json",
-    "lint:fix": "tslint -p tsconfig.json -c config/tslint.json --fix",
+    "lint": "tslint -p config/tsconfig.tslint.json -c config/tslint.json",
+    "lint:fix": "npm run lint -- --fix",
     "test": "npm run test:web && npm run test:node && npm run coverage",
     "test:web": "karma start config/karma.config.js --single-run",
     "test:web:watch": "karma start config/karma.config.js",

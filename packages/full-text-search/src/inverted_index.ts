@@ -1,4 +1,4 @@
-import {Analyzer, StandardAnalyzer, analyze} from "./analyzer/analyzer";
+import { Analyzer, StandardAnalyzer, analyze } from "./analyzer/analyzer";
 
 /**
  * Converts a string into an array of code points.

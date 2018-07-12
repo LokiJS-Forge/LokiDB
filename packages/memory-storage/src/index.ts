@@ -1,4 +1,4 @@
-import {MemoryStorage} from "./memory_storage";
+import { MemoryStorage } from "./memory_storage";
 
 export {MemoryStorage};
 export default MemoryStorage;

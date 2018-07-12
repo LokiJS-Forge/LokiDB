@@ -1,9 +1,9 @@
-import {Collection} from "./collection";
-import {clone, CloneMethod} from "./clone";
-import {ltHelper, gtHelper, aeqHelper, sortHelper} from "./helper";
-import {Doc} from "../../common/types";
-import {Scorer} from "../../full-text-search/src/scorer";
-import {Query as FullTextSearchQuery} from "../../full-text-search/src/query_types";
+import { Collection } from "./collection";
+import { clone, CloneMethod } from "./clone";
+import { ltHelper, gtHelper, aeqHelper, sortHelper } from "./helper";
+import { Doc } from "../../common/types";
+import { Scorer } from "../../full-text-search/src/scorer";
+import { Query as FullTextSearchQuery } from "../../full-text-search/src/query_types";
 
 // used to recursively scan hierarchical transform step object for param substitution
 function resolveTransformObject<TData extends object, TNested extends object>(subObj: Collection.Transform<TData, TNested>, params: object, depth: number = 0): Collection.Transform<TData, TNested> {
@@ -304,7 +304,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    */
   public toJSON(): ResultSet<TData, TNested> {
     const copy = this.copy();
-    copy._collection = <never>null;
+    copy._collection = <never> null;
     return copy;
   }
 

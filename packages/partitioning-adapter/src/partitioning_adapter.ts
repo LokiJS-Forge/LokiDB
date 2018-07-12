@@ -1,6 +1,6 @@
-import {Loki} from "../../loki/src/loki";
-import {StorageAdapter} from "../../common/types";
-import {PLUGINS} from "../../common/plugin";
+import { Loki } from "../../loki/src/loki";
+import { StorageAdapter } from "../../common/types";
+import { PLUGINS } from "../../common/plugin";
 
 /**
  * An adapter for adapters. Converts a non reference mode adapter into a reference mode adapter

@@ -1,8 +1,8 @@
 /* global describe, beforeEach, it, expect */
-import {Loki} from "../../src/loki";
-import {MemoryStorage} from "../../../memory-storage/src/memory_storage";
-import {Collection} from "../../src/collection";
-import {StorageAdapter} from "../../../common/types";
+import { Loki } from "../../src/loki";
+import { MemoryStorage } from "../../../memory-storage/src/memory_storage";
+import { Collection } from "../../src/collection";
+import { StorageAdapter } from "../../../common/types";
 
 interface AB {
   a: number;
