@@ -705,7 +705,7 @@ export class Collection<TData extends object = object, TNested extends object = 
 
     let rii = this._rangedIndexes[field].index;
 
-    for(let i = 0; i < this._data.length; i++) {
+    for (let i = 0; i < this._data.length; i++) {
       rii.insert(this._data[i].$loki, this._data[i][field]);
     }
   }
@@ -1268,7 +1268,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       for (let ri in this._rangedIndexes) {
         this._rangedIndexes[ri].index.remove(doc.$loki);
       }
-      
+
       // FullTextSearch.
       if (this._fullTextSearch !== null) {
         this._fullTextSearch.removeDocument(doc, position);
@@ -2230,7 +2230,7 @@ export namespace Collection {
   export interface Options<TData extends object, TNested extends object = {}> {
     unique?: (keyof (TData & TNested))[];
     indices?: (keyof (TData & TNested))[];
-    rangedIndexes?: RangedIndexOptions; 
+    rangedIndexes?: RangedIndexOptions;
     adaptiveBinaryIndices?: boolean;
     asyncListeners?: boolean;
     disableMeta?: boolean;
@@ -2248,8 +2248,8 @@ export namespace Collection {
 
   export interface RangedIndexOptions {
     [prop: string]: RangedIndexMeta;
- }
- 
+  }
+
   export interface DeserializeOptions {
     retainDirtyFlags?: boolean;
     fullTextSearch?: Dict<Analyzer>;

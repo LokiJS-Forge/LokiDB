@@ -10,7 +10,7 @@ export type RangedValueOperator = "$gt" | "$gte" | "$lt" | "$lte" | "$eq" | "$ne
 
 /* Loki Comparator interface for dependency injection to ranged indexes */
 export interface ILokiRangedComparer<T> {
-  compare(val: T, val2: T) : -1|0|1;
+  compare(val: T, val2: T) : -1 | 0 | 1;
 }
 
 export interface IRangedIndexRequest<T> {
@@ -39,14 +39,14 @@ export let RangedIndexFactoryMap: IRangedIndexFactoryMap = {
 };
 
 export interface IRangedIndex<T> {
-  insert(id:number, val:T): void;  
+  insert(id: number, val: T): void;
   update(id: number, val: T): void;
   remove(id: number): void;
   restore(tree: any) : void;
 
   rangeRequest(range?: IRangedIndexRequest<T>): number[];
 
-  validateIndex(): boolean;  
+  validateIndex(): boolean;
 }
 
 export function CreateJavascriptComparator<T>(): ILokiRangedComparer<T> {

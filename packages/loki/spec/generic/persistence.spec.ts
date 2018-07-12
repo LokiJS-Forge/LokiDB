@@ -117,19 +117,19 @@ describe("testing nested binary index serialization", () => {
 describe("testing btree index serialization", function() {
   it("collection find ops on btree index work", (done) => {
     interface TestUserType {
-       name: string;
-       age: number;
-       location: string;
+      name: string;
+      age: number;
+      location: string;
     }
 
     const memAdapter = new MemoryStorage();
     const db = new Loki("idxtest");
     db.initializePersistence({adapter: memAdapter});
 
-    const items = db.addCollection<TestUserType>("users", { 
-       rangedIndexes: {
-          name: { indexTypeName: "btree", comparatorName: "js" } 
-       }
+    const items = db.addCollection<TestUserType>("users", {
+      rangedIndexes: {
+        name: { indexTypeName: "btree", comparatorName: "js" }
+      }
     });
 
     items.insert([
