@@ -464,6 +464,22 @@ export class ResultSet<TData extends object = object, TNested extends object = o
       };
     }
 
+    if (!this._filterInitialized && this._collection._rangedIndexes.hasOwnProperty(propname)) {
+      let sortedIds: number[] = this._collection._rangedIndexes[propname].index.rangeRequest();
+      let dataPositions: number[] = [];
+
+      // until we refactor resultset to store $loki ids in filteredrows,
+      // we need to convert $loki ids to data array positions
+      for (let id of sortedIds) {
+        dataPositions.push(this._collection.get(id, true)[1]);
+
+      }
+
+      this._filteredRows = dataPositions;
+      this._filterInitialized = true;
+      return this;
+    }
+
     // If already filtered, but we want to leverage binary index on sort.
     // This will use custom array intection algorithm.
     if (!options.disableIndexIntersect && this._collection._binaryIndices.hasOwnProperty(propname)
@@ -803,6 +819,10 @@ export class ResultSet<TData extends object = object, TNested extends object = o
       searchByIndex = true;
     }
 
+    if (doIndexCheck && this._collection._rangedIndexes[property] && indexedOps[operator]) {
+      searchByIndex = true;
+    }
+
     // the comparison function
     const fun = LokiOps[operator];
 
@@ -877,6 +897,39 @@ export class ResultSet<TData extends object = object, TNested extends object = o
           }
         }
       }
+      return this;
+    }
+
+    // If we have BinaryTreeIndex, use that and bail
+    // -NOTE- probably need implement '$in' operator iteration using '$eq' implementation
+    if (this._collection._rangedIndexes[property]) {
+
+      if (operator === "$between") {
+        let idResult = this._collection._rangedIndexes[property].index.rangeRequest({
+          op: operator,
+          val: value[0],
+          high: value[1]
+        });
+
+        // for now we will have to 'shim' the binary tree index's $loki ids back
+        // into data array indices, ideally i would like to repurpose filteredrows to use loki ids
+        for (let id of idResult) {
+          result.push(this._collection.get(id, true)[1]);
+        }
+      }
+      else {
+        let idResult = this._collection._rangedIndexes[property].index.rangeRequest({
+          op: operator,
+          val: value
+        });
+
+        // for now we will have to 'shim' the binary tree index's $loki ids back
+        // into data array indices, ideally i would like to repurpose filteredrows to use loki ids
+        for (let id of idResult) {
+          result.push(this._collection.get(id, true)[1]);
+        }
+      }
+
       return this;
     }
 
