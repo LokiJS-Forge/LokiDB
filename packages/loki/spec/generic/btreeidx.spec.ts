@@ -1,5 +1,5 @@
 import { BinaryTreeIndex } from "../../src/btree_index";
-import { CreateJavascriptComparator } from "../../src/helper";
+import { CreateJavascriptComparator, ComparatorMap, IRangedIndexRequest, RangedIndexFactoryMap, IRangedIndex, ILokiRangedComparer } from "../../src/helper";
 import { Loki } from "../../src/loki";
 import { Doc } from "../../../common/types";
 
@@ -748,5 +748,76 @@ describe("binary tree index tests", () => {
     expect(result[4].name).toEqual("patterson");
     expect(result[5].name).toEqual("smith");
     expect(result[6].name).toEqual("thompson");
+  });
+
+  it("comparator and ranged index maps can be injected into", () => {
+
+    let cmp = {
+      compare: (a: any, b: any) => {
+        if (a > b) return 1;
+        if (a === b) return 0;
+        return -1;
+      }
+    };
+
+    // not really a functional ranged index, should have constructor accepting comparator
+
+    class customRangedIndex<T> implements IRangedIndex<T> {
+      public name: string;
+      public comparator: ILokiRangedComparer<T>;
+
+      constructor (name: string, comparator: ILokiRangedComparer<T>) {
+        this.name = name;
+        this.comparator = comparator;
+      }
+
+      insert (id: number, val: T) {
+        if (!id || !val) throw new Error("");
+        return;
+      }
+      update (id: number, val: T) {
+        if (!id || val === null) throw new Error("");
+        return;
+      }
+      remove (id: number) {
+        if (!id) throw new Error("");
+        return;
+      }
+      restore (tree: any) {
+        if (!tree) throw new Error("");
+        return;
+      }
+      rangeRequest (range? : IRangedIndexRequest<T>) {
+        if (range === null) {
+          // return everything
+          return <number[]> [];
+        }
+        return <number[]> [];
+      }
+      validateIndex () {
+        return true;
+      }
+    }
+
+    let myCustomIndexFactory = (name: string, cmp: ILokiRangedComparer<any>) => { return new customRangedIndex<any>(name, cmp); };
+
+    let db = new Loki("test.db", {
+      comparatorMap: {
+        "FastNumeric": cmp
+      },
+      rangedIndexFactoryMap: {
+        "MyCustomRangedIndex": myCustomIndexFactory
+      }
+    });
+
+    expect(db instanceof Loki).toEqual(true);
+
+    // verify they are registered into (global for now) comparator and rangedindex factory maps
+    expect(ComparatorMap.hasOwnProperty("FastNumeric")).toEqual(true);
+    expect(typeof ComparatorMap["FastNumeric"]).toEqual("object");
+    expect(typeof ComparatorMap["FastNumeric"].compare).toEqual("function");
+    expect(RangedIndexFactoryMap.hasOwnProperty("MyCustomRangedIndex")).toEqual(true);
+    expect(typeof RangedIndexFactoryMap["MyCustomRangedIndex"]).toEqual("function");
+
   });
 });
