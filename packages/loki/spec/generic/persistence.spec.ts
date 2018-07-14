@@ -97,22 +97,7 @@ describe("testing nested binary index serialization", () => {
         id: 4
       }
     }]);
-    users.ensureIndex("user.id");
-  });
-
-  it("should have a binary index", () => {
-    const ser = db.serialize();
-    const reloaded = new Loki();
-    reloaded.loadJSON(ser);
-    const coll = reloaded.getCollection<AUser, Nested>("users");
-    expect(coll.count()).toEqual(4);
-    expect(coll._binaryIndices["user.id"].values.length).toBe(4);
-    const joe = coll.find({"user.id": 1})[0];
-    expect(joe).toBeDefined();
-    expect(joe.user.id).toEqual(1);
-
-    expect(reloaded["_serializationMethod"]).toBe("normal");
-    expect(reloaded["_destructureDelimiter"]).toBe("$<\n");
+    users.ensureRangedIndex("user.id");
   });
 });
 
