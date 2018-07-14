@@ -457,7 +457,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    * @param {boolean} [options.useJavascriptSorting=false] - whether results are sorted via basic javascript sort.
    * @returns {ResultSet} Reference to this ResultSet, sorted, for future chain operations.
    */
-  public simplesort(propname: keyof (TData & TNested), options: boolean | ResultSet.SimpleSortOptions = {desc: false}): this {
+  public simplesort(propname: keyof (TData & TNested), options: boolean | ResultSet.SimpleSortOptions = { desc: false }): this {
     if (typeof options === "boolean") {
       options = {
         desc: options
@@ -472,43 +472,11 @@ export class ResultSet<TData extends object = object, TNested extends object = o
       // we need to convert $loki ids to data array positions
       for (let id of sortedIds) {
         dataPositions.push(this._collection.get(id, true)[1]);
-
       }
 
       this._filteredRows = dataPositions;
       this._filterInitialized = true;
       return this;
-    }
-
-    // If already filtered, but we want to leverage binary index on sort.
-    // This will use custom array intection algorithm.
-    if (!options.disableIndexIntersect && this._collection._binaryIndices.hasOwnProperty(propname)
-      && this._filterInitialized) {
-
-      const eff = this._collection._data.length / this._filteredRows.length;
-      // when javascript sort fallback is enabled, you generally need more than ~17% of total docs in resultset
-      // before array intersect is determined to be the faster algorithm, otherwise leave at 10% for loki sort.
-      const targetEff = options.useJavascriptSorting ? 6 : 10;
-
-      // anything more than ratio of 10:1 (total documents/current results) should use old sort code path
-      // So we will only use array intersection if you have more than 10% of total docs in your current ResultSet.
-      if (eff <= targetEff || options.forceIndexIntersect) {
-        const io = {};
-        // set up hashobject for simple 'inclusion test' with existing (filtered) results
-        for (let i = 0; i < this._filteredRows.length; i++) {
-          io[this._filteredRows[i]] = true;
-        }
-        // grab full sorted binary index array and filter by existing results
-        this._filteredRows = this._collection._binaryIndices[propname].values.filter((n: string) => {
-          return io[n];
-        });
-
-        if (options.desc) {
-          this._filteredRows.reverse();
-        }
-
-        return this;
-      }
     }
 
     if (options.useJavascriptSorting) {
@@ -521,24 +489,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
 
     // if this has no filters applied, just we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
-      // if we have a binary index and no other filters applied, we can use that instead of sorting (again)
-      if (this._collection._binaryIndices[propname] !== undefined) {
-        // make sure index is up-to-date
-        this._collection.ensureIndex(propname as keyof TData);
-        // copy index values into filteredRows
-        this._filteredRows = this._collection._binaryIndices[propname].values.slice(0);
-
-        if (options.desc) {
-          this._filteredRows.reverse();
-        }
-
-        // we are done, return this (ResultSet) for further chain ops
-        return this;
-      }
-      // otherwise initialize array for sort below
-      else {
-        this._filteredRows = this._collection._prepareFullDocIndex();
-      }
+      this._filteredRows = this._collection._prepareFullDocIndex();
     }
 
     const data = this._collection._data;
@@ -752,7 +703,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
       // if more than one expression in single query object,
       // convert implicit $and to explicit $and
       if (filters.length > 1) {
-        return this.find({"$and": filters} as any, firstOnly);
+        return this.find({ "$and": filters } as any, firstOnly);
       }
     }
 
@@ -808,16 +759,6 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     const doIndexCheck = !this._filterInitialized;
 
     let searchByIndex = false;
-    if (doIndexCheck && this._collection._binaryIndices[property] && indexedOps[operator]) {
-      // this is where our lazy index rebuilding will take place
-      // basically we will leave all indexes dirty until we need them
-      // so here we will rebuild only the index tied to this property
-      // ensureIndex() will only rebuild if flagged as dirty since we are not passing force=true param
-      if (this._collection._adaptiveBinaryIndices !== true) {
-        this._collection.ensureIndex(property);
-      }
-      searchByIndex = true;
-    }
 
     if (doIndexCheck && this._collection._rangedIndexes[property] && indexedOps[operator]) {
       searchByIndex = true;
@@ -886,7 +827,6 @@ export class ResultSet<TData extends object = object, TNested extends object = o
       return this;
     }
 
-    // first chained query so work against data[] but put results in filteredRows
     // if not searching by index
     if (!searchByIndex) {
       for (let i = 0; i < data.length; i++) {
@@ -900,8 +840,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
       return this;
     }
 
-    // If we have BinaryTreeIndex, use that and bail
-    // -NOTE- probably need implement '$in' operator iteration using '$eq' implementation
+    // If we have a rangedIndex defined, use that and bail
     if (this._collection._rangedIndexes[property]) {
 
       if (operator === "$between") {
@@ -923,52 +862,26 @@ export class ResultSet<TData extends object = object, TNested extends object = o
           val: value
         });
 
-        // for now we will have to 'shim' the binary tree index's $loki ids back
-        // into data array indices, ideally i would like to repurpose filteredrows to use loki ids
-        for (let id of idResult) {
-          result.push(this._collection.get(id, true)[1]);
+        if (indexedOps[operator] !== true) {
+          for (let id of idResult) {
+            let pos = this._collection.get(id, true)[1];
+            if (indexedOps[operator](data[pos][property], value)) {
+              result.push(pos);
+            }
+          }
+        }
+        else {
+          // for now we will have to 'shim' the binary tree index's $loki ids back
+          // into data array indices, ideally i would like to repurpose filteredrows to use loki ids
+          for (let id of idResult) {
+            result.push(this._collection.get(id, true)[1]);
+          }
         }
       }
 
       return this;
     }
 
-    let index = this._collection._binaryIndices[property];
-    if (operator !== "$in") {
-      // search by index
-      const segm = this._collection.calculateRange(operator, property, value);
-      for (let i = segm[0]; i <= segm[1]; i++) {
-        if (indexedOps[operator] !== true) {
-          // must be a function, implying 2nd phase filtering of results from calculateRange
-          if (indexedOps[operator](data[index.values[i]][property], value)) {
-            result.push(index.values[i]);
-            if (firstOnly) {
-              return this;
-            }
-          }
-        } else {
-          result.push(index.values[i]);
-          if (firstOnly) {
-            return this;
-          }
-        }
-      }
-    } else {
-      const idxset = [];
-      // query each value '$eq' operator and merge the segment results.
-      for (let j = 0, len = value.length; j < len; j++) {
-        const segm = this._collection.calculateRange("$eq", property, value[j]);
-        for (let i = segm[0]; i <= segm[1]; i++) {
-          if (idxset[i] === undefined) {
-            idxset[i] = true;
-            result.push(index.values[i]);
-          }
-          if (firstOnly) {
-            return this;
-          }
-        }
-      }
-    }
     return this;
   }
 
@@ -1170,7 +1083,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    * @returns {value} The output of your reduceFunction
    */
   public mapReduce<T, U>(mapFunction: (item: Doc<TData & TNested>, index: number, array: Doc<TData & TNested>[]) => T,
-                         reduceFunction: (array: T[]) => U): U {
+    reduceFunction: (array: T[]) => U): U {
     try {
       return reduceFunction(this.data().map(mapFunction));
     } catch (err) {
@@ -1192,8 +1105,8 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    * @returns {ResultSet} A ResultSet with data in the format [{left: leftObj, right: rightObj}]
    */
   public eqJoin(joinData: Collection<any> | ResultSet<any> | any[], leftJoinKey: string | ((obj: any) => string),
-                rightJoinKey: string | ((obj: any) => string), mapFun?: (left: any, right: any) => any,
-                dataOptions?: ResultSet.DataOptions): ResultSet<any, any> {
+    rightJoinKey: string | ((obj: any) => string), mapFun?: (left: any, right: any) => any,
+    dataOptions?: ResultSet.DataOptions): ResultSet<any, any> {
     let rightData = [];
     let rightDataLength;
     let key;
@@ -1260,7 +1173,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
    * @return {ResultSet}
    */
   public map<U extends object>(mapFun: (obj: Doc<TData & TNested>, index: number, array: Doc<TData & TNested>[]) => U,
-                               dataOptions?: ResultSet.DataOptions): ResultSet<U> {
+    dataOptions?: ResultSet.DataOptions): ResultSet<U> {
     const data = this.data(dataOptions).map(mapFun);
     //return return a new ResultSet with no filters
     this._collection = new Collection("mappedData");
@@ -1287,8 +1200,8 @@ export namespace ResultSet {
 
   export type ContainsHelperType<R> =
     R extends string ? string | string[] :
-      R extends any[] ? R[number] | R[number][] :
-        R extends object ? keyof R | (keyof R)[] : never;
+    R extends any[] ? R[number] | R[number][] :
+    R extends object ? keyof R | (keyof R)[] : never;
 
   export type LokiOps<R> = {
     $eq?: R;

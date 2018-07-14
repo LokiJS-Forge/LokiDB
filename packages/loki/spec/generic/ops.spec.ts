@@ -229,7 +229,7 @@ describe("Individual operator tests", () => {
     expect(coll.find({count: {$between: [20, 60]}}).length).toEqual(0);
 
     // now test -indexed- code path
-    coll.ensureIndex("count");
+    coll.ensureRangedIndex("count");
 
     results = coll.chain().find({count: {$between: [15, 75]}}).simplesort("count").data();
     expect(results.length).toEqual(4);

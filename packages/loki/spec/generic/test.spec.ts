@@ -205,15 +205,15 @@ describe("loki", () => {
 
     it("meta not set on returned objects", function () {
       const tdb = new Loki("test.db");
-      const coll = tdb.addCollection<{ a: number, b: number }>("tc", {disableMeta: true});
+      const coll = tdb.addCollection<{ a: number, b: number }>("tc", { disableMeta: true });
 
       // verify single insert return objs do not have meta set
-      const obj = coll.insert({a: 1, b: 2});
+      const obj = coll.insert({ a: 1, b: 2 });
       expect(obj.hasOwnProperty("meta")).toEqual(false);
       expect(obj.hasOwnProperty("$loki")).toEqual(true);
 
       // verify batch insert return objs do not have meta set
-      const objs = coll.insert([{a: 2, b: 3}, {a: 3, b: 4}]);
+      const objs = coll.insert([{ a: 2, b: 3 }, { a: 3, b: 4 }]);
       expect(Array.isArray(objs));
       objs.forEach((o) => {
         expect(o.hasOwnProperty("meta")).toEqual(false);
@@ -365,13 +365,13 @@ describe("loki", () => {
         }]
       });
 
-      let results = dna.find({"children.someProperty": {"$contains": 33}});
+      let results = dna.find({ "children.someProperty": { "$contains": 33 } });
       expect(results.length).toEqual(1);
 
-      results = dna.find({"children.someProperty": {"$contains": 22}});
+      results = dna.find({ "children.someProperty": { "$contains": 22 } });
       expect(results.length).toEqual(2);
 
-      results = dna.find({"children.someProperty": {"$contains": 11}});
+      results = dna.find({ "children.someProperty": { "$contains": 11 } });
       expect(results.length).toEqual(2);
     });
   });
@@ -410,7 +410,7 @@ describe("loki", () => {
       });
 
       const results = dna.find({
-        "relations.ids": {$contains: 379}
+        "relations.ids": { $contains: 379 }
       });
 
       expect(results.length).toEqual(2);
@@ -497,196 +497,36 @@ describe("loki", () => {
         }]
       });
 
-      let results = dna.find({"children.someArray.someProperty": {"$contains": 333}});
+      let results = dna.find({ "children.someArray.someProperty": { "$contains": 333 } });
       expect(results.length).toEqual(1);
 
-      results = dna.find({"children.someArray.someProperty": {"$contains": 111}});
+      results = dna.find({ "children.someArray.someProperty": { "$contains": 111 } });
       expect(results.length).toEqual(2);
 
-      results = dna.find({"children.someArray.someProperty": {"$contains": 222}});
+      results = dna.find({ "children.someArray.someProperty": { "$contains": 222 } });
       expect(results.length).toEqual(2);
 
-      results = dna.find({"$and": [{"id": 3}, {"children.someArray.someProperty": {"$contains": 222}}]});
+      results = dna.find({ "$and": [{ "id": 3 }, { "children.someArray.someProperty": { "$contains": 222 } }] });
       expect(results.length).toEqual(1);
 
-      results = dna.find({"$and": [{"id": 1}, {"children.someArray.someProperty": {"$contains": 222}}]});
+      results = dna.find({ "$and": [{ "id": 1 }, { "children.someArray.someProperty": { "$contains": 222 } }] });
       expect(results.length).toEqual(0);
 
-      results = dna.find({"$or": [{"id": 1}, {"children.someArray.someProperty": {"$contains": 222}}]});
+      results = dna.find({ "$or": [{ "id": 1 }, { "children.someArray.someProperty": { "$contains": 222 } }] });
       expect(results.length).toEqual(3);
     });
   });
 
-  describe("calculateRange", () => {
-    it("works", () => {
-      const eic = db.addCollection<any>("eic");
-      eic.ensureIndex("testid");
-
-      eic.insert({
-        "testid": 1,
-        "testString": "hhh",
-        "testFloat": 5.2
-      }); //0
-      eic.insert({
-        "testid": 1,
-        "testString": "aaa",
-        "testFloat": 6.2
-      }); //1
-      eic.insert({
-        "testid": 5,
-        "testString": "zzz",
-        "testFloat": 7.2
-      }); //2
-      eic.insert({
-        "testid": 6,
-        "testString": "ggg",
-        "testFloat": 1.2
-      }); //3
-      eic.insert({
-        "testid": 9,
-        "testString": "www",
-        "testFloat": 8.2
-      }); //4
-      eic.insert({
-        "testid": 11,
-        "testString": "yyy",
-        "testFloat": 4.2
-      }); //5
-      eic.insert({
-        "testid": 22,
-        "testString": "yyz",
-        "testFloat": 9.2
-      }); //6
-      eic.insert({
-        "testid": 23,
-        "testString": "m",
-        "testFloat": 2.2
-      }); //7
-
-      const rset = eic.chain();
-      rset.find({
-        "testid": 1
-      }); // force index to be built
-
-      // ranges are order of sequence in index not data array positions
-
-      let range = eic.calculateRange("$eq", "testid", 22);
-      expect(range).toEqual([6, 6]);
-
-      range = eic.calculateRange("$eq", "testid", 1);
-      expect(range).toEqual([0, 1]);
-
-      range = eic.calculateRange("$eq", "testid", 7);
-      expect(range).toEqual([0, -1]);
-
-      range = eic.calculateRange("$gte", "testid", 23);
-      expect(range).toEqual([7, 7]);
-
-      // reference this new record for future evaluations
-      eic.insert({
-        "testid": 23,
-        "testString": "bbb",
-        "testFloat": 1.9
-      });
-
-      // test when all records are in range
-      range = eic.calculateRange("$lt", "testid", 25);
-      expect(range).toEqual([0, 8]);
-      range = eic.calculateRange("$lte", "testid", 25);
-      expect(range).toEqual([0, 8]);
-      range = eic.calculateRange("$gt", "testid", 0);
-      expect(range).toEqual([0, 8]);
-      range = eic.calculateRange("$gte", "testid", 0);
-      expect(range).toEqual([0, 8]);
-
-      range = eic.calculateRange("$gte", "testid", 23);
-      expect(range).toEqual([7, 8]);
-
-      range = eic.calculateRange("$gte", "testid", 24);
-      expect(range).toEqual([0, -1]);
-
-      range = eic.calculateRange("$lte", "testid", 5);
-      expect(range).toEqual([0, 2]);
-
-      range = eic.calculateRange("$lte", "testid", 1);
-      expect(range).toEqual([0, 1]);
-
-      range = eic.calculateRange("$lte", "testid", -1);
-      expect(range).toEqual([0, -1]);
-
-      // add another index on string property
-      eic.ensureIndex("testString");
-      rset.find({
-        "testString": "asdf"
-      }); // force index to be built
-
-      range = eic.calculateRange("$lte", "testString", "ggg");
-      expect(range).toEqual([0, 2]); // includes record added in middle
-
-      range = eic.calculateRange("$gte", "testString", "m");
-      expect(range).toEqual([4, 8]); // offset by 1 because of record in middle
-
-      // add some float range evaluations
-      eic.ensureIndex("testFloat");
-      rset.find({
-        "testFloat": "1.1"
-      }); // force index to be built
-
-      range = eic.calculateRange("$lte", "testFloat", 1.2);
-      expect(range).toEqual([0, 0]);
-
-      range = eic.calculateRange("$eq", "testFloat", 1.111);
-      expect(range).toEqual([0, -1]);
-
-      range = eic.calculateRange("$eq", "testFloat", 8.2);
-      expect(range).toEqual([7, 7]); // 8th pos
-
-      range = eic.calculateRange("$gte", "testFloat", 1.0);
-      expect(range).toEqual([0, 8]); // 8th pos
-    });
-  });
-
-  describe("lazy indexLifecycle", () => {
-    it("works", () => {
-      const ilc = db.addCollection<any>("ilc", {
-        adaptiveBinaryIndices: false
-      });
-
-      let hasIdx = ilc._binaryIndices.hasOwnProperty("testid");
-      expect(hasIdx).toEqual(false);
-
-      ilc.ensureIndex("testid");
-      hasIdx = ilc._binaryIndices.hasOwnProperty("testid");
-      expect(hasIdx).toEqual(true);
-      expect(ilc._binaryIndices.testid.dirty).toEqual(false);
-      expect(ilc._binaryIndices.testid.values).toEqual([]);
-
-      ilc.insert({
-        "testid": 5
-      });
-      expect(ilc._binaryIndices.testid.dirty).toEqual(true);
-      ilc.insert({
-        "testid": 8
-      });
-      expect(ilc._binaryIndices.testid.values).toEqual([]);
-      expect(ilc._binaryIndices.testid.dirty).toEqual(true);
-
-      ilc.find({
-        "testid": 8
-      }); // should force index build
-      expect(ilc._binaryIndices.testid.dirty).toEqual(false);
-      expect(ilc._binaryIndices.testid.values.length).toEqual(2);
-    });
-  });
-
-  describe("indexes", () => {
+  describe("btree indexes", () => {
     it("works", () => {
       interface ITC {
         "testid": number;
       }
 
       const itc = db.addCollection<ITC>("test", {
-        indices: ["testid"]
+        rangedIndexes: {
+          testid: { indexTypeName: "btree", comparatorName: "js" }
+        }
       });
 
       itc.insert({
@@ -925,7 +765,7 @@ describe("loki", () => {
       }).data().length).toEqual(5);
 
       // add index and repeat final test
-      eic.ensureIndex("testid");
+      eic.ensureRangedIndex("testid");
 
       expect(eic.chain().find({
         "$and": [{
@@ -1021,13 +861,13 @@ describe("loki", () => {
       }
 
       // Add a collection to the database
-      const items = ssdb.addCollection<User>("items", {indices: ["name"]});
+      const items = ssdb.addCollection<User>("items", { indices: ["name"] });
 
       // Add some documents to the collection
-      items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
-      items.insert({name: "gungnir", owner: "odin", maker: "elves"});
-      items.insert({name: "tyrfing", owner: "svafrlami", maker: "dwarves"});
-      items.insert({name: "draupnir", owner: "odin", maker: "elves"});
+      items.insert({ name: "mjolnir", owner: "thor", maker: "dwarves" });
+      items.insert({ name: "gungnir", owner: "odin", maker: "elves" });
+      items.insert({ name: "tyrfing", owner: "svafrlami", maker: "dwarves" });
+      items.insert({ name: "draupnir", owner: "odin", maker: "elves" });
 
       // simplesort without filters on prop with index should work
       let results = items.chain().simplesort("name").data();
@@ -1060,15 +900,15 @@ describe("loki", () => {
       }
 
       // Add a collection to the database
-      const items = idb.addCollection<AUser, { "user.name": string }>("items", {nestedProperties: ["user.name"]});
+      const items = idb.addCollection<AUser, { "user.name": string }>("items", { nestedProperties: ["user.name"] });
 
       // Add some documents to the collection
-      items.insert({user: {name: "mjolnir", owner: "thor", maker: "dwarves"}});
-      items.insert({user: {name: "gungnir", owner: "odin", maker: "elves"}});
-      items.insert({user: {name: "tyrfing", owner: "svafrlami", maker: "dwarves"}});
-      items.insert({user: {name: "draupnir", owner: "odin", maker: "elves"}});
+      items.insert({ user: { name: "mjolnir", owner: "thor", maker: "dwarves" } });
+      items.insert({ user: { name: "gungnir", owner: "odin", maker: "elves" } });
+      items.insert({ user: { name: "tyrfing", owner: "svafrlami", maker: "dwarves" } });
+      items.insert({ user: { name: "draupnir", owner: "odin", maker: "elves" } });
 
-      const result = items.chain().data({forceClones: true});
+      const result = items.chain().data({ forceClones: true });
       expect(result[0]["user.name"]).toBeDefined();
       expect(result[0]["user.owner"]).toBeUndefined();
     });
@@ -1085,16 +925,16 @@ describe("loki", () => {
       }
 
       // Add a collection to the database
-      const items = idb.addCollection<User>("items", {indices: ["owner"]});
+      const items = idb.addCollection<User>("items", { indices: ["owner"] });
 
       // Add some documents to the collection
-      items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
-      items.insert({name: "gungnir", owner: "odin", maker: "elves"});
-      items.insert({name: "tyrfing", owner: "svafrlami", maker: "dwarves"});
-      items.insert({name: "draupnir", owner: "odin", maker: "elves"});
+      items.insert({ name: "mjolnir", owner: "thor", maker: "dwarves" });
+      items.insert({ name: "gungnir", owner: "odin", maker: "elves" });
+      items.insert({ name: "tyrfing", owner: "svafrlami", maker: "dwarves" });
+      items.insert({ name: "draupnir", owner: "odin", maker: "elves" });
 
       // unfiltered with strip meta
-      let result = items.chain().data({removeMeta: true});
+      let result = items.chain().data({ removeMeta: true });
       expect(result.length).toEqual(4);
       expect(result[0].hasOwnProperty("$loki")).toEqual(false);
       expect(result[0].hasOwnProperty("meta")).toEqual(false);
@@ -1106,7 +946,7 @@ describe("loki", () => {
       expect(result[3].hasOwnProperty("meta")).toEqual(false);
 
       // indexed sort with strip meta
-      result = items.chain().simplesort("owner").limit(2).data({removeMeta: true});
+      result = items.chain().simplesort("owner").limit(2).data({ removeMeta: true });
       expect(result.length).toEqual(2);
       expect(result[0].owner).toEqual("odin");
       expect(result[0].hasOwnProperty("$loki")).toEqual(false);
@@ -1116,7 +956,7 @@ describe("loki", () => {
       expect(result[1].hasOwnProperty("meta")).toEqual(false);
 
       // unindexed find strip meta
-      result = items.chain().find({maker: "elves"}).data({removeMeta: true});
+      result = items.chain().find({ maker: "elves" }).data({ removeMeta: true });
       expect(result.length).toEqual(2);
       expect(result[0].maker).toEqual("elves");
       expect(result[0].hasOwnProperty("$loki")).toEqual(false);
@@ -1148,7 +988,7 @@ describe("loki", () => {
       expect(result[1].hasOwnProperty("meta")).toEqual(true);
 
       // unindexed find strip meta
-      result = items.chain().find({maker: "elves"}).data();
+      result = items.chain().find({ maker: "elves" }).data();
       expect(result.length).toEqual(2);
       expect(result[0].maker).toEqual("elves");
       expect(result[0].hasOwnProperty("$loki")).toEqual(true);
@@ -1196,7 +1036,7 @@ describe("loki", () => {
       expect(docCount).toEqual(4);
 
       // remove middle documents
-      rsc.chain().find({testFloat: 6.2}).remove();
+      rsc.chain().find({ testFloat: 6.2 }).remove();
 
 
       // verify new doc count
