@@ -29,9 +29,6 @@ function initializeDB(mode) {
    var totalMS = 0.0;
 
    switch (mode) {
-      case "bidx":
-         samplecoll = db.addCollection('samplecoll', { indices: ["customId"] });
-         break;
       case "btree":
          samplecoll = db.addCollection('samplecoll', {
             rangedIndexes: {
@@ -335,14 +332,6 @@ var nonIndexedSteps = [
    testperfDV
 ];
 
-var binaryIndexSteps = [
-   () => initializeDB("bidx"),
-   () => { }, // after heavy memory alloc, wait a sec for cpu to settle
-   () => testperfFind(20),
-   () => testperfRS(15),
-   () => testperfDV(15)
-];
-
 var btreeIndexSteps = [
    () => initializeDB("btree"),
    () => { }, // after heavy memory alloc, wait a sec for cpu to settle
@@ -354,7 +343,6 @@ var btreeIndexSteps = [
 var perfGroups = [
    { name: "Benchmarking Core Id lookup performance", steps: corePerf },
    { name: "Benchmarking NON-INDEX query performance", steps: nonIndexedSteps },
-   { name: "Benchmarking BINARY INDEX query performance", steps: binaryIndexSteps },
    { name: "Benchmarking BINARY TREE INDEX query performance", steps: btreeIndexSteps }
 ];
 

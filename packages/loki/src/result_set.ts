@@ -474,7 +474,7 @@ export class ResultSet<TData extends object = object, TNested extends object = o
         dataPositions.push(this._collection.get(id, true)[1]);
       }
 
-      this._filteredRows = dataPositions;
+      this._filteredRows = options.desc ? dataPositions.reverse() : dataPositions;
       this._filterInitialized = true;
       return this;
     }
@@ -843,6 +843,23 @@ export class ResultSet<TData extends object = object, TNested extends object = o
     // If we have a rangedIndex defined, use that and bail
     if (this._collection._rangedIndexes[property]) {
 
+      if (operator === "$in") {
+        let ri: Collection.RangedIndexMeta = this._collection._rangedIndexes[property];
+
+        // iterate each $in array value
+        for (let val of value) {
+          // request matches where val eq current iterated val
+          let idResult = ri.index.rangeRequest({ op: "$eq", val: val });
+          // for each result in match
+          for (let id of idResult) {
+            // convert $loki id to data position and add to result (filteredrows)
+            result.push(this._collection.get(id, true)[1]);
+          }
+        }
+
+        return this;
+      }
+
       if (operator === "$between") {
         let idResult = this._collection._rangedIndexes[property].index.rangeRequest({
           op: operator,
@@ -855,31 +872,31 @@ export class ResultSet<TData extends object = object, TNested extends object = o
         for (let id of idResult) {
           result.push(this._collection.get(id, true)[1]);
         }
+
+        return this;
+      }
+
+      let idResult = this._collection._rangedIndexes[property].index.rangeRequest({
+        op: operator,
+        val: value
+      });
+
+      // if our op requires 'second pass'
+      if (indexedOps[operator] !== true) {
+        for (let id of idResult) {
+          let pos = this._collection.get(id, true)[1];
+          if (indexedOps[operator](data[pos][property], value)) {
+            result.push(pos);
+          }
+        }
       }
       else {
-        let idResult = this._collection._rangedIndexes[property].index.rangeRequest({
-          op: operator,
-          val: value
-        });
-
-        if (indexedOps[operator] !== true) {
-          for (let id of idResult) {
-            let pos = this._collection.get(id, true)[1];
-            if (indexedOps[operator](data[pos][property], value)) {
-              result.push(pos);
-            }
-          }
-        }
-        else {
-          // for now we will have to 'shim' the binary tree index's $loki ids back
-          // into data array indices, ideally i would like to repurpose filteredrows to use loki ids
-          for (let id of idResult) {
-            result.push(this._collection.get(id, true)[1]);
-          }
+        // for now we will have to 'shim' the binary tree index's $loki ids back
+        // into data array indices, ideally i would like to repurpose filteredrows to use loki ids
+        for (let id of idResult) {
+          result.push(this._collection.get(id, true)[1]);
         }
       }
-
-      return this;
     }
 
     return this;

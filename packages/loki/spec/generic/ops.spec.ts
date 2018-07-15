@@ -256,7 +256,7 @@ describe("Individual operator tests", () => {
 
     // test unindexed code path
     const db = new Loki("db");
-    const coll = db.addCollection<User>("coll", {indices: ["count"]});
+    const coll = db.addCollection<User>("coll", { rangedIndexes: { "count": {} } });
     coll.insert({name: "mjolnir", count: 73});
     coll.insert({name: "gungnir", count: 5});
     coll.insert({name: "tyrfing", count: 15});
