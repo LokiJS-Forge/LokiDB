@@ -133,6 +133,11 @@ export class Collection<TData extends object = object, TNested extends object = 
   public _disableDeltaChangesApi: boolean;
 
   /**
+   * By default, if you insert a document with a Date value for an indexed property, we will convert that value to number.
+   */
+  private _serializableIndexes: boolean;
+
+  /**
    * Name of path of used nested properties.
    */
   private _nestedProperties: { name: keyof TNested, path: string[] }[] = [];
@@ -175,7 +180,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {boolean} [options.disableChangesApi=true] - set to false to enable Changes API
    * @param {boolean} [options.disableDeltaChangesApi=true] - set to false to enable Delta Changes API (requires Changes API, forces cloning)
    * @param {boolean} [options.clone=false] - specify whether inserts and queries clone to/from user
-   * @param {boolean} [options.serializableIndices =true] - converts date values on binary indexed property values are serializable
+   * @param {boolean} [options.serializableIndexes=true] - converts date values on binary indexed property values are serializable
    * @param {string} [options.cloneMethod="deep"] - the clone method
    * @param {number} [options.transactional=false] - ?
    * @param {number} [options.ttl=] - age of document (in ms.) before document is considered aged/stale.
@@ -244,6 +249,9 @@ export class Collection<TData extends object = object, TNested extends object = 
     if (this._disableChangesApi) {
       this._disableDeltaChangesApi = true;
     }
+
+    // .
+    this._serializableIndexes = options.serializableIndexes !== undefined ? options.serializableIndexes : true;
 
     // .
     if (options.nestedProperties != undefined) {
@@ -921,6 +929,10 @@ export class Collection<TData extends object = object, TNested extends object = 
 
       // add id/val kvp to ranged index
       for (let ri in this._rangedIndexes) {
+        // ensure Dates are converted to unix epoch time if serializableIndexes is true
+        if (this._serializableIndexes && newDoc[ri] instanceof Date) {
+          newDoc[ri] = newDoc[ri].getTime();
+        }
         this._rangedIndexes[ri].index.insert(obj["$loki"], obj[ri]);
       }
 
@@ -1606,9 +1618,8 @@ export class Collection<TData extends object = object, TNested extends object = 
 export namespace Collection {
   export interface Options<TData extends object, TNested extends object = {}> {
     unique?: (keyof (TData & TNested))[];
-    indices?: (keyof (TData & TNested))[];
     rangedIndexes?: RangedIndexOptions;
-    adaptiveBinaryIndices?: boolean;
+    serializableIndexes?: boolean;
     asyncListeners?: boolean;
     disableMeta?: boolean;
     disableChangesApi?: boolean;
