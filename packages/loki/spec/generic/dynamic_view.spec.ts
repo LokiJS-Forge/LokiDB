@@ -257,7 +257,9 @@ describe("dynamicviews", () => {
         a: number;
       }
 
-      const test = db.addCollection<CR>("nodupes", {indices: ["index"]});
+      const test = db.addCollection<CR>("nodupes", {
+        rangedIndexes: { index: {} }
+      });
 
       const item = test.insert({
         index: "key",
@@ -284,7 +286,9 @@ describe("dynamicviews", () => {
 
 
     it("works 3", function testEmptyTableWithIndex() {
-      const itc = db.addCollection<any>("test", {indices: ["testindex"]});
+      const itc = db.addCollection<any>("test", {
+        rangedIndexes: { testindex: {} }
+      });
 
       const resultsNoIndex = itc.find({
         "testid": 2
@@ -429,7 +433,12 @@ describe("dynamicviews", () => {
   describe("dynamic view simplesort options work correctly", () => {
     it("works", function () {
       const db = new Loki("dvtest.db");
-      let coll = db.addCollection<{ a: number, b: number }>("colltest", {indices: ["a", "b"]});
+      let coll = db.addCollection<{ a: number, b: number }>("colltest", {
+        rangedIndexes: {
+          a: {},
+          b: {}
+        }
+      });
 
       // add basic dv with filter on a and basic simplesort on b
       let dv = coll.addDynamicView("dvtest");

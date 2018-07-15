@@ -48,7 +48,7 @@ describe("sorting and indexing", () => {
     expect(results[3].a).toBe(3);
 
     // test when indexed
-    const rss2 = db.addCollection<Sortable>("rssort2", { indices: ["a"] });
+    const rss2 = db.addCollection<Sortable>("rssort2", { rangedIndexes: { "a": {} } });
 
     rss2.insert({ a: 4, b: 2 });
     rss2.insert({ a: 7, b: 1 });
@@ -340,7 +340,7 @@ describe("sorting and indexing", () => {
 
   it("simplesort index intersect works correctly", () => {
     const db = new Loki("rss.db");
-    const rss = db.addCollection<{ a: number, b: number }>("rssort", { indices: ["a", "b"] });
+    const rss = db.addCollection<{ a: number, b: number }>("rssort", { rangedIndexes: { "a": {}, "b": {} } });
 
     rss.insert({ a: 4, b: 1 });
     rss.insert({ a: 7, b: 1 });
@@ -375,7 +375,7 @@ describe("sorting and indexing", () => {
 
   it("simplesort using javascript sorting works correctly", () => {
     const db = new Loki("rss.db");
-    const rss = db.addCollection<{ a: number, b: number }>("rssort", { indices: ["a", "b"] });
+    const rss = db.addCollection<{ a: number, b: number }>("rssort", { rangedIndexes: { "a": {}, "b": {} } });
 
     rss.insert({ a: 4, b: 1 });
     rss.insert({ a: 7, b: 1 });

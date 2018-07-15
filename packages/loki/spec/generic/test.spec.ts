@@ -861,7 +861,7 @@ describe("loki", () => {
       }
 
       // Add a collection to the database
-      const items = ssdb.addCollection<User>("items", { indices: ["name"] });
+      const items = ssdb.addCollection<User>("items", { rangedIndexes: { "name": {}} });
 
       // Add some documents to the collection
       items.insert({ name: "mjolnir", owner: "thor", maker: "dwarves" });
@@ -925,7 +925,7 @@ describe("loki", () => {
       }
 
       // Add a collection to the database
-      const items = idb.addCollection<User>("items", { indices: ["owner"] });
+      const items = idb.addCollection<User>("items", { rangedIndexes: { "owner" : {}} });
 
       // Add some documents to the collection
       items.insert({ name: "mjolnir", owner: "thor", maker: "dwarves" });
