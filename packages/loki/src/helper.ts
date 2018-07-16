@@ -1,4 +1,75 @@
 /**
+ * Rough, Initial interfaces for creation of various implementations of ranged indexes.
+ * Not sure how these might change or where they might be relocated to.
+ */
+
+import { BinaryTreeIndex } from "./btree_index";
+
+/* valid range ops that the index must directly support */
+export type RangedValueOperator = "$gt" | "$gte" | "$lt" | "$lte" | "$eq" | "$neq" | "$between";
+
+/* Loki Comparator interface for dependency injection to ranged indexes */
+export interface ILokiRangedComparer<T> {
+  compare(val: T, val2: T) : -1 | 0 | 1;
+}
+
+export interface IRangedIndexRequest<T> {
+  op: RangedValueOperator;
+  val: T;
+  high?: T;
+}
+
+export interface IComparatorMap {
+  [name: string]: ILokiRangedComparer<any>;
+}
+
+/* global (for now) comparator hashmap... static registry rather than factory */
+export let ComparatorMap: IComparatorMap = {
+  "js": CreateJavascriptComparator<any>(),
+  "loki": CreateLokiComparator()
+};
+
+export interface IRangedIndexFactoryMap {
+  [name: string]: (name: string, comparator: ILokiRangedComparer<any>) => IRangedIndex<any>;
+}
+
+/* global rangedIndex factory hashmap */
+export let RangedIndexFactoryMap: IRangedIndexFactoryMap = {
+  "btree": (name: string, comparator: ILokiRangedComparer<any>) => { return new BinaryTreeIndex(name, comparator); }
+};
+
+export interface IRangedIndex<T> {
+  insert(id: number, val: T): void;
+  update(id: number, val: T): void;
+  remove(id: number): void;
+  restore(tree: any) : void;
+
+  rangeRequest(range?: IRangedIndexRequest<T>): number[];
+
+  validateIndex(): boolean;
+}
+
+export function CreateJavascriptComparator<T>(): ILokiRangedComparer<T> {
+  return {
+    compare(val: T, val2: T) {
+      if (val === val2) return 0;
+      if (val < val2) return -1;
+      return 1;
+    }
+  };
+}
+
+export function CreateLokiComparator() : ILokiRangedComparer<any> {
+  return {
+    compare(val: any, val2: any) {
+      if (aeqHelper(val, val2)) return 0;
+      if (ltHelper(val, val2, false)) return -1;
+      return 1;
+    }
+  };
+}
+
+/**
  * Helper function for determining 'loki' abstract equality which is a little more abstract than ==
  *     aeqHelper(5, '5') === true
  *     aeqHelper(5.0, '5') === true

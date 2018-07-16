@@ -2,7 +2,7 @@ import { LokiEventEmitter } from "./event_emitter";
 import { UniqueIndex } from "./unique_index";
 import { ResultSet, LokiOps } from "./result_set";
 import { DynamicView } from "./dynamic_view";
-import { ltHelper, gtHelper, aeqHelper } from "./helper";
+import { IRangedIndex, ltHelper, gtHelper, aeqHelper, ComparatorMap, RangedIndexFactoryMap } from "./helper";
 import { clone, CloneMethod } from "./clone";
 import { Doc, Dict } from "../../common/types";
 import { FullTextSearch } from "../../full-text-search/src/full_text_search";
@@ -71,6 +71,7 @@ export class Collection<TData extends object = object, TNested extends object = 
   private _idIndex: number[] = [];
   // user defined indexes
   public _binaryIndices: { [P in keyof (TData & TNested)]?: Collection.BinaryIndex } = {}; // user defined indexes
+  public _rangedIndexes: { [P in keyof (TData & TNested)]?: Collection.RangedIndexMeta } = {};
 
   /**
    * Unique constraints contain duplicate object references, so they are not persisted.
@@ -183,6 +184,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {string[]} [options.unique=[]] - array of property names to define unique constraints for
    * @param {string[]} [options.exact=[]] - array of property names to define exact constraints for
    * @param {string[]} [options.indices=[]] - array property names to define binary indexes for
+   * @param {string[]} [options.btreeIndexes[]]
    * @param {boolean} [options.adaptiveBinaryIndices=true] - collection indices will be actively rebuilt rather than lazily
    * @param {boolean} [options.asyncListeners=false] - whether listeners are invoked asynchronously
    * @param {boolean} [options.disableMeta=false] - set to true to disable meta property on documents
@@ -298,6 +300,11 @@ export class Collection<TData extends object = object, TNested extends object = 
     for (let idx = 0; idx < indices.length; idx++) {
       this.ensureIndex(options.indices[idx]);
     }
+    let rangedIndexes: Collection.RangedIndexOptions = options.rangedIndexes || {};
+    for (let ri in rangedIndexes) {
+      // Todo: any way to type annotate this as typesafe generic?
+      this.ensureRangedIndex(ri, rangedIndexes[ri].indexTypeName, rangedIndexes[ri].comparatorName);
+    }
 
     this.setChangesApi(this._disableChangesApi, this._disableDeltaChangesApi);
 
@@ -312,6 +319,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       uniqueNames: Object.keys(this._constraints.unique),
       transforms: this._transforms as any,
       binaryIndices: this._binaryIndices as any,
+      rangedIndexes: this._rangedIndexes as any,
       _data: this._data,
       idIndex: this._idIndex,
       maxId: this._maxId,
@@ -345,6 +353,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     coll._cloneMethod = obj.cloneMethod || "deep";
     coll._changes = obj.changes;
     coll._nestedProperties = obj._nestedProperties as any[];
+    coll._rangedIndexes = obj.rangedIndexes || {};
 
     coll._dirty = (options && options.retainDirtyFlags === true) ? obj._dirty : false;
 
@@ -388,6 +397,22 @@ export class Collection<TData extends object = object, TNested extends object = 
     }
     if (obj.transforms !== undefined) {
       coll._transforms = obj.transforms;
+    }
+
+    // inflate rangedindexes
+    for (let ri in obj.rangedIndexes) {
+      // shortcut reference to serialized meta
+      let sri = obj.rangedIndexes[ri];
+      // lookup index factory function in map based on index type name
+      let rif = RangedIndexFactoryMap[sri.indexTypeName];
+      // lookup comparator function in map based on comparator name
+      let ricmp = ComparatorMap[sri.comparatorName];
+      // using index type (from meta), index factory and comparator... create instance of ranged index
+      let rii = rif(ri, ricmp);
+      // now ask new index instance to inflate from plain object
+      rii.restore(sri.index);
+      // attach class instance to our collection's ranged index's (index) instance property
+      coll._rangedIndexes[ri].index = rii;
     }
 
     coll._ensureId();
@@ -654,6 +679,40 @@ export class Collection<TData extends object = object, TNested extends object = 
       }
     }
     return results;
+  }
+
+  /**
+   * Ensure rangedIndex of a field
+   * @param field Property to create an index on (need to look into contraining on keyof T)
+   * @param indexTypeName Name of IndexType factory within (global?) hashmap to create IRangedIndex from
+   * @param comparatorName Name of Comparator within (global?) hashmap
+   */
+  public ensureRangedIndex(field: string, indexTypeName?: string, comparatorName?: string) {
+    indexTypeName = indexTypeName || "btree";
+    comparatorName = comparatorName || "loki";
+
+    if (!RangedIndexFactoryMap[indexTypeName]) {
+      throw new Error("ensureRangedIndex: Unknown range index type");
+    }
+
+    if (!ComparatorMap[comparatorName]) {
+      throw new Error("ensureRangedIndex: Unknown comparator");
+    }
+
+    let rif = RangedIndexFactoryMap[indexTypeName];
+    let comparator = ComparatorMap[comparatorName];
+
+    this._rangedIndexes[field] = {
+      index: rif(field, comparator),
+      indexTypeName: indexTypeName,
+      comparatorName: comparatorName
+    };
+
+    let rii = this._rangedIndexes[field].index;
+
+    for (let i = 0; i < this._data.length; i++) {
+      rii.insert(this._data[i].$loki, this._data[i][field]);
+    }
   }
 
   public ensureUniqueIndex(field: keyof (TData & TNested)) {
@@ -1006,6 +1065,11 @@ export class Collection<TData extends object = object, TNested extends object = 
         this.flagBinaryIndexesDirty();
       }
 
+      // Notify all ranged indexes of (possible) value update
+      for (let ri in this._rangedIndexes) {
+        this._rangedIndexes[ri].index.update(doc.$loki, doc[ri]);
+      }
+
       this._idIndex[position] = newInternal.$loki;
 
       // FullTextSearch.
@@ -1100,6 +1164,11 @@ export class Collection<TData extends object = object, TNested extends object = 
         }
       } else {
         this.flagBinaryIndexesDirty();
+      }
+
+      // add id/val kvp to ranged index
+      for (let ri in this._rangedIndexes) {
+        this._rangedIndexes[ri].index.insert(obj["$loki"], obj[ri]);
       }
 
       // FullTextSearch.
@@ -1199,6 +1268,11 @@ export class Collection<TData extends object = object, TNested extends object = 
 
       // remove id from idIndex
       this._idIndex.splice(position, 1);
+
+      // remove id/val kvp from binary tree index
+      for (let ri in this._rangedIndexes) {
+        this._rangedIndexes[ri].index.remove(doc.$loki);
+      }
 
       // FullTextSearch.
       if (this._fullTextSearch !== null) {
@@ -2161,6 +2235,7 @@ export namespace Collection {
   export interface Options<TData extends object, TNested extends object = {}> {
     unique?: (keyof (TData & TNested))[];
     indices?: (keyof (TData & TNested))[];
+    rangedIndexes?: RangedIndexOptions;
     adaptiveBinaryIndices?: boolean;
     asyncListeners?: boolean;
     disableMeta?: boolean;
@@ -2176,6 +2251,10 @@ export namespace Collection {
     fullTextSearch?: FullTextSearch.FieldOptions[];
   }
 
+  export interface RangedIndexOptions {
+    [prop: string]: RangedIndexMeta;
+  }
+
   export interface DeserializeOptions {
     retainDirtyFlags?: boolean;
     fullTextSearch?: Dict<Analyzer>;
@@ -2186,6 +2265,12 @@ export namespace Collection {
   export interface BinaryIndex {
     dirty: boolean;
     values: any;
+  }
+
+  export interface RangedIndexMeta {
+    index?: IRangedIndex<any>;
+    indexTypeName?: string;
+    comparatorName?: string;
   }
 
   export interface Change {
@@ -2201,6 +2286,7 @@ export namespace Collection {
     uniqueNames: string[];
     transforms: Dict<Transform[]>;
     binaryIndices: Dict<Collection.BinaryIndex>;
+    rangedIndexes: RangedIndexOptions;
     _data: Doc<any>[];
     idIndex: number[];
     maxId: number;
