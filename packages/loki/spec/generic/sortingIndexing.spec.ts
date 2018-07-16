@@ -16,10 +16,10 @@ describe("sorting and indexing", () => {
 
     const rss = db.addCollection<Sortable>("rssort");
 
-    rss.insert({a: 4, b: 2});
-    rss.insert({a: 7, b: 1});
-    rss.insert({a: 3, b: 4});
-    rss.insert({a: 9, b: 5});
+    rss.insert({ a: 4, b: 2 });
+    rss.insert({ a: 7, b: 1 });
+    rss.insert({ a: 3, b: 4 });
+    rss.insert({ a: 9, b: 5 });
 
     const results = rss.chain().simplesort("a").data();
     expect(results[0].a).toBe(3);
@@ -36,10 +36,10 @@ describe("sorting and indexing", () => {
 
     const rss = db.addCollection<Sortable>("rssort");
 
-    rss.insert({a: 4, b: 2});
-    rss.insert({a: 7, b: 1});
-    rss.insert({a: 3, b: 4});
-    rss.insert({a: 9, b: 5});
+    rss.insert({ a: 4, b: 2 });
+    rss.insert({ a: 7, b: 1 });
+    rss.insert({ a: 3, b: 4 });
+    rss.insert({ a: 9, b: 5 });
 
     let results = rss.chain().simplesort("a", true).data();
     expect(results[0].a).toBe(9);
@@ -48,12 +48,12 @@ describe("sorting and indexing", () => {
     expect(results[3].a).toBe(3);
 
     // test when indexed
-    const rss2 = db.addCollection<Sortable>("rssort2", {indices: ["a"]});
+    const rss2 = db.addCollection<Sortable>("rssort2", { rangedIndexes: { "a": {} } });
 
-    rss2.insert({a: 4, b: 2});
-    rss2.insert({a: 7, b: 1});
-    rss2.insert({a: 3, b: 4});
-    rss2.insert({a: 9, b: 5});
+    rss2.insert({ a: 4, b: 2 });
+    rss2.insert({ a: 7, b: 1 });
+    rss2.insert({ a: 3, b: 4 });
+    rss2.insert({ a: 9, b: 5 });
 
     results = rss2.chain().simplesort("a", true).data();
     expect(results[0].a).toBe(9);
@@ -75,10 +75,10 @@ describe("sorting and indexing", () => {
         nestedProperties: ["foo.a"]
       });
 
-    rss.insert({foo: {a: 4, b: 2}});
-    rss.insert({foo: {a: 7, b: 1}});
-    rss.insert({foo: {a: 3, b: 4}});
-    rss.insert({foo: {a: 9, b: 5}});
+    rss.insert({ foo: { a: 4, b: 2 } });
+    rss.insert({ foo: { a: 7, b: 1 } });
+    rss.insert({ foo: { a: 3, b: 4 } });
+    rss.insert({ foo: { a: 9, b: 5 } });
 
     const results = rss.chain().simplesort("foo.a").data();
     expect(results[0].foo.a).toBe(3);
@@ -102,11 +102,11 @@ describe("sorting and indexing", () => {
 
     const rss = db.addCollection<Sortable>("rssort");
 
-    rss.insert({a: 1, b: dt1});
-    rss.insert({a: 2, b: dt2});
-    rss.insert({a: 3, b: dt3});
-    rss.insert({a: 4, b: dt4});
-    rss.insert({a: 5, b: dt5});
+    rss.insert({ a: 1, b: dt1 });
+    rss.insert({ a: 2, b: dt2 });
+    rss.insert({ a: 3, b: dt3 });
+    rss.insert({ a: 4, b: dt4 });
+    rss.insert({ a: 5, b: dt5 });
 
     const results = rss.chain().simplesort("b").data();
     expect(results[0].a).toBe(3);
@@ -127,9 +127,9 @@ describe("sorting and indexing", () => {
     const coll = db.addCollection<Sortable>("coll");
 
     coll.insert([
-      {a: 1, b: 9, c: "first"},
-      {a: 5, b: 7, c: "second"},
-      {a: 2, b: 9, c: "third"}
+      { a: 1, b: 9, c: "first" },
+      { a: 5, b: 7, c: "second" },
+      { a: 2, b: 9, c: "third" }
     ]);
 
     const sortfun = (obj1: Sortable, obj2: Sortable) => {
@@ -157,9 +157,9 @@ describe("sorting and indexing", () => {
     const coll = db.addCollection<ABC>("coll");
 
     coll.insert([
-      {a: 1, b: 9, c: "first"},
-      {a: 5, b: 7, c: "second"},
-      {a: 2, b: 9, c: "third"}
+      { a: 1, b: 9, c: "first" },
+      { a: 5, b: 7, c: "second" },
+      { a: 2, b: 9, c: "third" }
     ]);
 
     let result = coll.chain().compoundsort(["b", "c"]).data();
@@ -194,10 +194,10 @@ describe("sorting and indexing", () => {
       });
 
     coll.insert([
-      {a: 1, z: {y: {b: 9, c: "first"}}},
-      {a: 5, z: {y: {b: 7, c: "second"}}},
+      { a: 1, z: { y: { b: 9, c: "first" } } },
+      { a: 5, z: { y: { b: 7, c: "second" } } },
       {
-        a: 2, z: {y: {b: 9, c: "third"}}
+        a: 2, z: { y: { b: 9, c: "third" } }
       }]);
 
     let result = coll.chain().compoundsort(["z.y.b", "z.y.c"]).data();
@@ -222,26 +222,26 @@ describe("sorting and indexing", () => {
       }
 
       const coll = db.addCollection<AB>("coll");
-      coll.insert({a: undefined, b: 5});
-      coll.insert({b: 5});
-      coll.insert({a: null, b: 5});
-      coll.insert({a: 7, b: 5});
-      coll.insert({a: "7", b: 5});
-      coll.insert({a: 7.0, b: 5});
-      coll.insert({a: "11", b: 5});
-      coll.insert({a: "4", b: 5});
-      coll.insert({a: new Date(), b: 5});
-      coll.insert({a: {ack: "object"}, b: 5});
-      coll.insert({a: 7.5, b: 5});
-      coll.insert({a: NaN, b: 5});
-      coll.insert({a: [8, 1, 15], b: 5});
-      coll.insert({a: "asdf", b: 5});
+      coll.insert({ a: undefined, b: 5 });
+      coll.insert({ b: 5 });
+      coll.insert({ a: null, b: 5 });
+      coll.insert({ a: 7, b: 5 });
+      coll.insert({ a: "7", b: 5 });
+      coll.insert({ a: 7.0, b: 5 });
+      coll.insert({ a: "11", b: 5 });
+      coll.insert({ a: "4", b: 5 });
+      coll.insert({ a: new Date(), b: 5 });
+      coll.insert({ a: { ack: "object" }, b: 5 });
+      coll.insert({ a: 7.5, b: 5 });
+      coll.insert({ a: NaN, b: 5 });
+      coll.insert({ a: [8, 1, 15], b: 5 });
+      coll.insert({ a: "asdf", b: 5 });
 
       let indexVals: any[] = [];
 
       // make sure unindexed sort is as expected
 
-      const result = coll.chain().simplesort("a").data();
+      let result = coll.chain().simplesort("a").data();
       result.forEach((obj) => {
         indexVals.push(obj.a);
       });
@@ -266,11 +266,12 @@ describe("sorting and indexing", () => {
       expect(indexVals[13] === "asdf").toEqual(true);
 
       // now make sure binary index uses same range
-      indexVals = [];
       coll.ensureIndex("a");
 
-      coll["_binaryIndices"].a.values.forEach((vi: any) => {
-        indexVals.push(coll._data[vi].a);
+      indexVals = [];
+      result = coll.chain().simplesort("a").data();
+      result.forEach((obj) => {
+        indexVals.push(obj.a);
       });
 
       expect(indexVals.length).toEqual(14);
@@ -306,16 +307,18 @@ describe("sorting and indexing", () => {
         b: Date;
       }
 
-      const cidx = db.addCollection<Sortable>("collidx", {indices: ["b"]});
+      const cidx = db.addCollection<Sortable>("collidx", {
+        rangedIndexes: { customId: {} }
+      });
 
-      cidx.insert({a: 1, b: dt1});
-      cidx.insert({a: 2, b: dt2});
-      cidx.insert({a: 3, b: dt3});
-      cidx.insert({a: 4, b: dt4});
-      cidx.insert({a: 5, b: dt5});
+      cidx.insert({ a: 1, b: dt1 });
+      cidx.insert({ a: 2, b: dt2 });
+      cidx.insert({ a: 3, b: dt3 });
+      cidx.insert({ a: 4, b: dt4 });
+      cidx.insert({ a: 5, b: dt5 });
 
       // force index build while simultaneously testing date equality test
-      let results = cidx.find({"b": {$aeq: dt2}});
+      let results = cidx.find({ "b": { $aeq: dt2 } });
       expect(results[0].a).toBe(2);
 
       // NOTE :
@@ -325,53 +328,45 @@ describe("sorting and indexing", () => {
 
       // after refactoring binary indices to be loose equality/ranges everywhere,
       // this unit test passed, meaning the dteq op is not needed if binary index exists
-      results = cidx.find({"b": sdt});
+      results = cidx.find({ "b": sdt });
       expect(results.length).toBe(0);
 
       // now try with new $dteq operator
-      results = cidx.find({"b": {"$dteq": sdt}});
+      results = cidx.find({ "b": { "$dteq": sdt } });
       expect(results.length).toBe(1);
       expect(results[0].a).toBe(2);
-
-      // now verify indices
-      // they are array of 'positions' so both array index and value are zero based
-      expect(cidx["_binaryIndices"].b.values[0]).toBe(2);
-      expect(cidx["_binaryIndices"].b.values[1]).toBe(4);
-      expect(cidx["_binaryIndices"].b.values[2]).toBe(0);
-      expect(cidx["_binaryIndices"].b.values[3]).toBe(3);
-      expect(cidx["_binaryIndices"].b.values[4]).toBe(1);
     });
   });
 
   it("simplesort index intersect works correctly", () => {
     const db = new Loki("rss.db");
-    const rss = db.addCollection<{ a: number, b: number }>("rssort", {indices: ["a", "b"]});
+    const rss = db.addCollection<{ a: number, b: number }>("rssort", { rangedIndexes: { "a": {}, "b": {} } });
 
-    rss.insert({a: 4, b: 1});
-    rss.insert({a: 7, b: 1});
-    rss.insert({a: 3, b: 1});
-    rss.insert({a: 9, b: 5});
-    rss.insert({a: 14, b: 1});
-    rss.insert({a: 17, b: 1});
-    rss.insert({a: 13, b: 1});
-    rss.insert({a: 19, b: 5});
+    rss.insert({ a: 4, b: 1 });
+    rss.insert({ a: 7, b: 1 });
+    rss.insert({ a: 3, b: 1 });
+    rss.insert({ a: 9, b: 5 });
+    rss.insert({ a: 14, b: 1 });
+    rss.insert({ a: 17, b: 1 });
+    rss.insert({ a: 13, b: 1 });
+    rss.insert({ a: 19, b: 5 });
 
     // test explicit force index intercept simplesort code path
-    let results = rss.chain().find({b: 1}).simplesort("a", {forceIndexIntersect: true}).data();
+    let results = rss.chain().find({ b: 1 }).simplesort("a", { forceIndexIntersect: true }).data();
     expect(results.length).toBe(6);
     for (let i = 0; i < results.length - 1; i++) {
       expect(LokiOps.$lte(results[i]["a"], results[i + 1]["a"]));
     }
 
     // test explicit disable index intercept simplesort code path
-    results = rss.chain().find({b: 1}).simplesort("a", {disableIndexIntersect: true}).data();
+    results = rss.chain().find({ b: 1 }).simplesort("a", { disableIndexIntersect: true }).data();
     expect(results.length).toBe(6);
     for (let i = 0; i < results.length - 1; i++) {
       expect(LokiOps.$lte(results[i]["a"], results[i + 1]["a"]));
     }
 
     // test 'smart' simplesort
-    results = rss.chain().find({b: 1}).simplesort("a").data();
+    results = rss.chain().find({ b: 1 }).simplesort("a").data();
     expect(results.length).toBe(6);
     for (let i = 0; i < results.length - 1; i++) {
       expect(LokiOps.$lte(results[i]["a"], results[i + 1]["a"]));
@@ -380,19 +375,19 @@ describe("sorting and indexing", () => {
 
   it("simplesort using javascript sorting works correctly", () => {
     const db = new Loki("rss.db");
-    const rss = db.addCollection<{ a: number, b: number }>("rssort", {indices: ["a", "b"]});
+    const rss = db.addCollection<{ a: number, b: number }>("rssort", { rangedIndexes: { "a": {}, "b": {} } });
 
-    rss.insert({a: 4, b: 1});
-    rss.insert({a: 7, b: 1});
-    rss.insert({a: 3, b: 1});
-    rss.insert({a: 9, b: 5});
-    rss.insert({a: 14, b: 1});
-    rss.insert({a: 17, b: 1});
-    rss.insert({a: 13, b: 1});
-    rss.insert({a: 19, b: 5});
+    rss.insert({ a: 4, b: 1 });
+    rss.insert({ a: 7, b: 1 });
+    rss.insert({ a: 3, b: 1 });
+    rss.insert({ a: 9, b: 5 });
+    rss.insert({ a: 14, b: 1 });
+    rss.insert({ a: 17, b: 1 });
+    rss.insert({ a: 13, b: 1 });
+    rss.insert({ a: 19, b: 5 });
 
     // test explicit force index intercept simplesort code path
-    const results = rss.chain().find({b: 1}).simplesort("a", {useJavascriptSorting: true}).data();
+    const results = rss.chain().find({ b: 1 }).simplesort("a", { useJavascriptSorting: true }).data();
 
     expect(results.length).toBe(6);
     for (let i = 0; i < results.length - 1; i++) {

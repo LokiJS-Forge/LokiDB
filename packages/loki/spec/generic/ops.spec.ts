@@ -229,7 +229,7 @@ describe("Individual operator tests", () => {
     expect(coll.find({count: {$between: [20, 60]}}).length).toEqual(0);
 
     // now test -indexed- code path
-    coll.ensureIndex("count");
+    coll.ensureRangedIndex("count");
 
     results = coll.chain().find({count: {$between: [15, 75]}}).simplesort("count").data();
     expect(results.length).toEqual(4);
@@ -256,7 +256,7 @@ describe("Individual operator tests", () => {
 
     // test unindexed code path
     const db = new Loki("db");
-    const coll = db.addCollection<User>("coll", {indices: ["count"]});
+    const coll = db.addCollection<User>("coll", { rangedIndexes: { "count": {} } });
     coll.insert({name: "mjolnir", count: 73});
     coll.insert({name: "gungnir", count: 5});
     coll.insert({name: "tyrfing", count: 15});

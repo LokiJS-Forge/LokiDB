@@ -1,8 +1,8 @@
 import { LokiEventEmitter } from "./event_emitter";
 import { UniqueIndex } from "./unique_index";
-import { ResultSet, LokiOps } from "./result_set";
+import { ResultSet } from "./result_set";
 import { DynamicView } from "./dynamic_view";
-import { IRangedIndex, ltHelper, gtHelper, aeqHelper, ComparatorMap, RangedIndexFactoryMap } from "./helper";
+import { IRangedIndex, ComparatorMap, RangedIndexFactoryMap } from "./helper";
 import { clone, CloneMethod } from "./clone";
 import { Doc, Dict } from "../../common/types";
 import { FullTextSearch } from "../../full-text-search/src/full_text_search";
@@ -70,7 +70,6 @@ export class Collection<TData extends object = object, TNested extends object = 
   // index of id
   private _idIndex: number[] = [];
   // user defined indexes
-  public _binaryIndices: { [P in keyof (TData & TNested)]?: Collection.BinaryIndex } = {}; // user defined indexes
   public _rangedIndexes: { [P in keyof (TData & TNested)]?: Collection.RangedIndexMeta } = {};
 
   /**
@@ -100,14 +99,8 @@ export class Collection<TData extends object = object, TNested extends object = 
   private _cached: {
     index: number[];
     data: Doc<TData & TNested>[];
-    binaryIndex: { [P in keyof (TData & TNested)]?: Collection.BinaryIndex };
+    rangedIndexes: { [name: string]: Collection.RangedIndexMeta };
   } = null;
-
-  /**
-   * If set to true we will optimally keep indices 'fresh' during insert/update/remove ops (never dirty/never needs rebuild).
-   * If you frequently intersperse insert/update/remove ops between find ops this will likely be significantly faster option.
-   */
-  public _adaptiveBinaryIndices: boolean;
 
   /**
    * Is collection transactional.
@@ -140,11 +133,9 @@ export class Collection<TData extends object = object, TNested extends object = 
   public _disableDeltaChangesApi: boolean;
 
   /**
-   * By default, if you insert a document into a collection with binary indices, if those indexed properties contain
-   * a DateTime we will convert to epoch time format so that (across serializations) its value position will be the
-   * same 'after' serialization as it was 'before'.
+   * By default, if you insert a document with a Date value for an indexed property, we will convert that value to number.
    */
-  private _serializableIndices: boolean;
+  private _serializableIndexes: boolean;
 
   /**
    * Name of path of used nested properties.
@@ -183,15 +174,13 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {(object)} [options={}] - a configuration object
    * @param {string[]} [options.unique=[]] - array of property names to define unique constraints for
    * @param {string[]} [options.exact=[]] - array of property names to define exact constraints for
-   * @param {string[]} [options.indices=[]] - array property names to define binary indexes for
-   * @param {string[]} [options.btreeIndexes[]]
-   * @param {boolean} [options.adaptiveBinaryIndices=true] - collection indices will be actively rebuilt rather than lazily
+   * @param {RangedIndexOptions} [options.rangedIndexes] - configuration object for ranged indexes
    * @param {boolean} [options.asyncListeners=false] - whether listeners are invoked asynchronously
    * @param {boolean} [options.disableMeta=false] - set to true to disable meta property on documents
    * @param {boolean} [options.disableChangesApi=true] - set to false to enable Changes API
    * @param {boolean} [options.disableDeltaChangesApi=true] - set to false to enable Delta Changes API (requires Changes API, forces cloning)
    * @param {boolean} [options.clone=false] - specify whether inserts and queries clone to/from user
-   * @param {boolean} [options.serializableIndices =true] - converts date values on binary indexed property values are serializable
+   * @param {boolean} [options.serializableIndexes=true] - converts date values on binary indexed property values are serializable
    * @param {string} [options.cloneMethod="deep"] - the clone method
    * @param {number} [options.transactional=false] - ?
    * @param {number} [options.ttl=] - age of document (in ms.) before document is considered aged/stale.
@@ -238,9 +227,6 @@ export class Collection<TData extends object = object, TNested extends object = 
     }
 
     // .
-    this._adaptiveBinaryIndices = options.adaptiveBinaryIndices !== undefined ? options.adaptiveBinaryIndices : true;
-
-    // .
     this._transactional = options.transactional !== undefined ? options.transactional : false;
 
     // .
@@ -265,7 +251,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     }
 
     // .
-    this._serializableIndices = options.serializableIndices !== undefined ? options.serializableIndices : true;
+    this._serializableIndexes = options.serializableIndexes !== undefined ? options.serializableIndexes : true;
 
     // .
     if (options.nestedProperties != undefined) {
@@ -296,10 +282,6 @@ export class Collection<TData extends object = object, TNested extends object = 
 
     // initialize the id index
     this._ensureId();
-    let indices = options.indices ? options.indices : [];
-    for (let idx = 0; idx < indices.length; idx++) {
-      this.ensureIndex(options.indices[idx]);
-    }
     let rangedIndexes: Collection.RangedIndexOptions = options.rangedIndexes || {};
     for (let ri in rangedIndexes) {
       // Todo: any way to type annotate this as typesafe generic?
@@ -318,14 +300,12 @@ export class Collection<TData extends object = object, TNested extends object = 
       _dynamicViews: this._dynamicViews,
       uniqueNames: Object.keys(this._constraints.unique),
       transforms: this._transforms as any,
-      binaryIndices: this._binaryIndices as any,
       rangedIndexes: this._rangedIndexes as any,
       _data: this._data,
       idIndex: this._idIndex,
       maxId: this._maxId,
       _dirty: this._dirty,
       _nestedProperties: this._nestedProperties,
-      adaptiveBinaryIndices: this._adaptiveBinaryIndices,
       transactional: this._transactional,
       asyncListeners: this._asyncListeners,
       disableMeta: this._disableMeta,
@@ -344,7 +324,6 @@ export class Collection<TData extends object = object, TNested extends object = 
       disableDeltaChangesApi: obj.disableDeltaChangesApi
     });
 
-    coll._adaptiveBinaryIndices = obj.adaptiveBinaryIndices !== undefined ? (obj.adaptiveBinaryIndices === true) : false;
     coll._transactional = obj.transactional;
     coll._asyncListeners = obj.asyncListeners;
     coll._disableMeta = obj.disableMeta;
@@ -392,9 +371,6 @@ export class Collection<TData extends object = object, TNested extends object = 
 
     coll._maxId = (obj.maxId === undefined) ? 0 : obj.maxId;
     coll._idIndex = obj.idIndex;
-    if (obj.binaryIndices !== undefined) {
-      coll._binaryIndices = obj.binaryIndices;
-    }
     if (obj.transforms !== undefined) {
       coll._transforms = obj.transforms;
     }
@@ -513,176 +489,17 @@ export class Collection<TData extends object = object, TNested extends object = 
   }
 
   /**
-   * Ensure binary index on a certain field.
-   * @param {string} field - the field name
-   * @param {boolean} [force=false] - flag indicating whether to construct index immediately
+   * Ensure rangedIndex of a field.
+   * @param field
+   * @param indexTypeName
+   * @param comparatorName
    */
-  public ensureIndex(field: keyof (TData & TNested), force = false) {
-    if (this._binaryIndices[field] && !force && !this._binaryIndices[field].dirty) {
-      return;
-    }
-
-    // if the index is already defined and we are using adaptiveBinaryIndices and we are not forcing a rebuild, return.
-    if (this._adaptiveBinaryIndices === true && this._binaryIndices[field] !== undefined && !force) {
-      return;
-    }
-
-    const index = {
-      name: field,
-      dirty: true,
-      values: this._prepareFullDocIndex()
-    };
-    this._binaryIndices[field] = index;
-
-    const wrappedComparer = (a: number, b: number) => {
-      const val1 = this._data[a][field];
-      const val2 = this._data[b][field];
-      if (val1 !== val2) {
-        if (ltHelper(val1, val2, false)) return -1;
-        if (gtHelper(val1, val2, false)) return 1;
-      }
-      return 0;
-    };
-
-    index.values.sort(wrappedComparer);
-    index.dirty = false;
-
-    this._dirty = true; // for autosave scenarios
-  }
-
-
-  /**
-   * Perform checks to determine validity/consistency of a binary index.
-   * @param {string} field - the field name of the binary-indexed to check
-   * @param {object=} options - optional configuration object
-   * @param {boolean} [options.randomSampling=false] - whether (faster) random sampling should be used
-   * @param {number} [options.randomSamplingFactor=0.10] - percentage of total rows to randomly sample
-   * @param {boolean} [options.repair=false] - whether to fix problems if they are encountered
-   * @returns {boolean} whether the index was found to be valid (before optional correcting).
-   * @example
-   * // full test
-   * var valid = coll.checkIndex('name');
-   * // full test with repair (if issues found)
-   * valid = coll.checkIndex('name', { repair: true });
-   * // random sampling (default is 10% of total document count)
-   * valid = coll.checkIndex('name', { randomSampling: true });
-   * // random sampling (sample 20% of total document count)
-   * valid = coll.checkIndex('name', { randomSampling: true, randomSamplingFactor: 0.20 });
-   * // random sampling (implied boolean)
-   * valid = coll.checkIndex('name', { randomSamplingFactor: 0.20 });
-   * // random sampling with repair (if issues found)
-   * valid = coll.checkIndex('name', { repair: true, randomSampling: true });
-   */
-  public checkIndex(field: keyof (TData & TNested), options: Collection.CheckIndexOptions = {repair: false}) {
-    // if lazy indexing, rebuild only if flagged as dirty
-    if (!this._adaptiveBinaryIndices) {
-      this.ensureIndex(field);
-    }
-
-    // if 'randomSamplingFactor' specified but not 'randomSampling', assume true
-    if (options.randomSamplingFactor && options.randomSampling !== false) {
-      options.randomSampling = true;
-    }
-    options.randomSamplingFactor = options.randomSamplingFactor || 0.1;
-    if (options.randomSamplingFactor < 0 || options.randomSamplingFactor > 1) {
-      options.randomSamplingFactor = 0.1;
-    }
-
-    const biv = this._binaryIndices[field].values;
-    const len = biv.length;
-
-    // if the index has an incorrect number of values
-    if (len !== this._data.length) {
-      if (options.repair) {
-        this.ensureIndex(field, true);
-      }
-      return false;
-    }
-
-    if (len === 0) {
-      return true;
-    }
-
-    let valid = true;
-    if (len === 1) {
-      valid = (biv[0] === 0);
-    } else {
-      if (options.randomSampling) {
-        // validate first and last
-        if (!LokiOps.$lte(this._data[biv[0]][field], this._data[biv[1]][field])) {
-          valid = false;
-        }
-        if (!LokiOps.$lte(this._data[biv[len - 2]][field], this._data[biv[len - 1]][field])) {
-          valid = false;
-        }
-
-        // if first and last positions are sorted correctly with their nearest neighbor,
-        // continue onto random sampling phase...
-        if (valid) {
-          // # random samplings = total count * sampling factor
-          const iter = Math.floor((len - 1) * options.randomSamplingFactor);
-
-          // for each random sampling, validate that the binary index is sequenced properly
-          // with next higher value.
-          for (let idx = 0; idx < iter; idx++) {
-            // calculate random position
-            const pos = Math.floor(Math.random() * (len - 1));
-            if (!LokiOps.$lte(this._data[biv[pos]][field], this._data[biv[pos + 1]][field])) {
-              valid = false;
-              break;
-            }
-          }
-        }
-      }
-      else {
-        // validate that the binary index is sequenced properly
-        for (let idx = 0; idx < len - 1; idx++) {
-          if (!LokiOps.$lte(this._data[biv[idx]][field], this._data[biv[idx + 1]][field])) {
-            valid = false;
-            break;
-          }
-        }
-      }
-    }
-
-    // if incorrectly sequenced and we are to fix problems, rebuild index
-    if (!valid && options.repair) {
-      this.ensureIndex(field, true);
-    }
-
-    return valid;
+  public ensureIndex(field: string, indexTypeName?: string, comparatorName?: string) {
+    this.ensureRangedIndex(field, indexTypeName, comparatorName);
   }
 
   /**
-   * Perform checks to determine validity/consistency of all binary indices
-   * @param {object=} options - optional configuration object
-   * @param {boolean} [options.randomSampling=false] - whether (faster) random sampling should be used
-   * @param {number} [options.randomSamplingFactor=0.10] - percentage of total rows to randomly sample
-   * @param {boolean} [options.repair=false] - whether to fix problems if they are encountered
-   * @returns {string[]} array of index names where problems were found
-   * @example
-   * // check all indices on a collection, returns array of invalid index names
-   * var result = coll.checkAllIndexes({ repair: true, randomSampling: true, randomSamplingFactor: 0.15 });
-   * if (result.length > 0) {
-   *   results.forEach(function(name) {
-   *     console.log('problem encountered with index : ' + name);
-   *   });
-   * }
-   */
-  public checkAllIndexes(options?: Collection.CheckIndexOptions): (keyof TData & TNested)[] {
-    const results = [];
-    let keys = Object.keys(this._binaryIndices) as (keyof TData & TNested)[];
-    for (let i = 0; i < keys.length; i++) {
-      const result = this.checkIndex(keys[i], options);
-      if (!result) {
-        results.push(keys[i]);
-      }
-    }
-    return results;
-  }
-
-  /**
-   * Ensure rangedIndex of a field
+   * Ensure rangedIndex of a field.
    * @param field Property to create an index on (need to look into contraining on keyof T)
    * @param indexTypeName Name of IndexType factory within (global?) hashmap to create IRangedIndex from
    * @param comparatorName Name of Comparator within (global?) hashmap
@@ -724,27 +541,6 @@ export class Collection<TData extends object = object, TNested extends object = 
       index.set(this._data[i], i);
     }
     return index;
-  }
-
-  /**
-   * Ensure all binary indices.
-   */
-  public ensureAllIndexes(force = false) {
-    const keys = Object.keys(this._binaryIndices) as (keyof (TData & TNested))[];
-    for (let i = 0; i < keys.length; i++) {
-      this.ensureIndex(keys[i], force);
-    }
-  }
-
-  public flagBinaryIndexesDirty() {
-    const keys = Object.keys(this._binaryIndices) as (keyof (TData & TNested))[];
-    for (let i = 0; i < keys.length; i++) {
-      this.flagBinaryIndexDirty(keys[i]);
-    }
-  }
-
-  public flagBinaryIndexDirty(index: keyof (TData & TNested)) {
-    this._binaryIndices[index].dirty = true;
   }
 
   /**
@@ -966,7 +762,7 @@ export class Collection<TData extends object = object, TNested extends object = 
 
     // if removing indices entirely
     if (removeIndices === true) {
-      this._binaryIndices = {};
+      this._rangedIndexes = {};
 
       this._constraints = {
         unique: {}
@@ -974,12 +770,10 @@ export class Collection<TData extends object = object, TNested extends object = 
     }
     // clear indices but leave definitions in place
     else {
-      // clear binary indices
-      const keys = Object.keys(this._binaryIndices);
-      keys.forEach((biname) => {
-        this._binaryIndices[biname].dirty = false;
-        this._binaryIndices[biname].values = [];
-      });
+      // re-instance ranged indexes
+      for (let ri in this._rangedIndexes) {
+        this.ensureRangedIndex(ri, this._rangedIndexes[ri].indexTypeName, this._rangedIndexes[ri].comparatorName);
+      }
 
       // clear entire unique indices definition
       const uniqueNames = Object.keys(this._constraints.unique);
@@ -1000,21 +794,8 @@ export class Collection<TData extends object = object, TNested extends object = 
   public update(doc: Doc<TData & TNested> | Doc<TData & TNested>[]): void {
     if (Array.isArray(doc)) {
 
-      // If not cloning, disable adaptive binary indices for the duration of the batch update,
-      // followed by lazy rebuild and re-enabling adaptive indices after batch update.
-      const adaptiveBatchOverride = !this._cloneObjects && this._adaptiveBinaryIndices
-        && Object.keys(this._binaryIndices).length > 0;
-      if (adaptiveBatchOverride) {
-        this._adaptiveBinaryIndices = false;
-      }
-
       for (let i = 0; i < doc.length; i++) {
         this.update(doc[i]);
-      }
-
-      if (adaptiveBatchOverride) {
-        this.ensureAllIndexes();
-        this._adaptiveBinaryIndices = true;
       }
 
       return;
@@ -1053,16 +834,6 @@ export class Collection<TData extends object = object, TNested extends object = 
       // submit it for all registered DynamicViews to evaluate for inclusion/exclusion
       for (let idx = 0; idx < this._dynamicViews.length; idx++) {
         this._dynamicViews[idx]._evaluateDocument(position, false);
-      }
-
-      if (this._adaptiveBinaryIndices) {
-        // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
-        const bIndices = Object.keys(this._binaryIndices) as (keyof (TData & TNested))[];
-        for (let i = 0; i < bIndices.length; i++) {
-          this.adaptiveBinaryIndexUpdate(position, bIndices[i]);
-        }
-      } else {
-        this.flagBinaryIndexesDirty();
       }
 
       // Notify all ranged indexes of (possible) value update
@@ -1156,18 +927,12 @@ export class Collection<TData extends object = object, TNested extends object = 
         this._dynamicViews[i]._evaluateDocument(addedPos, true);
       }
 
-      if (this._adaptiveBinaryIndices) {
-        // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
-        const bIndices = Object.keys(this._binaryIndices) as (keyof (TData & TNested))[];
-        for (let i = 0; i < bIndices.length; i++) {
-          this.adaptiveBinaryIndexInsert(addedPos, bIndices[i]);
-        }
-      } else {
-        this.flagBinaryIndexesDirty();
-      }
-
       // add id/val kvp to ranged index
       for (let ri in this._rangedIndexes) {
+        // ensure Dates are converted to unix epoch time if serializableIndexes is true
+        if (this._serializableIndexes && newDoc[ri] instanceof Date) {
+          newDoc[ri] = newDoc[ri].getTime();
+        }
         this._rangedIndexes[ri].index.insert(obj["$loki"], obj[ri]);
       }
 
@@ -1252,16 +1017,6 @@ export class Collection<TData extends object = object, TNested extends object = 
       // submit it for all registered DynamicViews to remove
       for (let idx = 0; idx < this._dynamicViews.length; idx++) {
         this._dynamicViews[idx]._removeDocument(position);
-      }
-
-      if (this._adaptiveBinaryIndices) {
-        // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
-        const bIndices = Object.keys(this._binaryIndices) as (keyof (TData & TNested))[];
-        for (let i = 0; i < bIndices.length; i++) {
-          this.adaptiveBinaryIndexRemove(position, bIndices[i]);
-        }
-      } else {
-        this.flagBinaryIndexesDirty();
       }
 
       this._data.splice(position, 1);
@@ -1461,400 +1216,6 @@ export class Collection<TData extends object = object, TNested extends object = 
   }
 
   /**
-   * Perform binary range lookup for the data[dataPosition][binaryIndexName] property value
-   *    Since multiple documents may contain the same value (which the index is sorted on),
-   *    we hone in on range and then linear scan range to find exact index array position.
-   * @param {int} dataPosition : data array index/position
-   * @param {string} binaryIndexName : index to search for dataPosition in
-   */
-  public getBinaryIndexPosition(dataPosition: number, binaryIndexName: keyof (TData & TNested)) {
-    const val = this._data[dataPosition][binaryIndexName];
-    const index = this._binaryIndices[binaryIndexName].values;
-
-    // i think calculateRange can probably be moved to collection
-    // as it doesn't seem to need ResultSet.  need to verify
-    //let rs = new ResultSet(this, null, null);
-    const range = this.calculateRange("$eq", binaryIndexName, val);
-
-    if (range[0] === 0 && range[1] === -1) {
-      // uhoh didn't find range
-      return null;
-    }
-
-    const min = range[0];
-    const max = range[1];
-
-    // narrow down the sub-segment of index values
-    // where the indexed property value exactly matches our
-    // value and then linear scan to find exact -index- position
-    for (let idx = min; idx <= max; idx++) {
-      if (index[idx] === dataPosition) return idx;
-    }
-
-    // uhoh
-    return null;
-  }
-
-  /**
-   * Adaptively insert a selected item to the index.
-   * @param {int} dataPosition : coll.data array index/position
-   * @param {string} binaryIndexName : index to search for dataPosition in
-   */
-  public adaptiveBinaryIndexInsert(dataPosition: number, binaryIndexName: keyof (TData & TNested)) {
-    const index = this._binaryIndices[binaryIndexName].values;
-    let val: any = this._data[dataPosition][binaryIndexName];
-
-    // If you are inserting a javascript Date value into a binary index, convert to epoch time
-    if (this._serializableIndices === true && val instanceof Date) {
-      this._data[dataPosition][binaryIndexName] = val.getTime() as any;
-      val = this._data[dataPosition][binaryIndexName];
-    }
-
-    const idxPos = (index.length === 0) ? 0 : this._calculateRangeStart(binaryIndexName, val, true);
-
-    // insert new data index into our binary index at the proper sorted location for relevant property calculated by idxPos.
-    // doing this after adjusting dataPositions so no clash with previous item at that position.
-    this._binaryIndices[binaryIndexName].values.splice(idxPos, 0, dataPosition);
-  }
-
-  /**
-   * Adaptively update a selected item within an index.
-   * @param {int} dataPosition : coll.data array index/position
-   * @param {string} binaryIndexName : index to search for dataPosition in
-   */
-  public adaptiveBinaryIndexUpdate(dataPosition: number, binaryIndexName: keyof (TData & TNested)) {
-    // linear scan needed to find old position within index unless we optimize for clone scenarios later
-    // within (my) node 5.6.0, the following for() loop with strict compare is -much- faster than indexOf()
-    let idxPos;
-
-    const index = this._binaryIndices[binaryIndexName].values;
-    const len = index.length;
-
-    for (idxPos = 0; idxPos < len; idxPos++) {
-      if (index[idxPos] === dataPosition) break;
-    }
-
-    //let idxPos = this.binaryIndices[binaryIndexName].values.indexOf(dataPosition);
-    this._binaryIndices[binaryIndexName].values.splice(idxPos, 1);
-
-    //this.adaptiveBinaryIndexRemove(dataPosition, binaryIndexName, true);
-    this.adaptiveBinaryIndexInsert(dataPosition, binaryIndexName);
-  }
-
-  /**
-   * Adaptively remove a selected item from the index.
-   * @param {number} dataPosition : coll.data array index/position
-   * @param {string} binaryIndexName : index to search for dataPosition in
-   * @param {boolean} removedFromIndexOnly - remove from index only
-   */
-  public adaptiveBinaryIndexRemove(dataPosition: number, binaryIndexName: keyof (TData & TNested), removedFromIndexOnly = false): void {
-    const idxPos = this.getBinaryIndexPosition(dataPosition, binaryIndexName);
-    if (idxPos === null) {
-      return;
-    }
-
-    // remove document from index
-    this._binaryIndices[binaryIndexName].values.splice(idxPos, 1);
-
-    // if we passed this optional flag parameter, we are calling from adaptiveBinaryIndexUpdate,
-    // in which case data positions stay the same.
-    if (removedFromIndexOnly === true) {
-      return;
-    }
-
-    // since index stores data array positions, if we remove a document
-    // we need to adjust array positions -1 for all document positions greater than removed position
-    const index = this._binaryIndices[binaryIndexName].values;
-    for (let idx = 0; idx < index.length; idx++) {
-      if (index[idx] > dataPosition) {
-        index[idx]--;
-      }
-    }
-  }
-
-  /**
-   * Internal method used for index maintenance and indexed searching.
-   * Calculates the beginning of an index range for a given value.
-   * For index maintainance (adaptive:true), we will return a valid index position to insert to.
-   * For querying (adaptive:false/undefined), we will :
-   *    return lower bound/index of range of that value (if found)
-   *    return next lower index position if not found (hole)
-   * If index is empty it is assumed to be handled at higher level, so
-   * this method assumes there is at least 1 document in index.
-   *
-   * @param {string} prop - name of property which has binary index
-   * @param {any} val - value to find within index
-   * @param {bool?} adaptive - if true, we will return insert position
-   */
-  private _calculateRangeStart(prop: keyof (TData & TNested), val: any, adaptive = false): number {
-    const rcd = this._data;
-    const index = this._binaryIndices[prop].values;
-    let min = 0;
-    let max = index.length - 1;
-    let mid = 0;
-
-    if (index.length === 0) {
-      return -1;
-    }
-
-    // hone in on start position of value
-    while (min < max) {
-      mid = (min + max) >> 1;
-
-      if (ltHelper(rcd[index[mid]][prop], val, false)) {
-        min = mid + 1;
-      } else {
-        max = mid;
-      }
-    }
-
-    const lbound = min;
-
-    // found it... return it
-    if (aeqHelper(val, rcd[index[lbound]][prop])) {
-      return lbound;
-    }
-
-    // if not in index and our value is less than the found one
-    if (ltHelper(val, rcd[index[lbound]][prop], false)) {
-      return adaptive ? lbound : lbound - 1;
-    }
-
-    // not in index and our value is greater than the found one
-    return adaptive ? lbound + 1 : lbound;
-  }
-
-  /**
-   * Internal method used for indexed $between.  Given a prop (index name), and a value
-   * (which may or may not yet exist) this will find the final position of that upper range value.
-   */
-  private _calculateRangeEnd(prop: keyof (TData & TNested), val: any) {
-    const rcd = this._data;
-    const index = this._binaryIndices[prop].values;
-    let min = 0;
-    let max = index.length - 1;
-    let mid = 0;
-
-    if (index.length === 0) {
-      return -1;
-    }
-
-    // hone in on start position of value
-    while (min < max) {
-      mid = (min + max) >> 1;
-
-      if (ltHelper(val, rcd[index[mid]][prop], false)) {
-        max = mid;
-      } else {
-        min = mid + 1;
-      }
-    }
-
-    const ubound = max;
-
-    // only eq if last element in array is our val
-    if (aeqHelper(val, rcd[index[ubound]][prop])) {
-      return ubound;
-    }
-
-    // if not in index and our value is less than the found one
-    if (gtHelper(val, rcd[index[ubound]][prop], false)) {
-      return ubound + 1;
-    }
-
-    // either hole or first nonmatch
-    if (aeqHelper(val, rcd[index[ubound - 1]][prop])) {
-      return ubound - 1;
-    }
-
-    // hole, so ubound if nearest gt than the val we were looking for
-    return ubound;
-  }
-
-  /**
-   * Binary Search utility method to find range/segment of values matching criteria.
-   *    this is used for collection.find() and first find filter of ResultSet/dynview
-   *    slightly different than get() binary search in that get() hones in on 1 value,
-   *    but we have to hone in on many (range)
-   * @param {string} op - operation, such as $eq
-   * @param {string} prop - name of property to calculate range for
-   * @param {object} val - value to use for range calculation.
-   * @returns {array} [start, end] index array positions
-   */
-  public calculateRange(op: string, prop: keyof (TData & TNested), val: any): [number, number] {
-    const rcd = this._data;
-    const index = this._binaryIndices[prop].values;
-    const min = 0;
-    const max = index.length - 1;
-    let lbound;
-    let lval;
-    let ubound;
-
-    // when no documents are in collection, return empty range condition
-    if (rcd.length === 0) {
-      return [0, -1];
-    }
-
-    const minVal = rcd[index[min]][prop];
-    const maxVal = rcd[index[max]][prop];
-
-    // if value falls outside of our range return [0, -1] to designate no results
-    switch (op) {
-      case "$eq":
-      case "$aeq":
-        if (ltHelper(val, minVal, false) || gtHelper(val, maxVal, false)) {
-          return [0, -1];
-        }
-        break;
-      case "$dteq":
-        if (ltHelper(val, minVal, false) || gtHelper(val, maxVal, false)) {
-          return [0, -1];
-        }
-        break;
-      case "$gt":
-        // none are within range
-        if (gtHelper(val, maxVal, true)) {
-          return [0, -1];
-        }
-        // all are within range
-        if (gtHelper(minVal, val, false)) {
-          return [min, max];
-        }
-        break;
-      case "$gte":
-        // none are within range
-        if (gtHelper(val, maxVal, false)) {
-          return [0, -1];
-        }
-        // all are within range
-        if (gtHelper(minVal, val, true)) {
-          return [min, max];
-        }
-        break;
-      case "$lt":
-        // none are within range
-        if (ltHelper(val, minVal, true)) {
-          return [0, -1];
-        }
-        // all are within range
-        if (ltHelper(maxVal, val, false)) {
-          return [min, max];
-        }
-        break;
-      case "$lte":
-        // none are within range
-        if (ltHelper(val, minVal, false)) {
-          return [0, -1];
-        }
-        // all are within range
-        if (ltHelper(maxVal, val, true)) {
-          return [min, max];
-        }
-        break;
-      case "$between":
-        // none are within range (low range is greater)
-        if (gtHelper(val[0], maxVal, false)) {
-          return [0, -1];
-        }
-        // none are within range (high range lower)
-        if (ltHelper(val[1], minVal, false)) {
-          return [0, -1];
-        }
-
-        lbound = this._calculateRangeStart(prop, val[0]);
-        ubound = this._calculateRangeEnd(prop, val[1]);
-
-        if (lbound < 0) lbound++;
-        if (ubound > max) ubound--;
-
-        if (!gtHelper(rcd[index[lbound]][prop], val[0], true)) lbound++;
-        if (!ltHelper(rcd[index[ubound]][prop], val[1], true)) ubound--;
-
-        if (ubound < lbound) return [0, -1];
-
-        return ([lbound, ubound]);
-    }
-
-    // determine lbound where needed
-    switch (op) {
-      case "$eq":
-      case "$aeq":
-      case "$dteq":
-      case "$gte":
-      case "$lt":
-        lbound = this._calculateRangeStart(prop, val);
-        lval = rcd[index[lbound]][prop];
-        break;
-      default:
-        break;
-    }
-
-    // determine ubound where needed
-    switch (op) {
-      case "$eq":
-      case "$aeq":
-      case "$dteq":
-      case "$lte":
-      case "$gt":
-        ubound = this._calculateRangeEnd(prop, val);
-        break;
-      default:
-        break;
-    }
-
-
-    switch (op) {
-      case "$eq":
-      case "$aeq":
-      case "$dteq":
-        if (!aeqHelper(lval, val)) {
-          return [0, -1];
-        }
-        return [lbound, ubound];
-
-      case "$gt":
-        // (an eqHelper would probably be better test)
-        // if hole (not found) ub position is already greater
-        if (!aeqHelper(rcd[index[ubound]][prop], val)) {
-          //if (gtHelper(rcd[index[ubound]][prop], val, false)) {
-          return [ubound, max];
-        }
-        // otherwise (found) so ubound is still equal, get next
-        return [ubound + 1, max];
-
-      case "$gte":
-        // if hole (not found) lb position marks left outside of range
-        if (!aeqHelper(rcd[index[lbound]][prop], val)) {
-          //if (ltHelper(rcd[index[lbound]][prop], val, false)) {
-          return [lbound + 1, max];
-        }
-        // otherwise (found) so lb is first position where its equal
-        return [lbound, max];
-
-      case "$lt":
-        // if hole (not found) position already is less than
-        if (!aeqHelper(rcd[index[lbound]][prop], val)) {
-          //if (ltHelper(rcd[index[lbound]][prop], val, false)) {
-          return [min, lbound];
-        }
-        // otherwise (found) so lb marks left inside of eq range, get previous
-        return [min, lbound - 1];
-
-      case "$lte":
-        // if hole (not found) ub position marks right outside so get previous
-        if (!aeqHelper(rcd[index[ubound]][prop], val)) {
-          //if (gtHelper(rcd[index[ubound]][prop], val, false)) {
-          return [min, ubound - 1];
-        }
-        // otherwise (found) so ub is last position where its still equal
-        return [min, ubound];
-
-      default:
-        return [0, rcd.length - 1];
-    }
-  }
-
-  /**
    * Retrieve doc by Unique index
    * @param {string} field - name of uniquely indexed property to use when doing lookup
    * @param {any} value - unique value to search for
@@ -1938,10 +1299,18 @@ export class Collection<TData extends object = object, TNested extends object = 
    */
   public startTransaction(): void {
     if (this._transactional) {
+      // backup any ranged indexes
+      let rib : { [name: string]: Collection.RangedIndexMeta } = {};
+      for (let ri in this._rangedIndexes) {
+        rib[ri].indexTypeName = this._rangedIndexes[ri].indexTypeName;
+        rib[ri].comparatorName = this._rangedIndexes[ri].comparatorName;
+        rib[ri].index = this._rangedIndexes[ri].index.backup();
+      }
+
       this._cached = {
         index: this._idIndex,
         data: clone(this._data, this._cloneMethod),
-        binaryIndex: this._binaryIndices,
+        rangedIndexes: rib,
       };
 
       // propagate startTransaction to dynamic views
@@ -1973,7 +1342,22 @@ export class Collection<TData extends object = object, TNested extends object = 
       if (this._cached !== null) {
         this._idIndex = this._cached.index;
         this._data = this._defineNestedProperties(this._cached.data);
-        this._binaryIndices = this._cached.binaryIndex;
+
+        // restore ranged indexes
+        for (let ri in this._cached.rangedIndexes) {
+          // shortcut reference to serialized meta
+          let sri = this._cached.rangedIndexes[ri];
+          // lookup index factory function in map based on index type name
+          let rif = RangedIndexFactoryMap[sri.indexTypeName];
+          // lookup comparator function in map based on comparator name
+          let ricmp = ComparatorMap[sri.comparatorName];
+          // using index type (from meta), index factory and comparator... create instance of ranged index
+          let rii = rif(ri, ricmp);
+          // now ask new index instance to inflate from plain object
+          rii.restore(sri.index);
+          // attach class instance to our collection's ranged index's (index) instance property
+          this._rangedIndexes[ri].index = rii;
+        }
 
         // propagate rollback to dynamic views
         for (let idx = 0; idx < this._dynamicViews.length; idx++) {
@@ -2234,9 +1618,8 @@ export class Collection<TData extends object = object, TNested extends object = 
 export namespace Collection {
   export interface Options<TData extends object, TNested extends object = {}> {
     unique?: (keyof (TData & TNested))[];
-    indices?: (keyof (TData & TNested))[];
     rangedIndexes?: RangedIndexOptions;
-    adaptiveBinaryIndices?: boolean;
+    serializableIndexes?: boolean;
     asyncListeners?: boolean;
     disableMeta?: boolean;
     disableChangesApi?: boolean;
@@ -2285,13 +1668,11 @@ export namespace Collection {
     _nestedProperties: { name: string, path: string[] }[];
     uniqueNames: string[];
     transforms: Dict<Transform[]>;
-    binaryIndices: Dict<Collection.BinaryIndex>;
     rangedIndexes: RangedIndexOptions;
     _data: Doc<any>[];
     idIndex: number[];
     maxId: number;
     _dirty: boolean;
-    adaptiveBinaryIndices: boolean;
     transactional: boolean;
     asyncListeners: boolean;
     disableMeta: boolean;

@@ -78,45 +78,32 @@ describe("testing nested binary index serialization", () => {
     db = new Loki();
     users = db.addCollection<AUser, Nested>("users", {
       nestedProperties: ["user.id"],
-      indices: ["user.id"],
+      rangedIndexes: { "user.id": { indexTypeName: "btree", comparatorName: "js" } }
     });
-    users.insert([{
-      user: {
-        id: 1
-      }
-    }, {
-      user: {
-        id: 2
-      }
-    }, {
-      user: {
-        id: 3
-      }
-    }, {
-      user: {
-        id: 4
-      }
-    }]);
-    users.ensureIndex("user.id");
+    users.insert([
+      { user: { id: 1 } },
+      { user: { id: 2 } },
+      { user: { id: 3 } },
+      { user: { id: 4 } }
+    ]);
   });
 
-  it("should have a binary index", () => {
+  it("should have a ranged index", function () {
+    /*
     const ser = db.serialize();
     const reloaded = new Loki();
     reloaded.loadJSON(ser);
     const coll = reloaded.getCollection<AUser, Nested>("users");
     expect(coll.count()).toEqual(4);
-    expect(coll._binaryIndices["user.id"].values.length).toBe(4);
-    const joe = coll.find({"user.id": 1})[0];
+    const joe = coll.findOne({ "user.id": 1 });
     expect(joe).toBeDefined();
     expect(joe.user.id).toEqual(1);
-
-    expect(reloaded["_serializationMethod"]).toBe("normal");
-    expect(reloaded["_destructureDelimiter"]).toBe("$<\n");
+    */
+    expect(users.find().length).toEqual(4);
   });
 });
 
-describe("testing btree index serialization", function() {
+describe("testing btree index serialization", function () {
   it("collection find ops on btree index work", (done) => {
     interface TestUserType {
       name: string;
@@ -126,7 +113,7 @@ describe("testing btree index serialization", function() {
 
     const memAdapter = new MemoryStorage();
     const db = new Loki("idxtest");
-    db.initializePersistence({adapter: memAdapter});
+    db.initializePersistence({ adapter: memAdapter });
 
     const items = db.addCollection<TestUserType>("users", {
       rangedIndexes: {
@@ -135,20 +122,20 @@ describe("testing btree index serialization", function() {
     });
 
     items.insert([
-       { name: "patterson", age: 10, location: "a" },
-       { name: "gilbertson", age: 20, location: "b" },
-       { name: "smith", age: 30, location: "c" },
-       { name: "donaldson", age: 40, location: "d" },
-       { name: "harrison", age: 50, location: "e" },
-       { name: "thompson", age: 60, location: "f" },
-       { name: "albertson", age: 70, location: "g" },
-       { name: "fiset", age: 80, location: "h" }
+      { name: "patterson", age: 10, location: "a" },
+      { name: "gilbertson", age: 20, location: "b" },
+      { name: "smith", age: 30, location: "c" },
+      { name: "donaldson", age: 40, location: "d" },
+      { name: "harrison", age: 50, location: "e" },
+      { name: "thompson", age: 60, location: "f" },
+      { name: "albertson", age: 70, location: "g" },
+      { name: "fiset", age: 80, location: "h" }
     ]);
 
     db.saveDatabase().then(() => {
       // now deserialize via loadDatabase() and ensure index is functional
       const db2 = new Loki("idxtest");
-      db2.initializePersistence({adapter: memAdapter});
+      db2.initializePersistence({ adapter: memAdapter });
       db2.loadDatabase({}).then(() => {
         let items2 = db.getCollection<TestUserType>("users");
 
@@ -208,7 +195,7 @@ describe("testing btree index serialization", function() {
     });
   });
 
-  it("btree backup and restore work correctly", function() {
+  it("btree backup and restore work correctly", function () {
     let bst = new BinaryTreeIndex("test", CreateJavascriptComparator());
     bst.insert(1, "f");
     bst.insert(2, "b");
@@ -237,7 +224,7 @@ describe("testing btree index serialization", function() {
 describe("testing disable meta serialization", function () {
   it("should have meta disabled", function () {
     const db = new Loki();
-    db.addCollection<User>("users", {disableMeta: true});
+    db.addCollection<User>("users", { disableMeta: true });
 
     const ser = db.serialize();
     const reloaded = new Loki();
@@ -249,7 +236,7 @@ describe("testing disable meta serialization", function () {
 
 describe("testing destructured serialization/deserialization", () => {
   it("verify default (D) destructuring works as expected", () => {
-    const ddb = new Loki("test.db", {serializationMethod: "destructured"});
+    const ddb = new Loki("test.db", { serializationMethod: "destructured" });
     const coll = ddb.addCollection<Test>("testcoll");
     coll.insert({
       name: "test1",
@@ -272,7 +259,7 @@ describe("testing destructured serialization/deserialization", () => {
 
     const destructuredJson = ddb.serialize();
 
-    const cddb = new Loki("test.db", {serializationMethod: "destructured"});
+    const cddb = new Loki("test.db", { serializationMethod: "destructured" });
     cddb.loadJSON(destructuredJson);
 
     expect(cddb["_serializationMethod"]).toEqual("destructured");
@@ -316,19 +303,19 @@ describe("testing destructured serialization/deserialization", () => {
 
     for (idx = 0; idx < methods.length; idx++) {
       switch (methods[idx]) {
-        case "D" :
-          options = {partitioned: false, delimited: true};
+        case "D":
+          options = { partitioned: false, delimited: true };
           break;
-        case "DA" :
-          options = {partitioned: true, delimited: true};
+        case "DA":
+          options = { partitioned: true, delimited: true };
           break;
-        case "NDA" :
-          options = {partitioned: false, delimited: false};
+        case "NDA":
+          options = { partitioned: false, delimited: false };
           break;
-        case "NDAA" :
-          options = {partitioned: true, delimited: false};
+        case "NDAA":
+          options = { partitioned: true, delimited: false };
           break;
-        default :
+        default:
           options = {};
           break;
       }
@@ -401,7 +388,7 @@ describe("testing destructured serialization/deserialization", () => {
 
     // we dont need to test all components of reassembling whole database
     // so we will just call helper function to deserialize just collection data
-    let data = ddb.deserializeCollection<Test>(result, {partitioned: true, delimited: false});
+    let data = ddb.deserializeCollection<Test>(result, { partitioned: true, delimited: false });
 
     expect(data.length).toEqual(ddb["_collections"][0].count());
     expect(data[0]["val"]).toEqual(ddb["_collections"][0]._data[0]["val"]);
@@ -419,7 +406,7 @@ describe("testing destructured serialization/deserialization", () => {
     });
 
     // now reinflate from that interim DA format
-    data = ddb.deserializeCollection<Test>(result, {partitioned: true, delimited: true});
+    data = ddb.deserializeCollection<Test>(result, { partitioned: true, delimited: true });
 
     expect(data.length).toEqual(ddb["_collections"][0].count());
     expect(data[0]["val"]).toEqual(ddb["_collections"][0]._data[0]["val"]);
@@ -437,7 +424,7 @@ describe("testing adapter functionality", () => {
     const memAdapter = new MemoryStorage();
     const ddb = new Loki("test.db");
 
-    ddb.initializePersistence({adapter: memAdapter});
+    ddb.initializePersistence({ adapter: memAdapter });
 
     const coll = ddb.addCollection<Test>("testcoll");
     coll.insert({
@@ -459,7 +446,7 @@ describe("testing adapter functionality", () => {
       b: 2
     });
     let dv = coll2.addDynamicView("test");
-    dv.applyFind({"a": 1});
+    dv.applyFind({ "a": 1 });
     dv.data();
 
     const p1 = ddb.saveDatabase().then(() => {
@@ -468,14 +455,14 @@ describe("testing adapter functionality", () => {
     });
 
     const cdb = new Loki("test.db");
-    cdb.initializePersistence({adapter: memAdapter});
+    cdb.initializePersistence({ adapter: memAdapter });
 
     const p2 = cdb.loadDatabase().then(() => {
       expect(cdb["_collections"].length).toEqual(2);
-      expect(cdb.getCollection<Test>("testcoll").findOne({name: "test2"})["val"]).toEqual(101);
+      expect(cdb.getCollection<Test>("testcoll").findOne({ name: "test2" })["val"]).toEqual(101);
       expect(cdb["_collections"][0].count()).toEqual(3);
       expect(cdb["_collections"][1].count()).toEqual(1);
-      expect(cdb.getCollection<AB>("another").getDynamicView("test").data()).toEqual(coll2.find({"a": 1}));
+      expect(cdb.getCollection<AB>("another").getDynamicView("test").data()).toEqual(coll2.find({ "a": 1 }));
     });
 
     Promise.all([p1, p2]).then(done, done.fail);
@@ -484,7 +471,7 @@ describe("testing adapter functionality", () => {
   it("verify loki deleteDatabase works", (done) => {
     const memAdapter = new MemoryStorage();
     const ddb = new Loki("test.db");
-    ddb.initializePersistence({adapter: memAdapter});
+    ddb.initializePersistence({ adapter: memAdapter });
 
     const coll = ddb.addCollection<Test>("testcoll");
     coll.insert({
@@ -524,13 +511,13 @@ describe("testing adapter functionality", () => {
       mode = "reference";
 
       loadDatabase(dbname: string) {
-        expect(typeof(dbname)).toEqual("string");
+        expect(typeof (dbname)).toEqual("string");
 
         const result = new Loki("new db");
         const n1 = result.addCollection<MN>("n1");
         const n2 = result.addCollection<MN>("n2");
-        n1.insert({m: 9, n: 8});
-        n2.insert({m: 7, n: 6});
+        n1.insert({ m: 9, n: 8 });
+        n2.insert({ m: 7, n: 6 });
 
         return Promise.resolve(result);
       }
@@ -544,7 +531,7 @@ describe("testing adapter functionality", () => {
       }
 
       exportDatabase(dbname: string, dbref: Loki) {
-        expect(typeof(dbname)).toEqual("string");
+        expect(typeof (dbname)).toEqual("string");
         expect(dbref.constructor.name).toEqual("Loki");
 
         expect(dbref["_persistenceAdapter"]).toEqual(null);
@@ -559,46 +546,46 @@ describe("testing adapter functionality", () => {
     const adapter = new MyFakeReferenceAdapter();
     const db = new Loki("rma test");
     let db2: Loki;
-    db.initializePersistence({adapter: adapter});
+    db.initializePersistence({ adapter: adapter });
     const c1 = db.addCollection<AB>("c1");
     const c2 = db.addCollection<AB>("c2");
-    c1.insert({a: 1, b: 2});
-    c2.insert({a: 3, b: 4});
+    c1.insert({ a: 1, b: 2 });
+    c2.insert({ a: 3, b: 4 });
 
     db.saveDatabase().then(() => {
       expect(db["persistenceAdapter"]).not.toEqual(null);
       expect(db["filename"]).toEqual("rma test");
       expect(db["_collections"][0].name).toEqual("c1");
-      expect(db.getCollection<AB>("c1").findOne({a: 1}).b).toEqual(2);
+      expect(db.getCollection<AB>("c1").findOne({ a: 1 }).b).toEqual(2);
 
       db2 = new Loki("other name");
-      db2.initializePersistence({adapter: adapter});
+      db2.initializePersistence({ adapter: adapter });
 
       return db2.loadDatabase();
     }).then(() => {
       expect(db2["_collections"].length).toEqual(2);
       expect(db2["_collections"][0].name).toEqual("n1");
       expect(db2["_collections"][1].name).toEqual("n2");
-      expect(db2.getCollection<MN>("n1").findOne({m: 9}).n).toEqual(8);
+      expect(db2.getCollection<MN>("n1").findOne({ m: 9 }).n).toEqual(8);
     }).then(done, done.fail);
   });
 });
 
 describe("async adapter tests", () => {
   it("verify throttled async drain", (done) => {
-    const mem = new MemoryStorage({asyncResponses: true, asyncTimeout: 50});
+    const mem = new MemoryStorage({ asyncResponses: true, asyncTimeout: 50 });
     const db = new Loki("sandbox.db");
-    db.initializePersistence({adapter: mem, throttledSaves: true});
+    db.initializePersistence({ adapter: mem, throttledSaves: true });
 
     // Add a collection to the database
     const items = db.addCollection<User>("items");
-    items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
-    items.insert({name: "gungnir", owner: "odin", maker: "elves"});
-    const tyr = items.insert({name: "tyrfing", owner: "Svafrlami", maker: "dwarves"});
-    const drau = items.insert({name: "draupnir", owner: "odin", maker: "elves"});
+    items.insert({ name: "mjolnir", owner: "thor", maker: "dwarves" });
+    items.insert({ name: "gungnir", owner: "odin", maker: "elves" });
+    const tyr = items.insert({ name: "tyrfing", owner: "Svafrlami", maker: "dwarves" });
+    const drau = items.insert({ name: "draupnir", owner: "odin", maker: "elves" });
 
     const another = db.addCollection<AB>("another");
-    const ai = another.insert({a: 1, b: 2});
+    const ai = another.insert({ a: 1, b: 2 });
 
     // this should immediately kick off the first save
     db.saveDatabase();
@@ -620,35 +607,35 @@ describe("async adapter tests", () => {
       // Wait until saves are complete and then loading the database and make
       // sure all saves are complete and includes their changes
       const db2 = new Loki("sandbox.db");
-      db2.initializePersistence({adapter: mem});
+      db2.initializePersistence({ adapter: mem });
 
       db2.loadDatabase().then(() => {
         // total of 2 saves should have occurred
         expect(mem.hashStore["sandbox.db"].savecount).toEqual(2);
 
         // verify the saved database contains all expected changes
-        expect(db2.getCollection<AB>("another").findOne({a: 1}).b).toEqual(3);
-        expect(db2.getCollection<User>("items").findOne({name: "tyrfing"}).owner).toEqual("arngrim");
-        expect(db2.getCollection<User>("items").findOne({name: "draupnir"}).maker).toEqual("dwarves");
+        expect(db2.getCollection<AB>("another").findOne({ a: 1 }).b).toEqual(3);
+        expect(db2.getCollection<User>("items").findOne({ name: "tyrfing" }).owner).toEqual("arngrim");
+        expect(db2.getCollection<User>("items").findOne({ name: "draupnir" }).maker).toEqual("dwarves");
         done();
       });
     });
   });
 
   it("verify throttledSaveDrain with duration timeout works", (done) => {
-    const mem = new MemoryStorage({asyncResponses: true, asyncTimeout: 200});
+    const mem = new MemoryStorage({ asyncResponses: true, asyncTimeout: 200 });
     const db = new Loki("sandbox.db");
-    db.initializePersistence({adapter: mem});
+    db.initializePersistence({ adapter: mem });
 
     // Add a collection to the database
     const items = db.addCollection<User>("items");
-    items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
-    items.insert({name: "gungnir", owner: "odin", maker: "elves"});
-    const tyr = items.insert({name: "tyrfing", owner: "Svafrlami", maker: "dwarves"});
-    const drau = items.insert({name: "draupnir", owner: "odin", maker: "elves"});
+    items.insert({ name: "mjolnir", owner: "thor", maker: "dwarves" });
+    items.insert({ name: "gungnir", owner: "odin", maker: "elves" });
+    const tyr = items.insert({ name: "tyrfing", owner: "Svafrlami", maker: "dwarves" });
+    const drau = items.insert({ name: "draupnir", owner: "odin", maker: "elves" });
 
     const another = db.addCollection<AB>("another");
-    const ai = another.insert({a: 1, b: 2});
+    const ai = another.insert({ a: 1, b: 2 });
 
     // this should immediately kick off the first save (~200ms)
     db.saveDatabase();
@@ -674,7 +661,7 @@ describe("async adapter tests", () => {
     // we want this to fail so above they should be bootstrapping several
     // saves which take about 400ms to complete.
     // The full drain can take one save/callback cycle longer than duration (~200ms).
-    db.throttledSaveDrain({recursiveWaitLimit: true, recursiveWaitLimitDuration: 200})
+    db.throttledSaveDrain({ recursiveWaitLimit: true, recursiveWaitLimitDuration: 200 })
       .then(() => {
         expect(true).toEqual(false);
         done();
@@ -685,19 +672,19 @@ describe("async adapter tests", () => {
   });
 
   it("verify throttled async throttles", (done) => {
-    const mem = new MemoryStorage({asyncResponses: true, asyncTimeout: 50});
+    const mem = new MemoryStorage({ asyncResponses: true, asyncTimeout: 50 });
     const db = new Loki("sandbox.db");
-    db.initializePersistence({adapter: mem});
+    db.initializePersistence({ adapter: mem });
 
     // Add a collection to the database
     const items = db.addCollection<User>("items");
-    items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
-    items.insert({name: "gungnir", owner: "odin", maker: "elves"});
-    const tyr = items.insert({name: "tyrfing", owner: "Svafrlami", maker: "dwarves"});
-    const drau = items.insert({name: "draupnir", owner: "odin", maker: "elves"});
+    items.insert({ name: "mjolnir", owner: "thor", maker: "dwarves" });
+    items.insert({ name: "gungnir", owner: "odin", maker: "elves" });
+    const tyr = items.insert({ name: "tyrfing", owner: "Svafrlami", maker: "dwarves" });
+    const drau = items.insert({ name: "draupnir", owner: "odin", maker: "elves" });
 
     const another = db.addCollection<AB>("another");
-    const ai = another.insert({a: 1, b: 2});
+    const ai = another.insert({ a: 1, b: 2 });
 
     // this should immediately kick off the first save
     db.saveDatabase();
@@ -722,25 +709,25 @@ describe("async adapter tests", () => {
 
       // verify the saved database contains all expected changes
       const db2 = new Loki("sandbox.db");
-      db2.initializePersistence({adapter: mem});
+      db2.initializePersistence({ adapter: mem });
       db2.loadDatabase().then(() => {
-        expect(db2.getCollection<AB>("another").findOne({a: 1}).b).toEqual(3);
-        expect(db2.getCollection<User>("items").findOne({name: "tyrfing"}).owner).toEqual("arngrim");
-        expect(db2.getCollection<User>("items").findOne({name: "draupnir"}).maker).toEqual("dwarves");
+        expect(db2.getCollection<AB>("another").findOne({ a: 1 }).b).toEqual(3);
+        expect(db2.getCollection<User>("items").findOne({ name: "tyrfing" }).owner).toEqual("arngrim");
+        expect(db2.getCollection<User>("items").findOne({ name: "draupnir" }).maker).toEqual("dwarves");
         done();
       });
     }, 200);
   });
 
   it("verify there is no race condition with dirty-checking", (done) => {
-    const mem = new MemoryStorage({asyncResponses: true, asyncTimeout: 50});
+    const mem = new MemoryStorage({ asyncResponses: true, asyncTimeout: 50 });
     const db = new Loki("sandbox.db");
 
-    db.initializePersistence({adapter: mem});
+    db.initializePersistence({ adapter: mem });
 
     const items = db.addCollection<User & { foo?: string }>("items");
-    items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
-    const gungnir = items.insert({name: "gungnir", owner: "odin", maker: "elves"});
+    items.insert({ name: "mjolnir", owner: "thor", maker: "dwarves" });
+    const gungnir = items.insert({ name: "gungnir", owner: "odin", maker: "elves" });
 
     expect(db["_autosaveDirty"]()).toBe(true);
 
@@ -756,19 +743,19 @@ describe("async adapter tests", () => {
   });
 
   it("verify loadDatabase in the middle of throttled saves will wait for  queue to drain first", (done) => {
-    const mem = new MemoryStorage({asyncResponses: true, asyncTimeout: 75});
+    const mem = new MemoryStorage({ asyncResponses: true, asyncTimeout: 75 });
     const db = new Loki("sandbox.db");
-    db.initializePersistence({adapter: mem});
+    db.initializePersistence({ adapter: mem });
 
     // Add a collection to the database
     const items = db.addCollection<User>("items");
-    items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
-    items.insert({name: "gungnir", owner: "odin", maker: "elves"});
-    const tyr = items.insert({name: "tyrfing", owner: "Svafrlami", maker: "dwarves"});
-    const drau = items.insert({name: "draupnir", owner: "odin", maker: "elves"});
+    items.insert({ name: "mjolnir", owner: "thor", maker: "dwarves" });
+    items.insert({ name: "gungnir", owner: "odin", maker: "elves" });
+    const tyr = items.insert({ name: "tyrfing", owner: "Svafrlami", maker: "dwarves" });
+    const drau = items.insert({ name: "draupnir", owner: "odin", maker: "elves" });
 
     const another = db.addCollection<AB>("another");
-    const ai = another.insert({a: 1, b: 2});
+    const ai = another.insert({ a: 1, b: 2 });
 
     // this should immediately kick off the first save (~100ms)
     db.saveDatabase();
@@ -797,9 +784,9 @@ describe("async adapter tests", () => {
     // then re-enable saves
     db.loadDatabase().then(() => {
 
-      expect(db.getCollection<AB>("another").findOne({a: 1}).b).toEqual(3);
-      expect(db.getCollection<User>("items").findOne({name: "tyrfing"}).owner).toEqual("arngrim");
-      expect(db.getCollection<User>("items").findOne({name: "draupnir"}).maker).toEqual("dwarves");
+      expect(db.getCollection<AB>("another").findOne({ a: 1 }).b).toEqual(3);
+      expect(db.getCollection<User>("items").findOne({ name: "tyrfing" }).owner).toEqual("arngrim");
+      expect(db.getCollection<User>("items").findOne({ name: "draupnir" }).maker).toEqual("dwarves");
     });
 
     setTimeout(() => {
@@ -828,19 +815,19 @@ describe("autosave/autoload", () => {
     const db = new Loki("sandbox.db");
     const items = db.addCollection<User>("items");
 
-    db.initializePersistence({adapter: dummyStorage, autosave: true, autosaveInterval: 1})
+    db.initializePersistence({ adapter: dummyStorage, autosave: true, autosaveInterval: 1 })
       .then(() => {
-        items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
+        items.insert({ name: "mjolnir", owner: "thor", maker: "dwarves" });
         expect(dummyStorage.counter).toEqual(0);
         return new Promise(resolve => setTimeout(resolve, 2));
       })
       .then(() => {
-        items.insert({name: "gungnir", owner: "odin", maker: "elves"});
+        items.insert({ name: "gungnir", owner: "odin", maker: "elves" });
         expect(dummyStorage.counter).toEqual(1);
         return new Promise(resolve => setTimeout(resolve, 2));
       })
       .then(() => {
-        items.insert({name: "gungnir", owner: "odin", maker: "elves"});
+        items.insert({ name: "gungnir", owner: "odin", maker: "elves" });
         expect(dummyStorage.counter).toEqual(2);
         return db.close();
       })
@@ -852,18 +839,18 @@ describe("autosave/autoload", () => {
   });
 
   it("verify autosave with autoload works", (done) => {
-    const mem = new MemoryStorage({asyncResponses: true, asyncTimeout: 1});
+    const mem = new MemoryStorage({ asyncResponses: true, asyncTimeout: 1 });
     const db = new Loki("sandbox.db");
     const db2 = new Loki("sandbox.db");
     const items = db.addCollection<User>("items");
 
-    db.initializePersistence({adapter: mem, autosave: true, autosaveInterval: 1})
+    db.initializePersistence({ adapter: mem, autosave: true, autosaveInterval: 1 })
       .then(() => {
-        items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
+        items.insert({ name: "mjolnir", owner: "thor", maker: "dwarves" });
         return new Promise(resolve => setTimeout(resolve, 2));
       })
       .then(() => {
-        return db2.initializePersistence({adapter: mem, autoload: true});
+        return db2.initializePersistence({ adapter: mem, autoload: true });
       })
       .then(() => {
         expect(db2.getCollection("items")).toBeDefined();
@@ -879,26 +866,26 @@ describe("testing changesAPI", () => {
     const mem = new MemoryStorage();
     const db = new Loki("sandbox.db");
     let db2: Loki;
-    db.initializePersistence({adapter: mem});
+    db.initializePersistence({ adapter: mem });
 
     // Add a collection to the database
-    const items = db.addCollection<User>("items", {disableChangesApi: false});
+    const items = db.addCollection<User>("items", { disableChangesApi: false });
 
     // Add some documents to the collection
-    items.insert({name: "mjolnir", owner: "thor", maker: "dwarves"});
-    items.insert({name: "gungnir", owner: "odin", maker: "elves"});
-    items.insert({name: "tyrfing", owner: "Svafrlami", maker: "dwarves"});
-    items.insert({name: "draupnir", owner: "odin", maker: "elves"});
+    items.insert({ name: "mjolnir", owner: "thor", maker: "dwarves" });
+    items.insert({ name: "gungnir", owner: "odin", maker: "elves" });
+    items.insert({ name: "tyrfing", owner: "Svafrlami", maker: "dwarves" });
+    items.insert({ name: "draupnir", owner: "odin", maker: "elves" });
 
     // Find and update an existing document
-    const tyrfing = items.findOne({"name": "tyrfing"});
+    const tyrfing = items.findOne({ "name": "tyrfing" });
     tyrfing.owner = "arngrim";
     items.update(tyrfing);
 
     // memory storage is synchronous so i will not bother with callbacks
     db.saveDatabase().then(() => {
       db2 = new Loki("sandbox.db");
-      db2.initializePersistence({adapter: mem});
+      db2.initializePersistence({ adapter: mem });
 
       return db2.loadDatabase();
     }).then(() => {
