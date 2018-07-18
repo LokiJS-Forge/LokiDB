@@ -39,6 +39,13 @@ describe("binary tree index tests", () => {
     return array;
   };
 
+  let reverseString = (str: string) => {
+    let splitString = str.split("");
+    let reverseArray = splitString.reverse();
+    let joinArray = reverseArray.join("");
+    return joinArray;
+  };
+
   beforeEach(() => {
   });
 
@@ -638,13 +645,6 @@ describe("binary tree index tests", () => {
       location: string;
     }
 
-    let reverseString = (str: string) => {
-      let splitString = str.split("");
-      let reverseArray = splitString.reverse();
-      let joinArray = reverseArray.join("");
-      return joinArray;
-    };
-
     const db = new Loki("idxtest");
     const items = db.addCollection<TestUserType>("users", {
       rangedIndexes: {
@@ -819,5 +819,106 @@ describe("binary tree index tests", () => {
     expect(RangedIndexFactoryMap.hasOwnProperty("MyCustomRangedIndex")).toEqual(true);
     expect(typeof RangedIndexFactoryMap["MyCustomRangedIndex"]).toEqual("function");
 
+  });
+
+  it("nested property with btree index work", () => {
+    interface TestUserType {
+      user: {
+        name: string;
+        age: number;
+        location: string;
+      };
+    }
+
+    const db = new Loki("idxtest");
+    const items = db.addCollection<TestUserType, { "user.name": string }>("users", {
+      rangedIndexes: {
+        "user.name": { indexTypeName: "btree", comparatorName: "js" }
+      },
+      nestedProperties: ["user.name"]
+    });
+
+    items.insert([
+      { user: { name: "patterson", age: 10, location: "a" } },
+      { user: { name: "gilbertson", age: 20, location: "b"  }},
+      { user: { name: "smith", age: 30, location: "c" } },
+      { user: { name: "donaldson", age: 40, location: "d" } },
+      { user: { name: "harrison", age: 50, location: "e" } },
+      { user: { name: "thompson", age: 60, location: "f" } },
+      { user: { name: "albertson", age: 70, location: "g" } },
+      { user: { name: "fiset", age: 80, location: "h" }}
+    ]);
+
+    // $eq
+    let results: TestUserType[] = items.find({ "user.name": "donaldson" });
+    expect(results.length).toEqual(1);
+    expect(results[0].user.name).toEqual("donaldson");
+    expect(results[0].user.age).toEqual(40);
+    expect(results[0].user.location).toEqual("d");
+
+    // $lt
+    results = items.find({ "user.name": { $lt: "giraffe" } });
+    expect(results.length).toEqual(4);
+    expect(results[0].user.name).toEqual("albertson");
+    expect(results[1].user.name).toEqual("donaldson");
+    expect(results[2].user.name).toEqual("fiset");
+    expect(results[3].user.name).toEqual("gilbertson");
+
+    // $lte
+    results = items.find({ "user.name": { $lte: "fiset" } });
+    expect(results.length).toEqual(3);
+    expect(results[0].user.name).toEqual("albertson");
+    expect(results[1].user.name).toEqual("donaldson");
+    expect(results[2].user.name).toEqual("fiset");
+
+    // $gt
+    results = items.find({ "user.name": { $gt: "giraffe" } });
+    expect(results.length).toEqual(4);
+    expect(results[0].user.name).toEqual("harrison");
+    expect(results[1].user.name).toEqual("patterson");
+    expect(results[2].user.name).toEqual("smith");
+    expect(results[3].user.name).toEqual("thompson");
+
+    // $gte
+    results = items.find({ "user.name": { $gte: "patterson" } });
+    expect(results.length).toEqual(3);
+    expect(results[0].user.name).toEqual("patterson");
+    expect(results[1].user.name).toEqual("smith");
+    expect(results[2].user.name).toEqual("thompson");
+
+    // $between
+    results = items.find({ "user.name": { $between: ["faraday", "samuel"] } });
+    expect(results.length).toEqual(4);
+    expect(results[0].user.name).toEqual("fiset");
+    expect(results[1].user.name).toEqual("gilbertson");
+    expect(results[2].user.name).toEqual("harrison");
+    expect(results[3].user.name).toEqual("patterson");
+
+    // simplesort
+    results = items.chain().simplesort("user.name").data();
+    expect(results.length).toEqual(8);
+    expect(results[0].user.name).toEqual("albertson");
+    expect(results[1].user.name).toEqual("donaldson");
+    expect(results[2].user.name).toEqual("fiset");
+    expect(results[3].user.name).toEqual("gilbertson");
+    expect(results[4].user.name).toEqual("harrison");
+    expect(results[5].user.name).toEqual("patterson");
+    expect(results[6].user.name).toEqual("smith");
+    expect(results[7].user.name).toEqual("thompson");
+
+    // remove
+    items.chain().find({ "user.name": { $lte: "goldman" } }).remove();
+    results = items.find({ "user.name": { $lte: "samuels" } });
+    expect(results.length).toEqual(2);
+    expect(results[0].user.name).toEqual("harrison");
+    expect(results[1].user.name).toEqual("patterson");
+
+    // update
+    items.chain().update((o) => { o.user.name = reverseString(o.user.name); return o; });
+    results = items.find({ "user.name": { $gte: "nork" } });
+    expect(results.length).toEqual(3);
+    expect(results[0].user.name).toEqual("nosirrah");
+    expect(results[1].user.name).toEqual("nospmoht");
+    expect(results[2].user.name).toEqual("nosrettap");
   });
 });
