@@ -62,15 +62,15 @@ function getNestedPropertyValue(obj: object, path: string[], array: any[], pathI
  * @param <TData> - the data type
  * @param <TNested> - nested properties of data type
  */
-export class Collection<TData extends object = object, TNested extends object = object> extends LokiEventEmitter {
+export class Collection<TData extends object = object, TNested extends object = object, T extends TData & TNested = TData & TNested> extends LokiEventEmitter {
   // the name of the collection
   public name: string;
   // the data held by the collection
-  public _data: Doc<TData & TNested>[] = [];
+  public _data: Doc<T>[] = [];
   // index of id
   private _idIndex: number[] = [];
   // user defined indexes
-  public _rangedIndexes: { [P in keyof (TData & TNested)]?: Collection.RangedIndexMeta } = {};
+  public _rangedIndexes: { [P in keyof T]?: Collection.RangedIndexMeta } = {};
 
   /**
    * Unique constraints contain duplicate object references, so they are not persisted.
@@ -78,7 +78,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    */
   public _constraints: {
     unique: {
-      [P in keyof (TData & TNested)]?: UniqueIndex<TData & TNested>;
+      [P in keyof T]?: UniqueIndex<T>;
     }
   } = {unique: {}};
 
@@ -86,7 +86,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * Transforms will be used to store frequently used query chains as a series of steps which itself can be stored along
    * with the database.
    */
-  public _transforms: Dict<Collection.Transform<TData, TNested>[]> = {};
+  public _transforms: Dict<Collection.Transform<T>[]> = {};
 
   /**
    * In autosave scenarios we will use collection level dirty flags to determine whether save is needed.
@@ -98,7 +98,7 @@ export class Collection<TData extends object = object, TNested extends object = 
   // private holder for cached data
   private _cached: {
     index: number[];
-    data: Doc<TData & TNested>[];
+    data: Doc<T>[];
     rangedIndexes: { [name: string]: Collection.RangedIndexMeta };
   } = null;
 
@@ -153,7 +153,7 @@ export class Collection<TData extends object = object, TNested extends object = 
 
   // currentMaxId - change manually at your own peril!
   private _maxId: number = 0;
-  private _dynamicViews: DynamicView<TData, TNested>[] = [];
+  private _dynamicViews: DynamicView<T>[] = [];
 
   /**
    * Changes are tracked by collection and aggregated by the db.
@@ -213,8 +213,8 @@ export class Collection<TData extends object = object, TNested extends object = 
       if (!Array.isArray(options.unique)) {
         options.unique = [options.unique];
       }
-      options.unique.forEach((prop: keyof (TData & TNested)) => {
-        this._constraints.unique[prop] = new UniqueIndex<TData & TNested>(prop);
+      options.unique.forEach((prop) => {
+        this._constraints.unique[prop] = new UniqueIndex<T>(prop);
       });
     }
 
@@ -420,7 +420,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {string} name - name to associate with transform
    * @param {array} transform - an array of transformation 'step' objects to save into the collection
    */
-  public addTransform(name: string, transform: Collection.Transform<TData, TNested>[]): void {
+  public addTransform(name: string, transform: Collection.Transform<T>[]): void {
     if (this._transforms[name] !== undefined) {
       throw new Error("a transform by that name already exists");
     }
@@ -431,7 +431,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * Retrieves a named transform from the collection.
    * @param {string} name - name of the transform to lookup.
    */
-  public getTransform(name: string): Collection.Transform<TData, TNested>[] {
+  public getTransform(name: string): Collection.Transform<T>[] {
     return this._transforms[name];
   }
 
@@ -440,7 +440,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {string} name - name to associate with transform
    * @param {object} transform - a transformation object to save into collection
    */
-  public setTransform(name: string, transform: Collection.Transform<TData, TNested>[]): void {
+  public setTransform(name: string, transform: Collection.Transform<T>[]): void {
     this._transforms[name] = transform;
   }
 
@@ -463,7 +463,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       this._ttl.ttlInterval = interval;
       this._ttl.daemon = setInterval(() => {
         const now = Date.now();
-        const toRemove = this.chain().where((member: Doc<TData>) => {
+        const toRemove = this.chain().where((member: Doc<T>) => {
           const timestamp = member.meta.updated || member.meta.created;
           const diff = now - timestamp;
           return this._ttl.age < diff;
@@ -532,8 +532,8 @@ export class Collection<TData extends object = object, TNested extends object = 
     }
   }
 
-  public ensureUniqueIndex(field: keyof (TData & TNested)) {
-    let index = new UniqueIndex<TData & TNested>(field);
+  public ensureUniqueIndex(field: keyof T) {
+    let index = new UniqueIndex<T>(field);
 
     // if index already existed, (re)loading it will likely cause collisions, rebuild always
     this._constraints.unique[field] = index;
@@ -548,7 +548,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {object} query - (optional) query object to count results of
    * @returns {number} number of documents in the collection
    */
-  public count(query?: ResultSet.Query<Doc<TData & TNested>>): number {
+  public count(query?: ResultSet.Query<Doc<T>>): number {
     if (!query) {
       return this._data.length;
     }
@@ -574,8 +574,8 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {number} options.minRebuildInterval - minimum rebuild interval (need clarification to docs here)
    * @returns {DynamicView} reference to the dynamic view added
    **/
-  public addDynamicView(name: string, options?: DynamicView.Options): DynamicView<TData, TNested> {
-    const dv = new DynamicView<TData, TNested>(this, name, options);
+  public addDynamicView(name: string, options?: DynamicView.Options): DynamicView<T> {
+    const dv = new DynamicView<T>(this as any as Collection<T>, name, options);
     this._dynamicViews.push(dv);
 
     return dv;
@@ -598,7 +598,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {string} name - name of dynamic view to retrieve reference of
    * @returns {DynamicView} A reference to the dynamic view with that name
    **/
-  public getDynamicView(name: string): DynamicView<TData, TNested> {
+  public getDynamicView(name: string): DynamicView<T> {
     for (let idx = 0; idx < this._dynamicViews.length; idx++) {
       if (this._dynamicViews[idx].name === name) {
         return this._dynamicViews[idx];
@@ -613,7 +613,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {object} filterObject - the 'mongo-like' query object
    * @param {function} updateFunction - the update function
    */
-  public findAndUpdate(filterObject: ResultSet.Query<Doc<TData & TNested>>, updateFunction: (obj: Doc<TData>) => any) {
+  public findAndUpdate(filterObject: ResultSet.Query<Doc<T>>, updateFunction: (obj: Doc<T>) => any) {
     this.chain().find(filterObject).update(updateFunction);
   }
 
@@ -621,7 +621,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * Applies a 'mongo-like' find query object removes all documents which match that filter.
    * @param {object} filterObject - 'mongo-like' query object
    */
-  public findAndRemove(filterObject: ResultSet.Query<Doc<TData & TNested>>) {
+  public findAndRemove(filterObject: ResultSet.Query<Doc<T>>) {
     this.chain().find(filterObject).remove();
   }
 
@@ -630,9 +630,9 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {(object|array)} doc - the document (or array of documents) to be inserted
    * @returns {(object|array)} document or documents inserted
    */
-  public insert(doc: TData): Doc<TData & TNested>;
-  public insert(doc: TData[]): Doc<TData & TNested>[];
-  public insert(doc: TData | TData[]): Doc<TData & TNested> | Doc<TData & TNested>[] {
+  public insert(doc: TData): Doc<T>;
+  public insert(doc: TData[]): Doc<T>[];
+  public insert(doc: TData | TData[]): Doc<T> | Doc<T>[] {
     if (!Array.isArray(doc)) {
       return this.insertOne(doc);
     }
@@ -664,7 +664,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {boolean} bulkInsert - quiet pre-insert and insert event emits
    * @returns {object} document or 'undefined' if there was a problem inserting it
    */
-  public insertOne(doc: TData, bulkInsert = false): Doc<TData & TNested> {
+  public insertOne(doc: TData, bulkInsert = false): Doc<T> {
     let err = null;
     let returnObj;
 
@@ -680,7 +680,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     }
 
     // if configured to clone, do so now... otherwise just use same obj reference
-    const obj = this._defineNestedProperties(this._cloneObjects ? clone(doc, this._cloneMethod) : doc);
+    const obj = this._defineNestedProperties(this._cloneObjects ? clone(doc, this._cloneMethod) : doc) as T;
 
     if (!this._disableMeta && (obj as Doc<TData>).meta === undefined) {
       (obj as Doc<TData>).meta = {
@@ -713,7 +713,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       this.emit("insert", returnObj);
     }
 
-    return returnObj as Doc<TData & TNested>;
+    return returnObj as Doc<T>;
   }
 
   /**
@@ -722,7 +722,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @returns {T & TNested} the object with nested properties
    * @hidden
    */
-  _defineNestedProperties<T extends object>(data: T): T & TNested {
+  _defineNestedProperties<U extends TData>(data: U): U & TNested {
     for (let i = 0; i < this._nestedProperties.length; i++) {
       const name = this._nestedProperties[i].name;
       const path = this._nestedProperties[i].path;
@@ -745,7 +745,7 @@ export class Collection<TData extends object = object, TNested extends object = 
         configurable: true
       });
     }
-    return data as T & TNested;
+    return data as U & TNested;
   }
 
   /**
@@ -791,7 +791,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * Updates an object and notifies collection that the document has changed.
    * @param {object} doc - document to update within the collection
    */
-  public update(doc: Doc<TData & TNested> | Doc<TData & TNested>[]): void {
+  public update(doc: Doc<T> | Doc<T>[]): void {
     if (Array.isArray(doc)) {
 
       for (let i = 0; i < doc.length; i++) {
@@ -876,7 +876,7 @@ export class Collection<TData extends object = object, TNested extends object = 
   /**
    * Add object to collection
    */
-  private _add(obj: TData & TNested) {
+  private _add(obj: T) {
     // if parameter isn't object exit with throw
     if ("object" !== typeof obj) {
       throw new TypeError("Object being added needs to be an object");
@@ -899,7 +899,7 @@ export class Collection<TData extends object = object, TNested extends object = 
         this._maxId = (this._data[this._data.length - 1].$loki + 1);
       }
 
-      const newDoc = obj as Doc<TData & TNested>;
+      const newDoc = obj as Doc<T>;
       newDoc.$loki = this._maxId;
       if (!this._disableMeta) {
         newDoc.meta.version = 0;
@@ -957,7 +957,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {function} filterFunction - the filter function
    * @param {function} updateFunction - the update function
    */
-  updateWhere(filterFunction: (obj: Doc<TData & TNested>) => boolean, updateFunction: (obj: Doc<TData & TNested>) => Doc<TData & TNested>) {
+  updateWhere(filterFunction: (obj: Doc<T>) => boolean, updateFunction: (obj: Doc<T>) => Doc<T>) {
     const results = this.where(filterFunction);
     try {
       for (let i = 0; i < results.length; i++) {
@@ -973,7 +973,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * Remove all documents matching supplied filter function.
    * @param {function} filterFunction - the filter function
    */
-  public removeWhere(filterFunction: (obj: Doc<TData & TNested>) => boolean) {
+  public removeWhere(filterFunction: (obj: Doc<T>) => boolean) {
     this.remove(this._data.filter(filterFunction));
   }
 
@@ -985,7 +985,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * Remove a document from the collection
    * @param {number|object} doc - document to remove from collection
    */
-  remove(doc: number | Doc<TData & TNested> | Doc<TData & TNested>[]): void {
+  remove(doc: number | Doc<T> | Doc<T>[]): void {
     if (typeof doc === "number") {
       doc = this.get(doc);
     }
@@ -1182,8 +1182,8 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @returns {(object|array|null)} Object reference if document was found, null if not,
    *     or an array if 'returnPosition' was passed.
    */
-  public get(id: number): Doc<TData & TNested>;
-  public get(id: number, returnPosition: boolean): Doc<TData & TNested> | [Doc<TData & TNested>, number];
+  public get(id: number): Doc<T>;
+  public get(id: number, returnPosition: boolean): Doc<T> | [Doc<T>, number];
   public get(id: number, returnPosition = false) {
     const data = this._idIndex;
     let max = data.length - 1;
@@ -1221,7 +1221,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {any} value - unique value to search for
    * @returns {object} document matching the value passed
    */
-  public by(field: keyof (TData & TNested), value: any): Doc<TData & TNested> {
+  public by(field: keyof T, value: any): Doc<T> {
     return this.findOne({[field]: value} as any);
   }
 
@@ -1230,7 +1230,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {object} query - query object used to perform search with
    * @returns {(object|null)} First matching document, or null if none
    */
-  public findOne(query: ResultSet.Query<Doc<TData & TNested>>): Doc<TData & TNested> {
+  public findOne(query: ResultSet.Query<Doc<T>>): Doc<T> {
     query = query || {};
 
     // Instantiate ResultSet and exec find op passing firstOnly = true param
@@ -1240,9 +1240,9 @@ export class Collection<TData extends object = object, TNested extends object = 
       return null;
     } else {
       if (!this._cloneObjects) {
-        return result[0] as any as Doc<TData & TNested>;
+        return result[0];
       } else {
-        return clone(result[0], this._cloneMethod) as any as Doc<TData & TNested>;
+        return clone(result[0], this._cloneMethod);
       }
     }
   }
@@ -1255,8 +1255,8 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {object} parameters - Object containing properties representing parameters to substitute
    * @returns {ResultSet} (this) ResultSet, or data array if any map or join functions where called
    */
-  public chain(transform?: string | Collection.Transform<TData, TNested>[], parameters?: object): ResultSet<TData, TNested> {
-    const rs = new ResultSet<TData, TNested>(this);
+  public chain(transform?: string | Collection.Transform<T>[], parameters?: object): ResultSet<T> {
+    const rs = new ResultSet<T>(this as any as Collection<T>);
     if (transform === undefined) {
       return rs;
     }
@@ -1270,7 +1270,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {object} query - 'mongo-like' query object
    * @returns {array} Array of matching documents
    */
-  public find(query?: ResultSet.Query<Doc<TData & TNested>>): Doc<TData & TNested>[] {
+  public find(query?: ResultSet.Query<Doc<T>>): Doc<T>[] {
     return this.chain().find(query).data();
   }
 
@@ -1341,7 +1341,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     if (this._transactional) {
       if (this._cached !== null) {
         this._idIndex = this._cached.index;
-        this._data = this._defineNestedProperties(this._cached.data);
+        this._data = this._cached.data; //this._defineNestedProperties(this._cached.data);
 
         // restore ranged indexes
         for (let ri in this._cached.rangedIndexes) {
@@ -1376,7 +1376,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {function} fun - filter function to run against all collection docs
    * @returns {array} all documents which pass your filter function
    */
-  public where(fun: (obj: Doc<TData & TNested>) => boolean): Doc<TData & TNested>[] {
+  public where(fun: (obj: Doc<T>) => boolean): Doc<T>[] {
     return this.chain().where(fun).data();
   }
 
@@ -1386,7 +1386,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {function} reduceFunction - function to use as reduce function
    * @returns {data} The result of your mapReduce operation
    */
-  public mapReduce<T, U>(mapFunction: (value: Doc<TData & TNested>, index: number, array: Doc<TData & TNested>[]) => T, reduceFunction: (array: T[]) => U): U {
+  public mapReduce<U1, U2>(mapFunction: (value: Doc<T>, index: number, array: Doc<T>[]) => U1, reduceFunction: (array: U1[]) => U2): U2 {
     return reduceFunction(this._data.map(mapFunction));
   }
 
@@ -1459,7 +1459,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {string} field - the field name
    * @return {any}: the array of values
    */
-  public extract(field: keyof (TData & TNested)): any[] {
+  public extract(field: keyof T): any[] {
     const result = [];
     for (let i = 0; i < this._data.length; i++) {
       result.push(this._data[i][field]);
@@ -1472,7 +1472,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {string} field - the field name
    * @return {number} the minimum value
    */
-  public min(field: keyof (TData & TNested)): number {
+  public min(field: keyof T): number {
     return Math.min.apply(null, this.extractNumerical(field));
   }
 
@@ -1481,7 +1481,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {string} field - the field name
    * @return {number} the maximum value
    */
-  public max(field: keyof (TData & TNested)): number {
+  public max(field: keyof T): number {
     return Math.max.apply(null, this.extractNumerical(field));
   }
 
@@ -1490,7 +1490,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {string} field - the field name
    * @return {object} - index and value
    */
-  public minRecord(field: keyof (TData & TNested)) {
+  public minRecord(field: keyof T) {
     const result = {
       index: 0,
       value: 0
@@ -1519,7 +1519,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {string} field - the field name
    * @return {object} - index and value
    */
-  public maxRecord(field: keyof (TData & TNested)) {
+  public maxRecord(field: keyof T) {
     const result = {
       index: 0,
       value: 0
@@ -1548,7 +1548,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {string} field - the field name
    * @return {number[]} - the number array
    */
-  public extractNumerical(field: keyof (TData & TNested)) {
+  public extractNumerical(field: keyof T) {
     return this.extract(field).map(parseFloat).filter(Number).filter((n) => !(isNaN(n)));
   }
 
@@ -1557,7 +1557,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {string} field - the field name
    * @returns {number} average of property in all docs in the collection
    */
-  public avg(field: keyof (TData & TNested)): number {
+  public avg(field: keyof T): number {
     return average(this.extractNumerical(field));
   }
 
@@ -1566,7 +1566,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {string} field - the field name
    * @return {number} the standard deviation
    */
-  public stdDev(field: keyof (TData & TNested)): number {
+  public stdDev(field: keyof T): number {
     return standardDeviation(this.extractNumerical(field));
   }
 
@@ -1575,7 +1575,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {string} field - the field name
    * @return {number} the mode
    */
-  public mode(field: keyof (TData & TNested)): number {
+  public mode(field: keyof T): number {
     const dict = {};
     const data = this.extractNumerical(field);
 
@@ -1601,7 +1601,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {string} field - the field name
    * @return {number} the median
    */
-  public median(field: keyof (TData & TNested)) {
+  public median(field: keyof T) {
     const values = this.extractNumerical(field);
     values.sort((a, b) => a - b);
 
@@ -1616,8 +1616,8 @@ export class Collection<TData extends object = object, TNested extends object = 
 }
 
 export namespace Collection {
-  export interface Options<TData extends object, TNested extends object = {}> {
-    unique?: (keyof (TData & TNested))[];
+  export interface Options<TData extends object, TNested extends object = {}, T extends object = TData & TNested> {
+    unique?: (keyof T)[];
     rangedIndexes?: RangedIndexOptions;
     serializableIndexes?: boolean;
     asyncListeners?: boolean;
@@ -1690,22 +1690,22 @@ export namespace Collection {
     repair?: boolean;
   }
 
-  export type Transform<TData extends object = object, TNested extends object = object> = {
+  export type Transform<T extends object = object> = {
     type: "find";
-    value: ResultSet.Query<Doc<TData & TNested>> | string;
+    value: ResultSet.Query<Doc<T>> | string;
   } | {
     type: "where";
-    value: ((obj: Doc<TData & TNested>) => boolean) | string;
+    value: ((obj: Doc<T>) => boolean) | string;
   } | {
     type: "simplesort";
-    property: keyof (TData & TNested);
+    property: keyof T;
     options?: boolean | ResultSet.SimpleSortOptions;
   } | {
     type: "compoundsort";
-    value: (keyof (TData & TNested) | [keyof (TData & TNested), boolean])[];
+    value: (keyof T | [keyof T, boolean])[];
   } | {
     type: "sort";
-    value: (a: Doc<TData & TNested>, b: Doc<TData & TNested>) => number;
+    value: (a: Doc<T>, b: Doc<T>) => number;
   } | {
     type: "sortByScoring";
     desc?: boolean;
@@ -1717,7 +1717,7 @@ export namespace Collection {
     value: number;
   } | {
     type: "map";
-    value: (obj: Doc<TData & TNested>, index: number, array: Doc<TData & TNested>[]) => any;
+    value: (obj: Doc<T>, index: number, array: Doc<T>[]) => any;
     dataOptions?: ResultSet.DataOptions;
   } | {
     type: "eqJoin";
@@ -1728,11 +1728,11 @@ export namespace Collection {
     dataOptions?: ResultSet.DataOptions;
   } | {
     type: "mapReduce";
-    mapFunction: (item: Doc<TData & TNested>, index: number, array: Doc<TData & TNested>[]) => any;
+    mapFunction: (item: Doc<T>, index: number, array: Doc<T>[]) => any;
     reduceFunction: (array: any[]) => any;
   } | {
     type: "update";
-    value: (obj: Doc<TData & TNested>) => any;
+    value: (obj: Doc<T>) => any;
   } | {
     type: "remove";
   };

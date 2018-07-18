@@ -43,6 +43,7 @@ export interface IRangedIndex<T> {
   update(id: number, val: T): void;
   remove(id: number): void;
   restore(tree: any) : void;
+  backup(): IRangedIndex<T>;
 
   rangeRequest(range?: IRangedIndexRequest<T>): number[];
 

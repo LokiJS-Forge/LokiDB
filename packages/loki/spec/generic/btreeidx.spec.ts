@@ -787,6 +787,9 @@ describe("binary tree index tests", () => {
         if (!tree) throw new Error("");
         return;
       }
+      backup() {
+        return this;
+      }
       rangeRequest (range? : IRangedIndexRequest<T>) {
         if (range === null) {
           // return everything
