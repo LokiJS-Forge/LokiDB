@@ -741,7 +741,7 @@ export class DynamicView<T extends object = object> extends LokiEventEmitter {
    * @param {function} reduceFunction - this function accepts many (array of map outputs) and returns single value
    * @returns The output of your reduceFunction
    */
-  public mapReduce<T2, U2>(mapFunction: (item: T, index: number, array: T[]) => T2, reduceFunction: (array: T2[]) => U2): U2 {
+  public mapReduce<U1, U2>(mapFunction: (item: T, index: number, array: T[]) => U1, reduceFunction: (array: U1[]) => U2): U2 {
     try {
       return reduceFunction(this.data().map(mapFunction));
     } catch (err) {

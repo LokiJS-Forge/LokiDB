@@ -65,7 +65,7 @@ function doQueryOp(val: any, op: object) {
  */
 export const LokiOps = {
   // comparison operators
-  // a is the value in the _collection
+  // a is the value in the collection
   // b is the query value
   $eq(a: any, b: any): boolean {
     return a === b;
@@ -216,7 +216,7 @@ export const LokiOps = {
   },
 
   // field-level logical operators
-  // a is the value in the _collection
+  // a is the value in the collection
   // b is the nested query operation (for '$not')
   //   or an array of nested query operations (for '$and' and '$or')
   $not(a: any, b: any): boolean {
@@ -304,7 +304,7 @@ export class ResultSet<T extends object = object> {
    */
   public toJSON(): ResultSet<T> {
     const copy = this.copy();
-    copy._collection = <never> null;
+    copy._collection = null;
     return copy;
   }
 
@@ -1194,7 +1194,7 @@ export class ResultSet<T extends object = object> {
     const data = this.data(dataOptions).map(mapFun);
     //return return a new ResultSet with no filters
     this._collection = new Collection("mappedData");
-    this._collection.insert(data as any);
+    this._collection.insert(data as any as T);
     this._filteredRows = [];
     this._filterInitialized = false;
     return this as any as ResultSet<U>;

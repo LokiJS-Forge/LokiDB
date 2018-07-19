@@ -9,8 +9,6 @@ import { FullTextSearch } from "../../full-text-search/src/full_text_search";
 import { PLUGINS } from "../../common/plugin";
 import { Analyzer } from "../../full-text-search/src/analyzer/analyzer";
 
-export {CloneMethod} from "./clone";
-
 function average(array: number[]): number {
   return (array.reduce((a, b) => a + b, 0)) / array.length;
 }
@@ -1300,7 +1298,7 @@ export class Collection<TData extends object = object, TNested extends object = 
   public startTransaction(): void {
     if (this._transactional) {
       // backup any ranged indexes
-      let rib : { [name: string]: Collection.RangedIndexMeta } = {};
+      let rib: { [name: string]: Collection.RangedIndexMeta } = {};
       for (let ri in this._rangedIndexes) {
         rib[ri].indexTypeName = this._rangedIndexes[ri].indexTypeName;
         rib[ri].comparatorName = this._rangedIndexes[ri].comparatorName;
@@ -1341,7 +1339,10 @@ export class Collection<TData extends object = object, TNested extends object = 
     if (this._transactional) {
       if (this._cached !== null) {
         this._idIndex = this._cached.index;
-        this._data = this._cached.data; //this._defineNestedProperties(this._cached.data);
+        this._data = this._cached.data;
+        for (let i = 0; i < this._data.length; i++) {
+          this._defineNestedProperties(this._data[i]);
+        }
 
         // restore ranged indexes
         for (let ri in this._cached.rangedIndexes) {
