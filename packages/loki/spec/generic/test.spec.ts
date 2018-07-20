@@ -303,6 +303,22 @@ describe("loki", () => {
 
     });
 
+    it("with transaction", () => {
+      const dnc = db.addCollection<{ first: string, addr: { zip: number } }, { "addr.zip": number }>("dncoll",
+        {
+          nestedProperties: ["addr.zip"],
+          transactional: true,
+          unique: ["first"]
+        });
+
+      const doc = dnc.insert({first: "abc", addr: {zip: 12345}});
+
+      expect(doc["addr.zip"]).toBeDefined();
+
+      expect(() => dnc.insert({first: "abc", addr: {zip: 54321}})).toThrowError();
+
+      expect(dnc.find({"first": "abc"})[0]["addr.zip"]).toBeDefined();
+    });
   });
 
   // We only support dot notation involving array when

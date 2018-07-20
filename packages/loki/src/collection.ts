@@ -1341,7 +1341,7 @@ export class Collection<TData extends object = object, TNested extends object = 
         this._idIndex = this._cached.index;
         this._data = this._cached.data;
         for (let i = 0; i < this._data.length; i++) {
-          this._defineNestedProperties(this._data[i]);
+          this._data[i] = this._defineNestedProperties(this._data[i]);
         }
 
         // restore ranged indexes
