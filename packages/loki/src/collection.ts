@@ -69,6 +69,8 @@ export class Collection<TData extends object = object, TNested extends object = 
   private _idIndex: number[] = [];
   // user defined indexes
   public _rangedIndexes: { [P in keyof T]?: Collection.RangedIndexMeta } = {};
+  // loki obj map
+  public _lokimap: { [$loki : number]: Doc<T> } = {};
 
   /**
    * Unique constraints contain duplicate object references, so they are not persisted.
@@ -360,10 +362,14 @@ export class Collection<TData extends object = object, TNested extends object = 
 
       for (let j = 0; j < obj._data.length; j++) {
         coll._data[j] = coll._defineNestedProperties(loader(obj._data[j]));
+        // regenerate lokimap
+        coll._lokimap[coll._data[j].$loki] = coll._data[j];
       }
     } else {
       for (let j = 0; j < obj._data.length; j++) {
         coll._data[j] = coll._defineNestedProperties(obj._data[j]);
+        // regenerate lokimap
+        coll._lokimap[coll._data[j].$loki] = coll._data[j];
       }
     }
 
@@ -536,7 +542,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     // if index already existed, (re)loading it will likely cause collisions, rebuild always
     this._constraints.unique[field] = index;
     for (let i = 0; i < this._data.length; i++) {
-      index.set(this._data[i], i);
+      index.set(this._data[i]);
     }
     return index;
   }
@@ -822,11 +828,12 @@ export class Collection<TData extends object = object, TNested extends object = 
       this.emit("pre-update", doc);
 
       Object.keys(this._constraints.unique).forEach((key) => {
-        this._constraints.unique[key].update(newInternal, position);
+        this._constraints.unique[key].update(newInternal);
       });
 
       // operate the update
       this._data[position] = newInternal;
+      this._lokimap[doc.$loki] = newInternal;
 
       // now that we can efficiently determine the data[] position of newly added document,
       // submit it for all registered DynamicViews to evaluate for inclusion/exclusion
@@ -906,12 +913,14 @@ export class Collection<TData extends object = object, TNested extends object = 
       const constrUnique = this._constraints.unique;
       for (const key in constrUnique) {
         if (constrUnique[key] !== undefined) {
-          constrUnique[key].set(newDoc, this._data.length);
+          constrUnique[key].set(newDoc);
         }
       }
 
       // add new obj id to idIndex
       this._idIndex.push(newDoc.$loki);
+      // update lokimap
+      this._lokimap[newDoc.$loki] = newDoc;
 
       // add the object
       this._data.push(newDoc);
@@ -1006,9 +1015,11 @@ export class Collection<TData extends object = object, TNested extends object = 
 
       const position = arr[1];
 
+      // already converted but let's narrow to make typescript happy
+      let aDoc : Doc<T> = (typeof doc === "number") ? this.get(doc) : doc;
       Object.keys(this._constraints.unique).forEach((key) => {
-        if (doc[key] !== null && doc[key] !== undefined) {
-          this._constraints.unique[key].remove(doc[key]);
+        if (key in aDoc) {
+          this._constraints.unique[key].remove(aDoc.$loki);
         }
       });
       // now that we can efficiently determine the data[] position of newly added document,
@@ -1021,6 +1032,8 @@ export class Collection<TData extends object = object, TNested extends object = 
 
       // remove id from idIndex
       this._idIndex.splice(position, 1);
+      // remove from lokimap
+      delete this._lokimap[doc.$loki];
 
       // remove id/val kvp from binary tree index
       for (let ri in this._rangedIndexes) {
@@ -1183,6 +1196,13 @@ export class Collection<TData extends object = object, TNested extends object = 
   public get(id: number): Doc<T>;
   public get(id: number, returnPosition: boolean): Doc<T> | [Doc<T>, number];
   public get(id: number, returnPosition = false) {
+    if (!returnPosition) {
+      let doc = this._lokimap[id];
+
+      if (doc === undefined) return null;
+
+      return doc;
+    }
     const data = this._idIndex;
     let max = data.length - 1;
     let min = 0;
@@ -1220,7 +1240,15 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @returns {object} document matching the value passed
    */
   public by(field: keyof T, value: any): Doc<T> {
-    return this.findOne({[field]: value} as any);
+    // for least amount of overhead, we will directly
+    // access index rather than use find codepath
+    let lokiId = this._constraints.unique[field].get(value);
+
+    if (!this._cloneObjects) {
+      return this._lokimap[lokiId];
+    } else {
+      return clone(this._lokimap[lokiId], this._cloneMethod);
+    }
   }
 
   /**
