@@ -1,349 +1,378 @@
+/**
+ * Core, "single object lookup" benchmarks
+ */
+
 let Loki = require('../build/packages/loki/lokidb.loki.js').default,
-   db = new Loki('perftest'),
-   samplecoll = null,
-   uniquecoll = null,
-   arraySize = 5000, // how large of a dataset to generate
-   totalIterations = 20000, // how many times we search it
-   getIterations = 2000000; // get is crazy fast due to binary search so this needs separate scale
+  crypto = require("crypto");
 
+/**
+ * Generates a random string using node crypto library which is less memory 'leaky'
+ */
 function genRandomVal() {
-   var text = "";
-   var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-   for (var i = 0; i < 20; i++)
-      text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-   return text;
+  return crypto.randomBytes(50).toString('hex');
 }
 
-// in addition to the loki id we will create a key of our own
-// (customId) which is number from 1- totalIterations
-// we will later perform find() queries against customId with and 
-// without an index
+/**
+ * Helper method for instantiating a loki database
+ * @param {*} mode 
+ */
+function createDatabase(mode) {
+  let tdb = new Loki("temp.db");
+  let coll;
 
-function initializeDB(mode) {
-   db = new Loki('perftest');
+  switch (mode) {
+    case "avl":
+      coll = tdb.addCollection('perfcoll', {
+        rangedIndexes: {
+          "customId": { indexTypeName: "btree", comparatorName: "js" }
+        }
+      });
+      break;
+    case "unique":
+      coll = tdb.addCollection('perfcoll', {
+        unique: ['customId']
+      });
+      break;
+    case "none":
+    default:
+      coll = tdb.addCollection('perfcoll');
+      break;
+  }
 
-   var start, end, totalTime;
-   var totalTimes = [];
-   var totalMS = 0.0;
+  return tdb;
+}
 
-   switch (mode) {
-      case "btree":
-         samplecoll = db.addCollection('samplecoll', {
-            rangedIndexes: {
-               "customId": { indexTypeName: "btree", comparatorName: "js" }
-            }
-         });
-         break;
-      case "none":
-      default:
-         samplecoll = db.addCollection('samplecoll');
-         break;
-   }
+/**
+ * Helper method for populating a collection
+ * @param {*} db 
+ * @param {*} count 
+ */
+function populateDatabase(db, count) {
+  let coll = db.getCollection("perfcoll");
 
-   for (var idx = 0; idx < arraySize; idx++) {
-      var v1 = genRandomVal();
-      var v2 = genRandomVal();
+  // populate collection
+  let idxbuf = [];
+  let customIdx, v1;
+  for (let idx = 0; idx < count; idx++) {
+    customIdx = count - idx;
+
+    idxbuf.push(customIdx);
+    v1 = genRandomVal();
+
+    coll.insert({
+      customId: customIdx,
+      val: v1,
+      val2: "more data 1234567890"
+    });
+  }
+
+  return idxbuf;
+}
+
+/**
+ * Benchmarks collection.by() performance with unique index
+ * @param {*} count 
+ * @param {*} multiple 
+ */
+function benchUniquePerf(count, multiple) {
+  let udb = createDatabase("unique");
+  let uniquecoll = udb.getCollection('perfcoll');
+
+  let v1, idxbuf = [];
+
+  for (let idx = 0; idx < count; idx++) {
+    v1 = genRandomVal();
+
+    uniquecoll.insert({
+      customId: (count - idx),
+      val: v1,
+      val2: "more data 1234567890"
+    });
+
+    idxbuf.push(count - idx);
+  }
+
+  let start, end;
+  let totalTimes = [];
+  let totalMS = 0.0;
+
+  let customIdx, result;
+
+  for (let m = 0; m < multiple; m++) {
+    for (let idx = 0; idx < count; idx++) {
+      customIdx = idxbuf[idx];
 
       start = process.hrtime();
-      samplecoll.insert({
-         customId: idx,
-         val: v1,
-         val2: v2,
-         val3: "more data 1234567890"
-      });
+      result = uniquecoll.by('customId', customIdx);
       end = process.hrtime(start);
       totalTimes.push(end);
-   }
 
-   for (var idx = 0; idx < totalTimes.length; idx++) {
-      totalMS += totalTimes[idx][0] * 1e3 + totalTimes[idx][1] / 1e6;
-   }
-
-   //var totalMS = end[0] * 1e3 + end[1]/1e6;
-   totalMS = totalMS.toFixed(2);
-   var rate = arraySize * 1000 / totalMS;
-   rate = rate.toFixed(2);
-   console.log("load (insert) : " + totalMS + "ms (" + rate + ") ops/s");
-}
-
-/**
- * initializeUnique : to support benchUniquePerf, we will set up another collection
- * where our customId is enforced as 'unique' using unique index feature of loki.
- */
-function initializeUnique() {
-   uniquecoll = db.addCollection('uniquecoll', {
-      unique: ['customId']
-   });
-
-   for (var idx = 0; idx < arraySize; idx++) {
-      var v1 = genRandomVal();
-      var v2 = genRandomVal();
-
-      uniquecoll.insert({
-         customId: (arraySize - idx),
-         val: v1,
-         val2: v2,
-         val3: "more data 1234567890"
-      });
-   }
-}
-
-/**
- * initializeWithEval : repeat of insert bench with a dynamic view registered.
- *    All inserts will be passed into the view's evaluateDocument() method.
- *    This test is an attempt to gauge the level of impact of that overhead.
- */
-function initializeWithEval() {
-   var dbTest = new Loki('perfInsertWithEval');
-
-   var start, end, totalTime;
-   var totalTimes = [];
-   var totalMS = 0.0;
-
-   var coll = dbTest.addCollection('samplecoll', {
-      indices: ['customId'],
-      asyncListeners: false,
-      disableChangesApi: true,
-      transactional: false,
-      clone: false
-   });
-
-   var dv = coll.addDynamicView('test');
-   dv.applyFind({
-      'customId': {
-         '$lt': arraySize / 4
+      if (result.customId !== customIdx) {
+        console.log("(perfUnique) object retrieved does match custom id");
       }
-   });
+    }
+  }
 
-   for (var idx = 0; idx < arraySize; idx++) {
-      var v1 = genRandomVal();
-      var v2 = genRandomVal();
+  for (let idx = 0; idx < totalTimes.length; idx++) {
+    totalMS += totalTimes[idx][0] * 1e3 + totalTimes[idx][1] / 1e6;
+  }
 
-      start = process.hrtime();
-      coll.insert({
-         customId: idx,
-         val: v1,
-         val2: v2,
-         val3: "more data 1234567890"
-      });
-      end = process.hrtime(start);
-      totalTimes.push(end);
-   }
-
-   for (var idx = 0; idx < totalTimes.length; idx++) {
-      totalMS += totalTimes[idx][0] * 1e3 + totalTimes[idx][1] / 1e6;
-   }
-
-   totalMS = totalMS.toFixed(2);
-   var rate = arraySize * 1000 / totalMS;
-   rate = rate.toFixed(2);
-   console.log("load (insert with dynamic view registered) : " + totalMS + "ms (" + rate + ") ops/s");
-}
-
-function benchUniquePerf() {
-   var start, end;
-   var totalTimes = [];
-   var totalMS = 0.0;
-
-   for (var idx = 0; idx < getIterations; idx++) {
-      var customidx = Math.floor(Math.random() * arraySize) + 1;
-
-      start = process.hrtime();
-      var results = uniquecoll.by('customId', customidx);
-      end = process.hrtime(start);
-      totalTimes.push(end);
-   }
-
-   for (var idx = 0; idx < totalTimes.length; idx++) {
-      totalMS += totalTimes[idx][0] * 1e3 + totalTimes[idx][1] / 1e6;
-   }
-
-   totalMS = totalMS.toFixed(2);
-   var rate = getIterations * 1000 / totalMS;
-   rate = rate.toFixed(2);
-   console.log("coll.by() : " + totalMS + "ms (" + rate + ") ops/s");
+  totalMS = totalMS.toFixed(2);
+  let rate = multiple * count * 1000 / totalMS;
+  rate = rate.toFixed(2);
+  console.log("coll.by() : " + totalMS + "ms (" + rate + " ops/s)  " + multiple*count + " iterations, " + count + " docs x " + multiple);
 };
 
-function testperfGet() {
-   var start, end;
-   var totalTimes = [];
-   var totalMS = 0.0;
+/**
+ * Benchmarks collection.get() performance
+ * @param {*} count number of documents to insert into collection
+ * @param {*} multiple number of times to repeat get() for each document
+ */
+function testperfGet(count, multiple) {
+  let gdb = createDatabase("none");
+  let coll = gdb.getCollection('perfcoll');
 
-   for (var idx = 0; idx < getIterations; idx++) {
-      var customidx = Math.floor(Math.random() * arraySize) + 1;
+  let start, end;
+  let totalTimes = [];
+  let totalMS = 0.0;
+
+  let customIdx, v1, obj = {}, idxbuf = [];
+
+  for (let idx = 0; idx < count; idx++) {
+    v1 = genRandomVal();
+
+    obj = coll.insert({
+      customId: (count - idx),
+      val: v1,
+      val2: "more data 1234567890"
+    });
+
+    idxbuf.push(obj.$loki);
+  }
+
+  let result;
+
+  for (let m = 0; m < multiple; m++) {
+    for (let idx = 0; idx < count; idx++) {
+      customIdx = idxbuf[idx];
 
       start = process.hrtime();
-      var results = samplecoll.get(customidx);
+      result = coll.get(customIdx);
       end = process.hrtime(start);
       totalTimes.push(end);
-   }
 
-   for (var idx = 0; idx < totalTimes.length; idx++) {
-      totalMS += totalTimes[idx][0] * 1e3 + totalTimes[idx][1] / 1e6;
-   }
+      if (result.$loki !== customIdx) {
+        console.log("(perfGet) object retrieved does match get id");
+      }
+    }
+  }
 
-   totalMS = totalMS.toFixed(2);
-   var rate = getIterations * 1000 / totalMS;
-   rate = rate.toFixed(2);
-   console.log("coll.get() : " + totalMS + "ms (" + rate + ") ops/s");
+  for (let idx = 0; idx < totalTimes.length; idx++) {
+    totalMS += totalTimes[idx][0] * 1e3 + totalTimes[idx][1] / 1e6;
+  }
+
+  totalMS = totalMS.toFixed(2);
+  let rate = multiple * count * 1000 / totalMS;
+  rate = rate.toFixed(2);
+  console.log("coll.get() : " + totalMS + "ms (" + rate + " ops/s)  " + multiple*count + " iterations, " + count + " docs x " + multiple);
 }
 
-function testperfFind(multiplier) {
-   var start, end;
-   var totalTimes = [];
-   var totalMS = 0;
+/**
+ * Benchmark collection find() performance
+ * @param {*} mode Index Mode ("none", "unique", "avl")
+ * @param {*} count Document count to populate collection with
+ * @param {*} multiple Used to repeat finding each document this number of times
+ */
+function testperfFind(mode, count, multiple) {
+  multiple = multiple || 1;
 
-   var loopIterations = totalIterations;
-   if (typeof (multiplier) != "undefined") {
-      loopIterations = loopIterations * multiplier;
-   }
+  let fdb = createDatabase(mode);
+  let idxbuf = populateDatabase(fdb, count);
+  let coll = fdb.getCollection("perfcoll");
 
-   for (var idx = 0; idx < loopIterations; idx++) {
-      var customidx = Math.floor(Math.random() * arraySize) + 1;
+  let start, end;
+  let totalTimes = [];
+  let totalMS = 0;
 
+  let results;
+
+  for (let m = 0; m < multiple; m++) {
+    for (let idx = 0; idx < count; idx++) {
+      customIdx = idxbuf[idx];
+  
       start = process.hrtime();
-      var results = samplecoll.find({
-         'customId': customidx
+      results = coll.find({
+        'customId': customIdx
       });
       end = process.hrtime(start);
       totalTimes.push(end);
-   }
+  
+      if (results.length !== 1) {
+        console.log("(perfFind) received " + results.length + "instead of 1 matches!");
+      }
+    }
+  }
 
-   for (var idx = 0; idx < totalTimes.length; idx++) {
-      totalMS += totalTimes[idx][0] * 1e3 + totalTimes[idx][1] / 1e6;
-   }
+  for (let idx = 0; idx < totalTimes.length; idx++) {
+    totalMS += totalTimes[idx][0] * 1e3 + totalTimes[idx][1] / 1e6;
+  }
 
-   totalMS = totalMS.toFixed(2);
-   var rate = loopIterations * 1000 / totalMS;
-   rate = rate.toFixed(2);
-   console.log("coll.find() : " + totalMS + "ms (" + rate + " ops/s) " + loopIterations + " iterations");
+  totalMS = totalMS.toFixed(2);
+  let rate = multiple * count * 1000 / totalMS;
+  rate = rate.toFixed(2);
+  console.log("coll.find() : " + totalMS + "ms (" + rate + " ops/s) " + multiple * count + " iterations, " + count + " docs x " + multiple);
 }
 
-function testperfRS(multiplier) {
-   var start, end;
-   var totalTimes = [];
-   var totalMS = 0;
+/**
+ * Resultset benchmark
+ * @param {*} mode 
+ * @param {*} count 
+ */
+function testperfRS(mode, count, multiple) {
+  multiple = multiple || 1;
 
-   var loopIterations = totalIterations;
-   if (typeof (multiplier) != "undefined") {
-      loopIterations = loopIterations * multiplier;
-   }
+  let rsdb = createDatabase(mode);
+  let idxbuf = populateDatabase(rsdb, count);
+  let coll = rsdb.getCollection("perfcoll");
 
-   for (var idx = 0; idx < loopIterations; idx++) {
-      var customidx = Math.floor(Math.random() * arraySize) + 1;
+  let start, end;
+  let totalTimes = [];
+  let totalMS = 0;
 
+  let customIdx, results;
+
+  for (let m = 0; m < multiple; m++) {
+    for (let idx = 0; idx < count; idx++) {
+      customIdx = idxbuf[idx];
+  
       start = process.hrtime();
-      var results = samplecoll.chain().find({
-         'customId': customidx
+      results = coll.chain().find({
+        'customId': customIdx
       }).data();
       end = process.hrtime(start)
       totalTimes.push(end);
-   }
+  
+      if (results.length !== 1) {
+        console.log("(perfRS) received " + results.length + "instead of 1 matches!");
+      }
+    }
+  }
 
-   for (var idx = 0; idx < totalTimes.length; idx++) {
-      totalMS += totalTimes[idx][0] * 1e3 + totalTimes[idx][1] / 1e6;
-   }
+  for (let idx = 0; idx < totalTimes.length; idx++) {
+    totalMS += totalTimes[idx][0] * 1e3 + totalTimes[idx][1] / 1e6;
+  }
 
-   totalMS = totalMS.toFixed(2);
-   var rate = loopIterations * 1000 / totalMS;
-   rate = rate.toFixed(2);
-   console.log("resultset chained find() :  " + totalMS + "ms (" + rate + " ops/s) " + loopIterations + " iterations");
+  totalMS = totalMS.toFixed(2);
+  let rate = multiple * count * 1000 / totalMS;
+  rate = rate.toFixed(2);
+  console.log("resultset chained find() :  " + totalMS + "ms (" + rate + " ops/s) " + multiple * count + " iterations, " + count + " docs x " + multiple);
 }
 
-function testperfDV(multiplier) {
-   var start, end;
-   var start2, end2, totalTime2 = 0.0;
-   var totalTimes = [];
-   var totalTimes2 = [];
-   var totalMS = 0;
-   var totalMS2 = 0;
+/**
+ * Benchmark dynamic view performance
+ * @param {*} mode 
+ * @param {*} count 
+ * @param {*} multiple 
+ */
+function testperfDV(mode, count, multiple) {
+  multiple = multiple || 1;
+  
+  let dvdb = createDatabase(mode);
+  let idxbuf = populateDatabase(dvdb, count);
+  let coll = dvdb.getCollection("perfcoll");
 
-   var loopIterations = totalIterations;
-   if (typeof (multiplier) != "undefined") {
-      loopIterations = loopIterations * multiplier;
-   }
+  let start, end;
+  let start2, end2, totalTime2 = 0.0;
+  let totalTimes = [];
+  let totalTimes2 = [];
+  let totalMS = 0;
+  let totalMS2 = 0;
 
-   for (var idx = 0; idx < loopIterations; idx++) {
-      var customidx = Math.floor(Math.random() * arraySize) + 1;
+  let customIdx, dv, results;
 
+  for (let m = 0; m < multiple; m++) {
+    for (let idx = 0; idx < count; idx++) {
+      customIdx = idxbuf[idx];
+  
       start = process.hrtime();
-      var dv = samplecoll.addDynamicView("perfview");
+      dv = coll.addDynamicView("perfview");
       dv.applyFind({
-         'customId': customidx
+        'customId': customIdx
       });
-      var results = dv.data();
+      results = dv.data();
       end = process.hrtime(start);
       totalTimes.push(end);
-
+  
       // test speed of repeated query on an already set up dynamicview
       start2 = process.hrtime();
-      var results = dv.data();
+      results = dv.data();
       end2 = process.hrtime(start2);
       totalTimes2.push(end2);
+  
+      coll.removeDynamicView("perfview");
+    }
+  }
 
-      samplecoll.removeDynamicView("perfview");
-   }
+  for (let idx = 0; idx < totalTimes.length; idx++) {
+    totalMS += totalTimes[idx][0] * 1e3 + totalTimes[idx][1] / 1e6;
+    totalMS2 += totalTimes2[idx][0] * 1e3 + totalTimes2[idx][1] / 1e6;
+  }
 
-   for (var idx = 0; idx < totalTimes.length; idx++) {
-      totalMS += totalTimes[idx][0] * 1e3 + totalTimes[idx][1] / 1e6;
-      totalMS2 += totalTimes2[idx][0] * 1e3 + totalTimes2[idx][1] / 1e6;
-   }
+  totalMS = totalMS.toFixed(2);
+  totalMS2 = totalMS2.toFixed(2);
+  let rate = count * 1000 / totalMS;
+  let rate2 = count * 1000 / totalMS2;
+  rate = rate.toFixed(2);
+  rate2 = rate2.toFixed(2);
 
-   totalMS = totalMS.toFixed(2);
-   totalMS2 = totalMS2.toFixed(2);
-   var rate = loopIterations * 1000 / totalMS;
-   var rate2 = loopIterations * 1000 / totalMS2;
-   rate = rate.toFixed(2);
-   rate2 = rate2.toFixed(2);
-
-   console.log("loki dynamic view first find : " + totalMS + "ms (" + rate + " ops/s) " + loopIterations + " iterations");
-   console.log("loki dynamic view subsequent finds : " + totalMS2 + "ms (" + rate2 + " ops/s) " + loopIterations + " iterations");
+  console.log("loki dynamic view first find : " + totalMS + "ms (" + rate + " ops/s) " + multiple * count + " iterations, " + count + " docs x " + multiple);
+  console.log("loki dynamic view subsequent finds : " + totalMS2 + "ms (" + rate2 + " ops/s) " + multiple * count + " iterations, " + count + " docs x " + multiple);
 }
 
 /**
  * Attempt to free up global variables and invoke node garbage collector (if enabled)
  */
 function cleanup() {
-   db.close();
-   samplecoll = null;
-   uniquecoll = null;
-   db = null;
-   if (global.gc) {
-      global.gc()
-   }
-   else {
-      console.log("!! WARNING: Launch node with --expose-gc flag for more accurate results !!")
-   }
+  if (global.gc) {
+    global.gc()
+  }
 }
 
-var corePerf = [
-   initializeDB,
-   initializeUnique,
-   testperfGet,
-   benchUniquePerf,
+let corePerf = [
+  () => testperfGet(200000, 20),
+  () => benchUniquePerf(200000, 20)
 ];
 
-var nonIndexedSteps = [
-   initializeDB,
-   testperfFind,
-   testperfRS,
-   testperfDV
+let nonIndexedSteps = [
+  () => testperfFind("none", 5000, 8),
+  () => testperfRS("none", 5000, 8),
+  () => testperfDV("none", 5000, 8)
 ];
 
-var btreeIndexSteps = [
-   () => initializeDB("btree"),
-   () => { }, // after heavy memory alloc, wait a sec for cpu to settle
-   () => testperfFind(20),
-   () => testperfRS(15),
-   () => testperfDV(15)
+let nonIndexedStepsHigh = [
+  () => testperfFind("none", 10000, 1),
+  () => testperfRS("none", 10000, 1),
+  () => testperfDV("none", 10000, 1)
 ];
 
-var perfGroups = [
-   { name: "Benchmarking Core Id lookup performance", steps: corePerf },
-   { name: "Benchmarking NON-INDEX query performance", steps: nonIndexedSteps },
-   { name: "Benchmarking BINARY TREE INDEX query performance", steps: btreeIndexSteps }
+let avlIndexSteps = [
+  () => testperfFind("avl", 20000, 20),
+  () => testperfRS("avl", 20000, 20),
+  () => testperfDV("avl", 20000, 20)
+];
+
+let avlIndexStepsHigh = [
+  () => testperfFind("avl", 200000, 2),
+  () => testperfRS("avl", 200000, 2),
+  () => testperfDV("avl", 200000, 2)
+];
+
+let perfGroups = [
+  { name: "Benchmarking Core Id lookup performance", steps: corePerf },
+  { name: "Benchmarking NON-INDEX query performance (Lower doc count)", steps: nonIndexedSteps },
+  { name: "Benchmarking NON-INDEX query performance (Higher doc count)", steps: nonIndexedStepsHigh },
+  { name: "Benchmarking AVL TREE INDEX query performance (Lower doc count)", steps: avlIndexSteps },
+  { name: "Benchmarking AVL TREE INDEX query performance (Higher doc count)", steps: avlIndexStepsHigh }
 ];
 
 /**
@@ -352,37 +381,43 @@ var perfGroups = [
  * @param {*} steps 
  */
 function execSteps(steps) {
-   // if we are finished with this group's steps...
-   if (steps.length === 0) {
-      // wait a few seconds in between benchmark groups
-      setTimeout(execGroups, 4000);
-      return;
-   }
+  // if we are finished with this group's steps...
+  if (steps.length === 0) {
+    // wait a few seconds in between benchmark groups
+    setTimeout(execGroups, 4000);
+    return;
+  }
 
-   var s = steps.shift();
+  let s = steps.shift();
 
-   s();
+  s();
 
-   setTimeout(() => { execSteps(steps); }, 1000);
+  setTimeout(() => { execSteps(steps); }, 1000);
 }
 
 /**
  * Kicks off a group of benchmarks, cleaning up in between
  */
 function execGroups() {
-   var g = perfGroups.shift();
-   if (!g) return;
+  let g = perfGroups.shift();
+  if (!g) return;
 
-   cleanup();
+  cleanup();
 
-   console.log("");
-   console.log("## " + g.name + " ##");
-   console.log("");
-   execSteps(g.steps);
+  console.log("");
+  console.log("## " + g.name + " ##");
+  console.log("");
+  execSteps(g.steps);
 }
 
 console.log("");
 console.log("Note: run 'npm run build' before benchmarking after getting latest or modifying code");
 console.log("");
+
+if (!global.gc) {
+  console.warn("##");
+  console.warn("## IMPORTANT! : For accuracy of results, launch node with --expose-gc flag");
+  console.warn("##");
+}
 
 execGroups();
