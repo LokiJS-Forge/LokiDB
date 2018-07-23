@@ -78,7 +78,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    */
   public _constraints: {
     unique: {
-      [P in keyof T]?: UniqueIndex<T>;
+      [P in keyof T]?: UniqueIndex;
     }
   } = {unique: {}};
 
@@ -214,7 +214,7 @@ export class Collection<TData extends object = object, TNested extends object = 
         options.unique = [options.unique];
       }
       options.unique.forEach((prop) => {
-        this._constraints.unique[prop] = new UniqueIndex<T>(prop);
+        this._constraints.unique[prop] = new UniqueIndex(prop as string);
       });
     }
 
@@ -537,12 +537,12 @@ export class Collection<TData extends object = object, TNested extends object = 
   }
 
   public ensureUniqueIndex(field: keyof T) {
-    let index = new UniqueIndex<T>(field);
+    let index = new UniqueIndex(field as string);
 
     // if index already existed, (re)loading it will likely cause collisions, rebuild always
     this._constraints.unique[field] = index;
     for (let i = 0; i < this._data.length; i++) {
-      index.set(this._data[i]);
+      index.set(this._data[i].$loki, this._data[i][field]);
     }
     return index;
   }
@@ -828,7 +828,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       this.emit("pre-update", doc);
 
       Object.keys(this._constraints.unique).forEach((key) => {
-        this._constraints.unique[key].update(newInternal);
+        this._constraints.unique[key].update(newInternal.$loki, newInternal[key]);
       });
 
       // operate the update
@@ -913,7 +913,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       const constrUnique = this._constraints.unique;
       for (const key in constrUnique) {
         if (constrUnique[key] !== undefined) {
-          constrUnique[key].set(newDoc);
+          constrUnique[key].set(newDoc.$loki, newDoc[key]);
         }
       }
 

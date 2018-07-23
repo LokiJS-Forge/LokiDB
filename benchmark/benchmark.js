@@ -320,8 +320,8 @@ function testperfDV(mode, count, multiple) {
 
   totalMS = totalMS.toFixed(2);
   totalMS2 = totalMS2.toFixed(2);
-  let rate = count * 1000 / totalMS;
-  let rate2 = count * 1000 / totalMS2;
+  let rate = multiple * count * 1000 / totalMS;
+  let rate2 = multiple * count * 1000 / totalMS2;
   rate = rate.toFixed(2);
   rate2 = rate2.toFixed(2);
 
