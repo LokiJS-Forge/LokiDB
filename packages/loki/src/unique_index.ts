@@ -54,7 +54,13 @@ export class UniqueIndex {
    * @param {*} value value to associate with loki id
    */
   public update(id: number, value: any): void {
-    if (value in this._lokiMap && this._lokiMap[value] !== id) {
+    // if the value has not changed, do nothing
+    if (value === this._valMap[id]) {
+      return;
+    }
+
+    // the value must have changed, so check if new value already exists
+    if (value in this._lokiMap) {
       throw new Error("Duplicate key for property " + this._field + ": " + value);
     }
     this.remove(id);
