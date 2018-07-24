@@ -67,7 +67,8 @@ describe("Constraints", () => {
       name: "Jack"
     });
 
-    expect(Object.keys(coll3["_constraints"].unique["username"]["_keyMap"]).length).toEqual(1);
+    expect(Object.keys(coll3["_constraints"].unique["username"]["_valMap"]).length).toEqual(1);
+    expect(Object.keys(coll3["_constraints"].unique["username"]["_lokiMap"]).length).toEqual(1);
   });
 
   it("chained search", () => {
@@ -128,7 +129,8 @@ describe("Constraints", () => {
       username: null,
       name: "Jake"
     });
-    expect(Object.keys(coll4["_constraints"].unique["username"]["_keyMap"]).length).toEqual(1);
+    expect(Object.keys(coll4["_constraints"].unique["username"]["_valMap"]).length).toEqual(1);
+    expect(Object.keys(coll4["_constraints"].unique["username"]["_lokiMap"]).length).toEqual(1);
   });
 
   it("coll.clear should affect unique indices correctly", () => {
@@ -137,14 +139,18 @@ describe("Constraints", () => {
     coll.insert({username: "joe", name: "Joe"});
     coll.insert({username: "jack", name: "Jack"});
     coll.insert({username: "jake", name: "Jake"});
-    expect(Object.keys(coll["_constraints"].unique["username"]["_keyMap"]).length).toEqual(3);
+    expect(Object.keys(coll["_constraints"].unique["username"]["_valMap"]).length).toEqual(3);
+    expect(Object.keys(coll["_constraints"].unique["username"]["_lokiMap"]).length).toEqual(3);
     coll.clear();
-    expect(Object.keys(coll["_constraints"].unique["username"]["_keyMap"]).length).toEqual(0);
+    expect(Object.keys(coll["_constraints"].unique["username"]["_valMap"]).length).toEqual(0);
+    expect(Object.keys(coll["_constraints"].unique["username"]["_lokiMap"]).length).toEqual(0);
     coll.insert({username: "joe", name: "Joe"});
     coll.insert({username: "jack", name: "Jack"});
-    expect(Object.keys(coll["_constraints"].unique["username"]["_keyMap"]).length).toEqual(2);
+    expect(Object.keys(coll["_constraints"].unique["username"]["_valMap"]).length).toEqual(2);
+    expect(Object.keys(coll["_constraints"].unique["username"]["_lokiMap"]).length).toEqual(2);
     coll.insert({username: "jake", name: "Jake"});
-    expect(Object.keys(coll["_constraints"].unique["username"]["_keyMap"]).length).toEqual(3);
+    expect(Object.keys(coll["_constraints"].unique["username"]["_valMap"]).length).toEqual(3);
+    expect(Object.keys(coll["_constraints"].unique["username"]["_lokiMap"]).length).toEqual(3);
 
     db = new Loki();
     coll = db.addCollection<User>("users", {unique: ["username"]});
@@ -152,7 +158,8 @@ describe("Constraints", () => {
     coll.insert({username: "joe", name: "Joe"});
     coll.insert({username: "jack", name: "Jack"});
     coll.insert({username: "jake", name: "Jake"});
-    expect(Object.keys(coll["_constraints"].unique["username"]["_keyMap"]).length).toEqual(3);
+    expect(Object.keys(coll["_constraints"].unique["username"]["_valMap"]).length).toEqual(3);
+    expect(Object.keys(coll["_constraints"].unique["username"]["_lokiMap"]).length).toEqual(3);
     coll.clear({removeIndices: true});
     expect(coll["_constraints"].unique.hasOwnProperty("username")).toEqual(false);
     coll.insert({username: "joe", name: "Joe"});

@@ -1,78 +1,92 @@
-import { Dict, Doc } from "../../common/types";
+import { Dict } from "../../common/types";
 
-export class UniqueIndex<T extends object = object> {
+export class UniqueIndex {
   // The property field to index.
-  private _field: keyof T;
-  // The map with the indices rows of unique property fields.
-  private _keyMap: Dict<number>;
+  private _field: string;
+  // maps value to loki
+  private _lokiMap: Dict<number>;
+  // maps loki to value - turns this into birectional map enforcing 1-1
+  // while this is optional and doubles memory overhead, it will improve maintenance costs
+  private _valMap: Dict<any>;
 
   /**
    * Constructs an unique index object.
-   * @param {number|string} propertyField - the property field to index
+   * @param {string} propertyField - the property field to index
    */
-  constructor(propertyField: keyof T) {
+  constructor(propertyField: string) {
     this._field = propertyField;
-    this._keyMap = {};
+    this._lokiMap = {};
+    this._valMap = {};
   }
 
   /**
    * Sets a document's unique index.
-   * @param {Doc} doc - the document
-   * @param {number} row - the data row of the document
+   * @param {number} id loki id to associate with value
+   * @param {*} value  value to associate with id
    */
-  public set(doc: Doc<T>, row: number): void {
-    const fieldValue = doc[this._field] as any as number;
-    if (fieldValue !== null && fieldValue !== undefined) {
-      if (this._keyMap[fieldValue] !== undefined) {
-        throw new Error("Duplicate key for property " + this._field + ": " + fieldValue);
-      } else {
-        this._keyMap[fieldValue] = row;
+  public set(id: number, value: any): void {
+    // unique index should not include null/undefined values
+    if (value !== null && value !== undefined) {
+      if (value in this._lokiMap) {
+        throw new Error("Duplicate key for property " + this._field + ": " + value);
       }
+
+      if (id in this._valMap) {
+        throw new Error("Duplicate key for property $loki : " + id);
+      }
+
+      this._lokiMap[value] = id;
+      this._valMap[id] = value;
     }
   }
 
   /**
-   * Returns the data row of an unique index.
-   * @param {number|string} index - the index
-   * @returns {number | string} - the row
+   * Returns the $loki id of an unique value.
+   * @param {*} value the value to retrieve a loki id match for
    */
-  public get(index: keyof T): number {
-    return this._keyMap[index];
+  public get(value: any): number {
+    return this._lokiMap[value];
   }
 
   /**
    * Updates a document's unique index.
-   * @param  {Object} doc - the document
-   * @param  {number} row - the data row of the document
+   * @param {number} id (loki) id of document to update the value to
+   * @param {*} value value to associate with loki id
    */
-  public update(doc: Doc<T>, row: number): void {
-    // Find and remove current keyMap for row.
-    const uniqueNames = Object.keys(this._keyMap);
-    for (let i = 0; i < uniqueNames.length; i++) {
-      if (row === this._keyMap[uniqueNames[i]]) {
-        delete this._keyMap[uniqueNames[i]];
-        break;
-      }
+  public update(id: number, value: any): void {
+    // if the value has not changed, do nothing
+    if (value === this._valMap[id]) {
+      return;
     }
-    this.set(doc, row);
+
+    // the value must have changed, so check if new value already exists
+    if (value in this._lokiMap) {
+      throw new Error("Duplicate key for property " + this._field + ": " + value);
+    }
+    this.remove(id);
+    this.set(id, value);
   }
 
   /**
    * Removes an unique index.
-   * @param {number|string} index - the unique index
+   * @param {number} id (loki) id to remove from index
    */
-  public remove(index: number | string): void {
-    if (this._keyMap[index] !== undefined) {
-      delete this._keyMap[index];
-    } else {
+  public remove(id: number): void {
+    if (!(id in this._valMap)) {
       throw new Error("Key is not in unique index: " + this._field);
     }
+
+    let oldValue = this._valMap[id];
+
+    delete this._lokiMap[oldValue];
+    delete this._valMap[id];
   }
 
   /**
-   * Clears all unique indexes.
+   * Clears the unique index.
    */
   public clear(): void {
-    this._keyMap = {};
+    this._lokiMap = {};
+    this._valMap = {};
   }
 }

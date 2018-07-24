@@ -790,8 +790,9 @@ export class ResultSet<T extends object = object> {
           }
         }
       } else if (this._collection._constraints.unique[property] !== undefined && operator === "$eq") {
-        // Use unique constraint for search.
-        let row = this._collection._constraints.unique[property].get(value);
+        // convert back to position for filtered rows (until we refactor filteredrows to store $loki instead of data pos)
+        let row = this._collection.get(this._collection._constraints.unique[property].get(value), true)[1];
+
         if (filter.indexOf(row) !== -1) {
           result.push(row);
         }
@@ -823,7 +824,8 @@ export class ResultSet<T extends object = object> {
 
     // Use unique constraint for search.
     if (this._collection._constraints.unique[property] !== undefined && operator === "$eq") {
-      result.push(this._collection._constraints.unique[property].get(value));
+      // convert back to position for filtered rows (until we refactor filteredrows to store $loki instead of data pos)
+      result.push(this._collection.get(this._collection._constraints.unique[property].get(value), true)[1]);
       return this;
     }
 

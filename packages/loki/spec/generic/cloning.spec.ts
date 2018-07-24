@@ -9,7 +9,7 @@ describe("cloning behavior", () => {
     maker: string;
   }
 
-  let db;
+  let db: Loki;
   let items: Collection<User>;
 
   beforeEach(() => {
