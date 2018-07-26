@@ -24,11 +24,9 @@ export interface ITreeNodeHash<T> {
 }
 
 /**
- * Experimental LokiDB AVL Balanced Binary Tree Index implementation.
+ * LokiDB AVL Balanced Binary Tree Index implementation.
  * To support duplicates, we use siblings (array) in tree nodes.
- * This index data structure should have higher memory usage than legacy loki binary
- * index but faster maintenance and performance throughout insert/update/remove ops.
- * AVL components guided by William Fiset tutorials at :
+ * Basic AVL components guided by William Fiset tutorials at :
  * https://github.com/williamfiset/data-structures/blob/master/com/williamfiset/datastructures/balancedtree/AVLTreeRecursive.java
  * https://www.youtube.com/watch?v=g4y2h70D6Nk&list=PLDV1Zeh2NRsD06x59fxczdWLhDDszUHKt
  */
