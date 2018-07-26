@@ -32,7 +32,7 @@ export interface ITreeNodeHash<T> {
  * https://github.com/williamfiset/data-structures/blob/master/com/williamfiset/datastructures/balancedtree/AVLTreeRecursive.java
  * https://www.youtube.com/watch?v=g4y2h70D6Nk&list=PLDV1Zeh2NRsD06x59fxczdWLhDDszUHKt
  */
-export class BinaryTreeIndex<T> implements IRangedIndex<T> {
+export class AvlTreeIndex<T> implements IRangedIndex<T> {
   name: string;
   comparator: ILokiRangedComparer<T>;
   nodes: ITreeNodeHash<T> = {};
@@ -46,14 +46,14 @@ export class BinaryTreeIndex<T> implements IRangedIndex<T> {
     this.comparator = comparator;
   }
 
-  backup(): BinaryTreeIndex<T> {
-    let result = new BinaryTreeIndex<T>(this.name, this.comparator);
+  backup(): AvlTreeIndex<T> {
+    let result = new AvlTreeIndex<T>(this.name, this.comparator);
     result.nodes = JSON.parse(JSON.stringify(this.nodes));
     result.apex = this.apex;
     return result;
   }
 
-  restore(tree: BinaryTreeIndex<T>) {
+  restore(tree: AvlTreeIndex<T>) {
     this.name = tree.name;
     this.comparator = tree.comparator;
     this.nodes = JSON.parse(JSON.stringify(tree.nodes));
@@ -67,7 +67,7 @@ export class BinaryTreeIndex<T> implements IRangedIndex<T> {
    */
   insert(id: number, val: T) {
     if (id <= 0) {
-      throw new Error("btree index ids are required to be numbers greater than zero");
+      throw new Error("avl index ids are required to be numbers greater than zero");
     }
 
     let node: TreeNode<T> = this.nodes[id] = {

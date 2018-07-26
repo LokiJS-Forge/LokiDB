@@ -3,7 +3,7 @@
  * Not sure how these might change or where they might be relocated to.
  */
 
-import { BinaryTreeIndex } from "./btree_index";
+import { AvlTreeIndex } from "./avl_index";
 
 /* valid range ops that the index must directly support */
 export type RangedValueOperator = "$gt" | "$gte" | "$lt" | "$lte" | "$eq" | "$neq" | "$between";
@@ -35,7 +35,7 @@ export interface IRangedIndexFactoryMap {
 
 /* global rangedIndex factory hashmap */
 export let RangedIndexFactoryMap: IRangedIndexFactoryMap = {
-  "btree": (name: string, comparator: ILokiRangedComparer<any>) => { return new BinaryTreeIndex(name, comparator); }
+  "avl": (name: string, comparator: ILokiRangedComparer<any>) => { return new AvlTreeIndex(name, comparator); }
 };
 
 export interface IRangedIndex<T> {

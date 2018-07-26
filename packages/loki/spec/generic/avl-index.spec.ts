@@ -1,9 +1,9 @@
-import { BinaryTreeIndex } from "../../src/btree_index";
+import { AvlTreeIndex } from "../../src/avl_index";
 import { CreateJavascriptComparator, ComparatorMap, IRangedIndexRequest, RangedIndexFactoryMap, IRangedIndex, ILokiRangedComparer } from "../../src/helper";
 import { Loki } from "../../src/loki";
 import { Doc } from "../../../common/types";
 
-describe("binary tree index tests", () => {
+describe("avl tree index tests", () => {
   const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   const count = 100;
 
@@ -50,7 +50,7 @@ describe("binary tree index tests", () => {
   });
 
   it("bst population works", () => {
-    let bst = new BinaryTreeIndex<string>("last", cmp);
+    let bst = new AvlTreeIndex<string>("last", cmp);
 
     bst.insert(1, "smith");
     bst.insert(2, "patterson");
@@ -84,7 +84,7 @@ describe("binary tree index tests", () => {
   });
 
   it("bst population stress test works", () => {
-    let bst = new BinaryTreeIndex<string>("rand", cmp);
+    let bst = new AvlTreeIndex<string>("rand", cmp);
     let idbuf: number[] = [];
     let rnd: string;
 
@@ -113,7 +113,7 @@ describe("binary tree index tests", () => {
     let idbuf: number[] = [];
     let rnd: string;
 
-    let bst = new BinaryTreeIndex<string>("last", cmp);
+    let bst = new AvlTreeIndex<string>("last", cmp);
 
     // insert random values into BST and retain values using numeric id greater than 0
     for (let idx = 1; idx <= count; idx++) {
@@ -149,7 +149,7 @@ describe("binary tree index tests", () => {
     let valbuf: string[] = [];
     let rnd: string;
 
-    let bst = new BinaryTreeIndex<string>("last", cmp);
+    let bst = new AvlTreeIndex<string>("last", cmp);
 
     // insert random values into BST and retain values using numeric id greater than 0
     for (let idx = 1; idx <= count; idx++) {
@@ -176,7 +176,7 @@ describe("binary tree index tests", () => {
     let valbuf: string[] = [];
     let rnd: string;
 
-    let bst = new BinaryTreeIndex<string>("last", cmp);
+    let bst = new AvlTreeIndex<string>("last", cmp);
 
     // insert random values into BST and retain values using numeric id greater than 0
     for (let idx = 0; idx < count; idx++) {
@@ -222,7 +222,7 @@ describe("binary tree index tests", () => {
     // left heavy involving apex
     // insert s,p,a
     // expect p(a)(s)
-    let bst = new BinaryTreeIndex<string>("last", cmp);
+    let bst = new AvlTreeIndex<string>("last", cmp);
     bst.insert(1, "smith");
     bst.insert(2, "patterson");
     bst.insert(3, "albertson");
@@ -239,7 +239,7 @@ describe("binary tree index tests", () => {
     // right heavy involving apex
     // insert a,p,s
     // expect p(a)(s)
-    bst = new BinaryTreeIndex<string>("last", cmp);
+    bst = new AvlTreeIndex<string>("last", cmp);
     bst.insert(3, "albertson");
     bst.insert(2, "patterson");
     bst.insert(1, "smith");
@@ -250,7 +250,7 @@ describe("binary tree index tests", () => {
     // double right heavy
     // insert order : s,p,a,g,h
     // expect final = p(g(a)(h))(s)
-    bst = new BinaryTreeIndex<string>("last", cmp);
+    bst = new AvlTreeIndex<string>("last", cmp);
     bst.insert(1, "smith");
     bst.insert(2, "patterson");
     bst.insert(3, "albertson");
@@ -265,7 +265,7 @@ describe("binary tree index tests", () => {
     // right-left heavy
     // insert order : s,p,a,g,d
     // expect final : p(d(a)(g))(s)
-    bst = new BinaryTreeIndex<string>("last", cmp);
+    bst = new AvlTreeIndex<string>("last", cmp);
     bst.insert(1, "smith");
     bst.insert(2, "patterson");
     bst.insert(3, "albertson");
@@ -278,7 +278,7 @@ describe("binary tree index tests", () => {
     expect(bst.nodes[6].right).toEqual(4);
 
     // double left heavy
-    bst = new BinaryTreeIndex<string>("last", cmp);
+    bst = new AvlTreeIndex<string>("last", cmp);
     bst.insert(1, "patterson");
     bst.insert(2, "gilbertson");
     bst.insert(3, "smith");
@@ -291,7 +291,7 @@ describe("binary tree index tests", () => {
     expect(bst.nodes[4].right).toEqual(2);
 
     // left right heavy
-    bst = new BinaryTreeIndex<string>("last", cmp);
+    bst = new AvlTreeIndex<string>("last", cmp);
     bst.insert(1, "patterson");
     bst.insert(2, "gilbertson");
     bst.insert(3, "smith");
@@ -306,13 +306,13 @@ describe("binary tree index tests", () => {
   });
 
   it("remove leafs, causing rotation to rebalance", () => {
-    let bst = new BinaryTreeIndex<string>("last", cmp);
+    let bst = new AvlTreeIndex<string>("last", cmp);
 
     // double left heavy involving remove
     // interim tree p (g (d)(h)) (s ()(t))
     // remove t (removing right leaf)
     // final expect g (d (a)(f)) (p (h)(s)))
-    bst = new BinaryTreeIndex<string>("last", cmp);
+    bst = new AvlTreeIndex<string>("last", cmp);
     bst.insert(1, "patterson");
     bst.insert(2, "gilbertson");
     bst.insert(3, "smith");
@@ -339,7 +339,7 @@ describe("binary tree index tests", () => {
     // interim tree g (d (a)()) (p (l) (t (s)(w)))
     // remove a (remove left leaf)
     // final tree p (g (d)(l)) (t (s)(w))
-    bst = new BinaryTreeIndex<string>("last", cmp);
+    bst = new AvlTreeIndex<string>("last", cmp);
     bst.insert(1, "gilbertson");
     bst.insert(2, "donaldson");
     bst.insert(3, "patterson");
@@ -368,7 +368,7 @@ describe("binary tree index tests", () => {
   // this test will use predecessor with no children
   it("remove rotation where node has two children and tree is left heavy", () => {
     // interim tree p (g (d)(h)) (s)  root balance = -1
-    let bst = new BinaryTreeIndex<string>("last", cmp);
+    let bst = new AvlTreeIndex<string>("last", cmp);
     bst.insert(1, "patterson");
     bst.insert(2, "gilbertson");
     bst.insert(3, "smith");
@@ -400,7 +400,7 @@ describe("binary tree index tests", () => {
   // this test will use successor with no children
   it("remove rotation where node has two children and tree is right heavy", () => {
     // interim tree g (d) (p (h)(t))  root balance = +1
-    let bst = new BinaryTreeIndex<string>("last", cmp);
+    let bst = new AvlTreeIndex<string>("last", cmp);
     bst.insert(1, "gilbertson");
     bst.insert(2, "donaldson");
     bst.insert(3, "patterson");
@@ -431,7 +431,7 @@ describe("binary tree index tests", () => {
     let valbuf: string[] = [];
     let rnd: string;
 
-    let bst = new BinaryTreeIndex<string>("asdf", cmp);
+    let bst = new AvlTreeIndex<string>("asdf", cmp);
 
     // insert random values into BST and retain values using numeric id greater than 0
     for (let idx = 1; idx <= count; idx++) {
@@ -457,7 +457,7 @@ describe("binary tree index tests", () => {
   });
 
   it("bst $lt rangeRequest works", () => {
-    let bst = new BinaryTreeIndex<string>("test", cmp);
+    let bst = new AvlTreeIndex<string>("test", cmp);
 
     bst.insert(1, "dsa");   // should be in results
     bst.insert(2, "xja");
@@ -478,7 +478,7 @@ describe("binary tree index tests", () => {
   });
 
   it("bst $lte rangeRequest works", () => {
-    let bst = new BinaryTreeIndex<string>("test", cmp);
+    let bst = new AvlTreeIndex<string>("test", cmp);
 
     bst.insert(1, "dsa");   // should be in results
     bst.insert(2, "xja");
@@ -500,7 +500,7 @@ describe("binary tree index tests", () => {
   });
 
   it("bst $gt rangeRequest works", () => {
-    let bst = new BinaryTreeIndex<string>("test", cmp);
+    let bst = new AvlTreeIndex<string>("test", cmp);
 
     bst.insert(1, "dsa");
     bst.insert(2, "xja");   // should be in results
@@ -522,7 +522,7 @@ describe("binary tree index tests", () => {
   });
 
   it("bst $gte rangeRequest works", () => {
-    let bst = new BinaryTreeIndex<string>("test", cmp);
+    let bst = new AvlTreeIndex<string>("test", cmp);
 
     bst.insert(1, "dsa");
     bst.insert(2, "xja");   // should be in results
@@ -545,7 +545,7 @@ describe("binary tree index tests", () => {
   });
 
   it("bst $between rangeRequest works", () => {
-    let bst = new BinaryTreeIndex<string>("test", cmp);
+    let bst = new AvlTreeIndex<string>("test", cmp);
 
     bst.insert(1, "dsa");
     bst.insert(2, "xja");
@@ -566,7 +566,7 @@ describe("binary tree index tests", () => {
     expect(result[3]).toEqual(7);
   });
 
-  it("collection find ops on btree index work", () => {
+  it("collection find ops on avl index work", () => {
     interface TestUserType {
       name: string;
       age: number;
@@ -576,7 +576,7 @@ describe("binary tree index tests", () => {
     const db = new Loki("idxtest");
     const items = db.addCollection<TestUserType>("users", {
       rangedIndexes: {
-        name: { indexTypeName: "btree", comparatorName: "js" }
+        name: { indexTypeName: "avl", comparatorName: "js" }
       }
     });
 
@@ -638,7 +638,7 @@ describe("binary tree index tests", () => {
 
   });
 
-  it("update works on collection with btree index", () => {
+  it("update works on collection with avl index", () => {
     interface TestUserType {
       name: string;
       age: number;
@@ -648,7 +648,7 @@ describe("binary tree index tests", () => {
     const db = new Loki("idxtest");
     const items = db.addCollection<TestUserType>("users", {
       rangedIndexes: {
-        name: { indexTypeName: "btree", comparatorName: "js" }
+        name: { indexTypeName: "avl", comparatorName: "js" }
       }
     });
 
@@ -682,7 +682,7 @@ describe("binary tree index tests", () => {
     expect(result[6].name).toEqual("nostreblig");
   });
 
-  it("remove works on collection with btree index", () => {
+  it("remove works on collection with avl index", () => {
     interface TestUserType {
       name: string;
       age: number;
@@ -692,7 +692,7 @@ describe("binary tree index tests", () => {
     const db = new Loki("idxtest");
     const items = db.addCollection<TestUserType>("users", {
       rangedIndexes: {
-        name: { indexTypeName: "btree", comparatorName: "js" }
+        name: { indexTypeName: "avl", comparatorName: "js" }
       }
     });
 
@@ -714,7 +714,7 @@ describe("binary tree index tests", () => {
     expect(result[1].name).toEqual("patterson");
   });
 
-  it("simplesort works on collection with btree index", () => {
+  it("simplesort works on collection with avl index", () => {
     interface TestUserType {
       name: string;
       age: number;
@@ -724,7 +724,7 @@ describe("binary tree index tests", () => {
     const db = new Loki("idxtest");
     const items = db.addCollection<TestUserType>("users", {
       rangedIndexes: {
-        name: { indexTypeName: "btree", comparatorName: "js" }
+        name: { indexTypeName: "avl", comparatorName: "js" }
       }
     });
 
@@ -824,7 +824,7 @@ describe("binary tree index tests", () => {
 
   });
 
-  it("nested property with btree index work", () => {
+  it("nested property with avl index work", () => {
     interface TestUserType {
       user: {
         name: string;
@@ -836,7 +836,7 @@ describe("binary tree index tests", () => {
     const db = new Loki("idxtest");
     const items = db.addCollection<TestUserType, { "user.name": string }>("users", {
       rangedIndexes: {
-        "user.name": { indexTypeName: "btree", comparatorName: "js" }
+        "user.name": { indexTypeName: "avl", comparatorName: "js" }
       },
       nestedProperties: ["user.name"]
     });
