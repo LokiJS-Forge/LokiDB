@@ -509,7 +509,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param comparatorName Name of Comparator within (global?) hashmap
    */
   public ensureRangedIndex(field: string, indexTypeName?: string, comparatorName?: string) {
-    indexTypeName = indexTypeName || "btree";
+    indexTypeName = indexTypeName || "avl";
     comparatorName = comparatorName || "loki";
 
     if (!RangedIndexFactoryMap[indexTypeName]) {

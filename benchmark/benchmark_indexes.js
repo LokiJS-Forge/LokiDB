@@ -83,7 +83,7 @@ function createDatabase(mode) {
     case "avl":
       coll = tdb.addCollection('perfcoll', {
         rangedIndexes: {
-          "customId": { indexTypeName: "btree", comparatorName: "js" }
+          "customId": { indexTypeName: "avl", comparatorName: "js" }
         }
       });
       break;

@@ -3,7 +3,7 @@ import { Loki } from "../../src/loki";
 import { MemoryStorage } from "../../../memory-storage/src/memory_storage";
 import { Collection } from "../../src/collection";
 import { StorageAdapter } from "../../../common/types";
-import { BinaryTreeIndex } from "../../src/btree_index";
+import { AvlTreeIndex } from "../../src/avl_index";
 import { CreateJavascriptComparator } from "../../src/helper";
 
 interface AB {
@@ -60,7 +60,7 @@ describe("testing unique index serialization", () => {
   });
 });
 
-describe("testing nested binary index serialization", () => {
+describe("testing nested avl index serialization", () => {
   let db: Loki;
 
   interface AUser {
@@ -78,7 +78,7 @@ describe("testing nested binary index serialization", () => {
     db = new Loki();
     users = db.addCollection<AUser, Nested>("users", {
       nestedProperties: ["user.id"],
-      rangedIndexes: { "user.id": { indexTypeName: "btree", comparatorName: "js" } }
+      rangedIndexes: { "user.id": { indexTypeName: "avl", comparatorName: "js" } }
     });
     users.insert([
       { user: { id: 1 } },
@@ -103,8 +103,8 @@ describe("testing nested binary index serialization", () => {
   });
 });
 
-describe("testing btree index serialization", function () {
-  it("collection find ops on btree index work", (done) => {
+describe("testing avl index serialization", function () {
+  it("collection find ops on avl index work", (done) => {
     interface TestUserType {
       name: string;
       age: number;
@@ -117,7 +117,7 @@ describe("testing btree index serialization", function () {
 
     const items = db.addCollection<TestUserType>("users", {
       rangedIndexes: {
-        name: { indexTypeName: "btree", comparatorName: "js" }
+        name: { indexTypeName: "avl", comparatorName: "js" }
       }
     });
 
@@ -184,19 +184,19 @@ describe("testing btree index serialization", function () {
         expect(results[2].name).toEqual("harrison");
         expect(results[3].name).toEqual("patterson");
 
-        // make sure we are acutally using binary tree index
-        expect(items2._rangedIndexes["name"].indexTypeName).toEqual("btree");
+        // make sure we are acutally using avl tree index
+        expect(items2._rangedIndexes["name"].indexTypeName).toEqual("avl");
         expect(items2._rangedIndexes["name"].comparatorName).toEqual("js");
         expect(typeof items2._rangedIndexes["name"].index.rangeRequest).toEqual("function");
-        expect(items2._rangedIndexes["name"].index.constructor.name).toEqual("BinaryTreeIndex");
+        expect(items2._rangedIndexes["name"].index.constructor.name).toEqual("AvlTreeIndex");
 
         done();
       });
     });
   });
 
-  it("btree backup and restore work correctly", function () {
-    let bst = new BinaryTreeIndex("test", CreateJavascriptComparator());
+  it("avl backup and restore work correctly", function () {
+    let bst = new AvlTreeIndex("test", CreateJavascriptComparator());
     bst.insert(1, "f");
     bst.insert(2, "b");
     bst.insert(3, "c");
@@ -208,7 +208,7 @@ describe("testing btree index serialization", function () {
     // add another to original to ensure backup does not include it
     bst.insert(6, "g");
 
-    let bst2 = new BinaryTreeIndex("test", CreateJavascriptComparator());
+    let bst2 = new AvlTreeIndex("test", CreateJavascriptComparator());
     bst2.restore(JSON.parse(JSON.stringify(bkp)));
 
     let results = bst2.rangeRequest();

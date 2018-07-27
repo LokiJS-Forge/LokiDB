@@ -1,9 +1,9 @@
-import { BinaryTreeIndex } from "../../src/btree_index";
+import { AvlTreeIndex, TreeNode } from "../../src/avl_index";
 import { CreateJavascriptComparator, ComparatorMap, IRangedIndexRequest, RangedIndexFactoryMap, IRangedIndex, ILokiRangedComparer } from "../../src/helper";
 import { Loki } from "../../src/loki";
 import { Doc } from "../../../common/types";
 
-describe("binary tree index tests", () => {
+describe("avl tree index tests", () => {
   const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   const count = 100;
 
@@ -49,21 +49,21 @@ describe("binary tree index tests", () => {
   beforeEach(() => {
   });
 
-  it("bst population works", () => {
-    let bst = new BinaryTreeIndex<string>("last", cmp);
+  it("avl population works", () => {
+    let avl = new AvlTreeIndex<string>("last", cmp);
 
-    bst.insert(1, "smith");
-    bst.insert(2, "patterson");
-    bst.insert(3, "albertson");
-    bst.insert(4, "gilbertson");
-    bst.insert(5, "yannitz");
-    bst.insert(6, "harrison");
-    bst.insert(7, "livingstone");
-    bst.insert(8, "gilbertson");
-    bst.insert(9, "lapierre");
+    avl.insert(1, "smith");
+    avl.insert(2, "patterson");
+    avl.insert(3, "albertson");
+    avl.insert(4, "gilbertson");
+    avl.insert(5, "yannitz");
+    avl.insert(6, "harrison");
+    avl.insert(7, "livingstone");
+    avl.insert(8, "gilbertson");
+    avl.insert(9, "lapierre");
 
     // get all sorted ids (since not passing an IRangeRequest)
-    let result: number[] = bst.rangeRequest();
+    let result: number[] = avl.rangeRequest();
 
     // verify number of elements is accurate
     expect(result.length).toEqual(9);
@@ -83,284 +83,284 @@ describe("binary tree index tests", () => {
     expect(result[8]).toEqual(5);
   });
 
-  it("bst population stress test works", () => {
-    let bst = new BinaryTreeIndex<string>("rand", cmp);
+  it("avl population stress test works", () => {
+    let avl = new AvlTreeIndex<string>("rand", cmp);
     let idbuf: number[] = [];
     let rnd: string;
 
-    // Populate BST and retain values
+    // Populate avl and retain values
     for (let idx = 0; idx < count; idx++) {
       rnd = genRandomVal();
       idbuf.push(idx + 1);
-      bst.insert(idx + 1, rnd);
+      avl.insert(idx + 1, rnd);
     }
 
     expect(idbuf.length).toEqual(count);
-    expect(bst.validateIndex()).toEqual(true);
-    expect(bst.rangeRequest().length).toEqual(count);
+    expect(avl.validateIndex()).toEqual(true);
+    expect(avl.rangeRequest().length).toEqual(count);
 
     // suffle id array and then sequentially update index vals
     shuffle(idbuf);
     for (let id of idbuf) {
-      bst.update(id, genRandomVal());
+      avl.update(id, genRandomVal());
     }
 
-    expect(bst.validateIndex()).toEqual(true);
-    expect(bst.rangeRequest().length).toEqual(count);
+    expect(avl.validateIndex()).toEqual(true);
+    expect(avl.rangeRequest().length).toEqual(count);
   });
 
-  it("bst maintenance (unique vals) stress test works", () => {
+  it("avl maintenance (unique vals) stress test works", () => {
     let idbuf: number[] = [];
     let rnd: string;
 
-    let bst = new BinaryTreeIndex<string>("last", cmp);
+    let avl = new AvlTreeIndex<string>("last", cmp);
 
-    // insert random values into BST and retain values using numeric id greater than 0
+    // insert random values into avl and retain values using numeric id greater than 0
     for (let idx = 1; idx <= count; idx++) {
       idbuf.push(idx);
       rnd = genRandomVal();
-      bst.insert(idx, rnd);
+      avl.insert(idx, rnd);
     }
 
-    expect(bst.validateIndex()).toEqual(true);
-    expect(bst.rangeRequest().length).toEqual(count);
+    expect(avl.validateIndex()).toEqual(true);
+    expect(avl.rangeRequest().length).toEqual(count);
 
     // now update every value in the index to a different random value
     shuffle(idbuf);
 
     for (let id of idbuf) {
       let urnd = genRandomVal();
-      bst.update(id, urnd);
+      avl.update(id, urnd);
     }
 
     // make sure the index is still valid
-    expect(bst.validateIndex()).toEqual(true);
-    expect(bst.rangeRequest().length).toEqual(count);
+    expect(avl.validateIndex()).toEqual(true);
+    expect(avl.rangeRequest().length).toEqual(count);
 
     shuffle(idbuf);
     for (let id of idbuf) {
-      bst.remove(id);
-      expect(bst.validateIndex()).toEqual(true);
+      avl.remove(id);
+      expect(avl.validateIndex()).toEqual(true);
     }
   });
 
-  it("bst maintenance with dups stress test works", () => {
+  it("avl maintenance with dups stress test works", () => {
     let idbuf: number[] = [];
     let valbuf: string[] = [];
     let rnd: string;
 
-    let bst = new BinaryTreeIndex<string>("last", cmp);
+    let avl = new AvlTreeIndex<string>("last", cmp);
 
-    // insert random values into BST and retain values using numeric id greater than 0
+    // insert random values into avl and retain values using numeric id greater than 0
     for (let idx = 1; idx <= count; idx++) {
       idbuf.push(idx);
       rnd = genRandomVal();
       valbuf.push(rnd);
-      bst.insert(idx, rnd);
+      avl.insert(idx, rnd);
     }
 
     shuffle(idbuf);
 
     // now insert duplicate values for all previous inserted values
     for (let idx = 0; idx < count; idx++) {
-      bst.insert(count + idx + 1, valbuf[idx]);
+      avl.insert(count + idx + 1, valbuf[idx]);
     }
 
     // make sure the index is still valid
-    expect(bst.validateIndex()).toEqual(true);
-    expect(bst.rangeRequest().length).toEqual(count * 2);
+    expect(avl.validateIndex()).toEqual(true);
+    expect(avl.rangeRequest().length).toEqual(count * 2);
   });
 
-  it("bst maintenance with dups and removes stress", () => {
+  it("avl maintenance with dups and removes stress", () => {
     let idbuf: number[] = [];
     let valbuf: string[] = [];
     let rnd: string;
 
-    let bst = new BinaryTreeIndex<string>("last", cmp);
+    let avl = new AvlTreeIndex<string>("last", cmp);
 
-    // insert random values into BST and retain values using numeric id greater than 0
+    // insert random values into avl and retain values using numeric id greater than 0
     for (let idx = 0; idx < count; idx++) {
       idbuf.push(idx + 1);
       rnd = genRandomVal();
       valbuf.push(rnd);
-      bst.insert(idx + 1, rnd);
+      avl.insert(idx + 1, rnd);
     }
 
     // now insert duplicate values for all previous inserted values
     for (let idx = 0; idx < count; idx++) {
       idbuf.push(count + idx + 1);
-      bst.insert(count + idx + 1, valbuf[idx]);
+      avl.insert(count + idx + 1, valbuf[idx]);
 
       // verify siblings
-      if (bst.nodes[idx + 1].siblings.length !== 1) {
+      if (avl.nodes[idx + 1].siblings.length !== 1) {
         throw new Error("wrong number of siblings");
       }
-      if (bst.nodes[count + idx + 1].siblings.length !== 0) {
+      if (avl.nodes[count + idx + 1].siblings.length !== 0) {
         throw new Error("wrong number of siblings");
       }
-      if (bst.nodes[count + idx + 1].parent !== idx + 1) {
+      if (avl.nodes[count + idx + 1].parent !== idx + 1) {
         throw new Error("incorrectly parented sibling");
       }
     }
 
     // make sure the index is still valid
-    expect(bst.validateIndex()).toEqual(true);
-    expect(bst.rangeRequest().length).toEqual(count * 2);
+    expect(avl.validateIndex()).toEqual(true);
+    expect(avl.rangeRequest().length).toEqual(count * 2);
 
     shuffle(idbuf);
 
     for (let idx = 0; idx < idbuf.length; idx++) {
-      bst.remove(idbuf[idx]);
+      avl.remove(idbuf[idx]);
     }
 
     // make sure the index is still valid
-    expect(bst.validateIndex()).toEqual(true);
-    expect(bst.rangeRequest().length).toEqual(0);
+    expect(avl.validateIndex()).toEqual(true);
+    expect(avl.rangeRequest().length).toEqual(0);
   });
 
   it("insert rotation balancing check", () => {
     // left heavy involving apex
     // insert s,p,a
     // expect p(a)(s)
-    let bst = new BinaryTreeIndex<string>("last", cmp);
-    bst.insert(1, "smith");
-    bst.insert(2, "patterson");
-    bst.insert(3, "albertson");
-    expect(bst.apex).toEqual(2);
-    expect(bst.nodes[bst.apex].height).toEqual(1);
-    expect(bst.nodes[bst.apex].balance).toEqual(0);
-    expect(bst.nodes[bst.apex].left).toEqual(3);
-    expect(bst.nodes[bst.apex].right).toEqual(1);
-    expect(bst.nodes[1].height).toEqual(0);
-    expect(bst.nodes[1].balance).toEqual(0);
-    expect(bst.nodes[3].height).toEqual(0);
-    expect(bst.nodes[3].balance).toEqual(0);
+    let avl = new AvlTreeIndex<string>("last", cmp);
+    avl.insert(1, "smith");
+    avl.insert(2, "patterson");
+    avl.insert(3, "albertson");
+    expect(avl.apex).toEqual(2);
+    expect(avl.nodes[avl.apex].height).toEqual(1);
+    expect(avl.nodes[avl.apex].balance).toEqual(0);
+    expect(avl.nodes[avl.apex].left).toEqual(3);
+    expect(avl.nodes[avl.apex].right).toEqual(1);
+    expect(avl.nodes[1].height).toEqual(0);
+    expect(avl.nodes[1].balance).toEqual(0);
+    expect(avl.nodes[3].height).toEqual(0);
+    expect(avl.nodes[3].balance).toEqual(0);
 
     // right heavy involving apex
     // insert a,p,s
     // expect p(a)(s)
-    bst = new BinaryTreeIndex<string>("last", cmp);
-    bst.insert(3, "albertson");
-    bst.insert(2, "patterson");
-    bst.insert(1, "smith");
-    expect(bst.apex).toEqual(2);
-    expect(bst.nodes[bst.apex].left).toEqual(3);
-    expect(bst.nodes[bst.apex].right).toEqual(1);
+    avl = new AvlTreeIndex<string>("last", cmp);
+    avl.insert(3, "albertson");
+    avl.insert(2, "patterson");
+    avl.insert(1, "smith");
+    expect(avl.apex).toEqual(2);
+    expect(avl.nodes[avl.apex].left).toEqual(3);
+    expect(avl.nodes[avl.apex].right).toEqual(1);
 
     // double right heavy
     // insert order : s,p,a,g,h
     // expect final = p(g(a)(h))(s)
-    bst = new BinaryTreeIndex<string>("last", cmp);
-    bst.insert(1, "smith");
-    bst.insert(2, "patterson");
-    bst.insert(3, "albertson");
-    bst.insert(4, "gilbertson");
-    bst.insert(6, "harrison");
-    expect(bst.apex).toEqual(2);
-    expect(bst.nodes[bst.apex].left).toEqual(4);
-    expect(bst.nodes[bst.apex].right).toEqual(1);
-    expect(bst.nodes[4].left).toEqual(3);
-    expect(bst.nodes[4].right).toEqual(6);
+    avl = new AvlTreeIndex<string>("last", cmp);
+    avl.insert(1, "smith");
+    avl.insert(2, "patterson");
+    avl.insert(3, "albertson");
+    avl.insert(4, "gilbertson");
+    avl.insert(6, "harrison");
+    expect(avl.apex).toEqual(2);
+    expect(avl.nodes[avl.apex].left).toEqual(4);
+    expect(avl.nodes[avl.apex].right).toEqual(1);
+    expect(avl.nodes[4].left).toEqual(3);
+    expect(avl.nodes[4].right).toEqual(6);
 
     // right-left heavy
     // insert order : s,p,a,g,d
     // expect final : p(d(a)(g))(s)
-    bst = new BinaryTreeIndex<string>("last", cmp);
-    bst.insert(1, "smith");
-    bst.insert(2, "patterson");
-    bst.insert(3, "albertson");
-    bst.insert(4, "gilbertson");
-    bst.insert(6, "donaldson");
-    expect(bst.apex).toEqual(2);
-    expect(bst.nodes[bst.apex].left).toEqual(6);
-    expect(bst.nodes[bst.apex].right).toEqual(1);
-    expect(bst.nodes[6].left).toEqual(3);
-    expect(bst.nodes[6].right).toEqual(4);
+    avl = new AvlTreeIndex<string>("last", cmp);
+    avl.insert(1, "smith");
+    avl.insert(2, "patterson");
+    avl.insert(3, "albertson");
+    avl.insert(4, "gilbertson");
+    avl.insert(6, "donaldson");
+    expect(avl.apex).toEqual(2);
+    expect(avl.nodes[avl.apex].left).toEqual(6);
+    expect(avl.nodes[avl.apex].right).toEqual(1);
+    expect(avl.nodes[6].left).toEqual(3);
+    expect(avl.nodes[6].right).toEqual(4);
 
     // double left heavy
-    bst = new BinaryTreeIndex<string>("last", cmp);
-    bst.insert(1, "patterson");
-    bst.insert(2, "gilbertson");
-    bst.insert(3, "smith");
-    bst.insert(4, "donaldson");
-    bst.insert(5, "albertson");
-    expect(bst.apex).toEqual(1);
-    expect(bst.nodes[1].left).toEqual(4);
-    expect(bst.nodes[1].right).toEqual(3);
-    expect(bst.nodes[4].left).toEqual(5);
-    expect(bst.nodes[4].right).toEqual(2);
+    avl = new AvlTreeIndex<string>("last", cmp);
+    avl.insert(1, "patterson");
+    avl.insert(2, "gilbertson");
+    avl.insert(3, "smith");
+    avl.insert(4, "donaldson");
+    avl.insert(5, "albertson");
+    expect(avl.apex).toEqual(1);
+    expect(avl.nodes[1].left).toEqual(4);
+    expect(avl.nodes[1].right).toEqual(3);
+    expect(avl.nodes[4].left).toEqual(5);
+    expect(avl.nodes[4].right).toEqual(2);
 
     // left right heavy
-    bst = new BinaryTreeIndex<string>("last", cmp);
-    bst.insert(1, "patterson");
-    bst.insert(2, "gilbertson");
-    bst.insert(3, "smith");
-    bst.insert(4, "albertson");
-    bst.insert(5, "donaldson");
-    expect(bst.apex).toEqual(1);
-    expect(bst.nodes[1].left).toEqual(5);
-    expect(bst.nodes[1].right).toEqual(3);
-    expect(bst.nodes[5].left).toEqual(4);
-    expect(bst.nodes[5].right).toEqual(2);
+    avl = new AvlTreeIndex<string>("last", cmp);
+    avl.insert(1, "patterson");
+    avl.insert(2, "gilbertson");
+    avl.insert(3, "smith");
+    avl.insert(4, "albertson");
+    avl.insert(5, "donaldson");
+    expect(avl.apex).toEqual(1);
+    expect(avl.nodes[1].left).toEqual(5);
+    expect(avl.nodes[1].right).toEqual(3);
+    expect(avl.nodes[5].left).toEqual(4);
+    expect(avl.nodes[5].right).toEqual(2);
 
   });
 
   it("remove leafs, causing rotation to rebalance", () => {
-    let bst = new BinaryTreeIndex<string>("last", cmp);
+    let avl = new AvlTreeIndex<string>("last", cmp);
 
     // double left heavy involving remove
     // interim tree p (g (d)(h)) (s ()(t))
     // remove t (removing right leaf)
     // final expect g (d (a)(f)) (p (h)(s)))
-    bst = new BinaryTreeIndex<string>("last", cmp);
-    bst.insert(1, "patterson");
-    bst.insert(2, "gilbertson");
-    bst.insert(3, "smith");
-    bst.insert(4, "donaldson");
-    bst.insert(5, "harrison");
-    bst.insert(6, "thompson"); // keep balanced during next 2 inserts
-    bst.insert(7, "albertson");
-    bst.insert(8, "fiset");
-    expect(bst.apex).toEqual(1);
-    expect(bst.nodes[1].left).toEqual(2);
-    expect(bst.nodes[1].right).toEqual(3);
-    expect(bst.nodes[2].left).toEqual(4);
-    expect(bst.nodes[2].right).toEqual(5);
-    bst.remove(6); // make tree double left heavy
-    expect(bst.apex).toEqual(2);
-    expect(bst.nodes[2].left).toEqual(4);
-    expect(bst.nodes[2].right).toEqual(1);
-    expect(bst.nodes[1].left).toEqual(5);
-    expect(bst.nodes[1].right).toEqual(3);
-    expect(bst.nodes[4].left).toEqual(7);
-    expect(bst.nodes[4].right).toEqual(8);
+    avl = new AvlTreeIndex<string>("last", cmp);
+    avl.insert(1, "patterson");
+    avl.insert(2, "gilbertson");
+    avl.insert(3, "smith");
+    avl.insert(4, "donaldson");
+    avl.insert(5, "harrison");
+    avl.insert(6, "thompson"); // keep balanced during next 2 inserts
+    avl.insert(7, "albertson");
+    avl.insert(8, "fiset");
+    expect(avl.apex).toEqual(1);
+    expect(avl.nodes[1].left).toEqual(2);
+    expect(avl.nodes[1].right).toEqual(3);
+    expect(avl.nodes[2].left).toEqual(4);
+    expect(avl.nodes[2].right).toEqual(5);
+    avl.remove(6); // make tree double left heavy
+    expect(avl.apex).toEqual(2);
+    expect(avl.nodes[2].left).toEqual(4);
+    expect(avl.nodes[2].right).toEqual(1);
+    expect(avl.nodes[1].left).toEqual(5);
+    expect(avl.nodes[1].right).toEqual(3);
+    expect(avl.nodes[4].left).toEqual(7);
+    expect(avl.nodes[4].right).toEqual(8);
 
     // double right heavy involving remove
     // interim tree g (d (a)()) (p (l) (t (s)(w)))
     // remove a (remove left leaf)
     // final tree p (g (d)(l)) (t (s)(w))
-    bst = new BinaryTreeIndex<string>("last", cmp);
-    bst.insert(1, "gilbertson");
-    bst.insert(2, "donaldson");
-    bst.insert(3, "patterson");
-    bst.insert(4, "albertson"); // later leaf to remove
-    bst.insert(5, "lapierre");
-    bst.insert(6, "thompson");
-    bst.insert(7, "smith");
-    bst.insert(8, "williams");
-    expect(bst.apex).toEqual(1);
-    expect(bst.nodes[1].left).toEqual(2);
-    expect(bst.nodes[1].right).toEqual(3);
-    expect(bst.nodes[3].left).toEqual(5);
-    expect(bst.nodes[3].right).toEqual(6);
-    bst.remove(4); // make tree double right heavy
-    expect(bst.apex).toEqual(3);
-    expect(bst.nodes[3].left).toEqual(1);
-    expect(bst.nodes[3].right).toEqual(6);
-    expect(bst.nodes[1].left).toEqual(2);
-    expect(bst.nodes[1].right).toEqual(5);
-    expect(bst.nodes[6].left).toEqual(7);
-    expect(bst.nodes[6].right).toEqual(8);
+    avl = new AvlTreeIndex<string>("last", cmp);
+    avl.insert(1, "gilbertson");
+    avl.insert(2, "donaldson");
+    avl.insert(3, "patterson");
+    avl.insert(4, "albertson"); // later leaf to remove
+    avl.insert(5, "lapierre");
+    avl.insert(6, "thompson");
+    avl.insert(7, "smith");
+    avl.insert(8, "williams");
+    expect(avl.apex).toEqual(1);
+    expect(avl.nodes[1].left).toEqual(2);
+    expect(avl.nodes[1].right).toEqual(3);
+    expect(avl.nodes[3].left).toEqual(5);
+    expect(avl.nodes[3].right).toEqual(6);
+    avl.remove(4); // make tree double right heavy
+    expect(avl.apex).toEqual(3);
+    expect(avl.nodes[3].left).toEqual(1);
+    expect(avl.nodes[3].right).toEqual(6);
+    expect(avl.nodes[1].left).toEqual(2);
+    expect(avl.nodes[1].right).toEqual(5);
+    expect(avl.nodes[6].left).toEqual(7);
+    expect(avl.nodes[6].right).toEqual(8);
   });
 
   // verify that we use in-order predecessor
@@ -368,31 +368,31 @@ describe("binary tree index tests", () => {
   // this test will use predecessor with no children
   it("remove rotation where node has two children and tree is left heavy", () => {
     // interim tree p (g (d)(h)) (s)  root balance = -1
-    let bst = new BinaryTreeIndex<string>("last", cmp);
-    bst.insert(1, "patterson");
-    bst.insert(2, "gilbertson");
-    bst.insert(3, "smith");
-    bst.insert(4, "donaldson");
-    bst.insert(5, "harrison");
-    expect(bst.apex).toEqual(1);
-    expect(bst.nodes[1].left).toEqual(2);
-    expect(bst.nodes[1].right).toEqual(3);
-    expect(bst.nodes[2].left).toEqual(4);
-    expect(bst.nodes[2].right).toEqual(5);
-    expect(bst.nodes[3].left).toEqual(null);
-    expect(bst.nodes[3].right).toEqual(null);
+    let avl = new AvlTreeIndex<string>("last", cmp);
+    avl.insert(1, "patterson");
+    avl.insert(2, "gilbertson");
+    avl.insert(3, "smith");
+    avl.insert(4, "donaldson");
+    avl.insert(5, "harrison");
+    expect(avl.apex).toEqual(1);
+    expect(avl.nodes[1].left).toEqual(2);
+    expect(avl.nodes[1].right).toEqual(3);
+    expect(avl.nodes[2].left).toEqual(4);
+    expect(avl.nodes[2].right).toEqual(5);
+    expect(avl.nodes[3].left).toEqual(null);
+    expect(avl.nodes[3].right).toEqual(null);
 
     // remove root which has two children and that root is left heavy...
     // it will use in-order predecessor (h) to reduce chance of rotation
     // new tree should be h (g (d)()) (s)
-    bst.remove(1);
-    expect(bst.apex).toEqual(5);
-    expect(bst.nodes[5].left).toEqual(2);
-    expect(bst.nodes[5].right).toEqual(3);
-    expect(bst.nodes[2].left).toEqual(4);
-    expect(bst.nodes[2].right).toEqual(null);
-    expect(bst.nodes[3].left).toEqual(null);
-    expect(bst.nodes[3].right).toEqual(null);
+    avl.remove(1);
+    expect(avl.apex).toEqual(5);
+    expect(avl.nodes[5].left).toEqual(2);
+    expect(avl.nodes[5].right).toEqual(3);
+    expect(avl.nodes[2].left).toEqual(4);
+    expect(avl.nodes[2].right).toEqual(null);
+    expect(avl.nodes[3].left).toEqual(null);
+    expect(avl.nodes[3].right).toEqual(null);
   });
 
   // verify that we use in-order successor
@@ -400,54 +400,54 @@ describe("binary tree index tests", () => {
   // this test will use successor with no children
   it("remove rotation where node has two children and tree is right heavy", () => {
     // interim tree g (d) (p (h)(t))  root balance = +1
-    let bst = new BinaryTreeIndex<string>("last", cmp);
-    bst.insert(1, "gilbertson");
-    bst.insert(2, "donaldson");
-    bst.insert(3, "patterson");
-    bst.insert(4, "harrison");
-    bst.insert(5, "thompson");
-    expect(bst.apex).toEqual(1);
-    expect(bst.nodes[1].left).toEqual(2);
-    expect(bst.nodes[1].right).toEqual(3);
-    expect(bst.nodes[2].left).toEqual(null);
-    expect(bst.nodes[2].right).toEqual(null);
-    expect(bst.nodes[3].left).toEqual(4);
-    expect(bst.nodes[3].right).toEqual(5);
+    let avl = new AvlTreeIndex<string>("last", cmp);
+    avl.insert(1, "gilbertson");
+    avl.insert(2, "donaldson");
+    avl.insert(3, "patterson");
+    avl.insert(4, "harrison");
+    avl.insert(5, "thompson");
+    expect(avl.apex).toEqual(1);
+    expect(avl.nodes[1].left).toEqual(2);
+    expect(avl.nodes[1].right).toEqual(3);
+    expect(avl.nodes[2].left).toEqual(null);
+    expect(avl.nodes[2].right).toEqual(null);
+    expect(avl.nodes[3].left).toEqual(4);
+    expect(avl.nodes[3].right).toEqual(5);
     // remove root which has two children and that root is right heavy...
     // it will use in-order predecessor (h) to reduce chance of rotation
     // new tree should be h (g (d)()) (s)
-    bst.remove(1);
-    expect(bst.apex).toEqual(4);
-    expect(bst.nodes[4].left).toEqual(2);
-    expect(bst.nodes[4].right).toEqual(3);
-    expect(bst.nodes[2].left).toEqual(null);
-    expect(bst.nodes[2].right).toEqual(null);
-    expect(bst.nodes[3].left).toEqual(null);
-    expect(bst.nodes[3].right).toEqual(5);
+    avl.remove(1);
+    expect(avl.apex).toEqual(4);
+    expect(avl.nodes[4].left).toEqual(2);
+    expect(avl.nodes[4].right).toEqual(3);
+    expect(avl.nodes[2].left).toEqual(null);
+    expect(avl.nodes[2].right).toEqual(null);
+    expect(avl.nodes[3].left).toEqual(null);
+    expect(avl.nodes[3].right).toEqual(5);
   });
 
-  it("bst $eq rangeRequest works", () => {
+  it("avl $eq rangeRequest works", () => {
     let idbuf: number[] = [];
     let valbuf: string[] = [];
     let rnd: string;
 
-    let bst = new BinaryTreeIndex<string>("asdf", cmp);
+    let avl = new AvlTreeIndex<string>("asdf", cmp);
 
-    // insert random values into BST and retain values using numeric id greater than 0
+    // insert random values into avl and retain values using numeric id greater than 0
     for (let idx = 1; idx <= count; idx++) {
       idbuf.push(idx);
       rnd = genRandomVal();
       valbuf.push(rnd);
-      bst.insert(idx, rnd);
+      avl.insert(idx, rnd);
     }
 
     for (let idx = 1; idx <= count; idx++) {
       idbuf.push(count + idx);
-      bst.insert(count + idx, valbuf[idx - 1]);
+      avl.insert(count + idx, valbuf[idx - 1]);
     }
 
     for (let idx = 1; idx <= count; idx++) {
-      let matches = bst.rangeRequest({
+      let matches = avl.rangeRequest({
         op: "$eq",
         val: valbuf[idx - 1]
       });
@@ -456,20 +456,20 @@ describe("binary tree index tests", () => {
     }
   });
 
-  it("bst $lt rangeRequest works", () => {
-    let bst = new BinaryTreeIndex<string>("test", cmp);
+  it("avl $lt rangeRequest works", () => {
+    let avl = new AvlTreeIndex<string>("test", cmp);
 
-    bst.insert(1, "dsa");   // should be in results
-    bst.insert(2, "xja");
-    bst.insert(3, "asd");   // should be in results
-    bst.insert(4, "gfd");   // not in results since op is $lt
-    bst.insert(5, "ert");   // should be in results
-    bst.insert(6, "mnb");
-    bst.insert(7, "vbn");
-    bst.insert(8, "rty");
-    bst.insert(9, "zxc");
+    avl.insert(1, "dsa");   // should be in results
+    avl.insert(2, "xja");
+    avl.insert(3, "asd");   // should be in results
+    avl.insert(4, "gfd");   // not in results since op is $lt
+    avl.insert(5, "ert");   // should be in results
+    avl.insert(6, "mnb");
+    avl.insert(7, "vbn");
+    avl.insert(8, "rty");
+    avl.insert(9, "zxc");
 
-    let result: number[] = bst.rangeRequest({ op: "$lt", val: "gfd" });
+    let result: number[] = avl.rangeRequest({ op: "$lt", val: "gfd" });
 
     expect(result.length).toEqual(3);
     expect(result[0]).toEqual(3);
@@ -477,20 +477,20 @@ describe("binary tree index tests", () => {
     expect(result[2]).toEqual(5);
   });
 
-  it("bst $lte rangeRequest works", () => {
-    let bst = new BinaryTreeIndex<string>("test", cmp);
+  it("avl $lte rangeRequest works", () => {
+    let avl = new AvlTreeIndex<string>("test", cmp);
 
-    bst.insert(1, "dsa");   // should be in results
-    bst.insert(2, "xja");
-    bst.insert(3, "asd");   // should be in results
-    bst.insert(4, "gfd");   // should be in results
-    bst.insert(5, "ert");   // should be in results
-    bst.insert(6, "mnb");
-    bst.insert(7, "vbn");
-    bst.insert(8, "rty");
-    bst.insert(9, "zxc");
+    avl.insert(1, "dsa");   // should be in results
+    avl.insert(2, "xja");
+    avl.insert(3, "asd");   // should be in results
+    avl.insert(4, "gfd");   // should be in results
+    avl.insert(5, "ert");   // should be in results
+    avl.insert(6, "mnb");
+    avl.insert(7, "vbn");
+    avl.insert(8, "rty");
+    avl.insert(9, "zxc");
 
-    let result: number[] = bst.rangeRequest({ op: "$lte", val: "gfd" });
+    let result: number[] = avl.rangeRequest({ op: "$lte", val: "gfd" });
 
     expect(result.length).toEqual(4);
     expect(result[0]).toEqual(3);
@@ -499,20 +499,20 @@ describe("binary tree index tests", () => {
     expect(result[3]).toEqual(4);
   });
 
-  it("bst $gt rangeRequest works", () => {
-    let bst = new BinaryTreeIndex<string>("test", cmp);
+  it("avl $gt rangeRequest works", () => {
+    let avl = new AvlTreeIndex<string>("test", cmp);
 
-    bst.insert(1, "dsa");
-    bst.insert(2, "xja");   // should be in results
-    bst.insert(3, "asd");
-    bst.insert(4, "gfd");
-    bst.insert(5, "ert");
-    bst.insert(6, "mnb");   // should -not- be in results since op is $gt
-    bst.insert(7, "vbn");   // should be in results
-    bst.insert(8, "rty");   // should be in results
-    bst.insert(9, "zxc");   // should be in results
+    avl.insert(1, "dsa");
+    avl.insert(2, "xja");   // should be in results
+    avl.insert(3, "asd");
+    avl.insert(4, "gfd");
+    avl.insert(5, "ert");
+    avl.insert(6, "mnb");   // should -not- be in results since op is $gt
+    avl.insert(7, "vbn");   // should be in results
+    avl.insert(8, "rty");   // should be in results
+    avl.insert(9, "zxc");   // should be in results
 
-    let result: number[] = bst.rangeRequest({ op: "$gt", val: "mnb" });
+    let result: number[] = avl.rangeRequest({ op: "$gt", val: "mnb" });
 
     expect(result.length).toEqual(4);
     expect(result[0]).toEqual(8);
@@ -521,20 +521,20 @@ describe("binary tree index tests", () => {
     expect(result[3]).toEqual(9);
   });
 
-  it("bst $gte rangeRequest works", () => {
-    let bst = new BinaryTreeIndex<string>("test", cmp);
+  it("avl $gte rangeRequest works", () => {
+    let avl = new AvlTreeIndex<string>("test", cmp);
 
-    bst.insert(1, "dsa");
-    bst.insert(2, "xja");   // should be in results
-    bst.insert(3, "asd");
-    bst.insert(4, "gfd");
-    bst.insert(5, "ert");
-    bst.insert(6, "mnb");   // should be in results
-    bst.insert(7, "vbn");   // should be in results
-    bst.insert(8, "rty");   // should be in results
-    bst.insert(9, "zxc");   // should be in results
+    avl.insert(1, "dsa");
+    avl.insert(2, "xja");   // should be in results
+    avl.insert(3, "asd");
+    avl.insert(4, "gfd");
+    avl.insert(5, "ert");
+    avl.insert(6, "mnb");   // should be in results
+    avl.insert(7, "vbn");   // should be in results
+    avl.insert(8, "rty");   // should be in results
+    avl.insert(9, "zxc");   // should be in results
 
-    let result: number[] = bst.rangeRequest({ op: "$gte", val: "mnb" });
+    let result: number[] = avl.rangeRequest({ op: "$gte", val: "mnb" });
 
     expect(result.length).toEqual(5);
     expect(result[0]).toEqual(6);
@@ -544,20 +544,20 @@ describe("binary tree index tests", () => {
     expect(result[4]).toEqual(9);
   });
 
-  it("bst $between rangeRequest works", () => {
-    let bst = new BinaryTreeIndex<string>("test", cmp);
+  it("avl $between rangeRequest works", () => {
+    let avl = new AvlTreeIndex<string>("test", cmp);
 
-    bst.insert(1, "dsa");
-    bst.insert(2, "xja");
-    bst.insert(3, "asd");
-    bst.insert(4, "gfd");   // should be in results
-    bst.insert(5, "ert");
-    bst.insert(6, "mnb");   // should be in results
-    bst.insert(7, "vbn");   // should be in results
-    bst.insert(8, "rty");   // should be in results
-    bst.insert(9, "zxc");
+    avl.insert(1, "dsa");
+    avl.insert(2, "xja");
+    avl.insert(3, "asd");
+    avl.insert(4, "gfd");   // should be in results
+    avl.insert(5, "ert");
+    avl.insert(6, "mnb");   // should be in results
+    avl.insert(7, "vbn");   // should be in results
+    avl.insert(8, "rty");   // should be in results
+    avl.insert(9, "zxc");
 
-    let result: number[] = bst.rangeRequest({ op: "$between", val: "gfd", high: "vbn" });
+    let result: number[] = avl.rangeRequest({ op: "$between", val: "gfd", high: "vbn" });
 
     expect(result.length).toEqual(4);
     expect(result[0]).toEqual(4);
@@ -566,7 +566,7 @@ describe("binary tree index tests", () => {
     expect(result[3]).toEqual(7);
   });
 
-  it("collection find ops on btree index work", () => {
+  it("collection find ops on avl index work", () => {
     interface TestUserType {
       name: string;
       age: number;
@@ -576,7 +576,7 @@ describe("binary tree index tests", () => {
     const db = new Loki("idxtest");
     const items = db.addCollection<TestUserType>("users", {
       rangedIndexes: {
-        name: { indexTypeName: "btree", comparatorName: "js" }
+        name: { indexTypeName: "avl", comparatorName: "js" }
       }
     });
 
@@ -638,7 +638,7 @@ describe("binary tree index tests", () => {
 
   });
 
-  it("update works on collection with btree index", () => {
+  it("update works on collection with avl index", () => {
     interface TestUserType {
       name: string;
       age: number;
@@ -648,7 +648,7 @@ describe("binary tree index tests", () => {
     const db = new Loki("idxtest");
     const items = db.addCollection<TestUserType>("users", {
       rangedIndexes: {
-        name: { indexTypeName: "btree", comparatorName: "js" }
+        name: { indexTypeName: "avl", comparatorName: "js" }
       }
     });
 
@@ -682,7 +682,7 @@ describe("binary tree index tests", () => {
     expect(result[6].name).toEqual("nostreblig");
   });
 
-  it("remove works on collection with btree index", () => {
+  it("remove works on collection with avl index", () => {
     interface TestUserType {
       name: string;
       age: number;
@@ -692,7 +692,7 @@ describe("binary tree index tests", () => {
     const db = new Loki("idxtest");
     const items = db.addCollection<TestUserType>("users", {
       rangedIndexes: {
-        name: { indexTypeName: "btree", comparatorName: "js" }
+        name: { indexTypeName: "avl", comparatorName: "js" }
       }
     });
 
@@ -714,7 +714,7 @@ describe("binary tree index tests", () => {
     expect(result[1].name).toEqual("patterson");
   });
 
-  it("simplesort works on collection with btree index", () => {
+  it("simplesort works on collection with avl index", () => {
     interface TestUserType {
       name: string;
       age: number;
@@ -724,7 +724,7 @@ describe("binary tree index tests", () => {
     const db = new Loki("idxtest");
     const items = db.addCollection<TestUserType>("users", {
       rangedIndexes: {
-        name: { indexTypeName: "btree", comparatorName: "js" }
+        name: { indexTypeName: "avl", comparatorName: "js" }
       }
     });
 
@@ -824,7 +824,7 @@ describe("binary tree index tests", () => {
 
   });
 
-  it("nested property with btree index work", () => {
+  it("nested property with avl index work", () => {
     interface TestUserType {
       user: {
         name: string;
@@ -836,7 +836,7 @@ describe("binary tree index tests", () => {
     const db = new Loki("idxtest");
     const items = db.addCollection<TestUserType, { "user.name": string }>("users", {
       rangedIndexes: {
-        "user.name": { indexTypeName: "btree", comparatorName: "js" }
+        "user.name": { indexTypeName: "avl", comparatorName: "js" }
       },
       nestedProperties: ["user.name"]
     });
@@ -923,5 +923,29 @@ describe("binary tree index tests", () => {
     expect(results[0].user.name).toEqual("nosirrah");
     expect(results[1].user.name).toEqual("nospmoht");
     expect(results[2].user.name).toEqual("nosrettap");
+  });
+
+  it("avl index raises exceptions where appropriate", () => {
+    let cmp : ILokiRangedComparer<any> = { compare : (a : any, b : any) => { return (a > b) ? -1 : 0; } };
+    let avl = new AvlTreeIndex("test", cmp);
+
+    // if inserting val <= 0, expect an error to be thrown
+    expect( () => avl.insert(0, "test")).toThrow(new Error("avl index ids are required to be numbers greater than zero"));
+
+    // if comparator returns value other than -1, 0, or 1, expect an error to be thrown
+    let node1: TreeNode<any> = {
+      id: 0, value: 0, parent: null, balance: 0, height: 0, left: null, right: null, siblings: []
+    };
+    let node2: TreeNode<any> = {
+      id: 0, value: 0, parent: null, balance: 0, height: 0, left: null, right: null, siblings: []
+    };
+    cmp = { compare : (a : any, b : any) => { return (a > b) ? -2 : 2; } } as any as ILokiRangedComparer<any>;
+    avl.comparator = cmp;
+
+    expect( () => avl.insertNode(node1, node2)).toThrow(new Error("Invalid comparator result"));
+
+    // attempting to remove a node from an avl tree which has no index should throw error
+    avl.apex = null;
+    expect( () => avl.remove(1)).toThrow(new Error("remove() : attempting remove when tree has no apex"));
   });
 });

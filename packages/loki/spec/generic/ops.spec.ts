@@ -511,7 +511,7 @@ describe("Individual operator tests", () => {
     expect(coll.find({a: {$gt: "7.2"}}).length).toEqual(3); // "11", "18.1", "asdf"
     expect(coll.find({a: {$lte: "7.2"}}).length).toEqual(7); // 7.2, "5", "4", 4, 2, 1, null
 
-    // expect same behavior when binary index is applied to property being queried
+    // expect same behavior when av; index is applied to property being queried
     coll.ensureIndex("a");
 
     expect(coll.findOne({a: "asdf"}).a).toEqual("asdf");

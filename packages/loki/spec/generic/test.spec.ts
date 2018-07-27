@@ -533,7 +533,7 @@ describe("loki", () => {
     });
   });
 
-  describe("btree indexes", () => {
+  describe("avl indexes", () => {
     it("works", () => {
       interface ITC {
         "testid": number;
@@ -541,7 +541,7 @@ describe("loki", () => {
 
       const itc = db.addCollection<ITC>("test", {
         rangedIndexes: {
-          testid: { indexTypeName: "btree", comparatorName: "js" }
+          testid: { indexTypeName: "avl", comparatorName: "js" }
         }
       });
 
