@@ -307,7 +307,8 @@ describe("sorting and indexing", () => {
       }
 
       const cidx = db.addCollection<Sortable>("collidx", {
-        rangedIndexes: { customId: {} }
+        rangedIndexes: { customId: {} },
+        defaultComparator: "adjs"
       });
 
       cidx.insert({ a: 1, b: dt1 });
@@ -317,63 +318,16 @@ describe("sorting and indexing", () => {
       cidx.insert({ a: 5, b: dt5 });
 
       // force index build while simultaneously testing date equality test
-      let results = cidx.find({ "b": { $aeq: dt2 } });
+      let results = cidx.find({ "b": { $eq: dt2 } });
       expect(results[0].a).toBe(2);
 
       const sdt = new Date(now + 5000);
 
-      // after refactoring binary indices to be loose equality/ranges everywhere,
-      // this unit test passed, meaning the dteq op is not needed if binary index exists
-      results = cidx.find({ "b": sdt });
-      expect(results.length).toBe(0);
-
       // now try with new $dteq operator
-      results = cidx.find({ "b": { "$dteq": sdt } });
+      results = cidx.find({ "b": sdt });
       expect(results.length).toBe(1);
       expect(results[0].a).toBe(2);
-    });
-  });
 
-  it("simplesort index intersect works correctly", () => {
-    const db = new Loki("rss.db");
-    const rss = db.addCollection<{ a: number, b: number }>("rssort", { rangedIndexes: { "a": {}, "b": {} } });
-
-    rss.insert({ a: 4, b: 1 });
-    rss.insert({ a: 7, b: 1 });
-    rss.insert({ a: 3, b: 1 });
-    rss.insert({ a: 9, b: 5 });
-    rss.insert({ a: 14, b: 1 });
-    rss.insert({ a: 17, b: 1 });
-    rss.insert({ a: 13, b: 1 });
-    rss.insert({ a: 19, b: 5 });
-
-    // test explicit force index intercept simplesort code path
-    let results = rss.chain().find({ b: 1 }).simplesort("a", { forceIndexIntersect: true }).data();
-    expect(results.length).toBe(6);
-    for (let i = 0; i < results.length - 1; i++) {
-      expect(LokiOps.$lte(results[i]["a"], results[i + 1]["a"]));
-    }
-    // test explicit disable index intercept simplesort code path
-    results = rss.chain().find({ b: 1 }).simplesort("a", { disableIndexIntersect: true }).data();
-    expect(results.length).toBe(6);
-    for (let i = 0; i < results.length - 1; i++) {
-      expect(LokiOps.$lte(results[i]["a"], results[i + 1]["a"]));
-    }
-
-    // test 'smart' simplesort
-    results = rss.chain().find({ b: 1 }).simplesort("a").data();
-    expect(results.length).toBe(6);
-    for (let i = 0; i < results.length - 1; i++) {
-      expect(LokiOps.$lte(results[i]["a"], results[i + 1]["a"]));
-    }
-  });
-
-  it("simplesort using javascript sorting works correctly", () => {
-    const db = new Loki("rss.db");
-    const rss = db.addCollection<{ a: number, b: number }>("rssort", { rangedIndexes: { "a": {}, "b": {} } });
-
-    rss.insert({ a: 4, b: 1 });
-    rss.insert({ a: 7, b: 1 });
       let sorted = cidx.chain().simplesort("b").data();
       expect(sorted.length).toEqual(5);
       expect(sorted[0].a).toEqual(3);
