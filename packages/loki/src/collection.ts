@@ -71,6 +71,8 @@ export class Collection<TData extends object = object, TNested extends object = 
   public _rangedIndexes: { [P in keyof T]?: Collection.RangedIndexMeta } = {};
   // loki obj map
   public _lokimap: { [$loki : number]: Doc<T> } = {};
+  // default comparator name
+  public _defaultComparator: string;
 
   /**
    * Unique constraints contain duplicate object references, so they are not persisted.
@@ -208,6 +210,8 @@ export class Collection<TData extends object = object, TNested extends object = 
     this.name = name;
 
     /* OPTIONS */
+    this._defaultComparator = options.defaultComparator || "js";
+
     // exact match and unique constraints
     if (options.unique !== undefined) {
       if (!Array.isArray(options.unique)) {
@@ -297,6 +301,7 @@ export class Collection<TData extends object = object, TNested extends object = 
   toJSON(): Collection.Serialized {
     return {
       name: this.name,
+      defaultComparator: this._defaultComparator,
       _dynamicViews: this._dynamicViews,
       uniqueNames: Object.keys(this._constraints.unique),
       transforms: this._transforms as any,
@@ -321,7 +326,8 @@ export class Collection<TData extends object = object, TNested extends object = 
   static fromJSONObject(obj: Collection.Serialized, options?: Collection.DeserializeOptions) {
     let coll = new Collection<any>(obj.name, {
       disableChangesApi: obj.disableChangesApi,
-      disableDeltaChangesApi: obj.disableDeltaChangesApi
+      disableDeltaChangesApi: obj.disableDeltaChangesApi,
+      defaultComparator: obj.defaultComparator
     });
 
     coll._transactional = obj.transactional;
@@ -1647,6 +1653,7 @@ export class Collection<TData extends object = object, TNested extends object = 
 export namespace Collection {
   export interface Options<TData extends object, TNested extends object = {}, T extends object = TData & TNested> {
     unique?: (keyof T)[];
+    defaultComparator?: string;
     rangedIndexes?: RangedIndexOptions;
     serializableIndexes?: boolean;
     asyncListeners?: boolean;
@@ -1693,6 +1700,7 @@ export namespace Collection {
 
   export interface Serialized {
     name: string;
+    defaultComparator: string;
     _dynamicViews: DynamicView[];
     _nestedProperties: { name: string, path: string[] }[];
     uniqueNames: string[];

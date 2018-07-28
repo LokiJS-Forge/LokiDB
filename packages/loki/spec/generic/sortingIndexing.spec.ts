@@ -1,6 +1,5 @@
 /* global describe, beforeEach, it, expect */
 import { Loki } from "../../src/loki";
-import { LokiOps } from "../../src/result_set";
 
 describe("sorting and indexing", () => {
   let db: Loki;
@@ -221,7 +220,7 @@ describe("sorting and indexing", () => {
         b?: any;
       }
 
-      const coll = db.addCollection<AB>("coll");
+      const coll = db.addCollection<AB>("coll", { defaultComparator: "loki"});
       coll.insert({ a: undefined, b: 5 });
       coll.insert({ b: 5 });
       coll.insert({ a: null, b: 5 });
@@ -321,9 +320,6 @@ describe("sorting and indexing", () => {
       let results = cidx.find({ "b": { $aeq: dt2 } });
       expect(results[0].a).toBe(2);
 
-      // NOTE :
-      // Binary Index imposes loose equality checks to construct its order
-      // Strict equality checks would need to be extra filtering phase
       const sdt = new Date(now + 5000);
 
       // after refactoring binary indices to be loose equality/ranges everywhere,
@@ -357,7 +353,6 @@ describe("sorting and indexing", () => {
     for (let i = 0; i < results.length - 1; i++) {
       expect(LokiOps.$lte(results[i]["a"], results[i + 1]["a"]));
     }
-
     // test explicit disable index intercept simplesort code path
     results = rss.chain().find({ b: 1 }).simplesort("a", { disableIndexIntersect: true }).data();
     expect(results.length).toBe(6);
@@ -379,19 +374,13 @@ describe("sorting and indexing", () => {
 
     rss.insert({ a: 4, b: 1 });
     rss.insert({ a: 7, b: 1 });
-    rss.insert({ a: 3, b: 1 });
-    rss.insert({ a: 9, b: 5 });
-    rss.insert({ a: 14, b: 1 });
-    rss.insert({ a: 17, b: 1 });
-    rss.insert({ a: 13, b: 1 });
-    rss.insert({ a: 19, b: 5 });
-
-    // test explicit force index intercept simplesort code path
-    const results = rss.chain().find({ b: 1 }).simplesort("a", { useJavascriptSorting: true }).data();
-
-    expect(results.length).toBe(6);
-    for (let i = 0; i < results.length - 1; i++) {
-      expect(LokiOps.$lte(results[i]["a"], results[i + 1]["a"]));
-    }
+      let sorted = cidx.chain().simplesort("b").data();
+      expect(sorted.length).toEqual(5);
+      expect(sorted[0].a).toEqual(3);
+      expect(sorted[1].a).toEqual(5);
+      expect(sorted[2].a).toEqual(1);
+      expect(sorted[3].a).toEqual(4);
+      expect(sorted[4].a).toEqual(2);
+    });
   });
 });

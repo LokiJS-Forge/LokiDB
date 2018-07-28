@@ -26,6 +26,8 @@ export interface IComparatorMap {
 /* global (for now) comparator hashmap... static registry rather than factory */
 export let ComparatorMap: IComparatorMap = {
   "js": CreateJavascriptComparator<any>(),
+  "ajs": CreateAbstractJavascriptComparator<any>(),
+  "adjs": CreateAbstractDateJavascriptComparator<any>(),
   "loki": CreateLokiComparator()
 };
 
@@ -55,6 +57,32 @@ export function CreateJavascriptComparator<T>(): ILokiRangedComparer<T> {
     compare(val: T, val2: T) {
       if (val === val2) return 0;
       if (val < val2) return -1;
+      return 1;
+    }
+  };
+}
+
+export function CreateAbstractJavascriptComparator<T>(): ILokiRangedComparer<T> {
+  return {
+    compare(val: T, val2: T) {
+      if (val == val2) return 0;
+      if (val < val2) return -1;
+      return 1;
+    }
+  };
+}
+
+/**
+ * Comparator which attempts to deal with deal with dates at comparator level.
+ * Should work for dates in any of the object, string, and number formats
+ */
+export function CreateAbstractDateJavascriptComparator<T>(): ILokiRangedComparer<T> {
+  return {
+    compare(val: T, val2: T) {
+      let v1: string = (new Date(val as any).toISOString());
+      let v2: string = (new Date(val2 as any).toISOString());
+      if (v1 == v2) return 0;
+      if (v1 < v2) return -1;
       return 1;
     }
   };

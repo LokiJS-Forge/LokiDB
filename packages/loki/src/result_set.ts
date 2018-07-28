@@ -1,6 +1,6 @@
 import { Collection } from "./collection";
 import { clone, CloneMethod } from "./clone";
-import { ltHelper, gtHelper, aeqHelper, sortHelper } from "./helper";
+import { sortHelper, ComparatorMap, ILokiRangedComparer } from "./helper";
 import { Doc } from "../../common/types";
 import { Scorer } from "../../full-text-search/src/scorer";
 import { Query as FullTextSearchQuery } from "../../full-text-search/src/query_types";
@@ -67,70 +67,33 @@ export const LokiOps = {
   // comparison operators
   // a is the value in the collection
   // b is the query value
-  $eq(a: any, b: any): boolean {
-    return a === b;
+  $eq(a: any, b: any, comparator: ILokiRangedComparer<any>): boolean {
+    return comparator.compare(a, b) === 0;
   },
 
-  // abstract/loose equality
-  $aeq(a: any, b: any): boolean {
-    return a == b;
+  $ne(a: any, b: any, comparator: ILokiRangedComparer<any>): boolean {
+    return comparator.compare(a, b) !== 0;
   },
 
-  $ne(a: any, b: any): boolean {
-    // ecma 5 safe test for NaN
-    if (b !== b) {
-      // ecma 5 test value is not NaN
-      return (a === a);
-    }
-    return a !== b;
+  $gt(a: any, b: any, comparator: ILokiRangedComparer<any>): boolean {
+    return comparator.compare(a, b) === 1;
   },
 
-  // date equality / loki abstract equality test
-  $dteq(a: any, b: any): boolean {
-    return aeqHelper(a, b);
+  $gte(a: any, b: any, comparator: ILokiRangedComparer<any>): boolean {
+    return comparator.compare(a, b) >= 0;
   },
 
-  $gt(a: any, b: any): boolean {
-    return gtHelper(a, b, false);
+  $lt(a: any, b: any, comparator: ILokiRangedComparer<any>): boolean {
+    return comparator.compare(a, b) === -1;
   },
 
-  $gte(a: any, b: any): boolean {
-    return gtHelper(a, b, true);
+  $lte(a: any, b: any, comparator: ILokiRangedComparer<any>): boolean {
+    return comparator.compare(a, b) <= 0;
   },
 
-  $lt(a: any, b: any): boolean {
-    return ltHelper(a, b, false);
-  },
-
-  $lte(a: any, b: any): boolean {
-    return ltHelper(a, b, true);
-  },
-
-  $between(a: any, range: [any, any]): boolean {
+  $between(a: any, range: [any, any], comparator: ILokiRangedComparer<any>): boolean {
     if (a === undefined || a === null) return false;
-    return (gtHelper(a, range[0], true) && ltHelper(a, range[1], true));
-  },
-
-  // lightweight javascript comparisons
-  $jgt(a: any, b: any): boolean {
-    return a > b;
-  },
-
-  $jgte(a: any, b: any): boolean {
-    return a >= b;
-  },
-
-  $jlt(a: any, b: any): boolean {
-    return a < b;
-  },
-
-  $jlte(a: any, b: any): boolean {
-    return a <= b;
-  },
-
-  $jbetween(a: any, range: [any, any]): boolean {
-    if (a === undefined || a === null) return false;
-    return (a >= range[0] && a <= range[1]);
+    return (comparator.compare(a, range[0]) >= 0 && comparator.compare(a, range[1]) <= 0);
   },
 
   $in(a: any, b: any): boolean {
@@ -246,8 +209,7 @@ export const LokiOps = {
 // if the op is registered to a function, we will run that function/op as a 2nd pass filter on results.
 // those 2nd pass filter functions should be similar to LokiOps functions, accepting 2 vals to compare.
 const indexedOps = {
-  $eq: LokiOps.$eq,
-  $aeq: true,
+  $eq: true,
   $dteq: true,
   $gt: true,
   $gte: true,
@@ -452,9 +414,6 @@ export class ResultSet<T extends object = object> {
    * @param {string} propname - name of property to sort by.
    * @param {boolean|object=} options - boolean for sort descending or options object
    * @param {boolean} [options.desc=false] - whether to sort descending
-   * @param {boolean} [options.disableIndexIntersect=false] - whether we should explicitly not use array intersection.
-   * @param {boolean} [options.forceIndexIntersect=false] - force array intersection (if binary index exists).
-   * @param {boolean} [options.useJavascriptSorting=false] - whether results are sorted via basic javascript sort.
    * @returns {ResultSet} Reference to this ResultSet, sorted, for future chain operations.
    */
   public simplesort(propname: keyof T, options: boolean | ResultSet.SimpleSortOptions = { desc: false }): this {
@@ -479,25 +438,24 @@ export class ResultSet<T extends object = object> {
       return this;
     }
 
-    if (options.useJavascriptSorting) {
-      return this.sort((obj1: T, obj2: T): number => {
-        if (obj1[propname] === obj2[propname]) return 0;
-        if (obj1[propname] > obj2[propname]) return 1;
-        return -1;
-      });
-    }
-
     // if this has no filters applied, just we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       this._filteredRows = this._collection._prepareFullDocIndex();
     }
 
     const data = this._collection._data;
+
+    let comparator : ILokiRangedComparer<any> = ComparatorMap[this._collection._defaultComparator];
+
     const wrappedComparer = (a: number, b: number) => {
-      return sortHelper(data[a][propname], data[b][propname], (options as ResultSet.SimpleSortOptions).desc);
+      return comparator.compare(data[a][propname], data[b][propname]);
     };
 
     this._filteredRows.sort(wrappedComparer);
+
+    if (options.desc) {
+      this._filteredRows.reverse();
+    }
 
     return this;
   }
@@ -797,9 +755,11 @@ export class ResultSet<T extends object = object> {
           result.push(row);
         }
       } else {
+        let comparator = ComparatorMap[this._collection._defaultComparator];
+
         for (let i = 0; i < filter.length; i++) {
           let rowIdx = filter[i];
-          if (fun(data[rowIdx][property], value)) {
+          if (fun(data[rowIdx][property], value, comparator)) {
             result.push(rowIdx);
           }
         }
@@ -831,8 +791,11 @@ export class ResultSet<T extends object = object> {
 
     // if not searching by index
     if (!searchByIndex) {
+      // determine comparator to use for ops
+      let comparator = ComparatorMap[this._collection._defaultComparator];
+
       for (let i = 0; i < data.length; i++) {
-        if (fun(data[i][property], value)) {
+        if (fun(data[i][property], value, comparator)) {
           result.push(i);
           if (firstOnly) {
             return this;
@@ -1212,9 +1175,6 @@ export namespace ResultSet {
 
   export interface SimpleSortOptions {
     desc?: boolean;
-    disableIndexIntersect?: boolean;
-    forceIndexIntersect?: boolean;
-    useJavascriptSorting?: boolean;
   }
 
   export type ContainsHelperType<R> =
@@ -1225,11 +1185,7 @@ export namespace ResultSet {
   export type LokiOps<R> = {
     $eq?: R;
   } | {
-    $aeq?: R;
-  } | {
     $ne?: R;
-  } | {
-    $dteq?: Date;
   } | {
     $gt?: R;
   } | {
@@ -1270,16 +1226,6 @@ export namespace ResultSet {
     $len?: number;
   } | {
     $where?: (val?: R) => boolean;
-  } | {
-    $jgt?: R;
-  } | {
-    $jgte?: R;
-  } | {
-    $jlt?: R;
-  } | {
-    $jlte?: R;
-  } | {
-    $jbetween?: [R, R];
   };
 
   export type Query<T> =

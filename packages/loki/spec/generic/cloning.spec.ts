@@ -56,7 +56,8 @@ describe("cloning behavior", () => {
       const cdb = new Loki("clonetest");
       const citems = cdb.addCollection<{ some: Date, other: (number | string | Date)[] }>("items", {
         clone: true,
-        cloneMethod: "deep"
+        cloneMethod: "deep",
+        defaultComparator: "adjs"
       });
       const oldObject = {
         some: new Date("July 21, 1983 01:14:00"),
@@ -69,7 +70,7 @@ describe("cloning behavior", () => {
       insObject.some = new Date("July 21, 1981 01:15:00");
       insObject.other = ["3", 4, "7", new Date("July 20, 1983 01:15:00"), 5];
 
-      const result = citems.findOne({"some": {$dteq: new Date("July 21, 1983 01:14:00")}});
+      const result = citems.findOne({"some": {$eq: new Date("July 21, 1983 01:14:00")}});
       expect(result.other).not.toEqual(oldObject.other);
       expect(result.other).not.toEqual(insObject.other);
     });
@@ -78,7 +79,8 @@ describe("cloning behavior", () => {
       const cdb = new Loki("clonetest");
       const citems = cdb.addCollection<{ some: Date, other: (number | string | Date)[] }>("items", {
         clone: true,
-        cloneMethod: "shallow-recurse"
+        cloneMethod: "shallow-recurse",
+        defaultComparator: "adjs"
       });
       const oldObject = {
         some: new Date("July 21, 1983 01:14:00"),
@@ -91,7 +93,7 @@ describe("cloning behavior", () => {
       insObject.some = new Date("July 21, 1981 01:15:00");
       insObject.other = ["3", 4, "7", new Date("July 20, 1983 01:15:00"), 5];
 
-      const result = citems.findOne({"some": {$dteq: new Date("July 21, 1983 01:14:00")}});
+      const result = citems.findOne({"some": {$eq: new Date("July 21, 1983 01:14:00")}});
       expect(result.other).not.toEqual(oldObject.other);
       expect(result.other).not.toEqual(insObject.other);
     });
@@ -100,7 +102,8 @@ describe("cloning behavior", () => {
       const cdb = new Loki("clonetest");
       const citems = cdb.addCollection<{ some: Date, other: (number | string | Date)[] }>("items", {
         clone: true,
-        cloneMethod: "parse-stringify"
+        cloneMethod: "parse-stringify",
+        defaultComparator: "adjs"
       });
       const oldObject = {
         some: new Date("July 21, 1983 01:14:00"),
@@ -113,7 +116,7 @@ describe("cloning behavior", () => {
       insObject.some = new Date("July 21, 1981 01:15:00");
       insObject.other = ["3", 4, "7", new Date("July 20, 1983 01:15:00"), 5];
 
-      const result = citems.findOne({"some": new Date("July 21, 1983 01:14:00").toISOString() as any});
+      const result = citems.findOne({"some": new Date("July 21, 1983 01:14:00")});
       expect(result.other).not.toEqual(oldObject.other);
       expect(result.other).not.toEqual(insObject.other);
     });
