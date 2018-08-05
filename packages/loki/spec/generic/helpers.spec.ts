@@ -1,11 +1,11 @@
 /* global describe, beforeEach, it, expect */
 import { LokiOps } from "../../src/result_set";
-import { ILokiRangedComparer, ComparatorMap } from "../../src/helper";
+import { ILokiComparer, ComparatorMap } from "../../src/helper";
 
 describe("Testing comparator helpers", () => {
 
   let ops: typeof LokiOps;
-  let lokiComparator: ILokiRangedComparer<any> = ComparatorMap["loki"];
+  let lokiComparator: ILokiComparer<any> = ComparatorMap["loki"];
 
   beforeEach(() => {
     ops = LokiOps;

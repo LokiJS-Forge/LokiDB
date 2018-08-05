@@ -9,8 +9,8 @@ import { AvlTreeIndex } from "./avl_index";
 export type RangedValueOperator = "$gt" | "$gte" | "$lt" | "$lte" | "$eq" | "$neq" | "$between";
 
 /* Loki Comparator interface for dependency injection to ranged indexes */
-export interface ILokiRangedComparer<T> {
-  compare(val: T, val2: T) : -1 | 0 | 1;
+export interface ILokiComparer<T> {
+  (a: T, b: T): -1 | 0 | 1;
 }
 
 export interface IRangedIndexRequest<T> {
@@ -20,7 +20,7 @@ export interface IRangedIndexRequest<T> {
 }
 
 export interface IComparatorMap {
-  [name: string]: ILokiRangedComparer<any>;
+  [name: string]: ILokiComparer<any>;
 }
 
 /* global (for now) comparator hashmap... static registry rather than factory */
@@ -32,19 +32,19 @@ export let ComparatorMap: IComparatorMap = {
 };
 
 export interface IRangedIndexFactoryMap {
-  [name: string]: (name: string, comparator: ILokiRangedComparer<any>) => IRangedIndex<any>;
+  [name: string]: (name: string, comparator: ILokiComparer<any>) => IRangedIndex<any>;
 }
 
 /* global rangedIndex factory hashmap */
 export let RangedIndexFactoryMap: IRangedIndexFactoryMap = {
-  "avl": (name: string, comparator: ILokiRangedComparer<any>) => { return new AvlTreeIndex(name, comparator); }
+  "avl": (name: string, comparator: ILokiComparer<any>) => { return new AvlTreeIndex(name, comparator); }
 };
 
 export interface IRangedIndex<T> {
   insert(id: number, val: T): void;
   update(id: number, val: T): void;
   remove(id: number): void;
-  restore(tree: any) : void;
+  restore(tree: any): void;
   backup(): IRangedIndex<T>;
 
   rangeRequest(range?: IRangedIndexRequest<T>): number[];
@@ -52,23 +52,19 @@ export interface IRangedIndex<T> {
   validateIndex(): boolean;
 }
 
-export function CreateJavascriptComparator<T>(): ILokiRangedComparer<T> {
-  return {
-    compare(val: T, val2: T) {
-      if (val === val2) return 0;
-      if (val < val2) return -1;
-      return 1;
-    }
+export function CreateJavascriptComparator<T>(): ILokiComparer<T> {
+  return (val: T, val2: T) => {
+    if (val === val2) return 0;
+    if (val < val2) return -1;
+    return 1;
   };
 }
 
-export function CreateAbstractJavascriptComparator<T>(): ILokiRangedComparer<T> {
-  return {
-    compare(val: T, val2: T) {
-      if (val == val2) return 0;
-      if (val < val2) return -1;
-      return 1;
-    }
+export function CreateAbstractJavascriptComparator<T>(): ILokiComparer<T> {
+  return (val: T, val2: T) => {
+    if (val == val2) return 0;
+    if (val < val2) return -1;
+    return 1;
   };
 }
 
@@ -76,25 +72,21 @@ export function CreateAbstractJavascriptComparator<T>(): ILokiRangedComparer<T> 
  * Comparator which attempts to deal with deal with dates at comparator level.
  * Should work for dates in any of the object, string, and number formats
  */
-export function CreateAbstractDateJavascriptComparator<T>(): ILokiRangedComparer<T> {
-  return {
-    compare(val: T, val2: T) {
-      let v1: string = (new Date(val as any).toISOString());
-      let v2: string = (new Date(val2 as any).toISOString());
-      if (v1 == v2) return 0;
-      if (v1 < v2) return -1;
-      return 1;
-    }
+export function CreateAbstractDateJavascriptComparator<T>(): ILokiComparer<T> {
+  return (val: T, val2: T) => {
+    let v1: string = (new Date(val as any).toISOString());
+    let v2: string = (new Date(val2 as any).toISOString());
+    if (v1 == v2) return 0;
+    if (v1 < v2) return -1;
+    return 1;
   };
 }
 
-export function CreateLokiComparator() : ILokiRangedComparer<any> {
-  return {
-    compare(val: any, val2: any) {
-      if (aeqHelper(val, val2)) return 0;
-      if (ltHelper(val, val2, false)) return -1;
-      return 1;
-    }
+export function CreateLokiComparator(): ILokiComparer<any> {
+  return (val: any, val2: any) => {
+    if (aeqHelper(val, val2)) return 0;
+    if (ltHelper(val, val2, false)) return -1;
+    return 1;
   };
 }
 

@@ -1,4 +1,4 @@
-import { ILokiRangedComparer, IRangedIndex, IRangedIndexRequest } from "./helper";
+import { IRangedIndex, IRangedIndexRequest, ILokiComparer } from "./helper";
 
 /**
  * Treenode type for binary search tree (BST) implementation.
@@ -32,14 +32,14 @@ export interface ITreeNodeHash<T> {
  */
 export class AvlTreeIndex<T> implements IRangedIndex<T> {
   name: string;
-  comparator: ILokiRangedComparer<T>;
+  comparator: ILokiComparer<T>;
   nodes: ITreeNodeHash<T> = {};
   apex: number | null = null;
 
   /**
    * Initializes index with property name and a comparer function.
    */
-  constructor(name: string, comparator: ILokiRangedComparer<T>) {
+  constructor(name: string, comparator: ILokiComparer<T>) {
     this.name = name;
     this.comparator = comparator;
   }
@@ -93,7 +93,7 @@ export class AvlTreeIndex<T> implements IRangedIndex<T> {
    * @param node
    */
   insertNode(current: TreeNode<T>, node: TreeNode<T>): number {
-    switch (this.comparator.compare(node.value, current.value)) {
+    switch (this.comparator(node.value, current.value)) {
       case 0:
         // eq
         current.siblings.push(node.id);
@@ -331,7 +331,7 @@ export class AvlTreeIndex<T> implements IRangedIndex<T> {
    */
   update(id: number, val: T) {
     let node = this.nodes[id];
-    let cmp = this.comparator.compare(node.value, val);
+    let cmp = this.comparator(node.value, val);
 
     // if the value did not change, or changed to value considered equal to itself, return.
     if (cmp === 0) return;
@@ -363,7 +363,7 @@ export class AvlTreeIndex<T> implements IRangedIndex<T> {
     }
     let val: T = this.nodes[id].value;
 
-    switch (this.comparator.compare(val, node.value)) {
+    switch (this.comparator(val, node.value)) {
       case 0:
         // eq - handle siblings if present
         if (node.siblings.length > 0) {
@@ -680,14 +680,14 @@ export class AvlTreeIndex<T> implements IRangedIndex<T> {
       throw new Error("collateRequest does not support $eq range request");
     }
 
-    let cmp1: number = this.comparator.compare(node.value, range.val);
+    let cmp1: number = this.comparator(node.value, range.val);
     let cmp2: number = 0;
 
     if (range.op === "$between") {
       if (range.high === null || range.high === undefined) {
         throw new Error("collateRequest: $between request missing high range value");
       }
-      cmp2 = this.comparator.compare(node.value, range.high);
+      cmp2 = this.comparator(node.value, range.high);
     }
 
     if (node.left) {
@@ -845,7 +845,7 @@ export class AvlTreeIndex<T> implements IRangedIndex<T> {
    */
   private locate(node: TreeNode<T>, val: T): TreeNode<T> | null {
     while (node !== null) {
-      switch (this.comparator.compare(val, node.value)) {
+      switch (this.comparator(val, node.value)) {
         case 0: return node;
         case 1:
           if (!node.right) {
@@ -902,7 +902,7 @@ export class AvlTreeIndex<T> implements IRangedIndex<T> {
 
     // iterate results and ensure next value is greater or equal to current
     for (let i = 0; i < result.length - 1; i++) {
-      if (this.comparator.compare(this.nodes[result[i]].value, this.nodes[result[i + 1]].value) === 1) {
+      if (this.comparator(this.nodes[result[i]].value, this.nodes[result[i + 1]].value) === 1) {
         return false;
       }
 

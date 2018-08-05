@@ -1,6 +1,6 @@
 import { Collection } from "./collection";
 import { clone, CloneMethod } from "./clone";
-import { sortHelper, ComparatorMap, ILokiRangedComparer } from "./helper";
+import { sortHelper, ComparatorMap, ILokiComparer } from "./helper";
 import { Doc } from "../../common/types";
 import { Scorer } from "../../full-text-search/src/scorer";
 import { Query as FullTextSearchQuery } from "../../full-text-search/src/query_types";
@@ -67,33 +67,33 @@ export const LokiOps = {
   // comparison operators
   // a is the value in the collection
   // b is the query value
-  $eq(a: any, b: any, comparator: ILokiRangedComparer<any>): boolean {
-    return comparator.compare(a, b) === 0;
+  $eq(a: any, b: any, comparator: ILokiComparer<any>): boolean {
+    return comparator(a, b) === 0;
   },
 
-  $ne(a: any, b: any, comparator: ILokiRangedComparer<any>): boolean {
-    return comparator.compare(a, b) !== 0;
+  $ne(a: any, b: any, comparator: ILokiComparer<any>): boolean {
+    return comparator(a, b) !== 0;
   },
 
-  $gt(a: any, b: any, comparator: ILokiRangedComparer<any>): boolean {
-    return comparator.compare(a, b) === 1;
+  $gt(a: any, b: any, comparator: ILokiComparer<any>): boolean {
+    return comparator(a, b) === 1;
   },
 
-  $gte(a: any, b: any, comparator: ILokiRangedComparer<any>): boolean {
-    return comparator.compare(a, b) >= 0;
+  $gte(a: any, b: any, comparator: ILokiComparer<any>): boolean {
+    return comparator(a, b) >= 0;
   },
 
-  $lt(a: any, b: any, comparator: ILokiRangedComparer<any>): boolean {
-    return comparator.compare(a, b) === -1;
+  $lt(a: any, b: any, comparator: ILokiComparer<any>): boolean {
+    return comparator(a, b) === -1;
   },
 
-  $lte(a: any, b: any, comparator: ILokiRangedComparer<any>): boolean {
-    return comparator.compare(a, b) <= 0;
+  $lte(a: any, b: any, comparator: ILokiComparer<any>): boolean {
+    return comparator(a, b) <= 0;
   },
 
-  $between(a: any, range: [any, any], comparator: ILokiRangedComparer<any>): boolean {
+  $between(a: any, range: [any, any], comparator: ILokiComparer<any>): boolean {
     if (a === undefined || a === null) return false;
-    return (comparator.compare(a, range[0]) >= 0 && comparator.compare(a, range[1]) <= 0);
+    return (comparator(a, range[0]) >= 0 && comparator(a, range[1]) <= 0);
   },
 
   $in(a: any, b: any): boolean {
@@ -445,10 +445,10 @@ export class ResultSet<T extends object = object> {
 
     const data = this._collection._data;
 
-    let comparator : ILokiRangedComparer<any> = ComparatorMap[this._collection._defaultComparator];
+    let comparator : ILokiComparer<any> = ComparatorMap[this._collection._defaultComparator];
 
     const wrappedComparer = (a: number, b: number) => {
-      return comparator.compare(data[a][propname], data[b][propname]);
+      return comparator(data[a][propname], data[b][propname]);
     };
 
     this._filteredRows.sort(wrappedComparer);
