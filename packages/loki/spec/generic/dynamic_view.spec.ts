@@ -3,8 +3,7 @@ import { Loki } from "../../src/loki";
 import { MemoryStorage } from "../../../memory-storage/src/memory_storage";
 import { Collection } from "../../src/collection";
 import { Doc } from "../../../common/types";
-import { LokiOps } from "../../src/result_set";
-import { ComparatorMap } from "../../src/helper";
+import { LokiOperatorPackageMap } from "../../src/helper";
 
 describe("dynamicviews", () => {
   interface User {
@@ -436,8 +435,8 @@ describe("dynamicviews", () => {
       const db = new Loki("dvtest.db");
       let coll = db.addCollection<{ a: number, b: number }>("colltest", {
         rangedIndexes: {
-          a: {},
-          b: {}
+          a: {},  // uses default 'js' comparator
+          b: {}   // uses default 'js' comparator
         }
       });
 
@@ -450,13 +449,11 @@ describe("dynamicviews", () => {
       // building up and tearing down dynamic views within it
       coll.insert([{a: 1, b: 11}, {a: 2, b: 9}, {a: 8, b: 3}, {a: 6, b: 7}, {a: 2, b: 14}, {a: 22, b: 1}]);
 
-      let comparator = ComparatorMap["loki"];
-
       // test whether results are valid
       let results = dv.data();
       expect(results.length).toBe(5);
       for (let idx = 0; idx < results.length - 1; idx++) {
-        expect(LokiOps.$lte(results[idx]["b"], results[idx + 1]["b"], comparator));
+        expect(LokiOperatorPackageMap["js"].$lte(results[idx]["b"], results[idx + 1]["b"]));
       }
 
       // remove dynamic view

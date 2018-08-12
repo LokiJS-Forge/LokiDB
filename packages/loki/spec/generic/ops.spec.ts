@@ -1,8 +1,7 @@
 /* global describe, beforeEach, it, expect */
 import { Loki } from "../../src/loki";
-import { LokiOps } from "../../src/result_set";
 import { Collection } from "../../src/collection";
-import { ComparatorMap } from "../../src/helper";
+import { LokiOperatorPackageMap } from "../../src/helper";
 
 describe("Testing operators", () => {
 
@@ -109,33 +108,18 @@ describe("Testing operators", () => {
 
 describe("Individual operator tests", () => {
 
-  let ops: typeof LokiOps;
-  beforeEach(() => {
-    ops = LokiOps;
-  });
-
   it("$ne op works as expected with 'loki' comparator", () => {
-    let comparator = ComparatorMap["loki"];
-
-    expect(ops.$ne(15, 20, comparator)).toEqual(true);
-
-    expect(ops.$ne(15, 15.0, comparator)).toEqual(false);
-
-    expect(ops.$ne(0, "0", comparator)).toEqual(false);
-
-    expect(ops.$ne(NaN, NaN, comparator)).toEqual(false);
-
-    expect(ops.$ne("en", NaN, comparator)).toEqual(true);
-
-    expect(ops.$ne(0, NaN, comparator)).toEqual(true);
+    expect(LokiOperatorPackageMap["loki"].$ne(15, 20)).toEqual(true);
+    expect(LokiOperatorPackageMap["loki"].$ne(15, 15.0)).toEqual(false);
+    expect(LokiOperatorPackageMap["loki"].$ne(0, "0")).toEqual(false);
+    expect(LokiOperatorPackageMap["loki"].$ne(NaN, NaN)).toEqual(false);
+    expect(LokiOperatorPackageMap["loki"].$ne("en", NaN)).toEqual(true);
+    expect(LokiOperatorPackageMap["loki"].$ne(0, NaN)).toEqual(true);
   });
 
   it("misc eq ops works as expected", () => {
-    let abstractComparator = ComparatorMap["ajs"];
-    let dateComparator = ComparatorMap["adjs"];
-
-    expect(ops.$eq(1, 11, abstractComparator)).toEqual(false);
-    expect(ops.$eq(1, "1", abstractComparator)).toEqual(true);
+    expect(LokiOperatorPackageMap["loki"].$eq(1, 11)).toEqual(false);
+    expect(LokiOperatorPackageMap["loki"].$eq(1, "1")).toEqual(true);
 
     const dt1 = new Date();
     const dt2 = new Date();
@@ -143,40 +127,38 @@ describe("Individual operator tests", () => {
     const dt3 = new Date();
     dt3.setTime(dt1.getTime() - 10000);
 
-    expect(ops.$eq(dt1, dt2, dateComparator)).toEqual(true);
-    expect(ops.$eq(dt1, dt3, dateComparator)).toEqual(false);
+    expect(LokiOperatorPackageMap["loki"].$eq(dt1, dt2)).toEqual(true);
+    expect(LokiOperatorPackageMap["loki"].$eq(dt1, dt3)).toEqual(false);
   });
 
   it("$type op works as expected", () => {
-    expect(ops.$type("test", "string")).toEqual(true);
-    expect(ops.$type(4, "number")).toEqual(true);
-    expect(ops.$type({a: 1}, "object")).toEqual(true);
-    expect(ops.$type(new Date(), "date")).toEqual(true);
-    expect(ops.$type([1, 2], "array")).toEqual(true);
+    expect(LokiOperatorPackageMap["loki"].$type("test", "string")).toEqual(true);
+    expect(LokiOperatorPackageMap["loki"].$type(4, "number")).toEqual(true);
+    expect(LokiOperatorPackageMap["loki"].$type({a: 1}, "object")).toEqual(true);
+    expect(LokiOperatorPackageMap["loki"].$type(new Date(), "date")).toEqual(true);
+    expect(LokiOperatorPackageMap["loki"].$type([1, 2], "array")).toEqual(true);
 
-    expect(ops.$type("test", "number")).toEqual(false);
-    expect(ops.$type(4, "string")).toEqual(false);
-    expect(ops.$type({a: 1}, "date")).toEqual(false);
-    expect(ops.$type(new Date(), "object")).toEqual(false);
-    expect(ops.$type([1, 2], "number")).toEqual(false);
+    expect(LokiOperatorPackageMap["loki"].$type("test", "number")).toEqual(false);
+    expect(LokiOperatorPackageMap["loki"].$type(4, "string")).toEqual(false);
+    expect(LokiOperatorPackageMap["loki"].$type({a: 1}, "date")).toEqual(false);
+    expect(LokiOperatorPackageMap["loki"].$type(new Date(), "object")).toEqual(false);
+    expect(LokiOperatorPackageMap["loki"].$type([1, 2], "number")).toEqual(false);
   });
 
   it("$in op works as expected", () => {
-    expect(ops.$in(4, [1, 2, 3, 4])).toEqual(true);
-    expect(ops.$in(7, [1, 2, 3, 4])).toEqual(false);
-    expect(ops.$in("el", "hello")).toEqual(true);
-    expect(ops.$in("le", "hello")).toEqual(false);
+    expect(LokiOperatorPackageMap["loki"].$in(4, [1, 2, 3, 4])).toEqual(true);
+    expect(LokiOperatorPackageMap["loki"].$in(7, [1, 2, 3, 4])).toEqual(false);
+    expect(LokiOperatorPackageMap["loki"].$in("el", "hello")).toEqual(true);
+    expect(LokiOperatorPackageMap["loki"].$in("le", "hello")).toEqual(false);
   });
 
-  let comparator = ComparatorMap["loki"];
-
   it("$between op works as expected", () => {
-    expect(ops.$between(75, [5, 100], comparator)).toEqual(true);
-    expect(ops.$between(75, [75, 100], comparator)).toEqual(true);
-    expect(ops.$between(75, [5, 75], comparator)).toEqual(true);
-    expect(ops.$between(75, [5, 74], comparator)).toEqual(false);
-    expect(ops.$between(75, [76, 100], comparator)).toEqual(false);
-    expect(ops.$between(null, [5, 100], comparator)).toEqual(false);
+    expect(LokiOperatorPackageMap["loki"].$between(75, [5, 100])).toEqual(true);
+    expect(LokiOperatorPackageMap["loki"].$between(75, [75, 100])).toEqual(true);
+    expect(LokiOperatorPackageMap["loki"].$between(75, [5, 75])).toEqual(true);
+    expect(LokiOperatorPackageMap["loki"].$between(75, [5, 74])).toEqual(false);
+    expect(LokiOperatorPackageMap["loki"].$between(75, [76, 100])).toEqual(false);
+    expect(LokiOperatorPackageMap["loki"].$between(null, [5, 100])).toEqual(false);
   });
 
   it("$between find works as expected", () => {
@@ -494,7 +476,7 @@ describe("Individual operator tests", () => {
       b: number;
     }
 
-    const coll = db.addCollection<AB>("coll", { defaultComparator: "loki" });
+    const coll = db.addCollection<AB>("coll", { defaultLokiOperatorPackage: "loki" });
 
     coll.insert({a: null, b: 5});
     coll.insert({a: "asdf", b: 5});

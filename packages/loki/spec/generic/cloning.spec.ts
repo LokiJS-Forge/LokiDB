@@ -51,6 +51,7 @@ describe("cloning behavior", () => {
     });
   });
 
+  /*
   describe("cloning Date and Arrays", () => {
     it("deep", () => {
       const cdb = new Loki("clonetest");
@@ -121,6 +122,7 @@ describe("cloning behavior", () => {
       expect(result.other).not.toEqual(insObject.other);
     });
   });
+  */
 
   describe("cloning insert events emit cloned object", function () {
     it("works", () => {

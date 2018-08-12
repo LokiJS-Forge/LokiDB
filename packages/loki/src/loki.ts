@@ -2,7 +2,7 @@ import { LokiEventEmitter } from "./event_emitter";
 import { Collection } from "./collection";
 import { Doc, StorageAdapter } from "../../common/types";
 import { PLUGINS } from "../../common/plugin";
-import { IComparatorMap, IRangedIndexFactoryMap, ComparatorMap, RangedIndexFactoryMap } from "./helper";
+import { IComparatorMap, IRangedIndexFactoryMap, ComparatorMap, RangedIndexFactoryMap, ILokiOperatorPackageMap, LokiOperatorPackageMap } from "./helper";
 
 function getENV(): Loki.Environment {
   if (global !== undefined && (global["android"] || global["NSObject"])) {
@@ -74,6 +74,9 @@ export class Loki extends LokiEventEmitter {
    * @param {Loki.Environment} [options.env] - the javascript environment
    * @param {Loki.SerializationMethod} [options.serializationMethod=NORMAL] - the serialization method
    * @param {string} [options.destructureDelimiter="$<\n"] - string delimiter used for destructured serialization
+   * @param {IComparatorMap} [options.comparatorMap] allows injecting or overriding registered comparators
+   * @param {IRangedIndexFactoryMap} [options.rangedIndexFactoryMap] allows injecting or overriding registered ranged index factories
+   * @param {ILokiOperatorPackageMap} [options.lokiOperatorPackageMap] allows injecting or overriding registered loki operator packages
    */
   constructor(filename = "loki.db", options: Loki.Options = {}) {
     super();
@@ -109,6 +112,13 @@ export class Loki extends LokiEventEmitter {
     if (options.rangedIndexFactoryMap) {
       for (let rif in options.rangedIndexFactoryMap) {
         RangedIndexFactoryMap[rif] = options.rangedIndexFactoryMap[rif];
+      }
+    }
+
+    // allow users to register their own LokiOperatorPackages or inject functionality within existing ones
+    if (options.lokiOperatorPackageMap) {
+      for (let lop in options.lokiOperatorPackageMap) {
+        LokiOperatorPackageMap[lop] = options.lokiOperatorPackageMap[lop];
       }
     }
 
@@ -1044,6 +1054,7 @@ export namespace Loki {
     destructureDelimiter?: string;
     comparatorMap?: IComparatorMap;
     rangedIndexFactoryMap?: IRangedIndexFactoryMap;
+    lokiOperatorPackageMap?: ILokiOperatorPackageMap;
   }
 
   export interface PersistenceOptions {

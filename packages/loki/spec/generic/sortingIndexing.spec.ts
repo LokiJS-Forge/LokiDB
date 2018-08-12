@@ -220,7 +220,7 @@ describe("sorting and indexing", () => {
         b?: any;
       }
 
-      const coll = db.addCollection<AB>("coll", { defaultComparator: "loki"});
+      const coll = db.addCollection<AB>("coll", { unindexedSortComparator: "loki"});
       coll.insert({ a: undefined, b: 5 });
       coll.insert({ b: 5 });
       coll.insert({ a: null, b: 5 });
@@ -239,7 +239,6 @@ describe("sorting and indexing", () => {
       let indexVals: any[] = [];
 
       // make sure unindexed sort is as expected
-
       let result = coll.chain().simplesort("a").data();
       result.forEach((obj) => {
         indexVals.push(obj.a);
@@ -264,7 +263,7 @@ describe("sorting and indexing", () => {
       expect(typeof indexVals[12] === "object").toEqual(true);
       expect(indexVals[13] === "asdf").toEqual(true);
 
-      // now make sure binary index uses same range
+      // now make sure avl index uses same range
       coll.ensureIndex("a");
 
       indexVals = [];
@@ -293,6 +292,7 @@ describe("sorting and indexing", () => {
       expect(indexVals[13] === "asdf").toEqual(true);
     });
 
+    /*
     it("date sort as expected", () => {
       const now = new Date().getTime();
       const dt1 = new Date(now - 1000);
@@ -336,5 +336,6 @@ describe("sorting and indexing", () => {
       expect(sorted[3].a).toEqual(4);
       expect(sorted[4].a).toEqual(2);
     });
+    */
   });
 });
