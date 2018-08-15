@@ -1,5 +1,6 @@
 import { AvlTreeIndex, TreeNode } from "../../src/avl_index";
-import { CreateJavascriptComparator, ComparatorMap, IRangedIndexRequest, RangedIndexFactoryMap, IRangedIndex, ILokiComparer } from "../../src/helper";
+import { IRangedIndexRequest, RangedIndexFactoryMap, IRangedIndex } from "../../src/ranged_indexes";
+import { CreateJavascriptComparator, ComparatorMap, ILokiComparer } from "../../src/comparators";
 import { Loki } from "../../src/loki";
 import { Doc } from "../../../common/types";
 

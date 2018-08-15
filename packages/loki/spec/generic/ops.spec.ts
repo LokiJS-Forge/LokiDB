@@ -1,7 +1,7 @@
 /* global describe, beforeEach, it, expect */
 import { Loki } from "../../src/loki";
 import { Collection } from "../../src/collection";
-import { LokiOperatorPackageMap } from "../../src/helper";
+import { LokiOperatorPackageMap } from "../../src/operator_packages";
 
 describe("Testing operators", () => {
 

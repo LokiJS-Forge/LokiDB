@@ -3,7 +3,7 @@ import { Loki } from "../../src/loki";
 import { MemoryStorage } from "../../../memory-storage/src/memory_storage";
 import { Collection } from "../../src/collection";
 import { Doc } from "../../../common/types";
-import { LokiOperatorPackageMap } from "../../src/helper";
+import { LokiOperatorPackageMap } from "../../src/operator_packages";
 
 describe("dynamicviews", () => {
   interface User {

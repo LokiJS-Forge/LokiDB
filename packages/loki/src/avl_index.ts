@@ -1,4 +1,5 @@
-import { IRangedIndex, IRangedIndexRequest, ILokiComparer } from "./helper";
+import { IRangedIndex, IRangedIndexRequest } from "./ranged_indexes";
+import { ILokiComparer } from "./comparators";
 
 /**
  * Treenode type for binary search tree (BST) implementation.

@@ -2,7 +2,9 @@ import { LokiEventEmitter } from "./event_emitter";
 import { Collection } from "./collection";
 import { Doc, StorageAdapter } from "../../common/types";
 import { PLUGINS } from "../../common/plugin";
-import { IComparatorMap, IRangedIndexFactoryMap, ComparatorMap, RangedIndexFactoryMap, ILokiOperatorPackageMap, LokiOperatorPackageMap } from "./helper";
+import { ComparatorMap, IComparatorMap } from "./comparators";
+import { RangedIndexFactoryMap, IRangedIndexFactoryMap } from "./ranged_indexes";
+import { LokiOperatorPackageMap, ILokiOperatorPackageMap } from "./operator_packages";
 
 function getENV(): Loki.Environment {
   if (global !== undefined && (global["android"] || global["NSObject"])) {

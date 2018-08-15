@@ -4,7 +4,7 @@ import { MemoryStorage } from "../../../memory-storage/src/memory_storage";
 import { Collection } from "../../src/collection";
 import { StorageAdapter } from "../../../common/types";
 import { AvlTreeIndex } from "../../src/avl_index";
-import { CreateJavascriptComparator } from "../../src/helper";
+import { CreateJavascriptComparator } from "../../src/comparators";
 
 interface AB {
   a: number;

@@ -1,6 +1,7 @@
 import { Collection } from "./collection";
 import { clone, CloneMethod } from "./clone";
-import { sortHelper, ComparatorMap, ILokiComparer, LokiOperatorPackageMap } from "./helper";
+import { sortHelper, LokiOperatorPackageMap } from "./operator_packages";
+import { ComparatorMap, ILokiComparer } from "./comparators";
 import { Doc } from "../../common/types";
 import { Scorer } from "../../full-text-search/src/scorer";
 import { Query as FullTextSearchQuery } from "../../full-text-search/src/query_types";

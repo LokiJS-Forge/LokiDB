@@ -1,8 +1,8 @@
-/* global describe, beforeEach, it, expect */
-import { LokiOperatorPackageMap, LokiOperatorPackage, ILokiComparer, ComparatorOperatorPackage } from "../../src/helper";
 import { Loki } from "../../src/loki";
+import { LokiOperatorPackageMap, LokiOperatorPackage, ComparatorOperatorPackage } from "../../src/operator_packages";
+import { ILokiComparer } from "../../src/comparators";
 
-describe("Testing comparator helpers", () => {
+describe("Testing operator packages feature", () => {
   beforeEach(() => {
   });
 
@@ -150,10 +150,7 @@ describe("Testing comparator helpers", () => {
       return -1;
     };
 
-    // we want to utilize our custom comparator withing ComparatorOperatorPackage
-    // so we will extend it and instantiate with our own comparator
-    class MyComparatorOperatorPackage extends ComparatorOperatorPackage<string> {}
-    let myComparatorOperatorPackage = new MyComparatorOperatorPackage(customComparator);
+    let myComparatorOperatorPackage = new ComparatorOperatorPackage<string>(customComparator);
 
     let db = new Loki("test.db", {
       lokiOperatorPackageMap: {
