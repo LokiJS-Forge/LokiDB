@@ -1,19 +1,19 @@
 # LokiDB Ranged Indexes
 
 ## Overview
-RangedIndexes in LokiDB represent an interface which the more higher-performance indexes which can be applied to properties within your collection.
+RangedIndexes in LokiDB represent an interface which higher-performance indexes which can implement so that they can be applied to properties within your LokiDB collections.
 
-In LokiDB, we have settled on and implemented an **_AVL self balancing binary tree (which supports duplicates)_** as our highest performance index for applying to properties.  This AVL index adheres to and implements the IRangedIndex interface.
+In LokiDB, we have settled on and implemented an **_AVL self balancing binary tree (which supports duplicates)_** as our highest performance index for applying to properties.  This AVL index adheres to and implements our IRangedIndex interface.
 
 While the "avl" ranged index implementation is our only implementation of IRangedIndex, having the interface as an abstraction allows the possibility of offerring alternate implemenations using other algorithms and structures in the future.  It also allows users to experiment, create, and inject their own IRangedIndex implementations in a configurable manner.
 
 ## What is the performance of LokiDB's "avl" index implementation?
 
-The best way to compare this is to compare the avl index to the former LokiJS's implementation of binary indices.
+The best way to compare our AVL index implementation is to compare this with the former LokiJS's implementation of binary indices.
 
-In that comparison, avl index seems to be roughly 20% faster for finds() but where avl index really shines is in the "maintenance" costs and for inserts, updates, and removes.  Once you get over a few thousand documents the logarithmic performance of the avl index for maintenance costs really shines comparared to linear maintenance of the binary indices array-splicing approach.
+In that comparison, the avl index seems to be roughly 20% faster for finds() but where avl index really shines is in the "maintenance" costs and for inserts, updates, and removes.  Once you get over a few thousand documents, the logarithmic performance of the avl index for maintenance costs really shines comparared to linear maintenance of the binary indices array-splicing approach.
 
-So **_the AVL index is highly scalable_** and not very dependent on collection size for the ops implemented within it ($eq, $lt, $lte, $gt, $gte, $between and somewhat for $in).
+So **_the AVL index is highly scalable_** and, as such, it is not very dependent on collection size for the ops which are implemented within it ($eq, $lt, $lte, $gt, $gte, $between and somewhat for $in).
 
 On an older Intel Core i5 laptop (in node.js), avl index performance might equate to roughly :
 - ~800K - 1M find ops/sec doing single object lookups
@@ -21,11 +21,11 @@ On an older Intel Core i5 laptop (in node.js), avl index performance might equat
 
 And that approximate performance does not significantly change when we scale from 40K documents to 100K documents.
 
-Obviously on newer and higher performance processors this quickly scales up well above those numbers but when compared to LokiJS you would not likely be able to see those number with any
+Obviously on newer and higher performance processors this quickly scales up well above those numbers but when compared to LokiJS you would not likely be able to see those number with any collection counts above a couple thousand documents.
 
 ## How can I apply an avl index to a property in my collection?
 
-Easy, a simple (javascript) example demonstrating this is the following :
+Easy... a simple (javascript) example demonstrating this is the following :
 ```javascript
 const db = new Loki("idxtest");
 
@@ -42,7 +42,7 @@ Honestly, most people probably will not need anything other than our AVL index i
 
 The AVL tree is known for keeping strict balancing of its property's values as documents are inserted, updated and removed.
 
-Other implementations such as Red-Black balanced binary search tree algorithms are less strictly balanced so they may have slightly faster inserts, updates, and removes while potentially having slightly higher lookups/finds. 
+Other implementations such as the "Red-Black" balanced binary search tree algorithms are less strictly balanced so they may have slightly faster inserts, updates, and removes while potentially having slightly slower lookups/finds. 
 
 ## If i implement my own RangedIndex, how might I register and use that IRangedIndex implemenation?
 

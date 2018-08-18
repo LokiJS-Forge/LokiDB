@@ -18,8 +18,9 @@ The primary reasons/drivers for our adoption of this approach is the following :
 - Have simplest and fastest minimal javascript implementations of these operators
 - Also have an implementation which is more tolerant of dirty data and mixed datatypes
 - Have an implementation which allows injecting your own comparators.
+- Future-proofing and smoothing transition between major changes (experimental -> default)
 
-Attempting to merge/blend any of the above use cases into a single implementation had negative impact on performance, so we created the ability to switch out whole implementations which only needs to be done once per find, rather than switching behavior for every document evaluation within that filtering.
+Attempting to merge/blend any of the above use cases into a single implementation had negative impact on performance, so we created the ability to switch out whole implementations which only needs to be done once per find, rather than switching behavior for every document evaluation within that filtering.  Having separate selectable packages also provides future-proofing and development of experimental implementions in parallel with maintaining existing implementations.
 
 ## What are the LokiOperatorPackages which LokiDB supports?
 Out of the box, LokiDB implements the following operator packages, which you can choose from (currently per-collection) :
@@ -30,14 +31,14 @@ Out of the box, LokiDB implements the following operator packages, which you can
 
 In practice we have one main implementation of all ops in the (default) "LokiOperatorPackage" class.  Other implementations 
 
-We may provide other implementations later, and you can provide your own implementationOther variants which we (or you) may provide can simply extend this class and override the ops we/you wish to have different implementations.
+We may provide other implementations later, and you can provide your own implementations.  Other variants which we (or you) may provide can simply extend this class and override the ops we/you wish to have different implementations.
 
 ## How would I select an operator package to use for my collection?
 
 When you call addCollection, such as :
 ```javascript
 let coll = db.addCollection("coll", {
-  defaultLokiOperatorPackage: ""
+  defaultLokiOperatorPackage: "js"
 });
 ```
 
@@ -69,15 +70,16 @@ let db = new Loki("test.db", {
 });
 ```
 
-Having registered that operator package (in the above example), and creating collections which set that to their default operator package (example above that), unindexed find() filters using the $gt and $lt op will exibit your filtering behavior (RangedIndexes have their own optimized implementation of those ops)
+Having registered that operator package (in the above example), and creating collections which set that to their default operator package (example above that), unindexed find() filters using the $gt and $lt op will exibit your filtering behavior (RangedIndexes have their own optimized implementation of those ops).  Any other ops specified in your query objects will use the default implementation in the class 
+which you extended from.
 
 ## How might I create an operator package based on comparators?
 
-So you have created your own comparator or wish to use one ours as the ultimate determination of filtering for $eq, $lt, $lte, $gt, $gte, and $between ops... how might you set up an operator package for that?
+If you have created your own comparator or wish to use one of ours as the ultimate determination of filtering for $eq, $lt, $lte, $gt, $gte, and $between ops... how might you set up an operator package for that?
 
 Here is a quick example showing how you might implement that :
 ```javascript
-// create custom comparator
+// create a custom case-insensitive string comparator
 let customComparator: ILokiComparer = (a, b) => {
   if (typeof a === "string" && typeof b === "string") {
     a = a.toLocaleLowerCase();

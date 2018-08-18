@@ -1,12 +1,12 @@
 # Loki Comparators
 
->Comparators (in javascript and loki) are functions which accepting two values and return :
->- 0 : if the first and second are considered 'equal'
+>Comparators (in javascript and loki) are functions which accept two values and return :
+>- 0 : if the first and second are considered equal
 >- -1 : if the first is less than the second
 >- 1 : if the first is greater than the second
 
 ## Overview
-Since comparators now play a important role in customizing and fine-tuning LokiDB, this page will attempt to summarize reasoning behind this increased structuring. 
+Since comparators now play a important role in customizing and fine-tuning LokiDB, this page will attempt to summarize the reasoning behind this increased structuring. 
 
 In the previous version of LokiDB (LokiJS), various components such as find ops, BinaryIndices and sorting shared a common set of helper functions serving as a common comparator. This arbitrary co-mingling inadvertently became standard as it would have been too much of a breaking change to decouple that later on (although some attempts to provide additional options were later added).
 
@@ -14,7 +14,7 @@ In LokiDB, to support decoupling these various components, we have established a
 
 LokiDB utilizes these comparators for : 
 - Unindexed sorting
-- Used with [RangedIndexes](./ranged_indexes.md) (such as our provided "avl" index) for higher performance.
+- Used with [RangedIndexes](./ranged_indexes.md) (such as our provided "avl" index) for higher performance filtering.
 - Can be optionally leveraged within unindexed find() operations (like $eq, $gt, $gte, $lt, $lte, $bewtween) when using our new 'ComparatorOperatorPackage' (See [operators.md](./operators.md)).  
 
 ## Why would I need more than the default "js" comparator?
@@ -26,14 +26,14 @@ Out of the box, LokiDB provides some base comparators :
 - "loki" comparators: slower, safer for mixed datatypes in ranged indexes.  This more closely resembles the comparator functionality which existed in LokiJS.
 - (possible additon) "string-insensitive" : could be used for comparing, sorting strings with case insensitivity.
 
-Individual comparators can be selected from the above to be used for indexing, sorting, or filtering... wherever it makes sense from a performance, functional, or type safety perspective.
+Individual comparators can be selected from the above to be used for indexing, sorting, or filtering... whichever makes the most sense from a performance, functional, or type safety perspective.
 
 ## Custom, user-defined comparators
-If the various 'built-in' comparatos don't fit a particular use case,  users can define their own comparator functions and add to (or override) comparators within the ComparatorMap.  They can then be leveraged in various places for sorting, indexing, filtering.  This configuration is done when instancing your Loki database instance, within the constructor.
+If the various 'built-in' comparators don't fit a particular use case,  users can define their own comparator functions and add to (or override) comparators within the ComparatorMap.  They can then be leveraged in various places for sorting, indexing, filtering.  This configuration is done when instancing your Loki database instance, within the constructor.
 
 An Example of this might look like the following : 
 ```javascript
-// define comparator as fat-arrow or named function
+// define comparator function
 let myComparator = (a, b) => {
    if (a === b) return 0;
    if (a > b) return 1;
@@ -60,7 +60,7 @@ coll.insert(someDocuments);
 // this will use the currently configured default unindexedSortComparator
 let result = coll.simplesort("name");
 
-// simplesort also allows you to override this in options
+// simplesort also allows you to override the default comparator in options
 let reversed = coll.simplesort("name", { 
    desc: true,
    unindexedSortComparator: "string-insensitive" 

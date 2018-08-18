@@ -1,5 +1,5 @@
 import { Loki } from "../../src/loki";
-import { LokiOperatorPackageMap, LokiOperatorPackage, ComparatorOperatorPackage } from "../../src/operator_packages";
+import { LokiOperatorPackageMap, LokiOperatorPackage, ComparatorOperatorPackage, aeqHelper, ltHelper, gtHelper } from "../../src/operator_packages";
 import { ILokiComparer } from "../../src/comparators";
 
 describe("Testing operator packages feature", () => {
@@ -35,6 +35,16 @@ describe("Testing operator packages feature", () => {
     expect(LokiOperatorPackageMap["js"].$gt(10, 5)).toEqual(true);
     expect(LokiOperatorPackageMap["js"].$gte(5, 5)).toEqual(true);
     expect(LokiOperatorPackageMap["js"].$gte(10, 5)).toEqual(true);
+
+    expect(LokiOperatorPackageMap["js"].$len("abc", 3)).toEqual(true);
+    expect(LokiOperatorPackageMap["js"].$len("abcd", 3)).toEqual(false);
+    expect(LokiOperatorPackageMap["js"].$len(5, 1)).toEqual(false);
+
+    expect(LokiOperatorPackageMap["js"].$where(3, function(a: any) { return a - 3 === 0; })).toEqual(true);
+    expect(LokiOperatorPackageMap["js"].$where(4, function(a: any) { return a - 3 === 0; })).toEqual(false);
+
+    expect(LokiOperatorPackageMap["js"].$between(5, [1, 10])).toEqual(true);
+    expect(LokiOperatorPackageMap["js"].$between(null, [1, 10])).toEqual(false);
   });
 
   it("LokiAbstractOperatorPackage works as expected", () => {
@@ -242,5 +252,42 @@ describe("Testing operator packages feature", () => {
     expect(results[5].name).toEqual("F");
     expect(results[6].name).toEqual("g");
     expect(results[7].name).toEqual("h");
+  });
+
+  it ("aeqHelper works as expected", () => {
+    expect(aeqHelper(1, "1")).toEqual(true);
+    expect(aeqHelper(false, false)).toEqual(true);
+    expect(aeqHelper(true, true)).toEqual(true);
+    expect(aeqHelper(false, true)).toEqual(false);
+    expect(aeqHelper(true, false)).toEqual(false);
+    expect(aeqHelper("", "")).toEqual(true);
+    expect(aeqHelper("", " ")).toEqual(false);
+    expect(aeqHelper(" ", "")).toEqual(false);
+    expect(aeqHelper(1, "1")).toEqual(true);
+    expect(aeqHelper(1, "1")).toEqual(true);
+    expect(aeqHelper(1.0, "1")).toEqual(true);
+    expect(aeqHelper(null, undefined)).toEqual(true);
+    expect(aeqHelper(1.0, "1")).toEqual(true);
+    expect(aeqHelper(new Date("1/1/2018"), new Date("1/1/2018"))).toEqual(true);
+    expect(aeqHelper("aaa", "AAA")).toEqual(false);
+  });
+
+  it ("ltHelper works as expected", () => {
+    expect(ltHelper("5", 5, true)).toEqual(true);
+    expect(ltHelper("5", 5, false)).toEqual(false);
+    expect(ltHelper("5", 6, false)).toEqual(true);
+    expect(ltHelper(6, "7", false)).toEqual(true);
+    expect(ltHelper(new Date("1/1/2018"), new Date("2/1/2018"), false)).toEqual(true);
+    expect(ltHelper(new Date("2/1/2018"), new Date("1/1/2018"), false)).toEqual(false);
+    expect(ltHelper({ a: 1 }, "7", false)).toEqual(false);
+  });
+
+  it ("gtHelper works as expected", () => {
+    expect(gtHelper("5", 5, true)).toEqual(true);
+    expect(gtHelper("5", 5, false)).toEqual(false);
+    expect(gtHelper("5", 6, true)).toEqual(false);
+    expect(gtHelper("6", 5, true)).toEqual(true);
+    expect(gtHelper(false, true, false)).toEqual(false);
+    expect(gtHelper(true, false, false)).toEqual(true);
   });
 });

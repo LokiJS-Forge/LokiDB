@@ -1,5 +1,5 @@
 import { Loki } from "../../src/loki";
-import { ILokiComparer, ComparatorMap } from "../../src/comparators";
+import { ILokiComparer, ComparatorMap, CreateJavascriptComparator, CreateAbstractDateJavascriptComparator, CreateAbstractJavascriptComparator } from "../../src/comparators";
 
 describe("comparator feature tests", () => {
   it("comparator injection works", () => {
@@ -40,5 +40,35 @@ describe("comparator feature tests", () => {
     // since we are temporarily exposing ComparatorMap globally, this test proves only
     // that the constructor will modify that global variable (which will be used by collection/resultset/etc)
     db.close();
+  });
+
+  it("CreateJavascriptComparator helper function works", () => {
+
+    let fn = CreateJavascriptComparator<any>();
+
+    expect(fn(4, 12)).toEqual(-1);
+    expect(fn(12, 4)).toEqual(1);
+    expect(fn("4", 4) === 0).toEqual(false);
+    expect(fn(4, "4") === 0).toEqual(false);
+    expect(fn(null, undefined) === 0).toEqual(false);
+  });
+
+  it("CreateAbstractJavascriptComparator helper function works", () => {
+    let fn = CreateAbstractJavascriptComparator<any>();
+
+    expect(fn(4, 12)).toEqual(-1);
+    expect(fn("4", 12)).toEqual(-1);
+    expect(fn("4", 4) === 0).toEqual(true);
+    expect(fn(4, "4") === 0).toEqual(true);
+    expect(fn(12, 4)).toEqual(1);
+    expect(fn(null, undefined) === 0).toEqual(true);
+  });
+
+  it("CreateAbstractDateComparator helper function works", () => {
+    let fn = CreateAbstractDateJavascriptComparator();
+
+    expect(fn(new Date("2015"), new Date("2015"))).toEqual(0);
+    expect(fn(new Date("2015"), new Date("1/1/2014"))).toEqual(1);
+    expect(fn(new Date("2015"), new Date("1/1/2016"))).toEqual(-1);
   });
 });
