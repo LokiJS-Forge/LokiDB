@@ -29,9 +29,8 @@ Out of the box, LokiDB implements the following operator packages, which you can
 - **"loki"** : implementation recommended for dirty data / mixed datatypes. This is an instance of **LokiAbstractOperator** class.
 - **_comparator_** - you need to instantiate this yourself and register that with a name within the loki constructor (example below).  These are created by instantiating the **ComparatorOperatorPackage** class, passing in a comparator to its constructor.
 
-In practice we have one main implementation of all ops in the (default) "LokiOperatorPackage" class.  Other implementations 
-
-We may provide other implementations later, and you can provide your own implementations.  Other variants which we (or you) may provide can simply extend this class and override the ops we/you wish to have different implementations.
+In practice we have one main implementation of all ops in the (default) "LokiOperatorPackage" class which our other implementations extend from 
+and override base behavior where needed.  We may provide other implementations later, and you can provide your own implementations.  Other variants which we (or you) may provide can simply extend this class and override the ops we/you wish to have different implementations.
 
 ## How would I select an operator package to use for my collection?
 

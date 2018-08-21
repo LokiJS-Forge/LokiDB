@@ -292,7 +292,6 @@ describe("sorting and indexing", () => {
       expect(indexVals[13] === "asdf").toEqual(true);
     });
 
-    /*
     it("date sort as expected", () => {
       const now = new Date().getTime();
       const dt1 = new Date(now - 1000);
@@ -306,27 +305,13 @@ describe("sorting and indexing", () => {
         b: Date;
       }
 
-      const cidx = db.addCollection<Sortable>("collidx", {
-        rangedIndexes: { customId: {} },
-        defaultComparator: "adjs"
-      });
+      const cidx = db.addCollection<Sortable>("collidx");
 
       cidx.insert({ a: 1, b: dt1 });
       cidx.insert({ a: 2, b: dt2 });
       cidx.insert({ a: 3, b: dt3 });
       cidx.insert({ a: 4, b: dt4 });
       cidx.insert({ a: 5, b: dt5 });
-
-      // force index build while simultaneously testing date equality test
-      let results = cidx.find({ "b": { $eq: dt2 } });
-      expect(results[0].a).toBe(2);
-
-      const sdt = new Date(now + 5000);
-
-      // now try with new $dteq operator
-      results = cidx.find({ "b": sdt });
-      expect(results.length).toBe(1);
-      expect(results[0].a).toBe(2);
 
       let sorted = cidx.chain().simplesort("b").data();
       expect(sorted.length).toEqual(5);
@@ -336,6 +321,5 @@ describe("sorting and indexing", () => {
       expect(sorted[3].a).toEqual(4);
       expect(sorted[4].a).toEqual(2);
     });
-    */
   });
 });

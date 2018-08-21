@@ -44,7 +44,7 @@ The AVL tree is known for keeping strict balancing of its property's values as d
 
 Other implementations such as the "Red-Black" balanced binary search tree algorithms are less strictly balanced so they may have slightly faster inserts, updates, and removes while potentially having slightly slower lookups/finds. 
 
-## If i implement my own RangedIndex, how might I register and use that IRangedIndex implemenation?
+## If I implement my own RangedIndex, how might I register and use that IRangedIndex implemenation?
 
 Typescript example (may provide javascript example in the future) :
 ```typescript
@@ -89,7 +89,7 @@ class customRangedIndex<T> implements IRangedIndex<T> {
   }
 }
 
-// randex index implementations need factory function
+// ranged index implementations need factory function
 let myCustomIndexFactory = (name: string, cmp: ILokiComparer<any>) => { 
   return new customRangedIndex<any>(name, cmp); 
 };
@@ -101,7 +101,7 @@ let db = new Loki("test.db", {
   }
 });
 
-// utilize your registed ranged index within a collection
+// utilize your registered ranged index within a collection
 let items = db.addCollection<TestUserType>("users", {
   rangedIndexes: {
     "name": { indexTypeName: "MyCustomRangedIndex", comparatorName: "js" }

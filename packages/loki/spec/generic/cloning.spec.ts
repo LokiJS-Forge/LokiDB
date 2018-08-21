@@ -51,14 +51,13 @@ describe("cloning behavior", () => {
     });
   });
 
-  /*
   describe("cloning Date and Arrays", () => {
     it("deep", () => {
       const cdb = new Loki("clonetest");
       const citems = cdb.addCollection<{ some: Date, other: (number | string | Date)[] }>("items", {
         clone: true,
         cloneMethod: "deep",
-        defaultComparator: "adjs"
+        defaultLokiOperatorPackage : "loki"
       });
       const oldObject = {
         some: new Date("July 21, 1983 01:14:00"),
@@ -81,7 +80,7 @@ describe("cloning behavior", () => {
       const citems = cdb.addCollection<{ some: Date, other: (number | string | Date)[] }>("items", {
         clone: true,
         cloneMethod: "shallow-recurse",
-        defaultComparator: "adjs"
+        defaultLokiOperatorPackage : "loki"
       });
       const oldObject = {
         some: new Date("July 21, 1983 01:14:00"),
@@ -101,10 +100,10 @@ describe("cloning behavior", () => {
 
     it("parse-stringify", () => {
       const cdb = new Loki("clonetest");
-      const citems = cdb.addCollection<{ some: Date, other: (number | string | Date)[] }>("items", {
+      const citems = cdb.addCollection<{ some: Date | string, other: (number | string | Date)[] }>("items", {
         clone: true,
         cloneMethod: "parse-stringify",
-        defaultComparator: "adjs"
+        defaultLokiOperatorPackage : "loki"
       });
       const oldObject = {
         some: new Date("July 21, 1983 01:14:00"),
@@ -117,12 +116,11 @@ describe("cloning behavior", () => {
       insObject.some = new Date("July 21, 1981 01:15:00");
       insObject.other = ["3", 4, "7", new Date("July 20, 1983 01:15:00"), 5];
 
-      const result = citems.findOne({"some": new Date("July 21, 1983 01:14:00")});
+      const result = citems.findOne({ "some": (new Date("July 21, 1983 01:14:00")).toISOString() });
       expect(result.other).not.toEqual(oldObject.other);
       expect(result.other).not.toEqual(insObject.other);
     });
   });
-  */
 
   describe("cloning insert events emit cloned object", function () {
     it("works", () => {
