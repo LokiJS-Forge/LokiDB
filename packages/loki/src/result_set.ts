@@ -1,6 +1,7 @@
 import { Collection } from "./collection";
 import { clone, CloneMethod } from "./clone";
-import { ltHelper, gtHelper, aeqHelper, sortHelper } from "./helper";
+import { sortHelper, LokiOperatorPackageMap } from "./operator_packages";
+import { ComparatorMap, ILokiComparer } from "./comparators";
 import { Doc } from "../../common/types";
 import { Scorer } from "../../full-text-search/src/scorer";
 import { Query as FullTextSearchQuery } from "../../full-text-search/src/query_types";
@@ -41,213 +42,14 @@ function resolveTransformParams<T extends object>(transform: Collection.Transfor
   return resolvedTransform;
 }
 
-function containsCheckFn(a: any) {
-  if (typeof a === "string" || Array.isArray(a)) {
-    return (b: any) => (a as any).indexOf(b) !== -1;
-  } else if (typeof a === "object" && a !== null) {
-    return (b: string) => Object.hasOwnProperty.call(a, b);
-  }
-  return null;
-}
-
-function doQueryOp(val: any, op: object) {
-  for (let p in op) {
-    if (Object.hasOwnProperty.call(op, p)) {
-      return LokiOps[p](val, op[p]);
-    }
-  }
-  return false;
-}
-
-
 /**
  * @hidden
  */
-export const LokiOps = {
-  // comparison operators
-  // a is the value in the collection
-  // b is the query value
-  $eq(a: any, b: any): boolean {
-    return a === b;
-  },
-
-  // abstract/loose equality
-  $aeq(a: any, b: any): boolean {
-    return a == b;
-  },
-
-  $ne(a: any, b: any): boolean {
-    // ecma 5 safe test for NaN
-    if (b !== b) {
-      // ecma 5 test value is not NaN
-      return (a === a);
-    }
-    return a !== b;
-  },
-
-  // date equality / loki abstract equality test
-  $dteq(a: any, b: any): boolean {
-    return aeqHelper(a, b);
-  },
-
-  $gt(a: any, b: any): boolean {
-    return gtHelper(a, b, false);
-  },
-
-  $gte(a: any, b: any): boolean {
-    return gtHelper(a, b, true);
-  },
-
-  $lt(a: any, b: any): boolean {
-    return ltHelper(a, b, false);
-  },
-
-  $lte(a: any, b: any): boolean {
-    return ltHelper(a, b, true);
-  },
-
-  $between(a: any, range: [any, any]): boolean {
-    if (a === undefined || a === null) return false;
-    return (gtHelper(a, range[0], true) && ltHelper(a, range[1], true));
-  },
-
-  // lightweight javascript comparisons
-  $jgt(a: any, b: any): boolean {
-    return a > b;
-  },
-
-  $jgte(a: any, b: any): boolean {
-    return a >= b;
-  },
-
-  $jlt(a: any, b: any): boolean {
-    return a < b;
-  },
-
-  $jlte(a: any, b: any): boolean {
-    return a <= b;
-  },
-
-  $jbetween(a: any, range: [any, any]): boolean {
-    if (a === undefined || a === null) return false;
-    return (a >= range[0] && a <= range[1]);
-  },
-
-  $in(a: any, b: any): boolean {
-    return b.indexOf(a) !== -1;
-  },
-
-  $nin(a: any, b: any): boolean {
-    return b.indexOf(a) === -1;
-  },
-
-  $keyin(a: string, b: object): boolean {
-    return a in b;
-  },
-
-  $nkeyin(a: string, b: object): boolean {
-    return !(a in b);
-  },
-
-  $definedin(a: string, b: object): boolean {
-    return b[a] !== undefined;
-  },
-
-  $undefinedin(a: string, b: object): boolean {
-    return b[a] === undefined;
-  },
-
-  $regex(a: string, b: RegExp): boolean {
-    return b.test(a);
-  },
-
-  $containsNone(a: any, b: any): boolean {
-    return !LokiOps.$containsAny(a, b);
-  },
-
-  $containsAny(a: any, b: any): boolean {
-    const checkFn = containsCheckFn(a);
-    if (checkFn !== null) {
-      return (Array.isArray(b)) ? (b.some(checkFn)) : (checkFn(b));
-    }
-    return false;
-  },
-
-  $contains(a: any, b: any): boolean {
-    const checkFn = containsCheckFn(a);
-    if (checkFn !== null) {
-      return (Array.isArray(b)) ? (b.every(checkFn)) : (checkFn(b));
-    }
-    return false;
-  },
-
-  $type(a: any, b: any): boolean {
-    let type: string = typeof a;
-    if (type === "object") {
-      if (Array.isArray(a)) {
-        type = "array";
-      } else if (a instanceof Date) {
-        type = "date";
-      }
-    }
-    return (typeof b !== "object") ? (type === b) : doQueryOp(type, b);
-  },
-
-  $finite(a: number, b: boolean): boolean {
-    return (b === isFinite(a));
-  },
-
-  $size(a: any, b: any): boolean {
-    if (Array.isArray(a)) {
-      return (typeof b !== "object") ? (a.length === b) : doQueryOp(a.length, b);
-    }
-    return false;
-  },
-
-  $len(a: any, b: any): boolean {
-    if (typeof a === "string") {
-      return (typeof b !== "object") ? (a.length === b) : doQueryOp(a.length, b);
-    }
-    return false;
-  },
-
-  $where(a: any, b: any): boolean {
-    return b(a) === true;
-  },
-
-  // field-level logical operators
-  // a is the value in the collection
-  // b is the nested query operation (for '$not')
-  //   or an array of nested query operations (for '$and' and '$or')
-  $not(a: any, b: any): boolean {
-    return !doQueryOp(a, b);
-  },
-
-  $and(a: any, b: any): boolean {
-    for (let idx = 0, len = b.length; idx < len; idx++) {
-      if (!doQueryOp(a, b[idx])) {
-        return false;
-      }
-    }
-    return true;
-  },
-
-  $or(a: any, b: any): boolean {
-    for (let idx = 0, len = b.length; idx < len; idx++) {
-      if (doQueryOp(a, b[idx])) {
-        return true;
-      }
-    }
-    return false;
-  }
-};
-
 // if an op is registered in this object, our 'calculateRange' can use it with our binary indices.
 // if the op is registered to a function, we will run that function/op as a 2nd pass filter on results.
 // those 2nd pass filter functions should be similar to LokiOps functions, accepting 2 vals to compare.
 const indexedOps = {
-  $eq: LokiOps.$eq,
-  $aeq: true,
+  $eq: true,
   $dteq: true,
   $gt: true,
   $gte: true,
@@ -452,9 +254,7 @@ export class ResultSet<T extends object = object> {
    * @param {string} propname - name of property to sort by.
    * @param {boolean|object=} options - boolean for sort descending or options object
    * @param {boolean} [options.desc=false] - whether to sort descending
-   * @param {boolean} [options.disableIndexIntersect=false] - whether we should explicitly not use array intersection.
-   * @param {boolean} [options.forceIndexIntersect=false] - force array intersection (if binary index exists).
-   * @param {boolean} [options.useJavascriptSorting=false] - whether results are sorted via basic javascript sort.
+   * @param {string} [options.sortComparator] override default with name of comparator registered in ComparatorMap
    * @returns {ResultSet} Reference to this ResultSet, sorted, for future chain operations.
    */
   public simplesort(propname: keyof T, options: boolean | ResultSet.SimpleSortOptions = { desc: false }): this {
@@ -479,25 +279,27 @@ export class ResultSet<T extends object = object> {
       return this;
     }
 
-    if (options.useJavascriptSorting) {
-      return this.sort((obj1: T, obj2: T): number => {
-        if (obj1[propname] === obj2[propname]) return 0;
-        if (obj1[propname] > obj2[propname]) return 1;
-        return -1;
-      });
-    }
-
     // if this has no filters applied, just we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
       this._filteredRows = this._collection._prepareFullDocIndex();
     }
 
     const data = this._collection._data;
+
+    let comparator : ILokiComparer<any> =
+      (options.sortComparator) ?
+        ComparatorMap[options.sortComparator] :
+        ComparatorMap[this._collection._unindexedSortComparator];
+
     const wrappedComparer = (a: number, b: number) => {
-      return sortHelper(data[a][propname], data[b][propname], (options as ResultSet.SimpleSortOptions).desc);
+      return comparator(data[a][propname], data[b][propname]);
     };
 
     this._filteredRows.sort(wrappedComparer);
+
+    if (options.desc) {
+      this._filteredRows.reverse();
+    }
 
     return this;
   }
@@ -765,8 +567,7 @@ export class ResultSet<T extends object = object> {
     }
 
     // the comparison function
-    const fun = LokiOps[operator];
-
+    const operatorPackage = LokiOperatorPackageMap[this._collection._defaultLokiOperatorPackage];
     // "shortcut" for collection data
     const data = this._collection._data;
 
@@ -799,7 +600,9 @@ export class ResultSet<T extends object = object> {
       } else {
         for (let i = 0; i < filter.length; i++) {
           let rowIdx = filter[i];
-          if (fun(data[rowIdx][property], value)) {
+
+          // calling operator as method property of operator package preserves 'this'
+          if (operatorPackage[operator](data[rowIdx][property], value)) {
             result.push(rowIdx);
           }
         }
@@ -831,8 +634,10 @@ export class ResultSet<T extends object = object> {
 
     // if not searching by index
     if (!searchByIndex) {
+      // determine comparator to use for ops
       for (let i = 0; i < data.length; i++) {
-        if (fun(data[i][property], value)) {
+        // calling operator as method property of operator package preserves 'this'
+        if (operatorPackage[operator](data[i][property], value)) {
           result.push(i);
           if (firstOnly) {
             return this;
@@ -1212,9 +1017,7 @@ export namespace ResultSet {
 
   export interface SimpleSortOptions {
     desc?: boolean;
-    disableIndexIntersect?: boolean;
-    forceIndexIntersect?: boolean;
-    useJavascriptSorting?: boolean;
+    sortComparator?: string;
   }
 
   export type ContainsHelperType<R> =
@@ -1225,11 +1028,7 @@ export namespace ResultSet {
   export type LokiOps<R> = {
     $eq?: R;
   } | {
-    $aeq?: R;
-  } | {
     $ne?: R;
-  } | {
-    $dteq?: Date;
   } | {
     $gt?: R;
   } | {
@@ -1270,16 +1069,6 @@ export namespace ResultSet {
     $len?: number;
   } | {
     $where?: (val?: R) => boolean;
-  } | {
-    $jgt?: R;
-  } | {
-    $jgte?: R;
-  } | {
-    $jlt?: R;
-  } | {
-    $jlte?: R;
-  } | {
-    $jbetween?: [R, R];
   };
 
   export type Query<T> =

@@ -3,7 +3,7 @@ import { Loki } from "../../src/loki";
 import { MemoryStorage } from "../../../memory-storage/src/memory_storage";
 import { Collection } from "../../src/collection";
 import { Doc } from "../../../common/types";
-import { LokiOps } from "../../src/result_set";
+import { LokiOperatorPackageMap } from "../../src/operator_packages";
 
 describe("dynamicviews", () => {
   interface User {
@@ -435,8 +435,8 @@ describe("dynamicviews", () => {
       const db = new Loki("dvtest.db");
       let coll = db.addCollection<{ a: number, b: number }>("colltest", {
         rangedIndexes: {
-          a: {},
-          b: {}
+          a: {},  // uses default 'js' comparator
+          b: {}   // uses default 'js' comparator
         }
       });
 
@@ -453,54 +453,11 @@ describe("dynamicviews", () => {
       let results = dv.data();
       expect(results.length).toBe(5);
       for (let idx = 0; idx < results.length - 1; idx++) {
-        expect(LokiOps.$lte(results[idx]["b"], results[idx + 1]["b"]));
+        expect(LokiOperatorPackageMap["js"].$lte(results[idx]["b"], results[idx + 1]["b"]));
       }
 
       // remove dynamic view
       coll.removeDynamicView("dvtest");
-
-      // add basic dv with filter on a and simplesort (with js fallback) on b
-      dv = coll.addDynamicView("dvtest");
-      dv.applyFind({a: {$lte: 20}});
-      dv.applySimpleSort("b", {useJavascriptSorting: true});
-
-      // test whether results are valid
-      // for our simple integer datatypes javascript sorting is same as loki sorting
-      results = dv.data();
-      expect(results.length).toBe(5);
-      for (let idx = 0; idx < results.length - 1; idx++) {
-        expect(results[idx]["b"] <= results[idx + 1]["b"]);
-      }
-
-      // remove dynamic view
-      coll.removeDynamicView("dvtest");
-
-      // add basic dv with filter on a and simplesort (forced js sort) on b
-      dv = coll.addDynamicView("dvtest");
-      dv.applyFind({a: {$lte: 20}});
-      dv.applySimpleSort("b", {disableIndexIntersect: true, useJavascriptSorting: true});
-
-      // test whether results are valid
-      results = dv.data();
-      expect(results.length).toBe(5);
-      for (let idx = 0; idx < results.length - 1; idx++) {
-        expect(results[idx]["b"] <= results[idx + 1]["b"]);
-      }
-
-      // remove dynamic view
-      coll.removeDynamicView("dvtest");
-
-      // add basic dv with filter on a and simplesort (forced loki sort) on b
-      dv = coll.addDynamicView("dvtest");
-      dv.applyFind({a: {$lte: 20}});
-      dv.applySimpleSort("b", {forceIndexIntersect: true});
-
-      // test whether results are valid
-      results = dv.data();
-      expect(results.length).toBe(5);
-      for (let idx = 0; idx < results.length - 1; idx++) {
-        expect(LokiOps.$lte(results[idx]["b"], results[idx + 1]["b"]));
-      }
     });
   });
 });

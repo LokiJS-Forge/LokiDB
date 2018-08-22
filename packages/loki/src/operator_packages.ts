@@ -1,73 +1,8 @@
-/**
- * Rough, Initial interfaces for creation of various implementations of ranged indexes.
- * Not sure how these might change or where they might be relocated to.
- */
+import { ILokiComparer } from "./comparators";
 
-import { AvlTreeIndex } from "./avl_index";
-
-/* valid range ops that the index must directly support */
-export type RangedValueOperator = "$gt" | "$gte" | "$lt" | "$lte" | "$eq" | "$neq" | "$between";
-
-/* Loki Comparator interface for dependency injection to ranged indexes */
-export interface ILokiRangedComparer<T> {
-  compare(val: T, val2: T) : -1 | 0 | 1;
-}
-
-export interface IRangedIndexRequest<T> {
-  op: RangedValueOperator;
-  val: T;
-  high?: T;
-}
-
-export interface IComparatorMap {
-  [name: string]: ILokiRangedComparer<any>;
-}
-
-/* global (for now) comparator hashmap... static registry rather than factory */
-export let ComparatorMap: IComparatorMap = {
-  "js": CreateJavascriptComparator<any>(),
-  "loki": CreateLokiComparator()
-};
-
-export interface IRangedIndexFactoryMap {
-  [name: string]: (name: string, comparator: ILokiRangedComparer<any>) => IRangedIndex<any>;
-}
-
-/* global rangedIndex factory hashmap */
-export let RangedIndexFactoryMap: IRangedIndexFactoryMap = {
-  "avl": (name: string, comparator: ILokiRangedComparer<any>) => { return new AvlTreeIndex(name, comparator); }
-};
-
-export interface IRangedIndex<T> {
-  insert(id: number, val: T): void;
-  update(id: number, val: T): void;
-  remove(id: number): void;
-  restore(tree: any) : void;
-  backup(): IRangedIndex<T>;
-
-  rangeRequest(range?: IRangedIndexRequest<T>): number[];
-
-  validateIndex(): boolean;
-}
-
-export function CreateJavascriptComparator<T>(): ILokiRangedComparer<T> {
-  return {
-    compare(val: T, val2: T) {
-      if (val === val2) return 0;
-      if (val < val2) return -1;
-      return 1;
-    }
-  };
-}
-
-export function CreateLokiComparator() : ILokiRangedComparer<any> {
-  return {
-    compare(val: any, val2: any) {
-      if (aeqHelper(val, val2)) return 0;
-      if (ltHelper(val, val2, false)) return -1;
-      return 1;
-    }
-  };
+/** Hash interface for named LokiOperatorPackage registration */
+export interface ILokiOperatorPackageMap {
+  [name: string]: LokiOperatorPackage;
 }
 
 /**
@@ -379,3 +314,254 @@ export function sortHelper(prop1: any, prop2: any, descending: boolean): number 
   // not lt, not gt so implied equality-- date compatible
   return 0;
 }
+
+/**
+ * Default implementation of LokiOperatorPackage, using fastest javascript comparison operators.
+ */
+export class LokiOperatorPackage {
+  // comparison operators
+  // a is the value in the collection
+  // b is the query value
+  $eq(a: any, b: any): boolean {
+    return a === b;
+  }
+
+  $ne(a: any, b: any): boolean {
+    return a !== b;
+  }
+
+  $gt(a: any, b: any): boolean {
+    return a > b;
+  }
+
+  $gte(a: any, b: any): boolean {
+    return a >= b;
+  }
+
+  $lt(a: any, b: any): boolean {
+    return a < b;
+  }
+
+  $lte(a: any, b: any): boolean {
+    return a <= b;
+  }
+
+  $between(a: any, range: [any, any]): boolean {
+    if (a === undefined || a === null) return false;
+    return a >= range[0] && a <= range[1];
+  }
+
+  $in(a: any, b: any): boolean {
+    return b.indexOf(a) !== -1;
+  }
+
+  $nin(a: any, b: any): boolean {
+    return b.indexOf(a) === -1;
+  }
+
+  $keyin(a: string, b: object): boolean {
+    return a in b;
+  }
+
+  $nkeyin(a: string, b: object): boolean {
+    return !(a in b);
+  }
+
+  $definedin(a: string, b: object): boolean {
+    return b[a] !== undefined;
+  }
+
+  $undefinedin(a: string, b: object): boolean {
+    return b[a] === undefined;
+  }
+
+  $regex(a: string, b: RegExp): boolean {
+    return b.test(a);
+  }
+
+  $containsNone(a: any, b: any): boolean {
+    return !this.$containsAny(a, b);
+  }
+
+  $containsAny(a: any, b: any): boolean {
+    const checkFn = this.containsCheckFn(a);
+    if (checkFn !== null) {
+      return (Array.isArray(b)) ? (b.some(checkFn)) : (checkFn(b));
+    }
+    return false;
+  }
+
+  $contains(a: any, b: any): boolean {
+    const checkFn = this.containsCheckFn(a);
+    if (checkFn !== null) {
+      return (Array.isArray(b)) ? (b.every(checkFn)) : (checkFn(b));
+    }
+    return false;
+  }
+
+  $type(a: any, b: any): boolean {
+    let type: string = typeof a;
+    if (type === "object") {
+      if (Array.isArray(a)) {
+        type = "array";
+      } else if (a instanceof Date) {
+        type = "date";
+      }
+    }
+    return (typeof b !== "object") ? (type === b) : this.doQueryOp(type, b);
+  }
+
+  $finite(a: number, b: boolean): boolean {
+    return (b === isFinite(a));
+  }
+
+  $size(a: any, b: any): boolean {
+    if (Array.isArray(a)) {
+      return (typeof b !== "object") ? (a.length === b) : this.doQueryOp(a.length, b);
+    }
+    return false;
+  }
+
+  $len(a: any, b: any): boolean {
+    if (typeof a === "string") {
+      return (typeof b !== "object") ? (a.length === b) : this.doQueryOp(a.length, b);
+    }
+    return false;
+  }
+
+  $where(a: any, b: any): boolean {
+    return b(a) === true;
+  }
+
+  // field-level logical operators
+  // a is the value in the collection
+  // b is the nested query operation (for '$not')
+  //   or an array of nested query operations (for '$and' and '$or')
+  $not(a: any, b: any): boolean {
+    return !this.doQueryOp(a, b);
+  }
+
+  $and(a: any, b: any): boolean {
+    for (let idx = 0, len = b.length; idx < len; idx++) {
+      if (!this.doQueryOp(a, b[idx])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  $or(a: any, b: any): boolean {
+    for (let idx = 0, len = b.length; idx < len; idx++) {
+      if (this.doQueryOp(a, b[idx])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private doQueryOp(val: any, op: object) {
+    for (let p in op) {
+      if (Object.hasOwnProperty.call(op, p)) {
+        return this[p](val, op[p]);
+      }
+    }
+    return false;
+  }
+
+  private containsCheckFn(a: any) {
+    if (typeof a === "string" || Array.isArray(a)) {
+      return (b: any) => (a as any).indexOf(b) !== -1;
+    } else if (typeof a === "object" && a !== null) {
+      return (b: string) => Object.hasOwnProperty.call(a, b);
+    }
+    return null;
+  }
+}
+
+/**
+ * LokiOperatorPackage which utilizes abstract 'loki' comparisons for basic relational equality op implementations.
+ */
+export class LokiAbstractOperatorPackage extends LokiOperatorPackage {
+  constructor() {
+    super();
+  }
+
+  $eq(a: any, b: any): boolean {
+    return aeqHelper(a, b);
+  }
+
+  $ne(a: any, b: any): boolean {
+    return !aeqHelper(a, b);
+  }
+
+  $gt(a: any, b: any): boolean {
+    return gtHelper(a, b, false);
+  }
+
+  $gte(a: any, b: any): boolean {
+    return gtHelper(a, b, true);
+  }
+
+  $lt(a: any, b: any): boolean {
+    return ltHelper(a, b, false);
+  }
+
+  $lte(a: any, b: any): boolean {
+    return ltHelper(a, b, true);
+  }
+
+  $between(a: any, range: [any, any]): boolean {
+    if (a === undefined || a === null) return false;
+    return gtHelper(a, range[0], true) && ltHelper(a, range[1], true);
+  }
+
+}
+
+/**
+ * LokiOperatorPackage which utilizes provided comparator for basic relational equality op implementations.
+ */
+export class ComparatorOperatorPackage<T> extends LokiOperatorPackage {
+  comparator: ILokiComparer<T>;
+
+  constructor(comparator: ILokiComparer<T>) {
+    super();
+    this.comparator = comparator;
+  }
+
+  $eq(a: any, b: any): boolean {
+    return this.comparator(a, b) === 0;
+  }
+
+  $ne(a: any, b: any): boolean {
+    return this.comparator(a, b) !== 0;
+  }
+
+  $gt(a: any, b: any): boolean {
+    return this.comparator(a, b) === 1;
+  }
+
+  $gte(a: any, b: any): boolean {
+    return this.comparator(a, b) > -1;
+  }
+
+  $lt(a: any, b: any): boolean {
+    return this.comparator(a, b) === -1;
+  }
+
+  $lte(a: any, b: any): boolean {
+    return this.comparator(a, b) < 1;
+  }
+
+  $between(a: any, range: [any, any]): boolean {
+    if (a === undefined || a === null) return false;
+    return this.comparator(a, range[0]) > -1 && this.comparator(a, range[1]) < 1;
+  }
+}
+
+/**
+ * Map/Register of named LokiOperatorPackages which implement all unindexed query ops within 'find' query objects
+ */
+export let LokiOperatorPackageMap : ILokiOperatorPackageMap = {
+  "js" : new LokiOperatorPackage(),
+  "loki" : new LokiAbstractOperatorPackage()
+};

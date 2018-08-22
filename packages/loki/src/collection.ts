@@ -2,7 +2,8 @@ import { LokiEventEmitter } from "./event_emitter";
 import { UniqueIndex } from "./unique_index";
 import { ResultSet } from "./result_set";
 import { DynamicView } from "./dynamic_view";
-import { IRangedIndex, ComparatorMap, RangedIndexFactoryMap } from "./helper";
+import { IRangedIndex, RangedIndexFactoryMap } from "./ranged_indexes";
+import { ComparatorMap } from "./comparators";
 import { clone, CloneMethod } from "./clone";
 import { Doc, Dict } from "../../common/types";
 import { FullTextSearch } from "../../full-text-search/src/full_text_search";
@@ -71,6 +72,10 @@ export class Collection<TData extends object = object, TNested extends object = 
   public _rangedIndexes: { [P in keyof T]?: Collection.RangedIndexMeta } = {};
   // loki obj map
   public _lokimap: { [$loki : number]: Doc<T> } = {};
+  // default comparator name to use for unindexed sorting
+  public _unindexedSortComparator: string = "js";
+  // default LokiOperatorPackage ('default' uses fastest 'javascript' comparisons)
+  public _defaultLokiOperatorPackage: string = "js";
 
   /**
    * Unique constraints contain duplicate object references, so they are not persisted.
@@ -185,6 +190,8 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {number} [options.transactional=false] - ?
    * @param {number} [options.ttl=] - age of document (in ms.) before document is considered aged/stale.
    * @param {number} [options.ttlInterval=] - time interval for clearing out 'aged' documents; not set by default
+   * @param {string} [options.unindexedSortComparator="js"] "js", "abstract", "abstract-date", "loki" or other registered comparator name
+   * @param {string} [options.defaultLokiOperatorPackage="js"] "js", "loki", "comparator" (or user defined) query ops package
    * @param {FullTextSearch.FieldOptions} [options.fullTextSearch=] - the full-text search options
    * @see {@link Loki#addCollection} for normal creation of collections
    */
@@ -208,6 +215,9 @@ export class Collection<TData extends object = object, TNested extends object = 
     this.name = name;
 
     /* OPTIONS */
+    this._unindexedSortComparator = options.unindexedSortComparator || "js";
+    this._defaultLokiOperatorPackage = options.defaultLokiOperatorPackage || "js";
+
     // exact match and unique constraints
     if (options.unique !== undefined) {
       if (!Array.isArray(options.unique)) {
@@ -297,6 +307,8 @@ export class Collection<TData extends object = object, TNested extends object = 
   toJSON(): Collection.Serialized {
     return {
       name: this.name,
+      unindexedSortComparator: this._unindexedSortComparator,
+      defaultLokiOperatorPackage: this._defaultLokiOperatorPackage,
       _dynamicViews: this._dynamicViews,
       uniqueNames: Object.keys(this._constraints.unique),
       transforms: this._transforms as any,
@@ -319,9 +331,12 @@ export class Collection<TData extends object = object, TNested extends object = 
   }
 
   static fromJSONObject(obj: Collection.Serialized, options?: Collection.DeserializeOptions) {
+    // instantiate collection with options needed by constructor
     let coll = new Collection<any>(obj.name, {
       disableChangesApi: obj.disableChangesApi,
-      disableDeltaChangesApi: obj.disableDeltaChangesApi
+      disableDeltaChangesApi: obj.disableDeltaChangesApi,
+      unindexedSortComparator: obj.unindexedSortComparator,
+      defaultLokiOperatorPackage: obj.defaultLokiOperatorPackage
     });
 
     coll._transactional = obj.transactional;
@@ -1647,6 +1662,8 @@ export class Collection<TData extends object = object, TNested extends object = 
 export namespace Collection {
   export interface Options<TData extends object, TNested extends object = {}, T extends object = TData & TNested> {
     unique?: (keyof T)[];
+    unindexedSortComparator?: string;
+    defaultLokiOperatorPackage?: string;
     rangedIndexes?: RangedIndexOptions;
     serializableIndexes?: boolean;
     asyncListeners?: boolean;
@@ -1693,6 +1710,8 @@ export namespace Collection {
 
   export interface Serialized {
     name: string;
+    unindexedSortComparator: string;
+    defaultLokiOperatorPackage: string;
     _dynamicViews: DynamicView[];
     _nestedProperties: { name: string, path: string[] }[];
     uniqueNames: string[];

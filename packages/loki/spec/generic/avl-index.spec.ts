@@ -1,5 +1,6 @@
 import { AvlTreeIndex, TreeNode } from "../../src/avl_index";
-import { CreateJavascriptComparator, ComparatorMap, IRangedIndexRequest, RangedIndexFactoryMap, IRangedIndex, ILokiRangedComparer } from "../../src/helper";
+import { IRangedIndexRequest, RangedIndexFactoryMap, IRangedIndex } from "../../src/ranged_indexes";
+import { CreateJavascriptComparator, ComparatorMap, ILokiComparer } from "../../src/comparators";
 import { Loki } from "../../src/loki";
 import { Doc } from "../../../common/types";
 
@@ -752,57 +753,55 @@ describe("avl tree index tests", () => {
 
   it("comparator and ranged index maps can be injected into", () => {
 
-    let cmp = {
-      compare: (a: any, b: any) => {
-        if (a > b) return 1;
-        if (a === b) return 0;
-        return -1;
-      }
+    let cmp = (a: any, b: any) => {
+      if (a > b) return 1;
+      if (a === b) return 0;
+      return -1;
     };
 
     // not really a functional ranged index, should have constructor accepting comparator
 
     class customRangedIndex<T> implements IRangedIndex<T> {
       public name: string;
-      public comparator: ILokiRangedComparer<T>;
+      public comparator: ILokiComparer<T>;
 
-      constructor (name: string, comparator: ILokiRangedComparer<T>) {
+      constructor(name: string, comparator: ILokiComparer<T>) {
         this.name = name;
         this.comparator = comparator;
       }
 
-      insert (id: number, val: T) {
+      insert(id: number, val: T) {
         if (!id || !val) throw new Error("");
         return;
       }
-      update (id: number, val: T) {
+      update(id: number, val: T) {
         if (!id || val === null) throw new Error("");
         return;
       }
-      remove (id: number) {
+      remove(id: number) {
         if (!id) throw new Error("");
         return;
       }
-      restore (tree: any) {
+      restore(tree: any) {
         if (!tree) throw new Error("");
         return;
       }
       backup() {
         return this;
       }
-      rangeRequest (range? : IRangedIndexRequest<T>) {
+      rangeRequest(range?: IRangedIndexRequest<T>) {
         if (range === null) {
           // return everything
           return <number[]> [];
         }
         return <number[]> [];
       }
-      validateIndex () {
+      validateIndex() {
         return true;
       }
     }
 
-    let myCustomIndexFactory = (name: string, cmp: ILokiRangedComparer<any>) => { return new customRangedIndex<any>(name, cmp); };
+    let myCustomIndexFactory = (name: string, cmp: ILokiComparer<any>) => { return new customRangedIndex<any>(name, cmp); };
 
     let db = new Loki("test.db", {
       comparatorMap: {
@@ -817,8 +816,7 @@ describe("avl tree index tests", () => {
 
     // verify they are registered into (global for now) comparator and rangedindex factory maps
     expect(ComparatorMap.hasOwnProperty("FastNumeric")).toEqual(true);
-    expect(typeof ComparatorMap["FastNumeric"]).toEqual("object");
-    expect(typeof ComparatorMap["FastNumeric"].compare).toEqual("function");
+    expect(typeof ComparatorMap["FastNumeric"]).toEqual("function");
     expect(RangedIndexFactoryMap.hasOwnProperty("MyCustomRangedIndex")).toEqual(true);
     expect(typeof RangedIndexFactoryMap["MyCustomRangedIndex"]).toEqual("function");
 
@@ -843,13 +841,13 @@ describe("avl tree index tests", () => {
 
     items.insert([
       { user: { name: "patterson", age: 10, location: "a" } },
-      { user: { name: "gilbertson", age: 20, location: "b"  }},
+      { user: { name: "gilbertson", age: 20, location: "b" } },
       { user: { name: "smith", age: 30, location: "c" } },
       { user: { name: "donaldson", age: 40, location: "d" } },
       { user: { name: "harrison", age: 50, location: "e" } },
       { user: { name: "thompson", age: 60, location: "f" } },
       { user: { name: "albertson", age: 70, location: "g" } },
-      { user: { name: "fiset", age: 80, location: "h" }}
+      { user: { name: "fiset", age: 80, location: "h" } }
     ]);
 
     // $eq
@@ -926,11 +924,11 @@ describe("avl tree index tests", () => {
   });
 
   it("avl index raises exceptions where appropriate", () => {
-    let cmp : ILokiRangedComparer<any> = { compare : (a : any, b : any) => { return (a > b) ? -1 : 0; } };
+    let cmp: ILokiComparer<any> = (a: any, b: any) => { return (a > b) ? -1 : 0; };
     let avl = new AvlTreeIndex("test", cmp);
 
     // if inserting val <= 0, expect an error to be thrown
-    expect( () => avl.insert(0, "test")).toThrow(new Error("avl index ids are required to be numbers greater than zero"));
+    expect(() => avl.insert(0, "test")).toThrow(new Error("avl index ids are required to be numbers greater than zero"));
 
     // if comparator returns value other than -1, 0, or 1, expect an error to be thrown
     let node1: TreeNode<any> = {
@@ -939,13 +937,16 @@ describe("avl tree index tests", () => {
     let node2: TreeNode<any> = {
       id: 0, value: 0, parent: null, balance: 0, height: 0, left: null, right: null, siblings: []
     };
-    cmp = { compare : (a : any, b : any) => { return (a > b) ? -2 : 2; } } as any as ILokiRangedComparer<any>;
+
+    let icmp = (a: any, b: any) => { return (a > b) ? -2 : 2; };
+    cmp = icmp as any as ILokiComparer<any>;
+
     avl.comparator = cmp;
 
-    expect( () => avl.insertNode(node1, node2)).toThrow(new Error("Invalid comparator result"));
+    expect(() => avl.insertNode(node1, node2)).toThrow(new Error("Invalid comparator result"));
 
     // attempting to remove a node from an avl tree which has no index should throw error
     avl.apex = null;
-    expect( () => avl.remove(1)).toThrow(new Error("remove() : attempting remove when tree has no apex"));
+    expect(() => avl.remove(1)).toThrow(new Error("remove() : attempting remove when tree has no apex"));
   });
 });
