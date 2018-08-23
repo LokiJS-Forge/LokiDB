@@ -4,7 +4,7 @@ import * as process from "process";
 import {PACKAGES, getBuildInformation, run, copy, makeDir, remove_dir, print} from "./common";
 
 const BUILD_DIST = process.argv.includes("--dist");
-const BUILD_INFO = getBuildInformation();
+const BUILD_INFO = getBuildInformation(true);
 
 main();
 process.exit(0);

@@ -56,8 +56,14 @@ export type BuildInformation = {
   version: string;
 };
 
-export function getBuildInformation(): BuildInformation {
-  fetchBranchesAndTags();
+export function getBuildInformation(optional_fetch: boolean): BuildInformation {
+  try {
+    fetchBranchesAndTags();
+  } catch (e) {
+    if (!optional_fetch) {
+      throw e;
+    }
+  }
 
   const buildInformation: BuildInformation = {
     release: checkIfReleaseMode(),

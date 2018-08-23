@@ -10,7 +10,7 @@ const GH_TOKEN = process.env.GH_TOKEN;
 const COMMIT_TAG = process.env.TRAVIS_TAG;
 const TRAVIS_REPO_SLUG = process.env.TRAVIS_REPO_SLUG;
 
-const BUILD_INFO = getBuildInformation();
+const BUILD_INFO = getBuildInformation(false);
 const RELEASE_BRANCH = "Releasing_" + BUILD_INFO.version;
 
 const CHANGELOG = {
