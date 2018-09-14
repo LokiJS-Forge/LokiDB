@@ -1,3 +1,18 @@
+<a name="2.0.0-beta.8"></a>
+# [2.0.0-beta.8](https://github.com/LokiJS-Forge/LokiDB/compare/2.0.0-beta.7...2.0.0-beta.8) (2018-09-14)
+
+
+### Bug Fixes
+
+* **loki:** define nested properties on rollback transaction ([#149](https://github.com/LokiJS-Forge/LokiDB/issues/149)) ([9e06e91](https://github.com/LokiJS-Forge/LokiDB/commit/9e06e91))
+
+
+### Features
+
+* **loki:** remove binary index  ([#146](https://github.com/LokiJS-Forge/LokiDB/issues/146)) ([1fb99f2](https://github.com/LokiJS-Forge/LokiDB/commit/1fb99f2))
+* **loki:** user definable comparators and operator packages ([#152](https://github.com/LokiJS-Forge/LokiDB/issues/152)) ([5c14bc2](https://github.com/LokiJS-Forge/LokiDB/commit/5c14bc2))
+
+
 <a name="2.0.0-beta.7"></a>
 # [2.0.0-beta.7](https://github.com/LokiJS-Forge/LokiDB/compare/2.0.0-beta.6...2.0.0-beta.7) (2018-06-27)
 

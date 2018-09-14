@@ -91,11 +91,81 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 5);
+/******/ 	return __webpack_require__(__webpack_require__.s = 8);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ComparatorMap; });
+/* unused harmony export CreateJavascriptComparator */
+/* unused harmony export CreateAbstractJavascriptComparator */
+/* unused harmony export CreateAbstractDateJavascriptComparator */
+/* unused harmony export CreateLokiComparator */
+/* harmony import */ var _operator_packages__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2);
+/**
+ * This file contains LokiOperatorPackages, RangedIndex and Comparator interfaces, as well as
+ * global map object instances for registered LokiOperatorPackages, RangedIndex implementations, and Comparator functions
+ */
+
+/** Map/Register of named ILokiComparer functions returning -1, 0, 1 for lt/eq/gt assertions for two passed parameters */
+let ComparatorMap = {
+    "js": CreateJavascriptComparator(),
+    "abstract-js": CreateAbstractJavascriptComparator(),
+    "abstract-date": CreateAbstractDateJavascriptComparator(),
+    "loki": CreateLokiComparator()
+};
+/** Typescript-friendly factory for strongly typed 'js' comparators */
+function CreateJavascriptComparator() {
+    return (val, val2) => {
+        if (val === val2)
+            return 0;
+        if (val < val2)
+            return -1;
+        return 1;
+    };
+}
+/** Typescript-friendly factory for strongly typed 'abstract js' comparators */
+function CreateAbstractJavascriptComparator() {
+    return (val, val2) => {
+        if (val == val2)
+            return 0;
+        if (val < val2)
+            return -1;
+        return 1;
+    };
+}
+/**
+ * Comparator which attempts to deal with deal with dates at comparator level.
+ * Should work for dates in any of the object, string, and number formats
+ */
+function CreateAbstractDateJavascriptComparator() {
+    return (val, val2) => {
+        let v1 = (new Date(val).toISOString());
+        let v2 = (new Date(val2).toISOString());
+        if (v1 == v2)
+            return 0;
+        if (v1 < v2)
+            return -1;
+        return 1;
+    };
+}
+/** Typescript-friendly factory for strongly typed 'loki' comparators */
+function CreateLokiComparator() {
+    return (val, val2) => {
+        if (Object(_operator_packages__WEBPACK_IMPORTED_MODULE_0__[/* aeqHelper */ "b"])(val, val2))
+            return 0;
+        if (Object(_operator_packages__WEBPACK_IMPORTED_MODULE_0__[/* ltHelper */ "c"])(val, val2, false))
+            return -1;
+        return 1;
+    };
+}
+
+
+/***/ }),
+/* 1 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -120,179 +190,21 @@ function create() {
  */
 const PLUGINS = create();
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(4)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(7)))
 
 /***/ }),
-/* 1 */
+/* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
-// EXTERNAL MODULE: ./packages/loki/src/event_emitter.ts
-var event_emitter = __webpack_require__(2);
-
-// CONCATENATED MODULE: ./packages/loki/src/unique_index.ts
-class UniqueIndex {
-    /**
-     * Constructs an unique index object.
-     * @param {number|string} propertyField - the property field to index
-     */
-    constructor(propertyField) {
-        this._field = propertyField;
-        this._keyMap = {};
-    }
-    /**
-     * Sets a document's unique index.
-     * @param {Doc} doc - the document
-     * @param {number} row - the data row of the document
-     */
-    set(doc, row) {
-        const fieldValue = doc[this._field];
-        if (fieldValue !== null && fieldValue !== undefined) {
-            if (this._keyMap[fieldValue] !== undefined) {
-                throw new Error("Duplicate key for property " + this._field + ": " + fieldValue);
-            }
-            else {
-                this._keyMap[fieldValue] = row;
-            }
-        }
-    }
-    /**
-     * Returns the data row of an unique index.
-     * @param {number|string} index - the index
-     * @returns {number | string} - the row
-     */
-    get(index) {
-        return this._keyMap[index];
-    }
-    /**
-     * Updates a document's unique index.
-     * @param  {Object} doc - the document
-     * @param  {number} row - the data row of the document
-     */
-    update(doc, row) {
-        // Find and remove current keyMap for row.
-        const uniqueNames = Object.keys(this._keyMap);
-        for (let i = 0; i < uniqueNames.length; i++) {
-            if (row === this._keyMap[uniqueNames[i]]) {
-                delete this._keyMap[uniqueNames[i]];
-                break;
-            }
-        }
-        this.set(doc, row);
-    }
-    /**
-     * Removes an unique index.
-     * @param {number|string} index - the unique index
-     */
-    remove(index) {
-        if (this._keyMap[index] !== undefined) {
-            delete this._keyMap[index];
-        }
-        else {
-            throw new Error("Key is not in unique index: " + this._field);
-        }
-    }
-    /**
-     * Clears all unique indexes.
-     */
-    clear() {
-        this._keyMap = {};
-    }
-}
-
-// CONCATENATED MODULE: ./packages/loki/src/clone.ts
-function add(copy, key, value) {
-    if (copy instanceof Array) {
-        copy.push(value);
-        return copy[copy.length - 1];
-    }
-    else if (copy instanceof Object) {
-        copy[key] = value;
-        return copy[key];
-    }
-}
-function walk(target, copy) {
-    for (let key in target) {
-        let obj = target[key];
-        if (obj instanceof Date) {
-            let value = new Date(obj.getTime());
-            add(copy, key, value);
-        }
-        else if (obj instanceof Function) {
-            let value = obj;
-            add(copy, key, value);
-        }
-        else if (obj instanceof Array) {
-            let value = [];
-            let last = add(copy, key, value);
-            walk(obj, last);
-        }
-        else if (obj instanceof Object) {
-            let value = {};
-            let last = add(copy, key, value);
-            walk(obj, last);
-        }
-        else {
-            let value = obj;
-            add(copy, key, value);
-        }
-    }
-}
-// Deep copy from Simeon Velichkov.
-/**
- * @param target
- * @returns {any}
- */
-function deepCopy(target) {
-    if (/number|string|boolean/.test(typeof target)) {
-        return target;
-    }
-    else if (target instanceof Date) {
-        return new Date(target.getTime());
-    }
-    const copy = (target instanceof Array) ? [] : {};
-    walk(target, copy);
-    return copy;
-}
-/**
- * @hidden
- */
-function clone(data, method = "parse-stringify") {
-    if (data === null || data === undefined) {
-        return null;
-    }
-    let cloned;
-    switch (method) {
-        case "parse-stringify":
-            cloned = JSON.parse(JSON.stringify(data));
-            break;
-        case "deep":
-            cloned = deepCopy(data);
-            break;
-        case "shallow":
-            cloned = Object.create(data.constructor.prototype);
-            Object.assign(cloned, data);
-            break;
-        case "shallow-recurse":
-            // shallow clone top level properties
-            cloned = clone(data, "shallow");
-            const keys = Object.keys(data);
-            // for each of the top level properties which are object literals, recursively shallow copy
-            for (let i = 0; i < keys.length; i++) {
-                const key = keys[i];
-                if (typeof data[key] === "object" && data[key].constructor.name === "Object") {
-                    cloned[key] = clone(data[key], "shallow-recurse");
-                }
-            }
-            break;
-        default:
-            break;
-    }
-    return cloned;
-}
-
-// CONCATENATED MODULE: ./packages/loki/src/helper.ts
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return aeqHelper; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return ltHelper; });
+/* unused harmony export gtHelper */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return sortHelper; });
+/* unused harmony export LokiOperatorPackage */
+/* unused harmony export LokiAbstractOperatorPackage */
+/* unused harmony export ComparatorOperatorPackage */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return LokiOperatorPackageMap; });
 /**
  * Helper function for determining 'loki' abstract equality which is a little more abstract than ==
  *     aeqHelper(5, '5') === true
@@ -576,8 +488,399 @@ function sortHelper(prop1, prop2, descending) {
     // not lt, not gt so implied equality-- date compatible
     return 0;
 }
+/**
+ * Default implementation of LokiOperatorPackage, using fastest javascript comparison operators.
+ */
+class LokiOperatorPackage {
+    // comparison operators
+    // a is the value in the collection
+    // b is the query value
+    $eq(a, b) {
+        return a === b;
+    }
+    $ne(a, b) {
+        return a !== b;
+    }
+    $gt(a, b) {
+        return a > b;
+    }
+    $gte(a, b) {
+        return a >= b;
+    }
+    $lt(a, b) {
+        return a < b;
+    }
+    $lte(a, b) {
+        return a <= b;
+    }
+    $between(a, range) {
+        if (a === undefined || a === null)
+            return false;
+        return a >= range[0] && a <= range[1];
+    }
+    $in(a, b) {
+        return b.indexOf(a) !== -1;
+    }
+    $nin(a, b) {
+        return b.indexOf(a) === -1;
+    }
+    $keyin(a, b) {
+        return a in b;
+    }
+    $nkeyin(a, b) {
+        return !(a in b);
+    }
+    $definedin(a, b) {
+        return b[a] !== undefined;
+    }
+    $undefinedin(a, b) {
+        return b[a] === undefined;
+    }
+    $regex(a, b) {
+        return b.test(a);
+    }
+    $containsNone(a, b) {
+        return !this.$containsAny(a, b);
+    }
+    $containsAny(a, b) {
+        const checkFn = this.containsCheckFn(a);
+        if (checkFn !== null) {
+            return (Array.isArray(b)) ? (b.some(checkFn)) : (checkFn(b));
+        }
+        return false;
+    }
+    $contains(a, b) {
+        const checkFn = this.containsCheckFn(a);
+        if (checkFn !== null) {
+            return (Array.isArray(b)) ? (b.every(checkFn)) : (checkFn(b));
+        }
+        return false;
+    }
+    $type(a, b) {
+        let type = typeof a;
+        if (type === "object") {
+            if (Array.isArray(a)) {
+                type = "array";
+            }
+            else if (a instanceof Date) {
+                type = "date";
+            }
+        }
+        return (typeof b !== "object") ? (type === b) : this.doQueryOp(type, b);
+    }
+    $finite(a, b) {
+        return (b === isFinite(a));
+    }
+    $size(a, b) {
+        if (Array.isArray(a)) {
+            return (typeof b !== "object") ? (a.length === b) : this.doQueryOp(a.length, b);
+        }
+        return false;
+    }
+    $len(a, b) {
+        if (typeof a === "string") {
+            return (typeof b !== "object") ? (a.length === b) : this.doQueryOp(a.length, b);
+        }
+        return false;
+    }
+    $where(a, b) {
+        return b(a) === true;
+    }
+    // field-level logical operators
+    // a is the value in the collection
+    // b is the nested query operation (for '$not')
+    //   or an array of nested query operations (for '$and' and '$or')
+    $not(a, b) {
+        return !this.doQueryOp(a, b);
+    }
+    $and(a, b) {
+        for (let idx = 0, len = b.length; idx < len; idx++) {
+            if (!this.doQueryOp(a, b[idx])) {
+                return false;
+            }
+        }
+        return true;
+    }
+    $or(a, b) {
+        for (let idx = 0, len = b.length; idx < len; idx++) {
+            if (this.doQueryOp(a, b[idx])) {
+                return true;
+            }
+        }
+        return false;
+    }
+    doQueryOp(val, op) {
+        for (let p in op) {
+            if (Object.hasOwnProperty.call(op, p)) {
+                return this[p](val, op[p]);
+            }
+        }
+        return false;
+    }
+    containsCheckFn(a) {
+        if (typeof a === "string" || Array.isArray(a)) {
+            return (b) => a.indexOf(b) !== -1;
+        }
+        else if (typeof a === "object" && a !== null) {
+            return (b) => Object.hasOwnProperty.call(a, b);
+        }
+        return null;
+    }
+}
+/**
+ * LokiOperatorPackage which utilizes abstract 'loki' comparisons for basic relational equality op implementations.
+ */
+class LokiAbstractOperatorPackage extends LokiOperatorPackage {
+    constructor() {
+        super();
+    }
+    $eq(a, b) {
+        return aeqHelper(a, b);
+    }
+    $ne(a, b) {
+        return !aeqHelper(a, b);
+    }
+    $gt(a, b) {
+        return gtHelper(a, b, false);
+    }
+    $gte(a, b) {
+        return gtHelper(a, b, true);
+    }
+    $lt(a, b) {
+        return ltHelper(a, b, false);
+    }
+    $lte(a, b) {
+        return ltHelper(a, b, true);
+    }
+    $between(a, range) {
+        if (a === undefined || a === null)
+            return false;
+        return gtHelper(a, range[0], true) && ltHelper(a, range[1], true);
+    }
+}
+/**
+ * LokiOperatorPackage which utilizes provided comparator for basic relational equality op implementations.
+ */
+class ComparatorOperatorPackage extends LokiOperatorPackage {
+    constructor(comparator) {
+        super();
+        this.comparator = comparator;
+    }
+    $eq(a, b) {
+        return this.comparator(a, b) === 0;
+    }
+    $ne(a, b) {
+        return this.comparator(a, b) !== 0;
+    }
+    $gt(a, b) {
+        return this.comparator(a, b) === 1;
+    }
+    $gte(a, b) {
+        return this.comparator(a, b) > -1;
+    }
+    $lt(a, b) {
+        return this.comparator(a, b) === -1;
+    }
+    $lte(a, b) {
+        return this.comparator(a, b) < 1;
+    }
+    $between(a, range) {
+        if (a === undefined || a === null)
+            return false;
+        return this.comparator(a, range[0]) > -1 && this.comparator(a, range[1]) < 1;
+    }
+}
+/**
+ * Map/Register of named LokiOperatorPackages which implement all unindexed query ops within 'find' query objects
+ */
+let LokiOperatorPackageMap = {
+    "js": new LokiOperatorPackage(),
+    "loki": new LokiAbstractOperatorPackage()
+};
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+
+// EXTERNAL MODULE: ./packages/loki/src/event_emitter.ts
+var event_emitter = __webpack_require__(5);
+
+// CONCATENATED MODULE: ./packages/loki/src/unique_index.ts
+class UniqueIndex {
+    /**
+     * Constructs an unique index object.
+     * @param {string} propertyField - the property field to index
+     */
+    constructor(propertyField) {
+        this._field = propertyField;
+        this._lokiMap = {};
+        this._valMap = {};
+    }
+    /**
+     * Sets a document's unique index.
+     * @param {number} id loki id to associate with value
+     * @param {*} value  value to associate with id
+     */
+    set(id, value) {
+        // unique index should not include null/undefined values
+        if (value !== null && value !== undefined) {
+            if (value in this._lokiMap) {
+                throw new Error("Duplicate key for property " + this._field + ": " + value);
+            }
+            if (id in this._valMap) {
+                throw new Error("Duplicate key for property $loki : " + id);
+            }
+            this._lokiMap[value] = id;
+            this._valMap[id] = value;
+        }
+    }
+    /**
+     * Returns the $loki id of an unique value.
+     * @param {*} value the value to retrieve a loki id match for
+     */
+    get(value) {
+        return this._lokiMap[value];
+    }
+    /**
+     * Updates a document's unique index.
+     * @param {number} id (loki) id of document to update the value to
+     * @param {*} value value to associate with loki id
+     */
+    update(id, value) {
+        // if the value has not changed, do nothing
+        if (value === this._valMap[id]) {
+            return;
+        }
+        // the value must have changed, so check if new value already exists
+        if (value in this._lokiMap) {
+            throw new Error("Duplicate key for property " + this._field + ": " + value);
+        }
+        this.remove(id);
+        this.set(id, value);
+    }
+    /**
+     * Removes an unique index.
+     * @param {number} id (loki) id to remove from index
+     */
+    remove(id) {
+        if (!(id in this._valMap)) {
+            throw new Error("Key is not in unique index: " + this._field);
+        }
+        let oldValue = this._valMap[id];
+        delete this._lokiMap[oldValue];
+        delete this._valMap[id];
+    }
+    /**
+     * Clears the unique index.
+     */
+    clear() {
+        this._lokiMap = {};
+        this._valMap = {};
+    }
+}
+
+// CONCATENATED MODULE: ./packages/loki/src/clone.ts
+function add(copy, key, value) {
+    if (copy instanceof Array) {
+        copy.push(value);
+        return copy[copy.length - 1];
+    }
+    else if (copy instanceof Object) {
+        copy[key] = value;
+        return copy[key];
+    }
+}
+function walk(target, copy) {
+    for (let key in target) {
+        let obj = target[key];
+        if (obj instanceof Date) {
+            let value = new Date(obj.getTime());
+            add(copy, key, value);
+        }
+        else if (obj instanceof Function) {
+            let value = obj;
+            add(copy, key, value);
+        }
+        else if (obj instanceof Array) {
+            let value = [];
+            let last = add(copy, key, value);
+            walk(obj, last);
+        }
+        else if (obj instanceof Object) {
+            let value = {};
+            let last = add(copy, key, value);
+            walk(obj, last);
+        }
+        else {
+            let value = obj;
+            add(copy, key, value);
+        }
+    }
+}
+// Deep copy from Simeon Velichkov.
+/**
+ * @param target
+ * @returns {any}
+ */
+function deepCopy(target) {
+    if (/number|string|boolean/.test(typeof target)) {
+        return target;
+    }
+    else if (target instanceof Date) {
+        return new Date(target.getTime());
+    }
+    const copy = (target instanceof Array) ? [] : {};
+    walk(target, copy);
+    return copy;
+}
+/**
+ * @hidden
+ */
+function clone(data, method = "parse-stringify") {
+    if (data === null || data === undefined) {
+        return null;
+    }
+    let cloned;
+    switch (method) {
+        case "parse-stringify":
+            cloned = JSON.parse(JSON.stringify(data));
+            break;
+        case "deep":
+            cloned = deepCopy(data);
+            break;
+        case "shallow":
+            cloned = Object.create(data.constructor.prototype);
+            Object.assign(cloned, data);
+            break;
+        case "shallow-recurse":
+            // shallow clone top level properties
+            cloned = clone(data, "shallow");
+            const keys = Object.keys(data);
+            // for each of the top level properties which are object literals, recursively shallow copy
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i];
+                if (typeof data[key] === "object" && data[key].constructor.name === "Object") {
+                    cloned[key] = clone(data[key], "shallow-recurse");
+                }
+            }
+            break;
+        default:
+            break;
+    }
+    return cloned;
+}
+
+// EXTERNAL MODULE: ./packages/loki/src/operator_packages.ts
+var operator_packages = __webpack_require__(2);
+
+// EXTERNAL MODULE: ./packages/loki/src/comparators.ts
+var comparators = __webpack_require__(0);
 
 // CONCATENATED MODULE: ./packages/loki/src/result_set.ts
+
 
 
 
@@ -613,182 +916,14 @@ function resolveTransformParams(transform, params) {
     }
     return resolvedTransform;
 }
-function containsCheckFn(a) {
-    if (typeof a === "string" || Array.isArray(a)) {
-        return (b) => a.indexOf(b) !== -1;
-    }
-    else if (typeof a === "object" && a !== null) {
-        return (b) => Object.hasOwnProperty.call(a, b);
-    }
-    return null;
-}
-function doQueryOp(val, op) {
-    for (let p in op) {
-        if (Object.hasOwnProperty.call(op, p)) {
-            return LokiOps[p](val, op[p]);
-        }
-    }
-    return false;
-}
 /**
  * @hidden
  */
-const LokiOps = {
-    // comparison operators
-    // a is the value in the _collection
-    // b is the query value
-    $eq(a, b) {
-        return a === b;
-    },
-    // abstract/loose equality
-    $aeq(a, b) {
-        return a == b;
-    },
-    $ne(a, b) {
-        // ecma 5 safe test for NaN
-        if (b !== b) {
-            // ecma 5 test value is not NaN
-            return (a === a);
-        }
-        return a !== b;
-    },
-    // date equality / loki abstract equality test
-    $dteq(a, b) {
-        return aeqHelper(a, b);
-    },
-    $gt(a, b) {
-        return gtHelper(a, b, false);
-    },
-    $gte(a, b) {
-        return gtHelper(a, b, true);
-    },
-    $lt(a, b) {
-        return ltHelper(a, b, false);
-    },
-    $lte(a, b) {
-        return ltHelper(a, b, true);
-    },
-    $between(a, range) {
-        if (a === undefined || a === null)
-            return false;
-        return (gtHelper(a, range[0], true) && ltHelper(a, range[1], true));
-    },
-    // lightweight javascript comparisons
-    $jgt(a, b) {
-        return a > b;
-    },
-    $jgte(a, b) {
-        return a >= b;
-    },
-    $jlt(a, b) {
-        return a < b;
-    },
-    $jlte(a, b) {
-        return a <= b;
-    },
-    $jbetween(a, range) {
-        if (a === undefined || a === null)
-            return false;
-        return (a >= range[0] && a <= range[1]);
-    },
-    $in(a, b) {
-        return b.indexOf(a) !== -1;
-    },
-    $nin(a, b) {
-        return b.indexOf(a) === -1;
-    },
-    $keyin(a, b) {
-        return a in b;
-    },
-    $nkeyin(a, b) {
-        return !(a in b);
-    },
-    $definedin(a, b) {
-        return b[a] !== undefined;
-    },
-    $undefinedin(a, b) {
-        return b[a] === undefined;
-    },
-    $regex(a, b) {
-        return b.test(a);
-    },
-    $containsNone(a, b) {
-        return !LokiOps.$containsAny(a, b);
-    },
-    $containsAny(a, b) {
-        const checkFn = containsCheckFn(a);
-        if (checkFn !== null) {
-            return (Array.isArray(b)) ? (b.some(checkFn)) : (checkFn(b));
-        }
-        return false;
-    },
-    $contains(a, b) {
-        const checkFn = containsCheckFn(a);
-        if (checkFn !== null) {
-            return (Array.isArray(b)) ? (b.every(checkFn)) : (checkFn(b));
-        }
-        return false;
-    },
-    $type(a, b) {
-        let type = typeof a;
-        if (type === "object") {
-            if (Array.isArray(a)) {
-                type = "array";
-            }
-            else if (a instanceof Date) {
-                type = "date";
-            }
-        }
-        return (typeof b !== "object") ? (type === b) : doQueryOp(type, b);
-    },
-    $finite(a, b) {
-        return (b === isFinite(a));
-    },
-    $size(a, b) {
-        if (Array.isArray(a)) {
-            return (typeof b !== "object") ? (a.length === b) : doQueryOp(a.length, b);
-        }
-        return false;
-    },
-    $len(a, b) {
-        if (typeof a === "string") {
-            return (typeof b !== "object") ? (a.length === b) : doQueryOp(a.length, b);
-        }
-        return false;
-    },
-    $where(a, b) {
-        return b(a) === true;
-    },
-    // field-level logical operators
-    // a is the value in the _collection
-    // b is the nested query operation (for '$not')
-    //   or an array of nested query operations (for '$and' and '$or')
-    $not(a, b) {
-        return !doQueryOp(a, b);
-    },
-    $and(a, b) {
-        for (let idx = 0, len = b.length; idx < len; idx++) {
-            if (!doQueryOp(a, b[idx])) {
-                return false;
-            }
-        }
-        return true;
-    },
-    $or(a, b) {
-        for (let idx = 0, len = b.length; idx < len; idx++) {
-            if (doQueryOp(a, b[idx])) {
-                return true;
-            }
-        }
-        return false;
-    }
-};
 // if an op is registered in this object, our 'calculateRange' can use it with our binary indices.
 // if the op is registered to a function, we will run that function/op as a 2nd pass filter on results.
 // those 2nd pass filter functions should be similar to LokiOps functions, accepting 2 vals to compare.
 const indexedOps = {
-    $eq: LokiOps.$eq,
-    $aeq: true,
+    $eq: true,
     $dteq: true,
     $gt: true,
     $gte: true,
@@ -973,9 +1108,7 @@ class result_set_ResultSet {
      * @param {string} propname - name of property to sort by.
      * @param {boolean|object=} options - boolean for sort descending or options object
      * @param {boolean} [options.desc=false] - whether to sort descending
-     * @param {boolean} [options.disableIndexIntersect=false] - whether we should explicitly not use array intersection.
-     * @param {boolean} [options.forceIndexIntersect=false] - force array intersection (if binary index exists).
-     * @param {boolean} [options.useJavascriptSorting=false] - whether results are sorted via basic javascript sort.
+     * @param {string} [options.sortComparator] override default with name of comparator registered in ComparatorMap
      * @returns {ResultSet} Reference to this ResultSet, sorted, for future chain operations.
      */
     simplesort(propname, options = { desc: false }) {
@@ -984,65 +1117,33 @@ class result_set_ResultSet {
                 desc: options
             };
         }
-        // If already filtered, but we want to leverage binary index on sort.
-        // This will use custom array intection algorithm.
-        if (!options.disableIndexIntersect && this._collection._binaryIndices.hasOwnProperty(propname)
-            && this._filterInitialized) {
-            const eff = this._collection._data.length / this._filteredRows.length;
-            // when javascript sort fallback is enabled, you generally need more than ~17% of total docs in resultset
-            // before array intersect is determined to be the faster algorithm, otherwise leave at 10% for loki sort.
-            const targetEff = options.useJavascriptSorting ? 6 : 10;
-            // anything more than ratio of 10:1 (total documents/current results) should use old sort code path
-            // So we will only use array intersection if you have more than 10% of total docs in your current ResultSet.
-            if (eff <= targetEff || options.forceIndexIntersect) {
-                const io = {};
-                // set up hashobject for simple 'inclusion test' with existing (filtered) results
-                for (let i = 0; i < this._filteredRows.length; i++) {
-                    io[this._filteredRows[i]] = true;
-                }
-                // grab full sorted binary index array and filter by existing results
-                this._filteredRows = this._collection._binaryIndices[propname].values.filter((n) => {
-                    return io[n];
-                });
-                if (options.desc) {
-                    this._filteredRows.reverse();
-                }
-                return this;
+        if (!this._filterInitialized && this._collection._rangedIndexes.hasOwnProperty(propname)) {
+            let sortedIds = this._collection._rangedIndexes[propname].index.rangeRequest();
+            let dataPositions = [];
+            // until we refactor resultset to store $loki ids in filteredrows,
+            // we need to convert $loki ids to data array positions
+            for (let id of sortedIds) {
+                dataPositions.push(this._collection.get(id, true)[1]);
             }
-        }
-        if (options.useJavascriptSorting) {
-            return this.sort((obj1, obj2) => {
-                if (obj1[propname] === obj2[propname])
-                    return 0;
-                if (obj1[propname] > obj2[propname])
-                    return 1;
-                return -1;
-            });
+            this._filteredRows = options.desc ? dataPositions.reverse() : dataPositions;
+            this._filterInitialized = true;
+            return this;
         }
         // if this has no filters applied, just we need to populate filteredRows first
         if (!this._filterInitialized && this._filteredRows.length === 0) {
-            // if we have a binary index and no other filters applied, we can use that instead of sorting (again)
-            if (this._collection._binaryIndices[propname] !== undefined) {
-                // make sure index is up-to-date
-                this._collection.ensureIndex(propname);
-                // copy index values into filteredRows
-                this._filteredRows = this._collection._binaryIndices[propname].values.slice(0);
-                if (options.desc) {
-                    this._filteredRows.reverse();
-                }
-                // we are done, return this (ResultSet) for further chain ops
-                return this;
-            }
-            // otherwise initialize array for sort below
-            else {
-                this._filteredRows = this._collection._prepareFullDocIndex();
-            }
+            this._filteredRows = this._collection._prepareFullDocIndex();
         }
         const data = this._collection._data;
+        let comparator = (options.sortComparator) ?
+            comparators["a" /* ComparatorMap */][options.sortComparator] :
+            comparators["a" /* ComparatorMap */][this._collection._unindexedSortComparator];
         const wrappedComparer = (a, b) => {
-            return sortHelper(data[a][propname], data[b][propname], options.desc);
+            return comparator(data[a][propname], data[b][propname]);
         };
         this._filteredRows.sort(wrappedComparer);
+        if (options.desc) {
+            this._filteredRows.reverse();
+        }
         return this;
     }
     /**
@@ -1095,7 +1196,7 @@ class result_set_ResultSet {
         for (let i = 0, len = properties.length; i < len; i++) {
             const prop = properties[i];
             const field = prop[0];
-            const res = sortHelper(obj1[field], obj2[field], prop[1]);
+            const res = Object(operator_packages["d" /* sortHelper */])(obj1[field], obj2[field], prop[1]);
             if (res !== 0) {
                 return res;
             }
@@ -1275,18 +1376,11 @@ class result_set_ResultSet {
         // for now only enabling where it is the first filter applied and prop is indexed
         const doIndexCheck = !this._filterInitialized;
         let searchByIndex = false;
-        if (doIndexCheck && this._collection._binaryIndices[property] && indexedOps[operator]) {
-            // this is where our lazy index rebuilding will take place
-            // basically we will leave all indexes dirty until we need them
-            // so here we will rebuild only the index tied to this property
-            // ensureIndex() will only rebuild if flagged as dirty since we are not passing force=true param
-            if (this._collection._adaptiveBinaryIndices !== true) {
-                this._collection.ensureIndex(property);
-            }
+        if (doIndexCheck && this._collection._rangedIndexes[property] && indexedOps[operator]) {
             searchByIndex = true;
         }
         // the comparison function
-        const fun = LokiOps[operator];
+        const operatorPackage = operator_packages["a" /* LokiOperatorPackageMap */][this._collection._defaultLokiOperatorPackage];
         // "shortcut" for collection data
         const data = this._collection._data;
         // Query executed differently depending on :
@@ -1308,8 +1402,8 @@ class result_set_ResultSet {
                 }
             }
             else if (this._collection._constraints.unique[property] !== undefined && operator === "$eq") {
-                // Use unique constraint for search.
-                let row = this._collection._constraints.unique[property].get(value);
+                // convert back to position for filtered rows (until we refactor filteredrows to store $loki instead of data pos)
+                let row = this._collection.get(this._collection._constraints.unique[property].get(value), true)[1];
                 if (filter.indexOf(row) !== -1) {
                     result.push(row);
                 }
@@ -1317,7 +1411,8 @@ class result_set_ResultSet {
             else {
                 for (let i = 0; i < filter.length; i++) {
                     let rowIdx = filter[i];
-                    if (fun(data[rowIdx][property], value)) {
+                    // calling operator as method property of operator package preserves 'this'
+                    if (operatorPackage[operator](data[rowIdx][property], value)) {
                         result.push(rowIdx);
                     }
                 }
@@ -1338,14 +1433,16 @@ class result_set_ResultSet {
         }
         // Use unique constraint for search.
         if (this._collection._constraints.unique[property] !== undefined && operator === "$eq") {
-            result.push(this._collection._constraints.unique[property].get(value));
+            // convert back to position for filtered rows (until we refactor filteredrows to store $loki instead of data pos)
+            result.push(this._collection.get(this._collection._constraints.unique[property].get(value), true)[1]);
             return this;
         }
-        // first chained query so work against data[] but put results in filteredRows
         // if not searching by index
         if (!searchByIndex) {
+            // determine comparator to use for ops
             for (let i = 0; i < data.length; i++) {
-                if (fun(data[i][property], value)) {
+                // calling operator as method property of operator package preserves 'this'
+                if (operatorPackage[operator](data[i][property], value)) {
                     result.push(i);
                     if (firstOnly) {
                         return this;
@@ -1354,41 +1451,53 @@ class result_set_ResultSet {
             }
             return this;
         }
-        let index = this._collection._binaryIndices[property];
-        if (operator !== "$in") {
-            // search by index
-            const segm = this._collection.calculateRange(operator, property, value);
-            for (let i = segm[0]; i <= segm[1]; i++) {
-                if (indexedOps[operator] !== true) {
-                    // must be a function, implying 2nd phase filtering of results from calculateRange
-                    if (indexedOps[operator](data[index.values[i]][property], value)) {
-                        result.push(index.values[i]);
-                        if (firstOnly) {
-                            return this;
-                        }
+        // If we have a rangedIndex defined, use that and bail
+        if (this._collection._rangedIndexes[property]) {
+            if (operator === "$in") {
+                let ri = this._collection._rangedIndexes[property];
+                // iterate each $in array value
+                for (let val of value) {
+                    // request matches where val eq current iterated val
+                    let idResult = ri.index.rangeRequest({ op: "$eq", val: val });
+                    // for each result in match
+                    for (let id of idResult) {
+                        // convert $loki id to data position and add to result (filteredrows)
+                        result.push(this._collection.get(id, true)[1]);
                     }
                 }
-                else {
-                    result.push(index.values[i]);
-                    if (firstOnly) {
-                        return this;
+                return this;
+            }
+            if (operator === "$between") {
+                let idResult = this._collection._rangedIndexes[property].index.rangeRequest({
+                    op: operator,
+                    val: value[0],
+                    high: value[1]
+                });
+                // for now we will have to 'shim' the binary tree index's $loki ids back
+                // into data array indices, ideally i would like to repurpose filteredrows to use loki ids
+                for (let id of idResult) {
+                    result.push(this._collection.get(id, true)[1]);
+                }
+                return this;
+            }
+            let idResult = this._collection._rangedIndexes[property].index.rangeRequest({
+                op: operator,
+                val: value
+            });
+            // if our op requires 'second pass'
+            if (indexedOps[operator] !== true) {
+                for (let id of idResult) {
+                    let pos = this._collection.get(id, true)[1];
+                    if (indexedOps[operator](data[pos][property], value)) {
+                        result.push(pos);
                     }
                 }
             }
-        }
-        else {
-            const idxset = [];
-            // query each value '$eq' operator and merge the segment results.
-            for (let j = 0, len = value.length; j < len; j++) {
-                const segm = this._collection.calculateRange("$eq", property, value[j]);
-                for (let i = segm[0]; i <= segm[1]; i++) {
-                    if (idxset[i] === undefined) {
-                        idxset[i] = true;
-                        result.push(index.values[i]);
-                    }
-                    if (firstOnly) {
-                        return this;
-                    }
+            else {
+                // for now we will have to 'shim' the binary tree index's $loki ids back
+                // into data array indices, ideally i would like to repurpose filteredrows to use loki ids
+                for (let id of idResult) {
+                    result.push(this._collection.get(id, true)[1]);
                 }
             }
         }
@@ -2334,11 +2443,15 @@ class dynamic_view_DynamicView extends event_emitter["a" /* LokiEventEmitter */]
     }
 }
 
+// EXTERNAL MODULE: ./packages/loki/src/ranged_indexes.ts + 1 modules
+var ranged_indexes = __webpack_require__(4);
+
 // EXTERNAL MODULE: ./packages/common/plugin.ts
-var common_plugin = __webpack_require__(0);
+var common_plugin = __webpack_require__(1);
 
 // CONCATENATED MODULE: ./packages/loki/src/collection.ts
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return collection_Collection; });
+
 
 
 
@@ -2398,18 +2511,19 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
      * @param {(object)} [options={}] - a configuration object
      * @param {string[]} [options.unique=[]] - array of property names to define unique constraints for
      * @param {string[]} [options.exact=[]] - array of property names to define exact constraints for
-     * @param {string[]} [options.indices=[]] - array property names to define binary indexes for
-     * @param {boolean} [options.adaptiveBinaryIndices=true] - collection indices will be actively rebuilt rather than lazily
+     * @param {RangedIndexOptions} [options.rangedIndexes] - configuration object for ranged indexes
      * @param {boolean} [options.asyncListeners=false] - whether listeners are invoked asynchronously
      * @param {boolean} [options.disableMeta=false] - set to true to disable meta property on documents
      * @param {boolean} [options.disableChangesApi=true] - set to false to enable Changes API
      * @param {boolean} [options.disableDeltaChangesApi=true] - set to false to enable Delta Changes API (requires Changes API, forces cloning)
      * @param {boolean} [options.clone=false] - specify whether inserts and queries clone to/from user
-     * @param {boolean} [options.serializableIndices =true] - converts date values on binary indexed property values are serializable
+     * @param {boolean} [options.serializableIndexes=true] - converts date values on binary indexed property values are serializable
      * @param {string} [options.cloneMethod="deep"] - the clone method
      * @param {number} [options.transactional=false] - ?
      * @param {number} [options.ttl=] - age of document (in ms.) before document is considered aged/stale.
      * @param {number} [options.ttlInterval=] - time interval for clearing out 'aged' documents; not set by default
+     * @param {string} [options.unindexedSortComparator="js"] "js", "abstract", "abstract-date", "loki" or other registered comparator name
+     * @param {string} [options.defaultLokiOperatorPackage="js"] "js", "loki", "comparator" (or user defined) query ops package
      * @param {FullTextSearch.FieldOptions} [options.fullTextSearch=] - the full-text search options
      * @see {@link Loki#addCollection} for normal creation of collections
      */
@@ -2420,7 +2534,13 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
         // index of id
         this._idIndex = [];
         // user defined indexes
-        this._binaryIndices = {}; // user defined indexes
+        this._rangedIndexes = {};
+        // loki obj map
+        this._lokimap = {};
+        // default comparator name to use for unindexed sorting
+        this._unindexedSortComparator = "js";
+        // default LokiOperatorPackage ('default' uses fastest 'javascript' comparisons)
+        this._defaultLokiOperatorPackage = "js";
         /**
          * Unique constraints contain duplicate object references, so they are not persisted.
          * We will keep track of properties which have unique constraints applied here, and regenerate on load.
@@ -2479,6 +2599,8 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
         // the name of the collection
         this.name = name;
         /* OPTIONS */
+        this._unindexedSortComparator = options.unindexedSortComparator || "js";
+        this._defaultLokiOperatorPackage = options.defaultLokiOperatorPackage || "js";
         // exact match and unique constraints
         if (options.unique !== undefined) {
             if (!Array.isArray(options.unique)) {
@@ -2497,8 +2619,6 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
             this._fullTextSearch = null;
         }
         // .
-        this._adaptiveBinaryIndices = options.adaptiveBinaryIndices !== undefined ? options.adaptiveBinaryIndices : true;
-        // .
         this._transactional = options.transactional !== undefined ? options.transactional : false;
         // .
         this._cloneObjects = options.clone !== undefined ? options.clone : false;
@@ -2516,7 +2636,7 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
             this._disableDeltaChangesApi = true;
         }
         // .
-        this._serializableIndices = options.serializableIndices !== undefined ? options.serializableIndices : true;
+        this._serializableIndexes = options.serializableIndexes !== undefined ? options.serializableIndexes : true;
         // .
         if (options.nestedProperties != undefined) {
             for (let i = 0; i < options.nestedProperties.length; i++) {
@@ -2544,9 +2664,10 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
         };
         // initialize the id index
         this._ensureId();
-        let indices = options.indices ? options.indices : [];
-        for (let idx = 0; idx < indices.length; idx++) {
-            this.ensureIndex(options.indices[idx]);
+        let rangedIndexes = options.rangedIndexes || {};
+        for (let ri in rangedIndexes) {
+            // Todo: any way to type annotate this as typesafe generic?
+            this.ensureRangedIndex(ri, rangedIndexes[ri].indexTypeName, rangedIndexes[ri].comparatorName);
         }
         this.setChangesApi(this._disableChangesApi, this._disableDeltaChangesApi);
         // for de-serialization purposes
@@ -2555,16 +2676,17 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
     toJSON() {
         return {
             name: this.name,
+            unindexedSortComparator: this._unindexedSortComparator,
+            defaultLokiOperatorPackage: this._defaultLokiOperatorPackage,
             _dynamicViews: this._dynamicViews,
             uniqueNames: Object.keys(this._constraints.unique),
             transforms: this._transforms,
-            binaryIndices: this._binaryIndices,
+            rangedIndexes: this._rangedIndexes,
             _data: this._data,
             idIndex: this._idIndex,
             maxId: this._maxId,
             _dirty: this._dirty,
             _nestedProperties: this._nestedProperties,
-            adaptiveBinaryIndices: this._adaptiveBinaryIndices,
             transactional: this._transactional,
             asyncListeners: this._asyncListeners,
             disableMeta: this._disableMeta,
@@ -2577,11 +2699,13 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
         };
     }
     static fromJSONObject(obj, options) {
+        // instantiate collection with options needed by constructor
         let coll = new collection_Collection(obj.name, {
             disableChangesApi: obj.disableChangesApi,
-            disableDeltaChangesApi: obj.disableDeltaChangesApi
+            disableDeltaChangesApi: obj.disableDeltaChangesApi,
+            unindexedSortComparator: obj.unindexedSortComparator,
+            defaultLokiOperatorPackage: obj.defaultLokiOperatorPackage
         });
-        coll._adaptiveBinaryIndices = obj.adaptiveBinaryIndices !== undefined ? (obj.adaptiveBinaryIndices === true) : false;
         coll._transactional = obj.transactional;
         coll._asyncListeners = obj.asyncListeners;
         coll._disableMeta = obj.disableMeta;
@@ -2590,6 +2714,7 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
         coll._cloneMethod = obj.cloneMethod || "deep";
         coll._changes = obj.changes;
         coll._nestedProperties = obj._nestedProperties;
+        coll._rangedIndexes = obj.rangedIndexes || {};
         coll._dirty = (options && options.retainDirtyFlags === true) ? obj._dirty : false;
         function makeLoader(coll) {
             const collOptions = options[coll.name];
@@ -2612,20 +2737,36 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
             let loader = makeLoader(obj);
             for (let j = 0; j < obj._data.length; j++) {
                 coll._data[j] = coll._defineNestedProperties(loader(obj._data[j]));
+                // regenerate lokimap
+                coll._lokimap[coll._data[j].$loki] = coll._data[j];
             }
         }
         else {
             for (let j = 0; j < obj._data.length; j++) {
                 coll._data[j] = coll._defineNestedProperties(obj._data[j]);
+                // regenerate lokimap
+                coll._lokimap[coll._data[j].$loki] = coll._data[j];
             }
         }
         coll._maxId = (obj.maxId === undefined) ? 0 : obj.maxId;
         coll._idIndex = obj.idIndex;
-        if (obj.binaryIndices !== undefined) {
-            coll._binaryIndices = obj.binaryIndices;
-        }
         if (obj.transforms !== undefined) {
             coll._transforms = obj.transforms;
+        }
+        // inflate rangedindexes
+        for (let ri in obj.rangedIndexes) {
+            // shortcut reference to serialized meta
+            let sri = obj.rangedIndexes[ri];
+            // lookup index factory function in map based on index type name
+            let rif = ranged_indexes["a" /* RangedIndexFactoryMap */][sri.indexTypeName];
+            // lookup comparator function in map based on comparator name
+            let ricmp = comparators["a" /* ComparatorMap */][sri.comparatorName];
+            // using index type (from meta), index factory and comparator... create instance of ranged index
+            let rii = rif(ri, ricmp);
+            // now ask new index instance to inflate from plain object
+            rii.restore(sri.index);
+            // attach class instance to our collection's ranged index's (index) instance property
+            coll._rangedIndexes[ri].index = rii;
         }
         coll._ensureId();
         // regenerate unique indexes
@@ -2714,185 +2855,49 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
         return indexes;
     }
     /**
-     * Ensure binary index on a certain field.
-     * @param {string} field - the field name
-     * @param {boolean} [force=false] - flag indicating whether to construct index immediately
+     * Ensure rangedIndex of a field.
+     * @param field
+     * @param indexTypeName
+     * @param comparatorName
      */
-    ensureIndex(field, force = false) {
-        if (this._binaryIndices[field] && !force && !this._binaryIndices[field].dirty) {
-            return;
-        }
-        // if the index is already defined and we are using adaptiveBinaryIndices and we are not forcing a rebuild, return.
-        if (this._adaptiveBinaryIndices === true && this._binaryIndices[field] !== undefined && !force) {
-            return;
-        }
-        const index = {
-            name: field,
-            dirty: true,
-            values: this._prepareFullDocIndex()
-        };
-        this._binaryIndices[field] = index;
-        const wrappedComparer = (a, b) => {
-            const val1 = this._data[a][field];
-            const val2 = this._data[b][field];
-            if (val1 !== val2) {
-                if (ltHelper(val1, val2, false))
-                    return -1;
-                if (gtHelper(val1, val2, false))
-                    return 1;
-            }
-            return 0;
-        };
-        index.values.sort(wrappedComparer);
-        index.dirty = false;
-        this._dirty = true; // for autosave scenarios
+    ensureIndex(field, indexTypeName, comparatorName) {
+        this.ensureRangedIndex(field, indexTypeName, comparatorName);
     }
     /**
-     * Perform checks to determine validity/consistency of a binary index.
-     * @param {string} field - the field name of the binary-indexed to check
-     * @param {object=} options - optional configuration object
-     * @param {boolean} [options.randomSampling=false] - whether (faster) random sampling should be used
-     * @param {number} [options.randomSamplingFactor=0.10] - percentage of total rows to randomly sample
-     * @param {boolean} [options.repair=false] - whether to fix problems if they are encountered
-     * @returns {boolean} whether the index was found to be valid (before optional correcting).
-     * @example
-     * // full test
-     * var valid = coll.checkIndex('name');
-     * // full test with repair (if issues found)
-     * valid = coll.checkIndex('name', { repair: true });
-     * // random sampling (default is 10% of total document count)
-     * valid = coll.checkIndex('name', { randomSampling: true });
-     * // random sampling (sample 20% of total document count)
-     * valid = coll.checkIndex('name', { randomSampling: true, randomSamplingFactor: 0.20 });
-     * // random sampling (implied boolean)
-     * valid = coll.checkIndex('name', { randomSamplingFactor: 0.20 });
-     * // random sampling with repair (if issues found)
-     * valid = coll.checkIndex('name', { repair: true, randomSampling: true });
+     * Ensure rangedIndex of a field.
+     * @param field Property to create an index on (need to look into contraining on keyof T)
+     * @param indexTypeName Name of IndexType factory within (global?) hashmap to create IRangedIndex from
+     * @param comparatorName Name of Comparator within (global?) hashmap
      */
-    checkIndex(field, options = { repair: false }) {
-        // if lazy indexing, rebuild only if flagged as dirty
-        if (!this._adaptiveBinaryIndices) {
-            this.ensureIndex(field);
+    ensureRangedIndex(field, indexTypeName, comparatorName) {
+        indexTypeName = indexTypeName || "avl";
+        comparatorName = comparatorName || "loki";
+        if (!ranged_indexes["a" /* RangedIndexFactoryMap */][indexTypeName]) {
+            throw new Error("ensureRangedIndex: Unknown range index type");
         }
-        // if 'randomSamplingFactor' specified but not 'randomSampling', assume true
-        if (options.randomSamplingFactor && options.randomSampling !== false) {
-            options.randomSampling = true;
+        if (!comparators["a" /* ComparatorMap */][comparatorName]) {
+            throw new Error("ensureRangedIndex: Unknown comparator");
         }
-        options.randomSamplingFactor = options.randomSamplingFactor || 0.1;
-        if (options.randomSamplingFactor < 0 || options.randomSamplingFactor > 1) {
-            options.randomSamplingFactor = 0.1;
+        let rif = ranged_indexes["a" /* RangedIndexFactoryMap */][indexTypeName];
+        let comparator = comparators["a" /* ComparatorMap */][comparatorName];
+        this._rangedIndexes[field] = {
+            index: rif(field, comparator),
+            indexTypeName: indexTypeName,
+            comparatorName: comparatorName
+        };
+        let rii = this._rangedIndexes[field].index;
+        for (let i = 0; i < this._data.length; i++) {
+            rii.insert(this._data[i].$loki, this._data[i][field]);
         }
-        const biv = this._binaryIndices[field].values;
-        const len = biv.length;
-        // if the index has an incorrect number of values
-        if (len !== this._data.length) {
-            if (options.repair) {
-                this.ensureIndex(field, true);
-            }
-            return false;
-        }
-        if (len === 0) {
-            return true;
-        }
-        let valid = true;
-        if (len === 1) {
-            valid = (biv[0] === 0);
-        }
-        else {
-            if (options.randomSampling) {
-                // validate first and last
-                if (!LokiOps.$lte(this._data[biv[0]][field], this._data[biv[1]][field])) {
-                    valid = false;
-                }
-                if (!LokiOps.$lte(this._data[biv[len - 2]][field], this._data[biv[len - 1]][field])) {
-                    valid = false;
-                }
-                // if first and last positions are sorted correctly with their nearest neighbor,
-                // continue onto random sampling phase...
-                if (valid) {
-                    // # random samplings = total count * sampling factor
-                    const iter = Math.floor((len - 1) * options.randomSamplingFactor);
-                    // for each random sampling, validate that the binary index is sequenced properly
-                    // with next higher value.
-                    for (let idx = 0; idx < iter; idx++) {
-                        // calculate random position
-                        const pos = Math.floor(Math.random() * (len - 1));
-                        if (!LokiOps.$lte(this._data[biv[pos]][field], this._data[biv[pos + 1]][field])) {
-                            valid = false;
-                            break;
-                        }
-                    }
-                }
-            }
-            else {
-                // validate that the binary index is sequenced properly
-                for (let idx = 0; idx < len - 1; idx++) {
-                    if (!LokiOps.$lte(this._data[biv[idx]][field], this._data[biv[idx + 1]][field])) {
-                        valid = false;
-                        break;
-                    }
-                }
-            }
-        }
-        // if incorrectly sequenced and we are to fix problems, rebuild index
-        if (!valid && options.repair) {
-            this.ensureIndex(field, true);
-        }
-        return valid;
-    }
-    /**
-     * Perform checks to determine validity/consistency of all binary indices
-     * @param {object=} options - optional configuration object
-     * @param {boolean} [options.randomSampling=false] - whether (faster) random sampling should be used
-     * @param {number} [options.randomSamplingFactor=0.10] - percentage of total rows to randomly sample
-     * @param {boolean} [options.repair=false] - whether to fix problems if they are encountered
-     * @returns {string[]} array of index names where problems were found
-     * @example
-     * // check all indices on a collection, returns array of invalid index names
-     * var result = coll.checkAllIndexes({ repair: true, randomSampling: true, randomSamplingFactor: 0.15 });
-     * if (result.length > 0) {
-     *   results.forEach(function(name) {
-     *     console.log('problem encountered with index : ' + name);
-     *   });
-     * }
-     */
-    checkAllIndexes(options) {
-        const results = [];
-        let keys = Object.keys(this._binaryIndices);
-        for (let i = 0; i < keys.length; i++) {
-            const result = this.checkIndex(keys[i], options);
-            if (!result) {
-                results.push(keys[i]);
-            }
-        }
-        return results;
     }
     ensureUniqueIndex(field) {
         let index = new UniqueIndex(field);
         // if index already existed, (re)loading it will likely cause collisions, rebuild always
         this._constraints.unique[field] = index;
         for (let i = 0; i < this._data.length; i++) {
-            index.set(this._data[i], i);
+            index.set(this._data[i].$loki, this._data[i][field]);
         }
         return index;
-    }
-    /**
-     * Ensure all binary indices.
-     */
-    ensureAllIndexes(force = false) {
-        const keys = Object.keys(this._binaryIndices);
-        for (let i = 0; i < keys.length; i++) {
-            this.ensureIndex(keys[i], force);
-        }
-    }
-    flagBinaryIndexesDirty() {
-        const keys = Object.keys(this._binaryIndices);
-        for (let i = 0; i < keys.length; i++) {
-            this.flagBinaryIndexDirty(keys[i]);
-        }
-    }
-    flagBinaryIndexDirty(index) {
-        this._binaryIndices[index].dirty = true;
     }
     /**
      * Quickly determine number of documents in collection (or query)
@@ -3083,19 +3088,17 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
         this._dirty = true;
         // if removing indices entirely
         if (removeIndices === true) {
-            this._binaryIndices = {};
+            this._rangedIndexes = {};
             this._constraints = {
                 unique: {}
             };
         }
         // clear indices but leave definitions in place
         else {
-            // clear binary indices
-            const keys = Object.keys(this._binaryIndices);
-            keys.forEach((biname) => {
-                this._binaryIndices[biname].dirty = false;
-                this._binaryIndices[biname].values = [];
-            });
+            // re-instance ranged indexes
+            for (let ri in this._rangedIndexes) {
+                this.ensureRangedIndex(ri, this._rangedIndexes[ri].indexTypeName, this._rangedIndexes[ri].comparatorName);
+            }
             // clear entire unique indices definition
             const uniqueNames = Object.keys(this._constraints.unique);
             for (let i = 0; i < uniqueNames.length; i++) {
@@ -3112,19 +3115,8 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
      */
     update(doc) {
         if (Array.isArray(doc)) {
-            // If not cloning, disable adaptive binary indices for the duration of the batch update,
-            // followed by lazy rebuild and re-enabling adaptive indices after batch update.
-            const adaptiveBatchOverride = !this._cloneObjects && this._adaptiveBinaryIndices
-                && Object.keys(this._binaryIndices).length > 0;
-            if (adaptiveBatchOverride) {
-                this._adaptiveBinaryIndices = false;
-            }
             for (let i = 0; i < doc.length; i++) {
                 this.update(doc[i]);
-            }
-            if (adaptiveBatchOverride) {
-                this.ensureAllIndexes();
-                this._adaptiveBinaryIndices = true;
             }
             return;
         }
@@ -3146,24 +3138,19 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
             let newInternal = this._defineNestedProperties(this._cloneObjects || !this._disableDeltaChangesApi ? clone(doc, this._cloneMethod) : doc);
             this.emit("pre-update", doc);
             Object.keys(this._constraints.unique).forEach((key) => {
-                this._constraints.unique[key].update(newInternal, position);
+                this._constraints.unique[key].update(newInternal.$loki, newInternal[key]);
             });
             // operate the update
             this._data[position] = newInternal;
+            this._lokimap[doc.$loki] = newInternal;
             // now that we can efficiently determine the data[] position of newly added document,
             // submit it for all registered DynamicViews to evaluate for inclusion/exclusion
             for (let idx = 0; idx < this._dynamicViews.length; idx++) {
                 this._dynamicViews[idx]._evaluateDocument(position, false);
             }
-            if (this._adaptiveBinaryIndices) {
-                // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
-                const bIndices = Object.keys(this._binaryIndices);
-                for (let i = 0; i < bIndices.length; i++) {
-                    this.adaptiveBinaryIndexUpdate(position, bIndices[i]);
-                }
-            }
-            else {
-                this.flagBinaryIndexesDirty();
+            // Notify all ranged indexes of (possible) value update
+            for (let ri in this._rangedIndexes) {
+                this._rangedIndexes[ri].index.update(doc.$loki, doc[ri]);
             }
             this._idIndex[position] = newInternal.$loki;
             // FullTextSearch.
@@ -3223,11 +3210,13 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
             const constrUnique = this._constraints.unique;
             for (const key in constrUnique) {
                 if (constrUnique[key] !== undefined) {
-                    constrUnique[key].set(newDoc, this._data.length);
+                    constrUnique[key].set(newDoc.$loki, newDoc[key]);
                 }
             }
             // add new obj id to idIndex
             this._idIndex.push(newDoc.$loki);
+            // update lokimap
+            this._lokimap[newDoc.$loki] = newDoc;
             // add the object
             this._data.push(newDoc);
             const addedPos = this._data.length - 1;
@@ -3237,15 +3226,13 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
             for (let i = 0; i < dvlen; i++) {
                 this._dynamicViews[i]._evaluateDocument(addedPos, true);
             }
-            if (this._adaptiveBinaryIndices) {
-                // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
-                const bIndices = Object.keys(this._binaryIndices);
-                for (let i = 0; i < bIndices.length; i++) {
-                    this.adaptiveBinaryIndexInsert(addedPos, bIndices[i]);
+            // add id/val kvp to ranged index
+            for (let ri in this._rangedIndexes) {
+                // ensure Dates are converted to unix epoch time if serializableIndexes is true
+                if (this._serializableIndexes && newDoc[ri] instanceof Date) {
+                    newDoc[ri] = newDoc[ri].getTime();
                 }
-            }
-            else {
-                this.flagBinaryIndexesDirty();
+                this._rangedIndexes[ri].index.insert(obj["$loki"], obj[ri]);
             }
             // FullTextSearch.
             if (this._fullTextSearch !== null) {
@@ -3311,9 +3298,11 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
             this.startTransaction();
             const arr = this.get(doc.$loki, true);
             const position = arr[1];
+            // already converted but let's narrow to make typescript happy
+            let aDoc = (typeof doc === "number") ? this.get(doc) : doc;
             Object.keys(this._constraints.unique).forEach((key) => {
-                if (doc[key] !== null && doc[key] !== undefined) {
-                    this._constraints.unique[key].remove(doc[key]);
+                if (key in aDoc) {
+                    this._constraints.unique[key].remove(aDoc.$loki);
                 }
             });
             // now that we can efficiently determine the data[] position of newly added document,
@@ -3321,19 +3310,15 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
             for (let idx = 0; idx < this._dynamicViews.length; idx++) {
                 this._dynamicViews[idx]._removeDocument(position);
             }
-            if (this._adaptiveBinaryIndices) {
-                // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
-                const bIndices = Object.keys(this._binaryIndices);
-                for (let i = 0; i < bIndices.length; i++) {
-                    this.adaptiveBinaryIndexRemove(position, bIndices[i]);
-                }
-            }
-            else {
-                this.flagBinaryIndexesDirty();
-            }
             this._data.splice(position, 1);
             // remove id from idIndex
             this._idIndex.splice(position, 1);
+            // remove from lokimap
+            delete this._lokimap[doc.$loki];
+            // remove id/val kvp from binary tree index
+            for (let ri in this._rangedIndexes) {
+                this._rangedIndexes[ri].index.remove(doc.$loki);
+            }
             // FullTextSearch.
             if (this._fullTextSearch !== null) {
                 this._fullTextSearch.removeDocument(doc, position);
@@ -3463,6 +3448,12 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
         obj.meta.revision += 1;
     }
     get(id, returnPosition = false) {
+        if (!returnPosition) {
+            let doc = this._lokimap[id];
+            if (doc === undefined)
+                return null;
+            return doc;
+        }
         const data = this._idIndex;
         let max = data.length - 1;
         let min = 0;
@@ -3489,362 +3480,21 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
         return null;
     }
     /**
-     * Perform binary range lookup for the data[dataPosition][binaryIndexName] property value
-     *    Since multiple documents may contain the same value (which the index is sorted on),
-     *    we hone in on range and then linear scan range to find exact index array position.
-     * @param {int} dataPosition : data array index/position
-     * @param {string} binaryIndexName : index to search for dataPosition in
-     */
-    getBinaryIndexPosition(dataPosition, binaryIndexName) {
-        const val = this._data[dataPosition][binaryIndexName];
-        const index = this._binaryIndices[binaryIndexName].values;
-        // i think calculateRange can probably be moved to collection
-        // as it doesn't seem to need ResultSet.  need to verify
-        //let rs = new ResultSet(this, null, null);
-        const range = this.calculateRange("$eq", binaryIndexName, val);
-        if (range[0] === 0 && range[1] === -1) {
-            // uhoh didn't find range
-            return null;
-        }
-        const min = range[0];
-        const max = range[1];
-        // narrow down the sub-segment of index values
-        // where the indexed property value exactly matches our
-        // value and then linear scan to find exact -index- position
-        for (let idx = min; idx <= max; idx++) {
-            if (index[idx] === dataPosition)
-                return idx;
-        }
-        // uhoh
-        return null;
-    }
-    /**
-     * Adaptively insert a selected item to the index.
-     * @param {int} dataPosition : coll.data array index/position
-     * @param {string} binaryIndexName : index to search for dataPosition in
-     */
-    adaptiveBinaryIndexInsert(dataPosition, binaryIndexName) {
-        const index = this._binaryIndices[binaryIndexName].values;
-        let val = this._data[dataPosition][binaryIndexName];
-        // If you are inserting a javascript Date value into a binary index, convert to epoch time
-        if (this._serializableIndices === true && val instanceof Date) {
-            this._data[dataPosition][binaryIndexName] = val.getTime();
-            val = this._data[dataPosition][binaryIndexName];
-        }
-        const idxPos = (index.length === 0) ? 0 : this._calculateRangeStart(binaryIndexName, val, true);
-        // insert new data index into our binary index at the proper sorted location for relevant property calculated by idxPos.
-        // doing this after adjusting dataPositions so no clash with previous item at that position.
-        this._binaryIndices[binaryIndexName].values.splice(idxPos, 0, dataPosition);
-    }
-    /**
-     * Adaptively update a selected item within an index.
-     * @param {int} dataPosition : coll.data array index/position
-     * @param {string} binaryIndexName : index to search for dataPosition in
-     */
-    adaptiveBinaryIndexUpdate(dataPosition, binaryIndexName) {
-        // linear scan needed to find old position within index unless we optimize for clone scenarios later
-        // within (my) node 5.6.0, the following for() loop with strict compare is -much- faster than indexOf()
-        let idxPos;
-        const index = this._binaryIndices[binaryIndexName].values;
-        const len = index.length;
-        for (idxPos = 0; idxPos < len; idxPos++) {
-            if (index[idxPos] === dataPosition)
-                break;
-        }
-        //let idxPos = this.binaryIndices[binaryIndexName].values.indexOf(dataPosition);
-        this._binaryIndices[binaryIndexName].values.splice(idxPos, 1);
-        //this.adaptiveBinaryIndexRemove(dataPosition, binaryIndexName, true);
-        this.adaptiveBinaryIndexInsert(dataPosition, binaryIndexName);
-    }
-    /**
-     * Adaptively remove a selected item from the index.
-     * @param {number} dataPosition : coll.data array index/position
-     * @param {string} binaryIndexName : index to search for dataPosition in
-     * @param {boolean} removedFromIndexOnly - remove from index only
-     */
-    adaptiveBinaryIndexRemove(dataPosition, binaryIndexName, removedFromIndexOnly = false) {
-        const idxPos = this.getBinaryIndexPosition(dataPosition, binaryIndexName);
-        if (idxPos === null) {
-            return;
-        }
-        // remove document from index
-        this._binaryIndices[binaryIndexName].values.splice(idxPos, 1);
-        // if we passed this optional flag parameter, we are calling from adaptiveBinaryIndexUpdate,
-        // in which case data positions stay the same.
-        if (removedFromIndexOnly === true) {
-            return;
-        }
-        // since index stores data array positions, if we remove a document
-        // we need to adjust array positions -1 for all document positions greater than removed position
-        const index = this._binaryIndices[binaryIndexName].values;
-        for (let idx = 0; idx < index.length; idx++) {
-            if (index[idx] > dataPosition) {
-                index[idx]--;
-            }
-        }
-    }
-    /**
-     * Internal method used for index maintenance and indexed searching.
-     * Calculates the beginning of an index range for a given value.
-     * For index maintainance (adaptive:true), we will return a valid index position to insert to.
-     * For querying (adaptive:false/undefined), we will :
-     *    return lower bound/index of range of that value (if found)
-     *    return next lower index position if not found (hole)
-     * If index is empty it is assumed to be handled at higher level, so
-     * this method assumes there is at least 1 document in index.
-     *
-     * @param {string} prop - name of property which has binary index
-     * @param {any} val - value to find within index
-     * @param {bool?} adaptive - if true, we will return insert position
-     */
-    _calculateRangeStart(prop, val, adaptive = false) {
-        const rcd = this._data;
-        const index = this._binaryIndices[prop].values;
-        let min = 0;
-        let max = index.length - 1;
-        let mid = 0;
-        if (index.length === 0) {
-            return -1;
-        }
-        // hone in on start position of value
-        while (min < max) {
-            mid = (min + max) >> 1;
-            if (ltHelper(rcd[index[mid]][prop], val, false)) {
-                min = mid + 1;
-            }
-            else {
-                max = mid;
-            }
-        }
-        const lbound = min;
-        // found it... return it
-        if (aeqHelper(val, rcd[index[lbound]][prop])) {
-            return lbound;
-        }
-        // if not in index and our value is less than the found one
-        if (ltHelper(val, rcd[index[lbound]][prop], false)) {
-            return adaptive ? lbound : lbound - 1;
-        }
-        // not in index and our value is greater than the found one
-        return adaptive ? lbound + 1 : lbound;
-    }
-    /**
-     * Internal method used for indexed $between.  Given a prop (index name), and a value
-     * (which may or may not yet exist) this will find the final position of that upper range value.
-     */
-    _calculateRangeEnd(prop, val) {
-        const rcd = this._data;
-        const index = this._binaryIndices[prop].values;
-        let min = 0;
-        let max = index.length - 1;
-        let mid = 0;
-        if (index.length === 0) {
-            return -1;
-        }
-        // hone in on start position of value
-        while (min < max) {
-            mid = (min + max) >> 1;
-            if (ltHelper(val, rcd[index[mid]][prop], false)) {
-                max = mid;
-            }
-            else {
-                min = mid + 1;
-            }
-        }
-        const ubound = max;
-        // only eq if last element in array is our val
-        if (aeqHelper(val, rcd[index[ubound]][prop])) {
-            return ubound;
-        }
-        // if not in index and our value is less than the found one
-        if (gtHelper(val, rcd[index[ubound]][prop], false)) {
-            return ubound + 1;
-        }
-        // either hole or first nonmatch
-        if (aeqHelper(val, rcd[index[ubound - 1]][prop])) {
-            return ubound - 1;
-        }
-        // hole, so ubound if nearest gt than the val we were looking for
-        return ubound;
-    }
-    /**
-     * Binary Search utility method to find range/segment of values matching criteria.
-     *    this is used for collection.find() and first find filter of ResultSet/dynview
-     *    slightly different than get() binary search in that get() hones in on 1 value,
-     *    but we have to hone in on many (range)
-     * @param {string} op - operation, such as $eq
-     * @param {string} prop - name of property to calculate range for
-     * @param {object} val - value to use for range calculation.
-     * @returns {array} [start, end] index array positions
-     */
-    calculateRange(op, prop, val) {
-        const rcd = this._data;
-        const index = this._binaryIndices[prop].values;
-        const min = 0;
-        const max = index.length - 1;
-        let lbound;
-        let lval;
-        let ubound;
-        // when no documents are in collection, return empty range condition
-        if (rcd.length === 0) {
-            return [0, -1];
-        }
-        const minVal = rcd[index[min]][prop];
-        const maxVal = rcd[index[max]][prop];
-        // if value falls outside of our range return [0, -1] to designate no results
-        switch (op) {
-            case "$eq":
-            case "$aeq":
-                if (ltHelper(val, minVal, false) || gtHelper(val, maxVal, false)) {
-                    return [0, -1];
-                }
-                break;
-            case "$dteq":
-                if (ltHelper(val, minVal, false) || gtHelper(val, maxVal, false)) {
-                    return [0, -1];
-                }
-                break;
-            case "$gt":
-                // none are within range
-                if (gtHelper(val, maxVal, true)) {
-                    return [0, -1];
-                }
-                // all are within range
-                if (gtHelper(minVal, val, false)) {
-                    return [min, max];
-                }
-                break;
-            case "$gte":
-                // none are within range
-                if (gtHelper(val, maxVal, false)) {
-                    return [0, -1];
-                }
-                // all are within range
-                if (gtHelper(minVal, val, true)) {
-                    return [min, max];
-                }
-                break;
-            case "$lt":
-                // none are within range
-                if (ltHelper(val, minVal, true)) {
-                    return [0, -1];
-                }
-                // all are within range
-                if (ltHelper(maxVal, val, false)) {
-                    return [min, max];
-                }
-                break;
-            case "$lte":
-                // none are within range
-                if (ltHelper(val, minVal, false)) {
-                    return [0, -1];
-                }
-                // all are within range
-                if (ltHelper(maxVal, val, true)) {
-                    return [min, max];
-                }
-                break;
-            case "$between":
-                // none are within range (low range is greater)
-                if (gtHelper(val[0], maxVal, false)) {
-                    return [0, -1];
-                }
-                // none are within range (high range lower)
-                if (ltHelper(val[1], minVal, false)) {
-                    return [0, -1];
-                }
-                lbound = this._calculateRangeStart(prop, val[0]);
-                ubound = this._calculateRangeEnd(prop, val[1]);
-                if (lbound < 0)
-                    lbound++;
-                if (ubound > max)
-                    ubound--;
-                if (!gtHelper(rcd[index[lbound]][prop], val[0], true))
-                    lbound++;
-                if (!ltHelper(rcd[index[ubound]][prop], val[1], true))
-                    ubound--;
-                if (ubound < lbound)
-                    return [0, -1];
-                return ([lbound, ubound]);
-        }
-        // determine lbound where needed
-        switch (op) {
-            case "$eq":
-            case "$aeq":
-            case "$dteq":
-            case "$gte":
-            case "$lt":
-                lbound = this._calculateRangeStart(prop, val);
-                lval = rcd[index[lbound]][prop];
-                break;
-            default:
-                break;
-        }
-        // determine ubound where needed
-        switch (op) {
-            case "$eq":
-            case "$aeq":
-            case "$dteq":
-            case "$lte":
-            case "$gt":
-                ubound = this._calculateRangeEnd(prop, val);
-                break;
-            default:
-                break;
-        }
-        switch (op) {
-            case "$eq":
-            case "$aeq":
-            case "$dteq":
-                if (!aeqHelper(lval, val)) {
-                    return [0, -1];
-                }
-                return [lbound, ubound];
-            case "$gt":
-                // (an eqHelper would probably be better test)
-                // if hole (not found) ub position is already greater
-                if (!aeqHelper(rcd[index[ubound]][prop], val)) {
-                    //if (gtHelper(rcd[index[ubound]][prop], val, false)) {
-                    return [ubound, max];
-                }
-                // otherwise (found) so ubound is still equal, get next
-                return [ubound + 1, max];
-            case "$gte":
-                // if hole (not found) lb position marks left outside of range
-                if (!aeqHelper(rcd[index[lbound]][prop], val)) {
-                    //if (ltHelper(rcd[index[lbound]][prop], val, false)) {
-                    return [lbound + 1, max];
-                }
-                // otherwise (found) so lb is first position where its equal
-                return [lbound, max];
-            case "$lt":
-                // if hole (not found) position already is less than
-                if (!aeqHelper(rcd[index[lbound]][prop], val)) {
-                    //if (ltHelper(rcd[index[lbound]][prop], val, false)) {
-                    return [min, lbound];
-                }
-                // otherwise (found) so lb marks left inside of eq range, get previous
-                return [min, lbound - 1];
-            case "$lte":
-                // if hole (not found) ub position marks right outside so get previous
-                if (!aeqHelper(rcd[index[ubound]][prop], val)) {
-                    //if (gtHelper(rcd[index[ubound]][prop], val, false)) {
-                    return [min, ubound - 1];
-                }
-                // otherwise (found) so ub is last position where its still equal
-                return [min, ubound];
-            default:
-                return [0, rcd.length - 1];
-        }
-    }
-    /**
      * Retrieve doc by Unique index
      * @param {string} field - name of uniquely indexed property to use when doing lookup
      * @param {any} value - unique value to search for
      * @returns {object} document matching the value passed
      */
     by(field, value) {
-        return this.findOne({ [field]: value });
+        // for least amount of overhead, we will directly
+        // access index rather than use find codepath
+        let lokiId = this._constraints.unique[field].get(value);
+        if (!this._cloneObjects) {
+            return this._lokimap[lokiId];
+        }
+        else {
+            return clone(this._lokimap[lokiId], this._cloneMethod);
+        }
     }
     /**
      * Find one object by index property, by property equal to value
@@ -3915,10 +3565,17 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
      */
     startTransaction() {
         if (this._transactional) {
+            // backup any ranged indexes
+            let rib = {};
+            for (let ri in this._rangedIndexes) {
+                rib[ri].indexTypeName = this._rangedIndexes[ri].indexTypeName;
+                rib[ri].comparatorName = this._rangedIndexes[ri].comparatorName;
+                rib[ri].index = this._rangedIndexes[ri].index.backup();
+            }
             this._cached = {
                 index: this._idIndex,
                 data: clone(this._data, this._cloneMethod),
-                binaryIndex: this._binaryIndices,
+                rangedIndexes: rib,
             };
             // propagate startTransaction to dynamic views
             for (let idx = 0; idx < this._dynamicViews.length; idx++) {
@@ -3945,8 +3602,25 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
         if (this._transactional) {
             if (this._cached !== null) {
                 this._idIndex = this._cached.index;
-                this._data = this._defineNestedProperties(this._cached.data);
-                this._binaryIndices = this._cached.binaryIndex;
+                this._data = this._cached.data;
+                for (let i = 0; i < this._data.length; i++) {
+                    this._data[i] = this._defineNestedProperties(this._data[i]);
+                }
+                // restore ranged indexes
+                for (let ri in this._cached.rangedIndexes) {
+                    // shortcut reference to serialized meta
+                    let sri = this._cached.rangedIndexes[ri];
+                    // lookup index factory function in map based on index type name
+                    let rif = ranged_indexes["a" /* RangedIndexFactoryMap */][sri.indexTypeName];
+                    // lookup comparator function in map based on comparator name
+                    let ricmp = comparators["a" /* ComparatorMap */][sri.comparatorName];
+                    // using index type (from meta), index factory and comparator... create instance of ranged index
+                    let rii = rif(ri, ricmp);
+                    // now ask new index instance to inflate from plain object
+                    rii.restore(sri.index);
+                    // attach class instance to our collection's ranged index's (index) instance property
+                    this._rangedIndexes[ri].index = rii;
+                }
                 // propagate rollback to dynamic views
                 for (let idx = 0; idx < this._dynamicViews.length; idx++) {
                     this._dynamicViews[idx].rollback();
@@ -4179,7 +3853,852 @@ class collection_Collection extends event_emitter["a" /* LokiEventEmitter */] {
 
 
 /***/ }),
-/* 2 */
+/* 4 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+
+// CONCATENATED MODULE: ./packages/loki/src/avl_index.ts
+/**
+ * LokiDB AVL Balanced Binary Tree Index implementation.
+ * To support duplicates, we use siblings (array) in tree nodes.
+ * Basic AVL components guided by William Fiset tutorials at :
+ * https://github.com/williamfiset/data-structures/blob/master/com/williamfiset/datastructures/balancedtree/AVLTreeRecursive.java
+ * https://www.youtube.com/watch?v=g4y2h70D6Nk&list=PLDV1Zeh2NRsD06x59fxczdWLhDDszUHKt
+ */
+class AvlTreeIndex {
+    /**
+     * Initializes index with property name and a comparer function.
+     */
+    constructor(name, comparator) {
+        this.nodes = {};
+        this.apex = null;
+        this.name = name;
+        this.comparator = comparator;
+    }
+    backup() {
+        let result = new AvlTreeIndex(this.name, this.comparator);
+        result.nodes = JSON.parse(JSON.stringify(this.nodes));
+        result.apex = this.apex;
+        return result;
+    }
+    restore(tree) {
+        this.name = tree.name;
+        this.comparator = tree.comparator;
+        this.nodes = JSON.parse(JSON.stringify(tree.nodes));
+        this.apex = tree.apex;
+    }
+    /**
+     * Used for inserting a new value into the BinaryTreeIndex
+     * @param id Unique Id (such as $loki) to associate with value
+     * @param val Value to be indexed and inserted into binary tree
+     */
+    insert(id, val) {
+        if (id <= 0) {
+            throw new Error("avl index ids are required to be numbers greater than zero");
+        }
+        let node = this.nodes[id] = {
+            id: id,
+            value: val,
+            parent: null,
+            balance: 0,
+            height: 0,
+            left: null,
+            right: null,
+            siblings: []
+        };
+        if (!this.apex) {
+            this.apex = id;
+            return;
+        }
+        this.insertNode(this.nodes[this.apex], node);
+    }
+    /**
+     * Recursively inserts a treenode and re-balances if needed.
+     * @param current
+     * @param node
+     */
+    insertNode(current, node) {
+        switch (this.comparator(node.value, current.value)) {
+            case 0:
+                // eq
+                current.siblings.push(node.id);
+                node.parent = current.id;
+                break;
+            case 1:
+                // gt
+                if (current.right) {
+                    this.insertNode(this.nodes[current.right], node);
+                    this.updateBalance(current);
+                }
+                else {
+                    current.right = node.id;
+                    node.parent = current.id;
+                    this.updateBalance(current);
+                }
+                break;
+            case -1:
+                // lt
+                if (current.left) {
+                    this.insertNode(this.nodes[current.left], node);
+                    this.updateBalance(current);
+                }
+                else {
+                    current.left = node.id;
+                    node.parent = current.id;
+                    this.updateBalance(current);
+                }
+                break;
+            default: throw new Error("Invalid comparator result");
+        }
+        if (current.balance < -1) {
+            if (current.left === null) {
+                throw new Error("insertNode.balance() : left child should not be null");
+            }
+            if (this.nodes[current.left].balance <= 0) {
+                this.leftLeftCase(current);
+            }
+            else {
+                this.leftRightCase(current);
+            }
+        }
+        if (current.balance > 1) {
+            if (current.right === null) {
+                throw new Error("insertNode.balance() : right child should not be null");
+            }
+            if (this.nodes[current.right].balance >= 0) {
+                this.rightRightCase(current);
+            }
+            else {
+                this.rightLeftCase(current);
+            }
+        }
+        return current.height;
+    }
+    /**
+     * Updates height and balance (calculation) for tree node
+     * @param node
+     */
+    updateBalance(node) {
+        let hl = node.left ? this.nodes[node.left].height : -1;
+        let hr = node.right ? this.nodes[node.right].height : -1;
+        //node.height = 1 + Math.max(hl, hr);
+        node.height = (hl > hr) ? 1 + hl : 1 + hr;
+        node.balance = hr - hl;
+    }
+    /**
+     * Balance the 'double left-heavy' condition
+     * @param node
+     */
+    leftLeftCase(node) {
+        return this.rotateRight(node);
+    }
+    /**
+     * Balance the '(parent) left heavy, (child) right heavy' condition
+     * @param node
+     */
+    leftRightCase(node) {
+        if (!node.left) {
+            throw new Error("leftRightCase: left child not set");
+        }
+        node.left = this.rotateLeft(this.nodes[node.left]).id;
+        return this.rotateRight(node);
+    }
+    /**
+     * Balance the 'double right-heavy' condition
+     * @param node
+     */
+    rightRightCase(node) {
+        return this.rotateLeft(node);
+    }
+    /**
+     * Balance the '(parent) right heavy, (child) left heavy' condition
+     * @param node
+     */
+    rightLeftCase(node) {
+        if (!node.right) {
+            throw new Error("rightLeftCase: right child not set");
+        }
+        node.right = this.rotateRight(this.nodes[node.right]).id;
+        return this.rotateLeft(node);
+    }
+    /**
+     * Left rotation of node. Swaps right child into current location.
+     * @param node
+     */
+    rotateLeft(node) {
+        if (!node.right) {
+            throw new Error("rotateLeft: right child was unavailable.");
+        }
+        let parent = (node.parent) ? this.nodes[node.parent] : null;
+        let right = this.nodes[node.right];
+        // assume rights (old) left branch as our (new) right branch
+        node.right = right.left;
+        if (node.right) {
+            this.nodes[node.right].parent = node.id;
+        }
+        // right will be new parent to node and assume old node's parent
+        right.left = node.id;
+        right.parent = node.parent;
+        node.parent = right.id;
+        // remap parent child pointer to right
+        if (parent) {
+            if (parent.left === node.id) {
+                parent.left = right.id;
+            }
+            else if (parent.right === node.id) {
+                parent.right = right.id;
+            }
+            else {
+                throw new Error("rotateLeft() : attempt to remap parent back to child failed... not found");
+            }
+        }
+        else {
+            if (this.apex !== node.id) {
+                throw new Error("rightRotate expecting parentless node to be apex");
+            }
+            this.apex = right.id;
+        }
+        // recalculate height and balance for swapped nodes
+        this.updateBalance(node);
+        this.updateBalance(right);
+        return right;
+    }
+    /**
+     * Right rotation of node. Swaps left child into current location.
+     * @param node
+     */
+    rotateRight(node) {
+        if (!node.left) {
+            throw new Error("rotateRight : left child unavailable");
+        }
+        let parent = (node.parent) ? this.nodes[node.parent] : null;
+        let left = this.nodes[node.left];
+        // assume left's (old) right branch as our (new) left branch
+        node.left = left.right;
+        if (left.right) {
+            this.nodes[left.right].parent = node.id;
+        }
+        // 'node' will be right child of left
+        left.right = node.id;
+        left.parent = node.parent;
+        node.parent = left.id;
+        if (parent) {
+            if (parent.left === node.id) {
+                parent.left = left.id;
+            }
+            else {
+                parent.right = left.id;
+            }
+        }
+        else {
+            if (this.apex !== node.id) {
+                throw new Error("rightRotate expecting parentless node to be apex");
+            }
+            this.apex = left.id;
+        }
+        // recalculate height and balance for swapped nodes
+        this.updateBalance(node);
+        this.updateBalance(left);
+        return left;
+    }
+    /**
+     * Diagnostic method for examining tree contents and structure
+     * @param node
+     */
+    getValuesAsTree(node) {
+        if (this.apex === null)
+            return null;
+        node = node || this.nodes[this.apex];
+        return {
+            id: node.id,
+            val: node.value,
+            siblings: node.siblings,
+            balance: node.balance,
+            height: node.height,
+            left: node.left ? this.getValuesAsTree(this.nodes[node.left]) : null,
+            right: node.right ? this.getValuesAsTree(this.nodes[node.right]) : null,
+        };
+    }
+    /**
+     * Updates a value, possibly relocating it, within binary tree
+     * @param id Unique Id (such as $loki) to associate with value
+     * @param val New value to be indexed within binary tree
+     */
+    update(id, val) {
+        let node = this.nodes[id];
+        let cmp = this.comparator(node.value, val);
+        // if the value did not change, or changed to value considered equal to itself, return.
+        if (cmp === 0)
+            return;
+        this.remove(id);
+        this.insert(id, val);
+    }
+    /**
+     * Removes a value from the binary tree index
+     * @param id
+     */
+    remove(id) {
+        if (!this.apex) {
+            throw new Error("remove() : attempting remove when tree has no apex");
+        }
+        this.removeNode(this.nodes[this.apex], id);
+    }
+    /**
+     * Recursive node removal and rebalancer
+     * @param node
+     * @param val
+     */
+    removeNode(node, id) {
+        if (!this.nodes[id]) {
+            throw new Error("removeNode: attempting to remove a node which is not in hashmap");
+        }
+        let val = this.nodes[id].value;
+        switch (this.comparator(val, node.value)) {
+            case 0:
+                // eq - handle siblings if present
+                if (node.siblings.length > 0) {
+                    // if node to remove is alpha sibling...
+                    if (node.id === id) {
+                        // get first sibling as replacement
+                        let alphaSiblingId = node.siblings.shift();
+                        let alphaSibling = this.nodes[alphaSiblingId];
+                        // remap all properties but id and value from node onto alphasibling
+                        alphaSibling.parent = node.parent;
+                        this.updateChildLink(node.parent, id, alphaSiblingId);
+                        if (node.left) {
+                            this.nodes[node.left].parent = alphaSiblingId;
+                        }
+                        if (node.right) {
+                            this.nodes[node.right].parent = alphaSiblingId;
+                        }
+                        alphaSibling.left = node.left;
+                        alphaSibling.right = node.right;
+                        alphaSibling.siblings = node.siblings;
+                        alphaSibling.height = node.height;
+                        alphaSibling.balance = node.balance;
+                        if (this.apex === id) {
+                            this.apex = alphaSiblingId;
+                        }
+                        // parent all remaining siblings alphaSibling (new parent)
+                        for (let si of alphaSibling.siblings) {
+                            this.nodes[si].parent = alphaSiblingId;
+                        }
+                        // delete old node from nodes and return
+                        delete this.nodes[id];
+                        return;
+                    }
+                    // else we are inner sibling
+                    else {
+                        let idx = node.siblings.indexOf(id);
+                        if (idx === -1) {
+                            throw new Error("Unable to remove sibling from parented sibling");
+                        }
+                        node.siblings.splice(idx, 1);
+                        delete this.nodes[id];
+                        return;
+                    }
+                }
+                // else we have no siblings, node will be removed
+                else {
+                    // if node to delete has no children
+                    if (!node.left && !node.right) {
+                        // if we have a parent, remove us from either left or right child link
+                        this.updateChildLink(node.parent, node.id, null);
+                        delete this.nodes[id];
+                        if (id === this.apex) {
+                            this.apex = null;
+                        }
+                        return;
+                    }
+                    // if node to delete has only one child we can do simple copy/replace
+                    if (!node.left || !node.right) {
+                        if (node.left) {
+                            this.promoteChild(node, this.nodes[node.left]);
+                            if (this.apex === id) {
+                                this.apex = node.left;
+                            }
+                        }
+                        if (node.right) {
+                            this.promoteChild(node, this.nodes[node.right]);
+                            if (this.apex === id) {
+                                this.apex = node.right;
+                            }
+                        }
+                        return;
+                    }
+                    // node to delete has two children, need swap with inorder successor
+                    // use find inorder successor by default
+                    this.promoteSuccessor(node);
+                    return;
+                }
+            case 1:
+                // gt - search right branch
+                if (!node.right) {
+                    throw new Error("removeNode: Unable to find value in tree");
+                }
+                this.removeNode(this.nodes[node.right], id);
+                break;
+            case -1:
+                // lt - search left branch
+                if (!node.left) {
+                    throw new Error("removeNode: Unable to find value in tree");
+                }
+                this.removeNode(this.nodes[node.left], id);
+                break;
+        }
+        this.updateBalance(node);
+        if (node.balance < -1) {
+            if (node.left === null) {
+                throw new Error("insertNode.balance() : left child should not be null");
+            }
+            if (this.nodes[node.left].balance <= 0) {
+                this.leftLeftCase(node);
+            }
+            else {
+                this.leftRightCase(node);
+            }
+        }
+        if (node.balance > 1) {
+            if (node.right === null) {
+                throw new Error("insertNode.balance() : right child should not be null");
+            }
+            if (this.nodes[node.right].balance >= 0) {
+                this.rightRightCase(node);
+            }
+            else {
+                this.rightLeftCase(node);
+            }
+        }
+    }
+    /**
+     * Utility method for updating a parent's child link when it changes
+     * @param parentId
+     * @param oldChildId
+     * @param newChildId
+     */
+    updateChildLink(parentId, oldChildId, newChildId) {
+        if (parentId === null)
+            return;
+        let parent = this.nodes[parentId];
+        if (parent.left === oldChildId) {
+            parent.left = newChildId;
+        }
+        else if (parent.right === oldChildId) {
+            parent.right = newChildId;
+        }
+    }
+    /**
+     * When removing a parent with only child, this does simple remap of child to grandParent.
+     * @param grandParent New parent of 'child'.
+     * @param parent Node being removed.
+     * @param child Node to reparent to grandParent.
+     */
+    promoteChild(parent, child) {
+        let gpId = parent.parent;
+        if (gpId) {
+            let gp = this.nodes[gpId];
+            if (gp.left === parent.id) {
+                gp.left = child.id;
+            }
+            else if (gp.right === parent.id) {
+                gp.right = child.id;
+            }
+        }
+        // remap (grand) child's parent pointer to grandparent (new parent) or null if new apex
+        child.parent = gpId;
+        // remove parent from bst hashmap
+        delete this.nodes[parent.id];
+        return;
+    }
+    /**
+     * Finds a successor to a node and replaces that node with it.
+     * @param node
+     */
+    promoteSuccessor(node) {
+        let oldId = node.id;
+        // assume successor/right branch (for now)
+        if (!node.right || !node.left) {
+            throw new Error("promoteSuccessor() : node to replace does not have two children");
+        }
+        let successor = null;
+        let glsId;
+        let glsValue;
+        let glsSiblings;
+        // if tree is already left heavy,
+        // let's replace with predecessor (greatest val in left branch)
+        if (node.balance < 0) {
+            let lchild = this.nodes[node.left];
+            successor = this.findGreaterLeaf(lchild);
+            glsId = successor.id;
+            glsValue = successor.value;
+            glsSiblings = successor.siblings;
+            successor.siblings = [];
+            this.removeNode(lchild, glsId);
+        }
+        // otherwise the tree is either balanced or right heavy,
+        // so let's use sucessor (least value in right branch)
+        else {
+            let rchild = this.nodes[node.right];
+            successor = this.findLesserLeaf(rchild);
+            glsId = successor.id;
+            glsValue = successor.value;
+            glsSiblings = successor.siblings;
+            // dont leave any siblings when we (temporarily) 'remove' or they will assume ownership of old node
+            successor.siblings = [];
+            this.removeNode(rchild, glsId);
+        }
+        // update any parent pointers to node being replaced
+        if (node.parent) {
+            let p = this.nodes[node.parent];
+            if (p.left === oldId)
+                p.left = glsId;
+            if (p.right === oldId)
+                p.right = glsId;
+        }
+        // update any child points to node being replaced
+        if (node.left)
+            this.nodes[node.left].parent = glsId;
+        if (node.right)
+            this.nodes[node.right].parent = glsId;
+        // update (reuse) node instance id and value with that of successor
+        node.id = glsId;
+        node.value = glsValue;
+        node.siblings = glsSiblings;
+        // update hashmap
+        this.nodes[glsId] = node;
+        delete this.nodes[oldId];
+        // if old was apex, update apex to point to successor
+        if (this.apex === oldId)
+            this.apex = glsId;
+        this.updateBalance(node);
+    }
+    /**
+     * Utility method for finding In-Order predecessor to the provided node
+     * @param node Parent node to find leaf node of greatest 'value'
+    */
+    findGreaterLeaf(node) {
+        if (!node.right) {
+            return node;
+        }
+        let result = this.findGreaterLeaf(this.nodes[node.right]);
+        return result ? result : node;
+    }
+    /**
+     * Utility method for finding In-Order successor to the provided node
+     * @param node Parent Node to find leaf node of least 'value'
+     */
+    findLesserLeaf(node) {
+        if (!node.left) {
+            return node;
+        }
+        let result = this.findLesserLeaf(this.nodes[node.left]);
+        return result ? result : node;
+    }
+    /**
+     *  Interface method to support ranged queries.  Results sorted by index property.
+     * @param range Options for ranged request.
+     */
+    rangeRequest(range) {
+        if (!this.apex)
+            return [];
+        // if requesting all id's sorted by their value
+        if (!range) {
+            return this.collateIds(this.nodes[this.apex]);
+        }
+        if (range.op === "$eq") {
+            let match = this.locate(this.nodes[this.apex], range.val);
+            if (match === null) {
+                return [];
+            }
+            if (match.siblings.length) {
+                return [match.id, ...match.siblings];
+            }
+            return [match.id];
+        }
+        let result = this.collateRequest(this.nodes[this.apex], range);
+        return result;
+    }
+    /**
+     * Implements ranged request operations.
+     * @param node
+     * @param range
+     */
+    collateRequest(node, range) {
+        let result = [];
+        if (range.op === "$eq") {
+            // we use locate instead for $eq range requests
+            throw new Error("collateRequest does not support $eq range request");
+        }
+        let cmp1 = this.comparator(node.value, range.val);
+        let cmp2 = 0;
+        if (range.op === "$between") {
+            if (range.high === null || range.high === undefined) {
+                throw new Error("collateRequest: $between request missing high range value");
+            }
+            cmp2 = this.comparator(node.value, range.high);
+        }
+        if (node.left) {
+            switch (range.op) {
+                case "$lt":
+                case "$lte":
+                    result = this.collateRequest(this.nodes[node.left], range);
+                    break;
+                case "$gt":
+                case "$gte":
+                    // if the current node is still greater than compare value,
+                    // it's possible left child will be too
+                    if (cmp1 === 1) {
+                        result = this.collateRequest(this.nodes[node.left], range);
+                    }
+                    break;
+                case "$between":
+                    // only pursue left path if current node greater than (low) range val
+                    if (cmp1 === 1) {
+                        result = this.collateRequest(this.nodes[node.left], range);
+                    }
+                    break;
+                default: break;
+            }
+        }
+        if (!range) {
+            result.push(node.id);
+            result.push(...node.siblings);
+        }
+        else {
+            switch (range.op) {
+                case "$lt":
+                    if (cmp1 === -1) {
+                        result.push(node.id);
+                        result.push(...node.siblings);
+                    }
+                    break;
+                case "$lte":
+                    if (cmp1 === -1 || cmp1 === 0) {
+                        result.push(node.id);
+                        result.push(...node.siblings);
+                    }
+                    break;
+                case "$gt":
+                    if (cmp1 === 1) {
+                        result.push(node.id);
+                        result.push(...node.siblings);
+                    }
+                    break;
+                case "$gte":
+                    if (cmp1 === 1 || cmp1 === 0) {
+                        result.push(node.id);
+                        result.push(...node.siblings);
+                    }
+                    break;
+                case "$between":
+                    if (cmp1 >= 0 && cmp2 <= 0) {
+                        result.push(node.id);
+                        result.push(...node.siblings);
+                    }
+                    break;
+                default: break;
+            }
+        }
+        if (node.right) {
+            if (!range) {
+                result.push(...this.collateRequest(this.nodes[node.right], range));
+            }
+            else {
+                switch (range.op) {
+                    case "$lt":
+                    case "$lte":
+                        // if the current node is still less than compare value,
+                        // it's possible right child will be too
+                        if (cmp1 === -1) {
+                            result.push(...this.collateRequest(this.nodes[node.right], range));
+                        }
+                        break;
+                    case "$gt":
+                    case "$gte":
+                        result.push(...this.collateRequest(this.nodes[node.right], range));
+                        break;
+                    case "$between":
+                        // only pursue right path if current node less than (high) range val
+                        if (cmp2 === -1) {
+                            result.push(...this.collateRequest(this.nodes[node.right], range));
+                        }
+                        break;
+                    default: break;
+                }
+            }
+        }
+        return result;
+    }
+    /**
+     * Used on a branch node to return an array of id within that branch, sorted by their value
+     * @param node
+     */
+    collateIds(node) {
+        let result = [];
+        // debug diagnostic
+        if (!node) {
+            return [];
+        }
+        if (node.left) {
+            result = this.collateIds(this.nodes[node.left]);
+        }
+        result.push(node.id);
+        result.push(...node.siblings);
+        if (node.right) {
+            result.push(...this.collateIds(this.nodes[node.right]));
+        }
+        return result;
+    }
+    /**
+     * Traverses tree to a node matching the provided value.
+     * @param node
+     * @param val
+     */
+    /*
+    private locate(node: TreeNode<T>, val: any): TreeNode<T> {
+       switch (this.comparator.compare(val, node.value)) {
+          case 0: return node;
+          case 1:
+             if (!node.right) {
+                return null;
+             }
+  
+             return this.locate(this.nodes[node.right], val);
+          case -1:
+             if (!node.left) {
+                return null;
+             }
+  
+             return this.locate(this.nodes[node.left], val);
+       }
+    }
+    */
+    /**
+     * Inline/Non-recusive 'single value' ($eq) lookup.
+     * Traverses tree to a node matching the provided value.
+     * @param node
+     * @param val
+     */
+    locate(node, val) {
+        while (node !== null) {
+            switch (this.comparator(val, node.value)) {
+                case 0: return node;
+                case 1:
+                    if (!node.right) {
+                        return null;
+                    }
+                    node = this.nodes[node.right];
+                    break;
+                case -1:
+                    if (!node.left) {
+                        return null;
+                    }
+                    node = this.nodes[node.left];
+                    break;
+            }
+        }
+        return null;
+    }
+    /**
+     * Index integrity check (IRangedIndex interface function)
+     */
+    validateIndex() {
+        // handle null apex condition and verify empty tree and nodes
+        if (!this.apex) {
+            if (Object.keys(this.nodes).length !== 0) {
+                return false;
+            }
+            return true;
+        }
+        // ensure apex has no parent
+        if (this.nodes[this.apex].parent !== null) {
+            return false;
+        }
+        // high level verification - retrieve all node ids ordered by their values
+        let result = this.collateIds(this.nodes[this.apex]);
+        let nc = Object.keys(this.nodes).length;
+        // verify the inorder traversal returned same number of elements as nodes hashmap
+        if (result.length !== nc) {
+            return false;
+        }
+        // if only one result
+        if (result.length === 1) {
+            if (this.nodes[result[0]].parent !== null)
+                return false;
+            if (this.nodes[result[0]].left !== null)
+                return false;
+            if (this.nodes[result[0]].right !== null)
+                return false;
+            return true;
+        }
+        // iterate results and ensure next value is greater or equal to current
+        for (let i = 0; i < result.length - 1; i++) {
+            if (this.comparator(this.nodes[result[i]].value, this.nodes[result[i + 1]].value) === 1) {
+                return false;
+            }
+        }
+        return this.validateNode(this.nodes[this.apex]);
+    }
+    /**
+     * Recursive Node validation routine
+     * @param node
+     */
+    validateNode(node) {
+        // should never have parent or child pointers reference self
+        if ([node.parent, node.left, node.right].indexOf(node.id) !== -1) {
+            return false;
+        }
+        // validate height and balance
+        let hl = (node.left) ? this.nodes[node.left].height : -1;
+        let hr = (node.right) ? this.nodes[node.right].height : -1;
+        let eh = 1 + Math.max(hl, hr);
+        if (node.height !== eh) {
+            return false;
+        }
+        if (node.balance !== hr - hl) {
+            return false;
+        }
+        // verify any siblings parent back to self
+        if (node.siblings.length > 0) {
+            for (let sid of node.siblings) {
+                if (this.nodes[sid].parent !== node.id)
+                    return false;
+            }
+        }
+        // if there is a left child, verify it parents to self and recurse it
+        if (node.left) {
+            if (this.nodes[node.left].parent !== node.id) {
+                return false;
+            }
+            if (!this.validateNode(this.nodes[node.left])) {
+                return false;
+            }
+        }
+        // if there is a right child, verify it parents to self and recurse it
+        if (node.right) {
+            if (this.nodes[node.right].parent !== node.id) {
+                return false;
+            }
+            if (!this.validateNode(this.nodes[node.right])) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
+// CONCATENATED MODULE: ./packages/loki/src/ranged_indexes.ts
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return RangedIndexFactoryMap; });
+
+/** Map/Register of named factory functions returning IRangedIndex instances */
+let RangedIndexFactoryMap = {
+    "avl": (name, comparator) => { return new AvlTreeIndex(name, comparator); }
+};
+
+
+/***/ }),
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4271,15 +4790,20 @@ class LokiEventEmitter {
 
 
 /***/ }),
-/* 3 */
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(global) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Loki; });
-/* harmony import */ var _event_emitter__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2);
-/* harmony import */ var _collection__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1);
-/* harmony import */ var _common_plugin__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(0);
-/* global global */
+/* harmony import */ var _event_emitter__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5);
+/* harmony import */ var _collection__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3);
+/* harmony import */ var _common_plugin__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(1);
+/* harmony import */ var _comparators__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(0);
+/* harmony import */ var _ranged_indexes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(4);
+/* harmony import */ var _operator_packages__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(2);
+
+
+
 
 
 
@@ -4316,6 +4840,9 @@ class Loki extends _event_emitter__WEBPACK_IMPORTED_MODULE_0__[/* LokiEventEmitt
      * @param {Loki.Environment} [options.env] - the javascript environment
      * @param {Loki.SerializationMethod} [options.serializationMethod=NORMAL] - the serialization method
      * @param {string} [options.destructureDelimiter="$<\n"] - string delimiter used for destructured serialization
+     * @param {IComparatorMap} [options.comparatorMap] allows injecting or overriding registered comparators
+     * @param {IRangedIndexFactoryMap} [options.rangedIndexFactoryMap] allows injecting or overriding registered ranged index factories
+     * @param {ILokiOperatorPackageMap} [options.lokiOperatorPackageMap] allows injecting or overriding registered loki operator packages
      */
     constructor(filename = "loki.db", options = {}) {
         super();
@@ -4353,6 +4880,24 @@ class Loki extends _event_emitter__WEBPACK_IMPORTED_MODULE_0__[/* LokiEventEmitt
             "changes": [],
             "warning": []
         };
+        // allow users to inject their own comparators
+        if (options.comparatorMap) {
+            for (let c in options.comparatorMap) {
+                _comparators__WEBPACK_IMPORTED_MODULE_3__[/* ComparatorMap */ "a"][c] = options.comparatorMap[c];
+            }
+        }
+        // allow users to register their own rangedIndex factory functions
+        if (options.rangedIndexFactoryMap) {
+            for (let rif in options.rangedIndexFactoryMap) {
+                _ranged_indexes__WEBPACK_IMPORTED_MODULE_4__[/* RangedIndexFactoryMap */ "a"][rif] = options.rangedIndexFactoryMap[rif];
+            }
+        }
+        // allow users to register their own LokiOperatorPackages or inject functionality within existing ones
+        if (options.lokiOperatorPackageMap) {
+            for (let lop in options.lokiOperatorPackageMap) {
+                _operator_packages__WEBPACK_IMPORTED_MODULE_5__[/* LokiOperatorPackageMap */ "a"][lop] = options.lokiOperatorPackageMap[lop];
+            }
+        }
         this.on("init", this.clearChanges);
     }
     /**
@@ -5178,10 +5723,10 @@ class Loki extends _event_emitter__WEBPACK_IMPORTED_MODULE_0__[/* LokiEventEmitt
     }
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(4)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(7)))
 
 /***/ }),
-/* 4 */
+/* 7 */
 /***/ (function(module, exports) {
 
 var g;
@@ -5207,15 +5752,15 @@ module.exports = g;
 
 
 /***/ }),
-/* 5 */
+/* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _loki__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3);
+/* harmony import */ var _loki__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Loki", function() { return _loki__WEBPACK_IMPORTED_MODULE_0__["a"]; });
 
-/* harmony import */ var _collection__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1);
+/* harmony import */ var _collection__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Collection", function() { return _collection__WEBPACK_IMPORTED_MODULE_1__["a"]; });
 
 

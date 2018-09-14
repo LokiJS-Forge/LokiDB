@@ -1,7 +1,7 @@
 /**
  * @hidden
  */
-import { Loki } from "../loki/src";
+import { Loki } from "../loki/src/loki";
 export interface StorageAdapter {
     loadDatabase(dbname: string): Promise<any>;
     saveDatabase?(dbname: string, serialization: string): Promise<void>;

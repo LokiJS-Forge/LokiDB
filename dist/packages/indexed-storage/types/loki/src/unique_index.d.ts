@@ -1,37 +1,36 @@
-import { Doc } from "../../common/types";
-export declare class UniqueIndex<T extends object = object> {
+export declare class UniqueIndex {
     private _field;
-    private _keyMap;
+    private _lokiMap;
+    private _valMap;
     /**
      * Constructs an unique index object.
-     * @param {number|string} propertyField - the property field to index
+     * @param {string} propertyField - the property field to index
      */
-    constructor(propertyField: keyof T);
+    constructor(propertyField: string);
     /**
      * Sets a document's unique index.
-     * @param {Doc} doc - the document
-     * @param {number} row - the data row of the document
+     * @param {number} id loki id to associate with value
+     * @param {*} value  value to associate with id
      */
-    set(doc: Doc<T>, row: number): void;
+    set(id: number, value: any): void;
     /**
-     * Returns the data row of an unique index.
-     * @param {number|string} index - the index
-     * @returns {number | string} - the row
+     * Returns the $loki id of an unique value.
+     * @param {*} value the value to retrieve a loki id match for
      */
-    get(index: keyof T): number;
+    get(value: any): number;
     /**
      * Updates a document's unique index.
-     * @param  {Object} doc - the document
-     * @param  {number} row - the data row of the document
+     * @param {number} id (loki) id of document to update the value to
+     * @param {*} value value to associate with loki id
      */
-    update(doc: Doc<T>, row: number): void;
+    update(id: number, value: any): void;
     /**
      * Removes an unique index.
-     * @param {number|string} index - the unique index
+     * @param {number} id (loki) id to remove from index
      */
-    remove(index: number | string): void;
+    remove(id: number): void;
     /**
-     * Clears all unique indexes.
+     * Clears the unique index.
      */
     clear(): void;
 }

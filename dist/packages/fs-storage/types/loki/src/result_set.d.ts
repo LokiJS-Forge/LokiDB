@@ -4,43 +4,6 @@ import { Doc } from "../../common/types";
 import { Scorer } from "../../full-text-search/src/scorer";
 import { Query as FullTextSearchQuery } from "../../full-text-search/src/query_types";
 /**
- * @hidden
- */
-export declare const LokiOps: {
-    $eq(a: any, b: any): boolean;
-    $aeq(a: any, b: any): boolean;
-    $ne(a: any, b: any): boolean;
-    $dteq(a: any, b: any): boolean;
-    $gt(a: any, b: any): boolean;
-    $gte(a: any, b: any): boolean;
-    $lt(a: any, b: any): boolean;
-    $lte(a: any, b: any): boolean;
-    $between(a: any, range: [any, any]): boolean;
-    $jgt(a: any, b: any): boolean;
-    $jgte(a: any, b: any): boolean;
-    $jlt(a: any, b: any): boolean;
-    $jlte(a: any, b: any): boolean;
-    $jbetween(a: any, range: [any, any]): boolean;
-    $in(a: any, b: any): boolean;
-    $nin(a: any, b: any): boolean;
-    $keyin(a: string, b: object): boolean;
-    $nkeyin(a: string, b: object): boolean;
-    $definedin(a: string, b: object): boolean;
-    $undefinedin(a: string, b: object): boolean;
-    $regex(a: string, b: RegExp): boolean;
-    $containsNone(a: any, b: any): boolean;
-    $containsAny(a: any, b: any): boolean;
-    $contains(a: any, b: any): boolean;
-    $type(a: any, b: any): boolean;
-    $finite(a: number, b: boolean): boolean;
-    $size(a: any, b: any): boolean;
-    $len(a: any, b: any): boolean;
-    $where(a: any, b: any): boolean;
-    $not(a: any, b: any): boolean;
-    $and(a: any, b: any): boolean;
-    $or(a: any, b: any): boolean;
-};
-/**
  * ResultSet class allowing chainable queries.  Intended to be instanced internally.
  *    Collection.find(), Collection.where(), and Collection.chain() instantiate this.
  *
@@ -53,8 +16,8 @@ export declare const LokiOps: {
  * @param <TData> - the data type
  * @param <TNested> - nested properties of data type
  */
-export declare class ResultSet<TData extends object = object, TNested extends object = object> {
-    _collection: Collection<TData, TNested>;
+export declare class ResultSet<T extends object = object> {
+    _collection: Collection<T>;
     _filteredRows: number[];
     _filterInitialized: boolean;
     private _scoring;
@@ -62,7 +25,7 @@ export declare class ResultSet<TData extends object = object, TNested extends ob
      * Constructor.
      * @param {Collection} collection - the collection which this ResultSet will query against
      */
-    constructor(collection: Collection<TData, TNested>);
+    constructor(collection: Collection<T>);
     /**
      * Reset the ResultSet to its initial state.
      * @returns {ResultSet} Reference to this ResultSet, for future chain operations.
@@ -71,7 +34,7 @@ export declare class ResultSet<TData extends object = object, TNested extends ob
     /**
      * Override of toJSON to avoid circular references
      */
-    toJSON(): ResultSet<TData, TNested>;
+    toJSON(): ResultSet<T>;
     /**
      * Allows you to limit the number of documents passed to next chain operation.
      * A ResultSet copy() is made to avoid altering original ResultSet.
@@ -89,14 +52,14 @@ export declare class ResultSet<TData extends object = object, TNested extends ob
      * To support reuse of ResultSet in branched query situations.
      * @returns {ResultSet} Returns a copy of the ResultSet (set) but the underlying document references will be the same.
      */
-    copy(): ResultSet<TData, TNested>;
+    copy(): ResultSet<T>;
     /**
      * Executes a named collection transform or raw array of transform steps against the ResultSet.
      * @param {(string|array)} transform - name of collection transform or raw transform array
      * @param {object} [parameters=] - object property hash of parameters, if the transform requires them.
      * @returns {ResultSet} either (this) ResultSet or a clone of of this ResultSet (depending on steps)
      */
-    transform(transform: string | Collection.Transform<TData, TNested>[], parameters?: object): this;
+    transform(transform: string | Collection.Transform<T>[], parameters?: object): this;
     /**
      * User supplied compare function is provided two documents to compare. (chainable)
      * @example
@@ -108,19 +71,17 @@ export declare class ResultSet<TData extends object = object, TNested extends ob
      * @param {function} comparefun - A javascript compare function used for sorting.
      * @returns {ResultSet} Reference to this ResultSet, sorted, for future chain operations.
      */
-    sort(comparefun: (a: Doc<TData & TNested>, b: Doc<TData & TNested>) => number): this;
+    sort(comparefun: (a: Doc<T>, b: Doc<T>) => number): this;
     /**
      * Simpler, loose evaluation for user to sort based on a property name. (chainable).
      * Sorting based on the same lt/gt helper functions used for binary indices.
      * @param {string} propname - name of property to sort by.
      * @param {boolean|object=} options - boolean for sort descending or options object
      * @param {boolean} [options.desc=false] - whether to sort descending
-     * @param {boolean} [options.disableIndexIntersect=false] - whether we should explicitly not use array intersection.
-     * @param {boolean} [options.forceIndexIntersect=false] - force array intersection (if binary index exists).
-     * @param {boolean} [options.useJavascriptSorting=false] - whether results are sorted via basic javascript sort.
+     * @param {string} [options.sortComparator] override default with name of comparator registered in ComparatorMap
      * @returns {ResultSet} Reference to this ResultSet, sorted, for future chain operations.
      */
-    simplesort(propname: keyof (TData & TNested), options?: boolean | ResultSet.SimpleSortOptions): this;
+    simplesort(propname: keyof T, options?: boolean | ResultSet.SimpleSortOptions): this;
     /**
      * Allows sorting a ResultSet based on multiple columns.
      * @example
@@ -131,7 +92,7 @@ export declare class ResultSet<TData extends object = object, TNested extends ob
      * @param {array} properties - array of property names or subarray of [propertyname, isdesc] used evaluate sort order
      * @returns {ResultSet} Reference to this ResultSet, sorted, for future chain operations.
      */
-    compoundsort(properties: (keyof (TData & TNested) | [keyof (TData & TNested), boolean])[]): this;
+    compoundsort(properties: (keyof T | [keyof T, boolean])[]): this;
     /**
      * Helper function for compoundsort(), performing individual object comparisons
      * @param {Array} properties - array of property names, in order, by which to evaluate sort order
@@ -159,8 +120,8 @@ export declare class ResultSet<TData extends object = object, TNested extends ob
      * @param {array} expressionArray - array of expressions
      * @returns {ResultSet} this ResultSet for further chain ops.
      */
-    findOr(expressionArray: ResultSet.Query<Doc<TData & TNested>>[]): this;
-    $or(expressionArray: ResultSet.Query<Doc<TData & TNested>>[]): this;
+    findOr(expressionArray: ResultSet.Query<Doc<T>>[]): this;
+    $or(expressionArray: ResultSet.Query<Doc<T>>[]): this;
     /**
      * Oversee the operation of AND'ed query expressions.
      * AND'ed expression evaluation runs each expression progressively against the full collection,
@@ -169,8 +130,8 @@ export declare class ResultSet<TData extends object = object, TNested extends ob
      * @param {array} expressionArray - array of expressions
      * @returns {ResultSet} this ResultSet for further chain ops.
      */
-    findAnd(expressionArray: ResultSet.Query<Doc<TData & TNested>>[]): this;
-    $and(expressionArray: ResultSet.Query<Doc<TData & TNested>>[]): this;
+    findAnd(expressionArray: ResultSet.Query<Doc<T>>[]): this;
+    $and(expressionArray: ResultSet.Query<Doc<T>>[]): this;
     /**
      * Used for querying via a mongo-style query object.
      *
@@ -178,13 +139,13 @@ export declare class ResultSet<TData extends object = object, TNested extends ob
      * @param {boolean} firstOnly - (Optional) Used by collection.findOne() - flag if this was invoked via findOne()
      * @returns {ResultSet} this ResultSet for further chain ops.
      */
-    find(query?: ResultSet.Query<Doc<TData & TNested>>, firstOnly?: boolean): this;
+    find(query?: ResultSet.Query<Doc<T>>, firstOnly?: boolean): this;
     /**
      * Used for filtering via a javascript filter function.
      * @param {function} fun - A javascript function used for filtering current results by.
      * @returns {ResultSet} this ResultSet for further chain ops.
      */
-    where(fun: (obj: Doc<TData & TNested>) => boolean): this;
+    where(fun: (obj: Doc<T>) => boolean): this;
     /**
      * Returns the number of documents in the ResultSet.
      * @returns {number} The number of documents in the ResultSet.
@@ -201,13 +162,13 @@ export declare class ResultSet<TData extends object = object, TNested extends ob
      *
      * @returns {Array} Array of documents in the ResultSet
      */
-    data(options?: ResultSet.DataOptions): Doc<TData & TNested>[];
+    data(options?: ResultSet.DataOptions): Doc<T>[];
     /**
      * Used to run an update operation on all documents currently in the ResultSet.
      * @param {function} updateFunction - User supplied updateFunction(obj) will be executed for each document object.
      * @returns {ResultSet} this ResultSet for further chain ops.
      */
-    update(updateFunction: (obj: Doc<TData & TNested>) => Doc<TData & TNested>): this;
+    update(updateFunction: (obj: Doc<T>) => Doc<T>): this;
     /**
      * Removes all document objects which are currently in ResultSet from collection (as well as ResultSet)
      * @returns {ResultSet} this (empty) ResultSet for further chain ops.
@@ -220,7 +181,7 @@ export declare class ResultSet<TData extends object = object, TNested extends ob
      * @param {function} reduceFunction - this function accepts many (array of map outputs) and returns single value
      * @returns {value} The output of your reduceFunction
      */
-    mapReduce<T, U>(mapFunction: (item: Doc<TData & TNested>, index: number, array: Doc<TData & TNested>[]) => T, reduceFunction: (array: T[]) => U): U;
+    mapReduce<U1, U2>(mapFunction: (item: Doc<T>, index: number, array: Doc<T>[]) => U1, reduceFunction: (array: U1[]) => U2): U2;
     /**
      * Left joining two sets of data. Join keys can be defined or calculated properties
      * eqJoin expects the right join key values to be unique.  Otherwise left data will be joined on the last joinData object with that key
@@ -234,7 +195,7 @@ export declare class ResultSet<TData extends object = object, TNested extends ob
      * @param {string} dataOptions.forceCloneMethod - allows overriding the default or collection specified cloning method
      * @returns {ResultSet} A ResultSet with data in the format [{left: leftObj, right: rightObj}]
      */
-    eqJoin(joinData: Collection<any> | ResultSet<any> | any[], leftJoinKey: string | ((obj: any) => string), rightJoinKey: string | ((obj: any) => string), mapFun?: (left: any, right: any) => any, dataOptions?: ResultSet.DataOptions): ResultSet<any, any>;
+    eqJoin(joinData: Collection<any> | ResultSet<any> | any[], leftJoinKey: string | ((obj: any) => string), rightJoinKey: string | ((obj: any) => string), mapFun?: (left: any, right: any) => any, dataOptions?: ResultSet.DataOptions): ResultSet<any>;
     /**
      * Applies a map function into a new collection for further chaining.
      * @param {function} mapFun - javascript map function
@@ -244,7 +205,7 @@ export declare class ResultSet<TData extends object = object, TNested extends ob
      * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method
      * @return {ResultSet}
      */
-    map<U extends object>(mapFun: (obj: Doc<TData & TNested>, index: number, array: Doc<TData & TNested>[]) => U, dataOptions?: ResultSet.DataOptions): ResultSet<U>;
+    map<U extends object>(mapFun: (obj: Doc<T>, index: number, array: Doc<T>[]) => U, dataOptions?: ResultSet.DataOptions): ResultSet<U>;
 }
 export declare namespace ResultSet {
     interface DataOptions {
@@ -254,19 +215,13 @@ export declare namespace ResultSet {
     }
     interface SimpleSortOptions {
         desc?: boolean;
-        disableIndexIntersect?: boolean;
-        forceIndexIntersect?: boolean;
-        useJavascriptSorting?: boolean;
+        sortComparator?: string;
     }
     type ContainsHelperType<R> = R extends string ? string | string[] : R extends any[] ? R[number] | R[number][] : R extends object ? keyof R | (keyof R)[] : never;
     type LokiOps<R> = {
         $eq?: R;
     } | {
-        $aeq?: R;
-    } | {
         $ne?: R;
-    } | {
-        $dteq?: Date;
     } | {
         $gt?: R;
     } | {
@@ -307,16 +262,6 @@ export declare namespace ResultSet {
         $len?: number;
     } | {
         $where?: (val?: R) => boolean;
-    } | {
-        $jgt?: R;
-    } | {
-        $jgte?: R;
-    } | {
-        $jlt?: R;
-    } | {
-        $jlte?: R;
-    } | {
-        $jbetween?: [R, R];
     };
     type Query<T> = {
         [P in keyof T]?: LokiOps<T[P]> | T[P];

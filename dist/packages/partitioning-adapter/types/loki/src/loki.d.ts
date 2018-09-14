@@ -1,6 +1,9 @@
 import { LokiEventEmitter } from "./event_emitter";
 import { Collection } from "./collection";
 import { Doc, StorageAdapter } from "../../common/types";
+import { IComparatorMap } from "./comparators";
+import { IRangedIndexFactoryMap } from "./ranged_indexes";
+import { ILokiOperatorPackageMap } from "./operator_packages";
 export declare class Loki extends LokiEventEmitter {
     filename: string;
     private databaseVersion;
@@ -25,6 +28,9 @@ export declare class Loki extends LokiEventEmitter {
      * @param {Loki.Environment} [options.env] - the javascript environment
      * @param {Loki.SerializationMethod} [options.serializationMethod=NORMAL] - the serialization method
      * @param {string} [options.destructureDelimiter="$<\n"] - string delimiter used for destructured serialization
+     * @param {IComparatorMap} [options.comparatorMap] allows injecting or overriding registered comparators
+     * @param {IRangedIndexFactoryMap} [options.rangedIndexFactoryMap] allows injecting or overriding registered ranged index factories
+     * @param {ILokiOperatorPackageMap} [options.lokiOperatorPackageMap] allows injecting or overriding registered loki operator packages
      */
     constructor(filename?: string, options?: Loki.Options);
     /**
@@ -280,6 +286,9 @@ export declare namespace Loki {
         env?: Environment;
         serializationMethod?: SerializationMethod;
         destructureDelimiter?: string;
+        comparatorMap?: IComparatorMap;
+        rangedIndexFactoryMap?: IRangedIndexFactoryMap;
+        lokiOperatorPackageMap?: ILokiOperatorPackageMap;
     }
     interface PersistenceOptions {
         adapter?: StorageAdapter;

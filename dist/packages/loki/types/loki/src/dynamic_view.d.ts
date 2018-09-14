@@ -21,7 +21,7 @@ import { Scorer } from "../../full-text-search/src/scorer";
  * @param <TData> - the data type
  * @param <TNested> - nested properties of data type
  */
-export declare class DynamicView<TData extends object = object, TNested extends object = object> extends LokiEventEmitter {
+export declare class DynamicView<T extends object = object> extends LokiEventEmitter {
     readonly name: string;
     private _collection;
     private _persistent;
@@ -47,7 +47,7 @@ export declare class DynamicView<TData extends object = object, TNested extends 
      * @param {string} [options.sortPriority="passive"] - the sort priority
      * @param {number} [options.minRebuildInterval=1] - minimum rebuild interval (need clarification to docs here)
      */
-    constructor(collection: Collection<TData, TNested>, name: string, options?: DynamicView.Options);
+    constructor(collection: Collection<T>, name: string, options?: DynamicView.Options);
     /**
      * Internally used immediately after deserialization (loading)
      *    This will clear out and reapply filterPipeline ops, recreating the view.
@@ -67,7 +67,7 @@ export declare class DynamicView<TData extends object = object, TNested extends 
      * @param {object} parameters - optional parameters (if optional transform requires them)
      * @returns {ResultSet} A copy of the internal ResultSet for branched queries.
      */
-    branchResultSet(transform?: string | Collection.Transform<TData, TNested>[], parameters?: object): ResultSet<TData, TNested>;
+    branchResultSet(transform?: string | Collection.Transform<T>[], parameters?: object): ResultSet<T>;
     /**
      * Override of toJSON to avoid circular references.
      */
@@ -92,7 +92,7 @@ export declare class DynamicView<TData extends object = object, TNested extends 
      * @param {function} comparefun - a javascript compare function used for sorting
      * @returns {DynamicView} this DynamicView object, for further chain ops.
      */
-    applySort(comparefun: (lhs: Doc<TData & TNested>, rhs: Doc<TData & TNested>) => number): this;
+    applySort(comparefun: (lhs: Doc<T>, rhs: Doc<T>) => number): this;
     /**
      * Used to specify a property used for view translation.
      * @param {string} field - the field name
@@ -105,7 +105,7 @@ export declare class DynamicView<TData extends object = object, TNested extends 
      * @example
      * dv.applySimpleSort("name");
      */
-    applySimpleSort(field: keyof (TData & TNested), options?: boolean | ResultSet.SimpleSortOptions): this;
+    applySimpleSort(field: keyof T, options?: boolean | ResultSet.SimpleSortOptions): this;
     /**
      * Allows sorting a ResultSet based on multiple columns.
      * @param {Array} criteria - array of property names or subarray of [propertyname, isdesc] used evaluate sort order
@@ -118,7 +118,7 @@ export declare class DynamicView<TData extends object = object, TNested extends 
      * // to sort by age (descending) and then by name (descending)
      * dv.applySortCriteria([['age', true], ['name', true]]);
      */
-    applySortCriteria(criteria: (keyof (TData & TNested) | [keyof (TData & TNested), boolean])[]): this;
+    applySortCriteria(criteria: (keyof T | [keyof T, boolean])[]): this;
     /**
      * Used to apply a sort by the latest full-text-search scoring.
      * @param {boolean} [ascending=false] - sort ascending
@@ -167,7 +167,7 @@ export declare class DynamicView<TData extends object = object, TNested extends 
      *    The object is in the format { 'type': filter_type, 'val', filter_param, 'uid', optional_filter_id }
      * @returns {DynamicView} this DynamicView object, for further chain ops.
      */
-    applyFilter(filter: DynamicView.Filter<TData, TNested>): this;
+    applyFilter(filter: DynamicView.Filter<T>): this;
     /**
      * applyFind() - Adds or updates a mongo-style query option in the DynamicView filter pipeline
      *
@@ -182,7 +182,7 @@ export declare class DynamicView<TData extends object = object, TNested extends 
      * @param {(string|number)} uid - Optional: The unique ID of this filter, to reference it in the future.
      * @returns {DynamicView} this DynamicView object, for further chain ops.
      */
-    applyWhere(fun: (obj: Doc<TData & TNested>) => boolean, uid?: string | number): this;
+    applyWhere(fun: (obj: Doc<T>) => boolean, uid?: string | number): this;
     /**
      * Remove the specified filter from the DynamicView filter pipeline
      * @param {(string|number)} uid - The unique ID of the filter to be removed.
@@ -205,7 +205,7 @@ export declare class DynamicView<TData extends object = object, TNested extends 
      *
      * @returns {Array} An array of documents representing the current DynamicView contents.
      */
-    data(options?: ResultSet.DataOptions): Doc<TData & TNested>[];
+    data(options?: ResultSet.DataOptions): Doc<T>[];
     /**
      * When the view is not sorted we may still wish to be notified of rebuild events.
      * This event will throttle and queue a single rebuild event when batches of updates affect the view.
@@ -240,7 +240,7 @@ export declare class DynamicView<TData extends object = object, TNested extends 
      * @param {function} reduceFunction - this function accepts many (array of map outputs) and returns single value
      * @returns The output of your reduceFunction
      */
-    mapReduce<T, U>(mapFunction: (item: TData, index: number, array: TData[]) => T, reduceFunction: (array: T[]) => U): U;
+    mapReduce<U1, U2>(mapFunction: (item: T, index: number, array: T[]) => U1, reduceFunction: (array: U1[]) => U2): U2;
 }
 export declare namespace DynamicView {
     interface Options {
@@ -264,13 +264,13 @@ export declare namespace DynamicView {
         _sortByScoring: boolean;
         _sortDirty: boolean;
     }
-    type Filter<TData extends object = object, TNested extends object = object> = {
+    type Filter<T extends object = object> = {
         type: "find";
-        val: ResultSet.Query<Doc<TData & TNested>>;
+        val: ResultSet.Query<Doc<T>>;
         uid: number | string;
     } | {
         type: "where";
-        val: (obj: Doc<TData & TNested>) => boolean;
+        val: (obj: Doc<T>) => boolean;
         uid: number | string;
     };
 }
