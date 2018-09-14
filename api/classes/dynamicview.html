@@ -57,7 +57,7 @@
 					<a href="dynamicview.html">DynamicView</a>
 				</li>
 			</ul>
-			<h1>Class DynamicView&lt;TData, TNested&gt;</h1>
+			<h1>Class DynamicView&lt;T&gt;</h1>
 		</div>
 	</div>
 </header>
@@ -84,6 +84,12 @@
 						<dt>see</dt>
 						<dd><p>{@link Collection#addDynamicView} to construct instances of DynamicView</p>
 						</dd>
+						<dt>param</dt>
+						<dd><p>the data type</p>
+						</dd>
+						<dt>param</dt>
+						<dd><p>nested properties of data type</p>
+						</dd>
 					</dl>
 				</div>
 			</section>
@@ -91,20 +97,7 @@
 				<h3>Type parameters</h3>
 				<ul class="tsd-type-parameters">
 					<li>
-						<h4>TData<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></h4>
-						<div class="tsd-comment tsd-typography">
-							<div class="lead">
-								<p>the data type</p>
-							</div>
-						</div>
-					</li>
-					<li>
-						<h4>TNested<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></h4>
-						<div class="tsd-comment tsd-typography">
-							<div class="lead">
-								<p>nested properties of data type</p>
-							</div>
-						</div>
+						<h4>T<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></h4>
 					</li>
 				</ul>
 			</section>
@@ -193,7 +186,7 @@
 					<div class="tsd-signature tsd-kind-icon">Filter<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L775">loki/src/dynamic_view.ts:775</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L775">loki/src/dynamic_view.ts:775</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -203,7 +196,7 @@
 					<div class="tsd-signature tsd-kind-icon">Sort<wbr>Priority<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"passive"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"active"</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L760">loki/src/dynamic_view.ts:760</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L760">loki/src/dynamic_view.ts:760</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -214,13 +207,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Dynamic<wbr>View<span class="tsd-signature-symbol">(</span>collection<span class="tsd-signature-symbol">: </span><a href="collection.html" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span>, name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/dynamicview.options.html" class="tsd-signature-type">Options</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="dynamicview.html" class="tsd-signature-type">DynamicView</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Dynamic<wbr>View<span class="tsd-signature-symbol">(</span>collection<span class="tsd-signature-symbol">: </span><a href="collection.html" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span>, name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/dynamicview.options.html" class="tsd-signature-type">Options</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="dynamicview.html" class="tsd-signature-type">DynamicView</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L49">loki/src/dynamic_view.ts:49</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L49">loki/src/dynamic_view.ts:49</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -231,7 +224,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>collection: <a href="collection.html" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span></h5>
+									<h5>collection: <a href="collection.html" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<div class="lead">
 											<p>a reference to the collection to work agains</p>
@@ -269,7 +262,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="lokieventemitter.html">LokiEventEmitter</a>.<a href="lokieventemitter.html#_asynclisteners">_asyncListeners</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/event_emitter.ts#L18">loki/src/event_emitter.ts:18</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/event_emitter.ts#L18">loki/src/event_emitter.ts:18</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -286,7 +279,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="lokieventemitter.html">LokiEventEmitter</a>.<a href="lokieventemitter.html#_events">_events</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/event_emitter.ts#L12">loki/src/event_emitter.ts:12</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/event_emitter.ts#L12">loki/src/event_emitter.ts:12</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -301,7 +294,7 @@
 					<div class="tsd-signature tsd-kind-icon">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L27">loki/src/dynamic_view.ts:27</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L27">loki/src/dynamic_view.ts:27</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -319,7 +312,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="lokieventemitter.html">LokiEventEmitter</a>.<a href="lokieventemitter.html#addlistener">addListener</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/event_emitter.ts#L68">loki/src/event_emitter.ts:68</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/event_emitter.ts#L68">loki/src/event_emitter.ts:68</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -344,13 +337,13 @@
 					<a name="applyfilter" class="tsd-anchor"></a>
 					<h3>apply<wbr>Filter</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">apply<wbr>Filter<span class="tsd-signature-symbol">(</span>filter<span class="tsd-signature-symbol">: </span><a href="dynamicview.html#filter" class="tsd-signature-type">Filter</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">apply<wbr>Filter<span class="tsd-signature-symbol">(</span>filter<span class="tsd-signature-symbol">: </span><a href="dynamicview.html#filter" class="tsd-signature-type">Filter</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L393">loki/src/dynamic_view.ts:393</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L393">loki/src/dynamic_view.ts:393</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -361,7 +354,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>filter: <a href="dynamicview.html#filter" class="tsd-signature-type">Filter</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span></h5>
+									<h5>filter: <a href="dynamicview.html#filter" class="tsd-signature-type">Filter</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>A filter object to add to the pipeline.
 										The object is in the format { &#39;type&#39;: filter_type, &#39;val&#39;, filter_param, &#39;uid&#39;, optional_filter_id }</p>
@@ -383,7 +376,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L423">loki/src/dynamic_view.ts:423</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L423">loki/src/dynamic_view.ts:423</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -415,13 +408,13 @@
 					<a name="applysimplesort" class="tsd-anchor"></a>
 					<h3>apply<wbr>Simple<wbr>Sort</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">apply<wbr>Simple<wbr>Sort<span class="tsd-signature-symbol">(</span>field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">keyof TData &amp; TNested</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> | </span><a href="../interfaces/resultset.simplesortoptions.html" class="tsd-signature-type">SimpleSortOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">apply<wbr>Simple<wbr>Sort<span class="tsd-signature-symbol">(</span>field<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">keyof T</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> | </span><a href="../interfaces/resultset.simplesortoptions.html" class="tsd-signature-type">SimpleSortOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L246">loki/src/dynamic_view.ts:246</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L246">loki/src/dynamic_view.ts:246</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -437,7 +430,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>field: <span class="tsd-signature-type">keyof TData &amp; TNested</span></h5>
+									<h5>field: <span class="tsd-signature-type">keyof T</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>the field name</p>
 									</div>
@@ -464,7 +457,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L225">loki/src/dynamic_view.ts:225</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L225">loki/src/dynamic_view.ts:225</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -491,17 +484,17 @@
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-siganture">
 											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
-												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>lhs<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span>, rhs<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>lhs<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span>, rhs<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
 											</ul>
 											<ul class="tsd-descriptions">
 												<li class="tsd-description">
 													<h4 class="tsd-parameters-title">Parameters</h4>
 													<ul class="tsd-parameters">
 														<li>
-															<h5>lhs: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span></h5>
+															<h5>lhs: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h5>
 														</li>
 														<li>
-															<h5>rhs: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span></h5>
+															<h5>rhs: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h5>
 														</li>
 													</ul>
 													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
@@ -526,7 +519,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L280">loki/src/dynamic_view.ts:280</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L280">loki/src/dynamic_view.ts:280</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -548,13 +541,13 @@
 					<a name="applysortcriteria" class="tsd-anchor"></a>
 					<h3>apply<wbr>Sort<wbr>Criteria</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">apply<wbr>Sort<wbr>Criteria<span class="tsd-signature-symbol">(</span>criteria<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-type">keyof (TData &amp; TNested)</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">apply<wbr>Sort<wbr>Criteria<span class="tsd-signature-symbol">(</span>criteria<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-type">keyof T</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L267">loki/src/dynamic_view.ts:267</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L267">loki/src/dynamic_view.ts:267</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -575,7 +568,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>criteria: <span class="tsd-signature-symbol">(</span><span class="tsd-signature-type">keyof (TData &amp; TNested)</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">[]</span></h5>
+									<h5>criteria: <span class="tsd-signature-symbol">(</span><span class="tsd-signature-type">keyof T</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">[]</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>array of property names or subarray of [propertyname, isdesc] used evaluate sort order</p>
 									</div>
@@ -596,7 +589,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L438">loki/src/dynamic_view.ts:438</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L438">loki/src/dynamic_view.ts:438</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -614,14 +607,14 @@
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-siganture">
 											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
-												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>obj<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>obj<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
 											</ul>
 											<ul class="tsd-descriptions">
 												<li class="tsd-description">
 													<h4 class="tsd-parameters-title">Parameters</h4>
 													<ul class="tsd-parameters">
 														<li>
-															<h5>obj: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span></h5>
+															<h5>obj: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h5>
 														</li>
 													</ul>
 													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -646,13 +639,13 @@
 					<a name="branchresultset" class="tsd-anchor"></a>
 					<h3>branch<wbr>Result<wbr>Set</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">branch<wbr>Result<wbr>Set<span class="tsd-signature-symbol">(</span>transform<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><a href="collection.html#transform" class="tsd-signature-type">Transform</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span>, parameters<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="resultset.html" class="tsd-signature-type">ResultSet</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">branch<wbr>Result<wbr>Set<span class="tsd-signature-symbol">(</span>transform<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><a href="collection.html#transform" class="tsd-signature-type">Transform</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span>, parameters<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="resultset.html" class="tsd-signature-type">ResultSet</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L142">loki/src/dynamic_view.ts:142</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L142">loki/src/dynamic_view.ts:142</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -665,7 +658,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> transform: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><a href="collection.html#transform" class="tsd-signature-type">Transform</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> transform: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><a href="collection.html#transform" class="tsd-signature-type">Transform</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>Optional name of collection transform, or an array of transform steps</p>
 									</div>
@@ -677,7 +670,7 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="resultset.html" class="tsd-signature-type">ResultSet</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="resultset.html" class="tsd-signature-type">ResultSet</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h4>
 							<p>A copy of the internal ResultSet for branched queries.</p>
 						</li>
 					</ul>
@@ -692,7 +685,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L310">loki/src/dynamic_view.ts:310</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L310">loki/src/dynamic_view.ts:310</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -715,7 +708,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L467">loki/src/dynamic_view.ts:467</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L467">loki/src/dynamic_view.ts:467</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -732,13 +725,13 @@
 					<a name="data" class="tsd-anchor"></a>
 					<h3>data</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">data<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/resultset.dataoptions.html" class="tsd-signature-type">DataOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></li>
+						<li class="tsd-signature tsd-kind-icon">data<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/resultset.dataoptions.html" class="tsd-signature-type">DataOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L489">loki/src/dynamic_view.ts:489</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L489">loki/src/dynamic_view.ts:489</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -755,7 +748,7 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h4>
 							<p>An array of documents representing the current DynamicView contents.</p>
 						</li>
 					</ul>
@@ -771,7 +764,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="lokieventemitter.html">LokiEventEmitter</a>.<a href="lokieventemitter.html#emit">emit</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/event_emitter.ts#L51">loki/src/event_emitter.ts:51</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/event_emitter.ts#L51">loki/src/event_emitter.ts:51</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -810,7 +803,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L293">loki/src/dynamic_view.ts:293</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L293">loki/src/dynamic_view.ts:293</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -826,13 +819,13 @@
 					<a name="mapreduce" class="tsd-anchor"></a>
 					<h3>map<wbr>Reduce</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">map<wbr>Reduce&lt;T, U&gt;<span class="tsd-signature-symbol">(</span>mapFunction<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span>, reduceFunction<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">U</span></li>
+						<li class="tsd-signature tsd-kind-icon">map<wbr>Reduce&lt;U1, U2&gt;<span class="tsd-signature-symbol">(</span>mapFunction<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span>, reduceFunction<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">U2</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L744">loki/src/dynamic_view.ts:744</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L744">loki/src/dynamic_view.ts:744</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -843,10 +836,10 @@
 							<h4 class="tsd-type-parameters-title">Type parameters</h4>
 							<ul class="tsd-type-parameters">
 								<li>
-									<h4>T</h4>
+									<h4>U1</h4>
 								</li>
 								<li>
-									<h4>U</h4>
+									<h4>U2</h4>
 								</li>
 							</ul>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -859,23 +852,23 @@
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-siganture">
 											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
-												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>item<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TData</span>, index<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, array<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">T</span></li>
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>item<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">T</span>, index<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, array<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">U1</span></li>
 											</ul>
 											<ul class="tsd-descriptions">
 												<li class="tsd-description">
 													<h4 class="tsd-parameters-title">Parameters</h4>
 													<ul class="tsd-parameters">
 														<li>
-															<h5>item: <span class="tsd-signature-type">TData</span></h5>
+															<h5>item: <span class="tsd-signature-type">T</span></h5>
 														</li>
 														<li>
 															<h5>index: <span class="tsd-signature-type">number</span></h5>
 														</li>
 														<li>
-															<h5>array: <span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol">[]</span></h5>
+															<h5>array: <span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">[]</span></h5>
 														</li>
 													</ul>
-													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">T</span></h4>
+													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">U1</span></h4>
 												</li>
 											</ul>
 										</li>
@@ -889,24 +882,24 @@
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-siganture">
 											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
-												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>array<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">U</span></li>
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>array<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">U1</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">U2</span></li>
 											</ul>
 											<ul class="tsd-descriptions">
 												<li class="tsd-description">
 													<h4 class="tsd-parameters-title">Parameters</h4>
 													<ul class="tsd-parameters">
 														<li>
-															<h5>array: <span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">[]</span></h5>
+															<h5>array: <span class="tsd-signature-type">U1</span><span class="tsd-signature-symbol">[]</span></h5>
 														</li>
 													</ul>
-													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">U</span></h4>
+													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">U2</span></h4>
 												</li>
 											</ul>
 										</li>
 									</ul>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">U</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">U2</span></h4>
 							<p>The output of your reduceFunction</p>
 						</li>
 					</ul>
@@ -922,7 +915,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="lokieventemitter.html">LokiEventEmitter</a>.<a href="lokieventemitter.html#on">on</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/event_emitter.ts#L26">loki/src/event_emitter.ts:26</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/event_emitter.ts#L26">loki/src/event_emitter.ts:26</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -960,7 +953,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L362">loki/src/dynamic_view.ts:362</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L362">loki/src/dynamic_view.ts:362</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -983,7 +976,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L452">loki/src/dynamic_view.ts:452</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L452">loki/src/dynamic_view.ts:452</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1015,7 +1008,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L190">loki/src/dynamic_view.ts:190</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L190">loki/src/dynamic_view.ts:190</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1047,7 +1040,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="lokieventemitter.html">LokiEventEmitter</a>.<a href="lokieventemitter.html#removelistener">removeListener</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/event_emitter.ts#L77">loki/src/event_emitter.ts:77</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/event_emitter.ts#L77">loki/src/event_emitter.ts:77</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1084,7 +1077,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L319">loki/src/dynamic_view.ts:319</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L319">loki/src/dynamic_view.ts:319</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1107,7 +1100,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L301">loki/src/dynamic_view.ts:301</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L301">loki/src/dynamic_view.ts:301</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1130,7 +1123,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L153">loki/src/dynamic_view.ts:153</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L153">loki/src/dynamic_view.ts:153</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1152,7 +1145,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/dynamic_view.ts#L168">loki/src/dynamic_view.ts:168</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/dynamic_view.ts#L168">loki/src/dynamic_view.ts:168</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>

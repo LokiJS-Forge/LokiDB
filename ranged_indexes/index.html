@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>LokiDB Ranged Indexes - LokiDB</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  <link href="../css/codemirror/codemirror.css" rel="stylesheet">
+  <link href="../css/codemirror/foldgutter.css" rel="stylesheet">
+  <link href="../css/javascript_editor.css" rel="stylesheet">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "LokiDB Ranged Indexes";
+    var mkdocs_page_input_path = "ranged_indexes.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> LokiDB</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="..">Home</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../comparators/">Loki Comparators</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../operator_packages/">LokiOperatorPackages</a>
+	    </li>
+          
+            <li class="toctree-l1 current">
+		
+    <a class="current" href="./">LokiDB Ranged Indexes</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l2"><a href="#lokidb-ranged-indexes">LokiDB Ranged Indexes</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l3" href="#overview">Overview</a></li>
+        
+            <li><a class="toctree-l3" href="#what-is-the-performance-of-lokidbs-avl-index-implementation">What is the performance of LokiDB's "avl" index implementation?</a></li>
+        
+            <li><a class="toctree-l3" href="#how-can-i-apply-an-avl-index-to-a-property-in-my-collection">How can I apply an avl index to a property in my collection?</a></li>
+        
+            <li><a class="toctree-l3" href="#what-other-indexes-might-i-want-to-have-an-implementation-for-in-the-future">What other indexes might I want to have an implementation for in the future?</a></li>
+        
+            <li><a class="toctree-l3" href="#if-i-implement-my-own-rangedindex-how-might-i-register-and-use-that-irangedindex-implemenation">If I implement my own RangedIndex, how might I register and use that IRangedIndex implemenation?</a></li>
+        
+        </ul>
+    
+
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">LokiDB</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>LokiDB Ranged Indexes</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/LokiJS-Forge/LokiDB/edit/master/docs/ranged_indexes.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="lokidb-ranged-indexes">LokiDB Ranged Indexes</h1>
+<h2 id="overview">Overview</h2>
+<p>RangedIndexes in LokiDB represent an interface which higher-performance indexes which can implement so that they can be applied to properties within your LokiDB collections.</p>
+<p>In LokiDB, we have settled on and implemented an <strong><em>AVL self balancing binary tree (which supports duplicates)</em></strong> as our highest performance index for applying to properties.  This AVL index adheres to and implements our IRangedIndex interface.</p>
+<p>While the "avl" ranged index implementation is our only implementation of IRangedIndex, having the interface as an abstraction allows the possibility of offerring alternate implemenations using other algorithms and structures in the future.  It also allows users to experiment, create, and inject their own IRangedIndex implementations in a configurable manner.</p>
+<h2 id="what-is-the-performance-of-lokidbs-avl-index-implementation">What is the performance of LokiDB's "avl" index implementation?</h2>
+<p>The best way to compare our AVL index implementation is to compare this with the former LokiJS's implementation of binary indices.</p>
+<p>In that comparison, the avl index seems to be roughly 20% faster for finds() but where avl index really shines is in the "maintenance" costs and for inserts, updates, and removes.  Once you get over a few thousand documents, the logarithmic performance of the avl index for maintenance costs really shines comparared to linear maintenance of the binary indices array-splicing approach.</p>
+<p>So <strong><em>the AVL index is highly scalable</em></strong> and, as such, it is not very dependent on collection size for the ops which are implemented within it ($eq, $lt, $lte, $gt, $gte, $between and somewhat for $in).</p>
+<p>On an older Intel Core i5 laptop (in node.js), avl index performance might equate to roughly :
+- ~800K - 1M find ops/sec doing single object lookups
+- ~250K ops/sec for inserts, updates, and removes (maintenance)</p>
+<p>And that approximate performance does not significantly change when we scale from 40K documents to 100K documents.</p>
+<p>Obviously on newer and higher performance processors this quickly scales up well above those numbers but when compared to LokiJS you would not likely be able to see those number with any collection counts above a couple thousand documents.</p>
+<h2 id="how-can-i-apply-an-avl-index-to-a-property-in-my-collection">How can I apply an avl index to a property in my collection?</h2>
+<p>Easy... a simple (javascript) example demonstrating this is the following :</p>
+<pre><code class="javascript">const db = new Loki(&quot;idxtest&quot;);
+
+// create a &quot;users&quot; collection, applying an avl index to the &quot;name&quot; property of its documents
+const items = db.addCollection(&quot;users&quot;, {
+  rangedIndexes: {
+    name: { indexTypeName: &quot;avl&quot;, comparatorName: &quot;js&quot; }
+  }
+});
+</code></pre>
+
+<h2 id="what-other-indexes-might-i-want-to-have-an-implementation-for-in-the-future">What other indexes might I want to have an implementation for in the future?</h2>
+<p>Honestly, most people probably will not need anything other than our AVL index implementation.</p>
+<p>The AVL tree is known for keeping strict balancing of its property's values as documents are inserted, updated and removed.</p>
+<p>Other implementations such as the "Red-Black" balanced binary search tree algorithms are less strictly balanced so they may have slightly faster inserts, updates, and removes while potentially having slightly slower lookups/finds. </p>
+<h2 id="if-i-implement-my-own-rangedindex-how-might-i-register-and-use-that-irangedindex-implemenation">If I implement my own RangedIndex, how might I register and use that IRangedIndex implemenation?</h2>
+<p>Typescript example (may provide javascript example in the future) :</p>
+<pre><code class="typescript">// define index implementation
+class customRangedIndex&lt;T&gt; implements IRangedIndex&lt;T&gt; {
+  public name: string;
+  public comparator: ILokiComparer&lt;T&gt;;
+
+  constructor(name: string, comparator: ILokiComparer&lt;T&gt;) {
+    this.name = name;
+    this.comparator = comparator;
+  }
+
+  insert(id: number, val: T) {
+    if (!id || !val) throw new Error(&quot;&quot;);
+    return;
+  }
+  update(id: number, val: T) {
+    if (!id || val === null) throw new Error(&quot;&quot;);
+    return;
+  }
+  remove(id: number) {
+    if (!id) throw new Error(&quot;&quot;);
+    return;
+  }
+  restore(tree: any) {
+    if (!tree) throw new Error(&quot;&quot;);
+    return;
+  }
+  backup() {
+    return this;
+  }
+  rangeRequest(range?: IRangedIndexRequest&lt;T&gt;) {
+    if (range === null) {
+      // return everything
+      return &lt;number[]&gt; [];
+    }
+    return &lt;number[]&gt; [];
+  }
+  validateIndex() {
+    return true;
+  }
+}
+
+// ranged index implementations need factory function
+let myCustomIndexFactory = (name: string, cmp: ILokiComparer&lt;any&gt;) =&gt; { 
+  return new customRangedIndex&lt;any&gt;(name, cmp); 
+};
+
+// register ranged index factory function with loki constructor
+let db = new Loki(&quot;test.db&quot;, {
+  rangedIndexFactoryMap: {
+    &quot;MyCustomRangedIndex&quot;: myCustomIndexFactory
+  }
+});
+
+// utilize your registered ranged index within a collection
+let items = db.addCollection&lt;TestUserType&gt;(&quot;users&quot;, {
+  rangedIndexes: {
+    &quot;name&quot;: { indexTypeName: &quot;MyCustomRangedIndex&quot;, comparatorName: &quot;js&quot; }
+  }
+});
+
+
+</code></pre>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../operator_packages/" class="btn btn-neutral" title="LokiOperatorPackages"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+      <p>Copyright &copy; 2017</p>
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/LokiJS-Forge/LokiDB/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../operator_packages/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../js/gitter.js" defer></script>
+      <script src="../js/javascript_editor.js" defer></script>
+      <script src="../js/codemirror/lib/codemirror.js" defer></script>
+      <script src="../js/codemirror/addon/fold/brace-fold.js" defer></script>
+      <script src="../js/codemirror/addon/fold/foldcode.js" defer></script>
+      <script src="../js/codemirror/addon/fold/foldgutter.js" defer></script>
+      <script src="../js/codemirror/addon/edit/matchbrackets.js" defer></script>
+      <script src="../js/codemirror/mode/javascript/javascript.js" defer></script>
+      <script src="../search/main.js" defer></script>
+
+</body>
+</html>

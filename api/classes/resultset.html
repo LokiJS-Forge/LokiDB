@@ -57,7 +57,7 @@
 					<a href="resultset.html">ResultSet</a>
 				</li>
 			</ul>
-			<h1>Class ResultSet&lt;TData, TNested&gt;</h1>
+			<h1>Class ResultSet&lt;T&gt;</h1>
 		</div>
 	</div>
 </header>
@@ -77,6 +77,12 @@
 								.where(function(obj) { return obj.name === &#39;Toyota&#39; })
 							.data();</p>
 						</dd>
+						<dt>param</dt>
+						<dd><p>the data type</p>
+						</dd>
+						<dt>param</dt>
+						<dd><p>nested properties of data type</p>
+						</dd>
 					</dl>
 				</div>
 			</section>
@@ -84,20 +90,7 @@
 				<h3>Type parameters</h3>
 				<ul class="tsd-type-parameters">
 					<li>
-						<h4>TData<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></h4>
-						<div class="tsd-comment tsd-typography">
-							<div class="lead">
-								<p>the data type</p>
-							</div>
-						</div>
-					</li>
-					<li>
-						<h4>TNested<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></h4>
-						<div class="tsd-comment tsd-typography">
-							<div class="lead">
-								<p>nested properties of data type</p>
-							</div>
-						</div>
+						<h4>T<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></h4>
 					</li>
 				</ul>
 			</section>
@@ -182,17 +175,17 @@
 					<div class="tsd-signature tsd-kind-icon">Contains<wbr>Helper<wbr>Type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">R</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L1235">loki/src/result_set.ts:1235</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L1023">loki/src/result_set.ts:1023</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-class tsd-has-type-parameter tsd-is-static">
 					<a name="lokiops" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> Loki<wbr>Ops</h3>
-					<div class="tsd-signature tsd-kind-icon">Loki<wbr>Ops<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span></div>
+					<div class="tsd-signature tsd-kind-icon">Loki<wbr>Ops<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L1240">loki/src/result_set.ts:1240</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L1028">loki/src/result_set.ts:1028</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -202,7 +195,7 @@
 					<div class="tsd-signature tsd-kind-icon">Query<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">object</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L1300">loki/src/result_set.ts:1300</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L1074">loki/src/result_set.ts:1074</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -213,13 +206,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Result<wbr>Set<span class="tsd-signature-symbol">(</span>collection<span class="tsd-signature-symbol">: </span><a href="collection.html" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="resultset.html" class="tsd-signature-type">ResultSet</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Result<wbr>Set<span class="tsd-signature-symbol">(</span>collection<span class="tsd-signature-symbol">: </span><a href="collection.html" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="resultset.html" class="tsd-signature-type">ResultSet</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L279">loki/src/result_set.ts:279</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L81">loki/src/result_set.ts:81</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -230,7 +223,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>collection: <a href="collection.html" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span></h5>
+									<h5>collection: <a href="collection.html" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<div class="lead">
 											<p>the collection which this ResultSet will query against</p>
@@ -248,10 +241,10 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="_collection" class="tsd-anchor"></a>
 					<h3>_collection</h3>
-					<div class="tsd-signature tsd-kind-icon">_collection<span class="tsd-signature-symbol">:</span> <a href="collection.html" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span></div>
+					<div class="tsd-signature tsd-kind-icon">_collection<span class="tsd-signature-symbol">:</span> <a href="collection.html" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L275">loki/src/result_set.ts:275</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L77">loki/src/result_set.ts:77</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -261,7 +254,7 @@
 					<div class="tsd-signature tsd-kind-icon">_filter<wbr>Initialized<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> =&nbsp;false</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L277">loki/src/result_set.ts:277</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L79">loki/src/result_set.ts:79</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -271,7 +264,7 @@
 					<div class="tsd-signature tsd-kind-icon">_filtered<wbr>Rows<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L276">loki/src/result_set.ts:276</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L78">loki/src/result_set.ts:78</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -282,19 +275,19 @@
 					<a name="_and" class="tsd-anchor"></a>
 					<h3>$and</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">$and<span class="tsd-signature-symbol">(</span>expressionArray<span class="tsd-signature-symbol">: </span><a href="resultset.html#query" class="tsd-signature-type">Query</a><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">$and<span class="tsd-signature-symbol">(</span>expressionArray<span class="tsd-signature-symbol">: </span><a href="resultset.html#query" class="tsd-signature-type">Query</a><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L701">loki/src/result_set.ts:701</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L470">loki/src/result_set.ts:470</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>expressionArray: <a href="resultset.html#query" class="tsd-signature-type">Query</a><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
+									<h5>expressionArray: <a href="resultset.html#query" class="tsd-signature-type">Query</a><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">this</span></h4>
@@ -305,19 +298,19 @@
 					<a name="_or" class="tsd-anchor"></a>
 					<h3>$or</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">$or<span class="tsd-signature-symbol">(</span>expressionArray<span class="tsd-signature-symbol">: </span><a href="resultset.html#query" class="tsd-signature-type">Query</a><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">$or<span class="tsd-signature-symbol">(</span>expressionArray<span class="tsd-signature-symbol">: </span><a href="resultset.html#query" class="tsd-signature-type">Query</a><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L677">loki/src/result_set.ts:677</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L446">loki/src/result_set.ts:446</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>expressionArray: <a href="resultset.html#query" class="tsd-signature-type">Query</a><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
+									<h5>expressionArray: <a href="resultset.html#query" class="tsd-signature-type">Query</a><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">this</span></h4>
@@ -328,13 +321,13 @@
 					<a name="compoundsort" class="tsd-anchor"></a>
 					<h3>compoundsort</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">compoundsort<span class="tsd-signature-symbol">(</span>properties<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-type">keyof (TData &amp; TNested)</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">compoundsort<span class="tsd-signature-symbol">(</span>properties<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-type">keyof T</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L548">loki/src/result_set.ts:548</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L317">loki/src/result_set.ts:317</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -353,7 +346,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>properties: <span class="tsd-signature-symbol">(</span><span class="tsd-signature-type">keyof (TData &amp; TNested)</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">[]</span></h5>
+									<h5>properties: <span class="tsd-signature-symbol">(</span><span class="tsd-signature-type">keyof T</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">[]</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>array of property names or subarray of [propertyname, isdesc] used evaluate sort order</p>
 									</div>
@@ -368,13 +361,13 @@
 					<a name="copy" class="tsd-anchor"></a>
 					<h3>copy</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">copy<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="resultset.html" class="tsd-signature-type">ResultSet</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">copy<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="resultset.html" class="tsd-signature-type">ResultSet</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L348">loki/src/result_set.ts:348</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L150">loki/src/result_set.ts:150</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -382,7 +375,7 @@
 									<p>To support reuse of ResultSet in branched query situations.</p>
 								</div>
 							</div>
-							<h4 class="tsd-returns-title">Returns <a href="resultset.html" class="tsd-signature-type">ResultSet</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="resultset.html" class="tsd-signature-type">ResultSet</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h4>
 							<p>Returns a copy of the ResultSet (set) but the underlying document references will be the same.</p>
 						</li>
 					</ul>
@@ -397,7 +390,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L973">loki/src/result_set.ts:973</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L763">loki/src/result_set.ts:763</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -414,13 +407,13 @@
 					<a name="data" class="tsd-anchor"></a>
 					<h3>data</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">data<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/resultset.dataoptions.html" class="tsd-signature-type">DataOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></li>
+						<li class="tsd-signature tsd-kind-icon">data<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/resultset.dataoptions.html" class="tsd-signature-type">DataOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L991">loki/src/result_set.ts:991</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L781">loki/src/result_set.ts:781</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -434,7 +427,7 @@
 									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> options: <a href="../interfaces/resultset.dataoptions.html" class="tsd-signature-type">DataOptions</a><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h4>
 							<p>Array of documents in the ResultSet</p>
 						</li>
 					</ul>
@@ -443,13 +436,13 @@
 					<a name="eqjoin" class="tsd-anchor"></a>
 					<h3>eq<wbr>Join</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">eq<wbr>Join<span class="tsd-signature-symbol">(</span>joinData<span class="tsd-signature-symbol">: </span><a href="collection.html" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><a href="resultset.html" class="tsd-signature-type">ResultSet</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span>, leftJoinKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span>, rightJoinKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span>, mapFun<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">function</span>, dataOptions<span class="tsd-signature-symbol">?: </span><a href="../interfaces/resultset.dataoptions.html" class="tsd-signature-type">DataOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="resultset.html" class="tsd-signature-type">ResultSet</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">eq<wbr>Join<span class="tsd-signature-symbol">(</span>joinData<span class="tsd-signature-symbol">: </span><a href="collection.html" class="tsd-signature-type">Collection</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><a href="resultset.html" class="tsd-signature-type">ResultSet</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span>, leftJoinKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span>, rightJoinKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span>, mapFun<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">function</span>, dataOptions<span class="tsd-signature-symbol">?: </span><a href="../interfaces/resultset.dataoptions.html" class="tsd-signature-type">DataOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="resultset.html" class="tsd-signature-type">ResultSet</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L1141">loki/src/result_set.ts:1141</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L931">loki/src/result_set.ts:931</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -506,7 +499,7 @@
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> dataOptions: <a href="../interfaces/resultset.dataoptions.html" class="tsd-signature-type">DataOptions</a></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="resultset.html" class="tsd-signature-type">ResultSet</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="resultset.html" class="tsd-signature-type">ResultSet</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
 							<p>A ResultSet with data in the format [{left: leftObj, right: rightObj}]</p>
 						</li>
 					</ul>
@@ -515,13 +508,13 @@
 					<a name="find" class="tsd-anchor"></a>
 					<h3>find</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">find<span class="tsd-signature-symbol">(</span>query<span class="tsd-signature-symbol">?: </span><a href="resultset.html#query" class="tsd-signature-type">Query</a><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span>, firstOnly<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">find<span class="tsd-signature-symbol">(</span>query<span class="tsd-signature-symbol">?: </span><a href="resultset.html#query" class="tsd-signature-type">Query</a><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span>, firstOnly<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L712">loki/src/result_set.ts:712</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L481">loki/src/result_set.ts:481</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -532,7 +525,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> query: <a href="resultset.html#query" class="tsd-signature-type">Query</a><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> query: <a href="resultset.html#query" class="tsd-signature-type">Query</a><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>A mongo-style query object used for filtering current results.</p>
 									</div>
@@ -553,13 +546,13 @@
 					<a name="findand" class="tsd-anchor"></a>
 					<h3>find<wbr>And</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">find<wbr>And<span class="tsd-signature-symbol">(</span>expressionArray<span class="tsd-signature-symbol">: </span><a href="resultset.html#query" class="tsd-signature-type">Query</a><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">find<wbr>And<span class="tsd-signature-symbol">(</span>expressionArray<span class="tsd-signature-symbol">: </span><a href="resultset.html#query" class="tsd-signature-type">Query</a><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L689">loki/src/result_set.ts:689</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L458">loki/src/result_set.ts:458</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -573,7 +566,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>expressionArray: <a href="resultset.html#query" class="tsd-signature-type">Query</a><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
+									<h5>expressionArray: <a href="resultset.html#query" class="tsd-signature-type">Query</a><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>array of expressions</p>
 									</div>
@@ -588,13 +581,13 @@
 					<a name="findor" class="tsd-anchor"></a>
 					<h3>find<wbr>Or</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">find<wbr>Or<span class="tsd-signature-symbol">(</span>expressionArray<span class="tsd-signature-symbol">: </span><a href="resultset.html#query" class="tsd-signature-type">Query</a><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">find<wbr>Or<span class="tsd-signature-symbol">(</span>expressionArray<span class="tsd-signature-symbol">: </span><a href="resultset.html#query" class="tsd-signature-type">Query</a><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L645">loki/src/result_set.ts:645</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L414">loki/src/result_set.ts:414</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -608,7 +601,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>expressionArray: <a href="resultset.html#query" class="tsd-signature-type">Query</a><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
+									<h5>expressionArray: <a href="resultset.html#query" class="tsd-signature-type">Query</a><span class="tsd-signature-symbol">&lt;</span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>array of expressions</p>
 									</div>
@@ -629,7 +622,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L626">loki/src/result_set.ts:626</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L395">loki/src/result_set.ts:395</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -651,7 +644,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L317">loki/src/result_set.ts:317</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L119">loki/src/result_set.ts:119</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -684,7 +677,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L1209">loki/src/result_set.ts:1209</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L999">loki/src/result_set.ts:999</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -708,20 +701,20 @@
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-siganture">
 											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
-												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>obj<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span>, index<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, array<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">U</span></li>
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>obj<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span>, index<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, array<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">U</span></li>
 											</ul>
 											<ul class="tsd-descriptions">
 												<li class="tsd-description">
 													<h4 class="tsd-parameters-title">Parameters</h4>
 													<ul class="tsd-parameters">
 														<li>
-															<h5>obj: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span></h5>
+															<h5>obj: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h5>
 														</li>
 														<li>
 															<h5>index: <span class="tsd-signature-type">number</span></h5>
 														</li>
 														<li>
-															<h5>array: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
+															<h5>array: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
 														</li>
 													</ul>
 													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">U</span></h4>
@@ -742,13 +735,13 @@
 					<a name="mapreduce" class="tsd-anchor"></a>
 					<h3>map<wbr>Reduce</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">map<wbr>Reduce&lt;T, U&gt;<span class="tsd-signature-symbol">(</span>mapFunction<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span>, reduceFunction<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">U</span></li>
+						<li class="tsd-signature tsd-kind-icon">map<wbr>Reduce&lt;U1, U2&gt;<span class="tsd-signature-symbol">(</span>mapFunction<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span>, reduceFunction<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">U2</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L1119">loki/src/result_set.ts:1119</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L909">loki/src/result_set.ts:909</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -759,10 +752,10 @@
 							<h4 class="tsd-type-parameters-title">Type parameters</h4>
 							<ul class="tsd-type-parameters">
 								<li>
-									<h4>T</h4>
+									<h4>U1</h4>
 								</li>
 								<li>
-									<h4>U</h4>
+									<h4>U2</h4>
 								</li>
 							</ul>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -775,23 +768,23 @@
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-siganture">
 											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
-												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>item<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span>, index<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, array<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">T</span></li>
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>item<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span>, index<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, array<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">U1</span></li>
 											</ul>
 											<ul class="tsd-descriptions">
 												<li class="tsd-description">
 													<h4 class="tsd-parameters-title">Parameters</h4>
 													<ul class="tsd-parameters">
 														<li>
-															<h5>item: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span></h5>
+															<h5>item: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h5>
 														</li>
 														<li>
 															<h5>index: <span class="tsd-signature-type">number</span></h5>
 														</li>
 														<li>
-															<h5>array: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
+															<h5>array: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
 														</li>
 													</ul>
-													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">T</span></h4>
+													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">U1</span></h4>
 												</li>
 											</ul>
 										</li>
@@ -805,24 +798,24 @@
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-siganture">
 											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
-												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>array<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">U</span></li>
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>array<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">U1</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">U2</span></li>
 											</ul>
 											<ul class="tsd-descriptions">
 												<li class="tsd-description">
 													<h4 class="tsd-parameters-title">Parameters</h4>
 													<ul class="tsd-parameters">
 														<li>
-															<h5>array: <span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">[]</span></h5>
+															<h5>array: <span class="tsd-signature-type">U1</span><span class="tsd-signature-symbol">[]</span></h5>
 														</li>
 													</ul>
-													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">U</span></h4>
+													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">U2</span></h4>
 												</li>
 											</ul>
 										</li>
 									</ul>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">U</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">U2</span></h4>
 							<p>The output of your reduceFunction</p>
 						</li>
 					</ul>
@@ -837,7 +830,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L333">loki/src/result_set.ts:333</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L135">loki/src/result_set.ts:135</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -869,7 +862,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L1102">loki/src/result_set.ts:1102</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L892">loki/src/result_set.ts:892</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -892,7 +885,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L294">loki/src/result_set.ts:294</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L96">loki/src/result_set.ts:96</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -909,13 +902,13 @@
 					<a name="simplesort" class="tsd-anchor"></a>
 					<h3>simplesort</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">simplesort<span class="tsd-signature-symbol">(</span>propname<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">keyof TData &amp; TNested</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> | </span><a href="../interfaces/resultset.simplesortoptions.html" class="tsd-signature-type">SimpleSortOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">simplesort<span class="tsd-signature-symbol">(</span>propname<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">keyof T</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> | </span><a href="../interfaces/resultset.simplesortoptions.html" class="tsd-signature-type">SimpleSortOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L460">loki/src/result_set.ts:460</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L260">loki/src/result_set.ts:260</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -927,13 +920,13 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>propname: <span class="tsd-signature-type">keyof TData &amp; TNested</span></h5>
+									<h5>propname: <span class="tsd-signature-type">keyof T</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>name of property to sort by.</p>
 									</div>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> options: <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> | </span><a href="../interfaces/resultset.simplesortoptions.html" class="tsd-signature-type">SimpleSortOptions</a><span class="tsd-signature-symbol"> =&nbsp;{desc: false}</span></h5>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> options: <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> | </span><a href="../interfaces/resultset.simplesortoptions.html" class="tsd-signature-type">SimpleSortOptions</a><span class="tsd-signature-symbol"> =&nbsp;{ desc: false }</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>boolean for sort descending or options object</p>
 									</div>
@@ -954,7 +947,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L435">loki/src/result_set.ts:435</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L237">loki/src/result_set.ts:237</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -981,17 +974,17 @@
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-siganture">
 											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
-												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>a<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span>, b<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>a<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span>, b<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
 											</ul>
 											<ul class="tsd-descriptions">
 												<li class="tsd-description">
 													<h4 class="tsd-parameters-title">Parameters</h4>
 													<ul class="tsd-parameters">
 														<li>
-															<h5>a: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span></h5>
+															<h5>a: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h5>
 														</li>
 														<li>
-															<h5>b: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span></h5>
+															<h5>b: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h5>
 														</li>
 													</ul>
 													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
@@ -1016,7 +1009,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L608">loki/src/result_set.ts:608</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L377">loki/src/result_set.ts:377</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1038,13 +1031,13 @@
 					<a name="tojson" class="tsd-anchor"></a>
 					<h3>toJSON</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">toJSON<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="resultset.html" class="tsd-signature-type">ResultSet</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">toJSON<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="resultset.html" class="tsd-signature-type">ResultSet</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L305">loki/src/result_set.ts:305</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L107">loki/src/result_set.ts:107</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1052,7 +1045,7 @@
 									<p>Override of toJSON to avoid circular references</p>
 								</div>
 							</div>
-							<h4 class="tsd-returns-title">Returns <a href="resultset.html" class="tsd-signature-type">ResultSet</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="resultset.html" class="tsd-signature-type">ResultSet</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -1060,13 +1053,13 @@
 					<a name="transform" class="tsd-anchor"></a>
 					<h3>transform</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">transform<span class="tsd-signature-symbol">(</span>transform<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><a href="collection.html#transform" class="tsd-signature-type">Transform</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span>, parameters<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">transform<span class="tsd-signature-symbol">(</span>transform<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><a href="collection.html#transform" class="tsd-signature-type">Transform</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span>, parameters<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L361">loki/src/result_set.ts:361</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L163">loki/src/result_set.ts:163</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1077,7 +1070,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>transform: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><a href="collection.html#transform" class="tsd-signature-type">Transform</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
+									<h5>transform: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><a href="collection.html#transform" class="tsd-signature-type">Transform</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>name of collection transform or raw transform array</p>
 									</div>
@@ -1101,7 +1094,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L1071">loki/src/result_set.ts:1071</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L861">loki/src/result_set.ts:861</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1119,17 +1112,17 @@
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-siganture">
 											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
-												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>obj<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span></li>
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>obj<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></li>
 											</ul>
 											<ul class="tsd-descriptions">
 												<li class="tsd-description">
 													<h4 class="tsd-parameters-title">Parameters</h4>
 													<ul class="tsd-parameters">
 														<li>
-															<h5>obj: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span></h5>
+															<h5>obj: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h5>
 														</li>
 													</ul>
-													<h4 class="tsd-returns-title">Returns <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span></h4>
+													<h4 class="tsd-returns-title">Returns <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h4>
 												</li>
 											</ul>
 										</li>
@@ -1151,7 +1144,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/result_set.ts#L928">loki/src/result_set.ts:928</a></li>
+									<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/result_set.ts#L718">loki/src/result_set.ts:718</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1169,14 +1162,14 @@
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-siganture">
 											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
-												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>obj<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>obj<span class="tsd-signature-symbol">: </span><a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
 											</ul>
 											<ul class="tsd-descriptions">
 												<li class="tsd-description">
 													<h4 class="tsd-parameters-title">Parameters</h4>
 													<ul class="tsd-parameters">
 														<li>
-															<h5>obj: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">TData</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">TNested</span><span class="tsd-signature-symbol">&gt;</span></h5>
+															<h5>obj: <a href="../globals.html#doc" class="tsd-signature-type">Doc</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h5>
 														</li>
 													</ul>
 													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>

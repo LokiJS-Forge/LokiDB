@@ -60,7 +60,7 @@
 					<a href="collection.options.html">Options</a>
 				</li>
 			</ul>
-			<h1>Interface Options&lt;TData, TNested&gt;</h1>
+			<h1>Interface Options&lt;TData, TNested, T&gt;</h1>
 		</div>
 	</div>
 </header>
@@ -75,6 +75,9 @@
 					</li>
 					<li>
 						<h4>TNested<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></h4>
+					</li>
+					<li>
+						<h4>T<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></h4>
 					</li>
 				</ul>
 			</section>
@@ -93,20 +96,22 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.options.html#adaptivebinaryindices" class="tsd-kind-icon">adaptive<wbr>Binary<wbr>Indices</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.options.html#asynclisteners" class="tsd-kind-icon">async<wbr>Listeners</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.options.html#clone" class="tsd-kind-icon">clone</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.options.html#clonemethod" class="tsd-kind-icon">clone<wbr>Method</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.options.html#defaultlokioperatorpackage" class="tsd-kind-icon">default<wbr>Loki<wbr>Operator<wbr>Package</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.options.html#disablechangesapi" class="tsd-kind-icon">disable<wbr>Changes<wbr>Api</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.options.html#disabledeltachangesapi" class="tsd-kind-icon">disable<wbr>Delta<wbr>Changes<wbr>Api</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.options.html#disablemeta" class="tsd-kind-icon">disable<wbr>Meta</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.options.html#fulltextsearch" class="tsd-kind-icon">full<wbr>Text<wbr>Search</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.options.html#indices" class="tsd-kind-icon">indices</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.options.html#nestedproperties" class="tsd-kind-icon">nested<wbr>Properties</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.options.html#rangedindexes" class="tsd-kind-icon">ranged<wbr>Indexes</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.options.html#serializableindexes" class="tsd-kind-icon">serializable<wbr>Indexes</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.options.html#serializableindices" class="tsd-kind-icon">serializable<wbr>Indices</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.options.html#transactional" class="tsd-kind-icon">transactional</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.options.html#ttl" class="tsd-kind-icon">ttl</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.options.html#ttlinterval" class="tsd-kind-icon">ttl<wbr>Interval</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.options.html#unindexedsortcomparator" class="tsd-kind-icon">unindexed<wbr>Sort<wbr>Comparator</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="collection.options.html#unique" class="tsd-kind-icon">unique</a></li>
 							</ul>
 						</section>
@@ -116,22 +121,12 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="adaptivebinaryindices" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> adaptive<wbr>Binary<wbr>Indices</h3>
-					<div class="tsd-signature tsd-kind-icon">adaptive<wbr>Binary<wbr>Indices<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/collection.ts#L2164">loki/src/collection.ts:2164</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="asynclisteners" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> async<wbr>Listeners</h3>
 					<div class="tsd-signature tsd-kind-icon">async<wbr>Listeners<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/collection.ts#L2165">loki/src/collection.ts:2165</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/collection.ts#L1669">loki/src/collection.ts:1669</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -141,7 +136,7 @@
 					<div class="tsd-signature tsd-kind-icon">clone<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/collection.ts#L2169">loki/src/collection.ts:2169</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/collection.ts#L1673">loki/src/collection.ts:1673</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -151,7 +146,17 @@
 					<div class="tsd-signature tsd-kind-icon">clone<wbr>Method<span class="tsd-signature-symbol">:</span> <a href="../globals.html#clonemethod" class="tsd-signature-type">CloneMethod</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/collection.ts#L2171">loki/src/collection.ts:2171</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/collection.ts#L1675">loki/src/collection.ts:1675</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="defaultlokioperatorpackage" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> default<wbr>Loki<wbr>Operator<wbr>Package</h3>
+					<div class="tsd-signature tsd-kind-icon">default<wbr>Loki<wbr>Operator<wbr>Package<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/collection.ts#L1666">loki/src/collection.ts:1666</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -161,7 +166,7 @@
 					<div class="tsd-signature tsd-kind-icon">disable<wbr>Changes<wbr>Api<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/collection.ts#L2167">loki/src/collection.ts:2167</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/collection.ts#L1671">loki/src/collection.ts:1671</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -171,7 +176,7 @@
 					<div class="tsd-signature tsd-kind-icon">disable<wbr>Delta<wbr>Changes<wbr>Api<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/collection.ts#L2168">loki/src/collection.ts:2168</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/collection.ts#L1672">loki/src/collection.ts:1672</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -181,7 +186,7 @@
 					<div class="tsd-signature tsd-kind-icon">disable<wbr>Meta<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/collection.ts#L2166">loki/src/collection.ts:2166</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/collection.ts#L1670">loki/src/collection.ts:1670</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -191,17 +196,7 @@
 					<div class="tsd-signature tsd-kind-icon">full<wbr>Text<wbr>Search<span class="tsd-signature-symbol">:</span> <a href="fulltextsearch.fieldoptions.html" class="tsd-signature-type">FieldOptions</a><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/collection.ts#L2176">loki/src/collection.ts:2176</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="indices" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> indices</h3>
-					<div class="tsd-signature tsd-kind-icon">indices<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">keyof (TData &amp; TNested)</span><span class="tsd-signature-symbol">[]</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/collection.ts#L2163">loki/src/collection.ts:2163</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/collection.ts#L1680">loki/src/collection.ts:1680</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -211,7 +206,27 @@
 					<div class="tsd-signature tsd-kind-icon">nested<wbr>Properties<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-type">keyof TNested</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/collection.ts#L2175">loki/src/collection.ts:2175</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/collection.ts#L1679">loki/src/collection.ts:1679</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="rangedindexes" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> ranged<wbr>Indexes</h3>
+					<div class="tsd-signature tsd-kind-icon">ranged<wbr>Indexes<span class="tsd-signature-symbol">:</span> <a href="collection.rangedindexoptions.html" class="tsd-signature-type">RangedIndexOptions</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/collection.ts#L1667">loki/src/collection.ts:1667</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="serializableindexes" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> serializable<wbr>Indexes</h3>
+					<div class="tsd-signature tsd-kind-icon">serializable<wbr>Indexes<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/collection.ts#L1668">loki/src/collection.ts:1668</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -221,7 +236,7 @@
 					<div class="tsd-signature tsd-kind-icon">serializable<wbr>Indices<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/collection.ts#L2170">loki/src/collection.ts:2170</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/collection.ts#L1674">loki/src/collection.ts:1674</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -231,7 +246,7 @@
 					<div class="tsd-signature tsd-kind-icon">transactional<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/collection.ts#L2172">loki/src/collection.ts:2172</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/collection.ts#L1676">loki/src/collection.ts:1676</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -241,7 +256,7 @@
 					<div class="tsd-signature tsd-kind-icon">ttl<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/collection.ts#L2173">loki/src/collection.ts:2173</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/collection.ts#L1677">loki/src/collection.ts:1677</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -251,17 +266,27 @@
 					<div class="tsd-signature tsd-kind-icon">ttl<wbr>Interval<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/collection.ts#L2174">loki/src/collection.ts:2174</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/collection.ts#L1678">loki/src/collection.ts:1678</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="unindexedsortcomparator" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> unindexed<wbr>Sort<wbr>Comparator</h3>
+					<div class="tsd-signature tsd-kind-icon">unindexed<wbr>Sort<wbr>Comparator<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/collection.ts#L1665">loki/src/collection.ts:1665</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="unique" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> unique</h3>
-					<div class="tsd-signature tsd-kind-icon">unique<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">keyof (TData &amp; TNested)</span><span class="tsd-signature-symbol">[]</span></div>
+					<div class="tsd-signature tsd-kind-icon">unique<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">keyof T</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/5c67268/packages/loki/src/collection.ts#L2162">loki/src/collection.ts:2162</a></li>
+							<li>Defined in <a href="https://github.com/LokiJS-Forge/LokiDB/blob/fc5ab50/packages/loki/src/collection.ts#L1664">loki/src/collection.ts:1664</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -286,9 +311,6 @@
 								<a href="collection.options.html" class="tsd-kind-icon">Options</a>
 								<ul>
 									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="collection.options.html#adaptivebinaryindices" class="tsd-kind-icon">adaptive<wbr>Binary<wbr>Indices</a>
-									</li>
-									<li class=" tsd-kind-property tsd-parent-kind-interface">
 										<a href="collection.options.html#asynclisteners" class="tsd-kind-icon">async<wbr>Listeners</a>
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface">
@@ -296,6 +318,9 @@
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface">
 										<a href="collection.options.html#clonemethod" class="tsd-kind-icon">clone<wbr>Method</a>
+									</li>
+									<li class=" tsd-kind-property tsd-parent-kind-interface">
+										<a href="collection.options.html#defaultlokioperatorpackage" class="tsd-kind-icon">default<wbr>Loki<wbr>Operator<wbr>Package</a>
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface">
 										<a href="collection.options.html#disablechangesapi" class="tsd-kind-icon">disable<wbr>Changes<wbr>Api</a>
@@ -310,10 +335,13 @@
 										<a href="collection.options.html#fulltextsearch" class="tsd-kind-icon">full<wbr>Text<wbr>Search</a>
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="collection.options.html#indices" class="tsd-kind-icon">indices</a>
+										<a href="collection.options.html#nestedproperties" class="tsd-kind-icon">nested<wbr>Properties</a>
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface">
-										<a href="collection.options.html#nestedproperties" class="tsd-kind-icon">nested<wbr>Properties</a>
+										<a href="collection.options.html#rangedindexes" class="tsd-kind-icon">ranged<wbr>Indexes</a>
+									</li>
+									<li class=" tsd-kind-property tsd-parent-kind-interface">
+										<a href="collection.options.html#serializableindexes" class="tsd-kind-icon">serializable<wbr>Indexes</a>
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface">
 										<a href="collection.options.html#serializableindices" class="tsd-kind-icon">serializable<wbr>Indices</a>
@@ -326,6 +354,9 @@
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface">
 										<a href="collection.options.html#ttlinterval" class="tsd-kind-icon">ttl<wbr>Interval</a>
+									</li>
+									<li class=" tsd-kind-property tsd-parent-kind-interface">
+										<a href="collection.options.html#unindexedsortcomparator" class="tsd-kind-icon">unindexed<wbr>Sort<wbr>Comparator</a>
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface">
 										<a href="collection.options.html#unique" class="tsd-kind-icon">unique</a>

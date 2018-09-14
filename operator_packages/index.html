@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>LokiOperatorPackages - LokiDB</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  <link href="../css/codemirror/codemirror.css" rel="stylesheet">
+  <link href="../css/codemirror/foldgutter.css" rel="stylesheet">
+  <link href="../css/javascript_editor.css" rel="stylesheet">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "LokiOperatorPackages";
+    var mkdocs_page_input_path = "operator_packages.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> LokiDB</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="..">Home</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../comparators/">Loki Comparators</a>
+	    </li>
+          
+            <li class="toctree-l1 current">
+		
+    <a class="current" href="./">LokiOperatorPackages</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l2"><a href="#lokioperatorpackages">LokiOperatorPackages</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l3" href="#overview">Overview</a></li>
+        
+            <li><a class="toctree-l3" href="#why-support-multiple-implementations-of-operators">Why support multiple implementations of operators?</a></li>
+        
+            <li><a class="toctree-l3" href="#what-are-the-lokioperatorpackages-which-lokidb-supports">What are the LokiOperatorPackages which LokiDB supports?</a></li>
+        
+            <li><a class="toctree-l3" href="#how-would-i-select-an-operator-package-to-use-for-my-collection">How would I select an operator package to use for my collection?</a></li>
+        
+            <li><a class="toctree-l3" href="#how-can-i-create-and-register-my-own-operator-package">How can I create and register my own operator package?</a></li>
+        
+            <li><a class="toctree-l3" href="#how-might-i-create-an-operator-package-based-on-comparators">How might I create an operator package based on comparators?</a></li>
+        
+        </ul>
+    
+
+    </ul>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../ranged_indexes/">LokiDB Ranged Indexes</a>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">LokiDB</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>LokiOperatorPackages</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/LokiJS-Forge/LokiDB/edit/master/docs/operator_packages.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="lokioperatorpackages">LokiOperatorPackages</h1>
+<h2 id="overview">Overview</h2>
+<p>LokiDB allows querying your collections with a "mongo-like" query object, passed to a collection.find() or query chain. The set of available "ops" which you can include within your query object is called a <strong><em>LokiOperatorPackage</em></strong>.  </p>
+<p>A LokiOperatorPackage represents the unindexed or "fallback" implementation of all supported ops.</p>
+<blockquote>
+<p>Ranged Indexes allow the highest performance for querying collections... however they only implement a limited subset of ops ($eq, $lt, $lte, $gt, $gte, $between).</p>
+<p>Filtering other ops (even when a ranged index is applied) falls back to the LokiOperatorPackage registered as that collection's default.</p>
+</blockquote>
+<p>In the previous version of LokiDB (LokiJS) there was just one 'LokiOps'.  LokiDB allows and provides multiple for you to choose from or even provide your own.</p>
+<h2 id="why-support-multiple-implementations-of-operators">Why support multiple implementations of operators?</h2>
+<p>The primary reasons/drivers for our adoption of this approach is the following :</p>
+<ul>
+<li>Have simplest and fastest minimal javascript implementations of these operators</li>
+<li>Also have an implementation which is more tolerant of dirty data and mixed datatypes</li>
+<li>Have an implementation which allows injecting your own comparators.</li>
+<li>Future-proofing and smoothing transition between major changes (experimental -&gt; default)</li>
+</ul>
+<p>Attempting to merge/blend any of the above use cases into a single implementation had negative impact on performance, so we created the ability to switch out whole implementations which only needs to be done once per find, rather than switching behavior for every document evaluation within that filtering.  Having separate selectable packages also provides future-proofing and development of experimental implementions in parallel with maintaining existing implementations.</p>
+<h2 id="what-are-the-lokioperatorpackages-which-lokidb-supports">What are the LokiOperatorPackages which LokiDB supports?</h2>
+<p>Out of the box, LokiDB implements the following operator packages, which you can choose from (currently per-collection) :</p>
+<ul>
+<li><strong>"js"</strong> (default) : the default implementation using fastest javascript comparisons. This is an instance of the main <strong>LokiOperatorPackage</strong> class.</li>
+<li><strong>"loki"</strong> : implementation recommended for dirty data / mixed datatypes. This is an instance of <strong>LokiAbstractOperator</strong> class.</li>
+<li><strong><em>comparator</em></strong> - you need to instantiate this yourself and register that with a name within the loki constructor (example below).  These are created by instantiating the <strong>ComparatorOperatorPackage</strong> class, passing in a comparator to its constructor.</li>
+</ul>
+<p>In practice we have one main implementation of all ops in the (default) "LokiOperatorPackage" class which our other implementations extend from 
+and override base behavior where needed.  We may provide other implementations later, and you can provide your own implementations.  Other variants which we (or you) may provide can simply extend this class and override the ops we/you wish to have different implementations.</p>
+<h2 id="how-would-i-select-an-operator-package-to-use-for-my-collection">How would I select an operator package to use for my collection?</h2>
+<p>When you call addCollection, such as :</p>
+<pre><code class="javascript">let coll = db.addCollection(&quot;coll&quot;, {
+  defaultLokiOperatorPackage: &quot;js&quot;
+});
+</code></pre>
+
+<h2 id="how-can-i-create-and-register-my-own-operator-package">How can I create and register my own operator package?</h2>
+<p>Usually you would extend the default LokiOperatorPackage, however any of our operator package classes can be extended from.</p>
+<p>An example where we extend and override some of the ops with some arbitrary "opposite logic" might be :</p>
+<pre><code class="javascript">// extend and override with some opposite logic
+class MyOperatorPackage extends LokiOperatorPackage {
+  $gt(a, b): boolean {
+    if (a &lt; b) return true;
+    return false;
+  }
+
+  $lt(a, b): boolean {
+    if (a &gt; b) return true;
+    return false;
+  }
+}
+
+// inject our new operator into global LokiOperatorPackageMap.
+// if it already exists, it will overwrite... this includes overriding native packages.
+let db = new Loki(&quot;test.db&quot;, {
+  lokiOperatorPackageMap : {
+    &quot;MyOperatorPackage&quot;: new MyOperatorPackage()
+  }
+});
+</code></pre>
+
+<p>Having registered that operator package (in the above example), and creating collections which set that to their default operator package (example above that), unindexed find() filters using the $gt and $lt op will exibit your filtering behavior (RangedIndexes have their own optimized implementation of those ops).  Any other ops specified in your query objects will use the default implementation in the class 
+which you extended from.</p>
+<h2 id="how-might-i-create-an-operator-package-based-on-comparators">How might I create an operator package based on comparators?</h2>
+<p>If you have created your own comparator or wish to use one of ours as the ultimate determination of filtering for $eq, $lt, $lte, $gt, $gte, and $between ops... how might you set up an operator package for that?</p>
+<p>Here is a quick example showing how you might implement that :</p>
+<pre><code class="javascript">// create a custom case-insensitive string comparator
+let customComparator: ILokiComparer = (a, b) =&gt; {
+  if (typeof a === &quot;string&quot; &amp;&amp; typeof b === &quot;string&quot;) {
+    a = a.toLocaleLowerCase();
+    b = b.toLocaleLowerCase();
+  }
+
+  if (a === b) return 0;
+  if (a &gt; b) return 1;
+  return -1;
+};
+
+// instantiate an operator package based on that comparator
+let myComparatorOperatorPackage = new ComparatorOperatorPackage(customComparator);
+
+// inject as named operator package within the Loki constructor
+let db = new Loki(&quot;test.db&quot;, {
+  lokiOperatorPackageMap: {
+    &quot;MyComparatorOperatorPackage&quot;: myComparatorOperatorPackage
+  }
+});
+</code></pre>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../ranged_indexes/" class="btn btn-neutral float-right" title="LokiDB Ranged Indexes">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../comparators/" class="btn btn-neutral" title="Loki Comparators"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+      <p>Copyright &copy; 2017</p>
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/LokiJS-Forge/LokiDB/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../comparators/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../ranged_indexes/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../js/gitter.js" defer></script>
+      <script src="../js/javascript_editor.js" defer></script>
+      <script src="../js/codemirror/lib/codemirror.js" defer></script>
+      <script src="../js/codemirror/addon/fold/brace-fold.js" defer></script>
+      <script src="../js/codemirror/addon/fold/foldcode.js" defer></script>
+      <script src="../js/codemirror/addon/fold/foldgutter.js" defer></script>
+      <script src="../js/codemirror/addon/edit/matchbrackets.js" defer></script>
+      <script src="../js/codemirror/mode/javascript/javascript.js" defer></script>
+      <script src="../search/main.js" defer></script>
+
+</body>
+</html>
