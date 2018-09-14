@@ -38,8 +38,7 @@ const CHANGELOG = {
   }
 };
 
-main();
-process.exit(0);
+main(); 
 
 function main() {
   if (BUILD_INFO.release) {
