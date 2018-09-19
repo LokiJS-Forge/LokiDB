@@ -459,7 +459,7 @@ export class LokiOperatorPackage {
     return false;
   }
 
-  private doQueryOp(val: any, op: object) {
+  protected doQueryOp(val: any, op: object) {
     for (let p in op) {
       if (Object.hasOwnProperty.call(op, p)) {
         return this[p](val, op[p]);
@@ -468,7 +468,7 @@ export class LokiOperatorPackage {
     return false;
   }
 
-  private containsCheckFn(a: any) {
+  protected containsCheckFn(a: any) {
     if (typeof a === "string" || Array.isArray(a)) {
       return (b: any) => (a as any).indexOf(b) !== -1;
     } else if (typeof a === "object" && a !== null) {
@@ -514,7 +514,58 @@ export class LokiAbstractOperatorPackage extends LokiOperatorPackage {
     if (a === undefined || a === null) return false;
     return gtHelper(a, range[0], true) && ltHelper(a, range[1], true);
   }
+}
 
+/**
+ * LokiCompatibilityOperatorPackage - used for migrations from LokiJS
+ */
+export class LokiCompatibilityOperatorPackage extends LokiAbstractOperatorPackage {
+  constructor() {
+    super();
+  }
+
+  $eq(a: any, b: any): boolean {
+    return a === b;
+  }
+
+  $aeq(a: any, b: any): boolean {
+    return aeqHelper(a, b);
+  }
+
+  $ne(a: any, b: any) {
+    // ecma 5 safe test for NaN
+    if (b !== b) {
+      // ecma 5 test value is not NaN
+      return (a === a);
+    }
+
+    return a !== b;
+  }
+
+  $dteq(a: any, b: any) {
+    return aeqHelper(a, b);
+  }
+
+  $jgt(a: any, b: any) {
+    return a > b;
+  }
+
+  $jgte(a: any, b: any) {
+    return a >= b;
+  }
+
+  $jlt(a: any, b: any) {
+    return a < b;
+  }
+
+  $jlte(a: any, b: any) {
+    return a <= b;
+  }
+
+  $jbetween(a: any, vals: any[]) {
+    if (a === undefined || a === null) return false;
+    return (a >= vals[0] && a <= vals[1]);
+  }
 }
 
 /**
@@ -563,5 +614,6 @@ export class ComparatorOperatorPackage<T> extends LokiOperatorPackage {
  */
 export let LokiOperatorPackageMap : ILokiOperatorPackageMap = {
   "js" : new LokiOperatorPackage(),
-  "loki" : new LokiAbstractOperatorPackage()
+  "loki" : new LokiAbstractOperatorPackage(),
+  "compat": new LokiCompatibilityOperatorPackage()
 };
