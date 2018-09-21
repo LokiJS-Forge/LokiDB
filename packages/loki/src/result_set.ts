@@ -119,7 +119,7 @@ export class ResultSet<T extends object = object> {
   public limit(qty: number): this {
     // if this has no filters applied, we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
-      this._filteredRows = this._collection._prepareFullDocIndex();
+      this._filteredRows = [...this._collection._data.keys()];
     }
 
     this._filteredRows = this._filteredRows.slice(0, qty);
@@ -135,7 +135,7 @@ export class ResultSet<T extends object = object> {
   public offset(pos: number): this {
     // if this has no filters applied, we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
-      this._filteredRows = this._collection._prepareFullDocIndex();
+      this._filteredRows = [...this._collection._data.keys()];
     }
 
     this._filteredRows = this._filteredRows.slice(pos);
@@ -237,11 +237,11 @@ export class ResultSet<T extends object = object> {
   public sort(comparefun: (a: Doc<T>, b: Doc<T>) => number): this {
     // if this has no filters applied, just we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
-      this._filteredRows = this._collection._prepareFullDocIndex();
+      this._filteredRows = [...this._collection._data.keys()];
     }
 
     const data = this._collection._data;
-    const wrappedComparer = (a: number, b: number) => comparefun(data[a], data[b]);
+    const wrappedComparer = (a: number, b: number) => comparefun(data.get(a), data.get(b));
 
     this._filteredRows.sort(wrappedComparer);
 
@@ -265,23 +265,14 @@ export class ResultSet<T extends object = object> {
     }
 
     if (!this._filterInitialized && this._collection._rangedIndexes.hasOwnProperty(propname)) {
-      let sortedIds: number[] = this._collection._rangedIndexes[propname].index.rangeRequest();
-      let dataPositions: number[] = [];
-
-      // until we refactor resultset to store $loki ids in filteredrows,
-      // we need to convert $loki ids to data array positions
-      for (let id of sortedIds) {
-        dataPositions.push(this._collection.get(id, true)[1]);
-      }
-
-      this._filteredRows = options.desc ? dataPositions.reverse() : dataPositions;
+      this._filteredRows = this._collection._rangedIndexes[propname].index.rangeRequest();
       this._filterInitialized = true;
       return this;
     }
 
     // if this has no filters applied, just we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
-      this._filteredRows = this._collection._prepareFullDocIndex();
+      this._filteredRows = [...this._collection._data.keys()];
     }
 
     const data = this._collection._data;
@@ -292,7 +283,7 @@ export class ResultSet<T extends object = object> {
         ComparatorMap[this._collection._unindexedSortComparator];
 
     const wrappedComparer = (a: number, b: number) => {
-      return comparator(data[a][propname], data[b][propname]);
+      return comparator(data.get(a)[propname], data.get(b)[propname]);
     };
 
     this._filteredRows.sort(wrappedComparer);
@@ -338,7 +329,7 @@ export class ResultSet<T extends object = object> {
 
     // if this has no filters applied, just we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
-      this._filteredRows = this._collection._prepareFullDocIndex();
+      this._filteredRows = [...this._collection._data.keys()];
     }
 
     const data = this._collection._data;
@@ -479,7 +470,7 @@ export class ResultSet<T extends object = object> {
    * @returns {ResultSet} this ResultSet for further chain ops.
    */
   public find(query?: ResultSet.Query<Doc<T>>, firstOnly = false): this {
-    if (this._collection._data.length === 0) {
+    if (this._collection._data.size === 0) {
       this._filteredRows = [];
       this._filterInitialized = true;
       return this;
@@ -512,7 +503,7 @@ export class ResultSet<T extends object = object> {
     // apply no filters if they want all
     if (!property || queryObject === "getAll") {
       if (firstOnly) {
-        this._filteredRows = (this._collection._data.length > 0) ? [0] : [];
+        this._filteredRows = (this._collection._data.size > 0) ? [0 /* TODOOOOOOOOOO */] : [];
         this._filterInitialized = true;
       }
       return this;
@@ -584,18 +575,17 @@ export class ResultSet<T extends object = object> {
 
       if (property === "$fts") {
         this._scoring = this._collection._fullTextSearch.search(queryObject.$fts as FullTextSearchQuery);
-        let keys = Object.keys(this._scoring);
+        const keys = Object.keys(this._scoring);
         for (let i = 0; i < keys.length; i++) {
           if (filter.indexOf(+keys[i]) !== -1) {
             result.push(+keys[i]);
           }
         }
       } else if (this._collection._constraints.unique[property] !== undefined && operator === "$eq") {
-        // convert back to position for filtered rows (until we refactor filteredrows to store $loki instead of data pos)
-        let row = this._collection.get(this._collection._constraints.unique[property].get(value), true)[1];
+        const lokiId  = this._collection._constraints.unique[property].get(value);
 
-        if (filter.indexOf(row) !== -1) {
-          result.push(row);
+        if (filter.indexOf(lokiId) !== -1) {
+          result.push(lokiId);
         }
       } else {
         for (let i = 0; i < filter.length; i++) {
@@ -628,17 +618,17 @@ export class ResultSet<T extends object = object> {
     // Use unique constraint for search.
     if (this._collection._constraints.unique[property] !== undefined && operator === "$eq") {
       // convert back to position for filtered rows (until we refactor filteredrows to store $loki instead of data pos)
-      result.push(this._collection.get(this._collection._constraints.unique[property].get(value), true)[1]);
+      result.push(this._collection._constraints.unique[property].get(value));
       return this;
     }
 
     // if not searching by index
     if (!searchByIndex) {
       // determine comparator to use for ops
-      for (let i = 0; i < data.length; i++) {
+      for (const doc of data.values()) {
         // calling operator as method property of operator package preserves 'this'
-        if (operatorPackage[operator](data[i][property], value)) {
-          result.push(i);
+        if (operatorPackage[operator](doc[property], value)) {
+          result.push(doc.$loki);
           if (firstOnly) {
             return this;
           }
@@ -658,12 +648,10 @@ export class ResultSet<T extends object = object> {
           // request matches where val eq current iterated val
           let idResult = ri.index.rangeRequest({ op: "$eq", val: val });
           // for each result in match
-          for (let id of idResult) {
-            // convert $loki id to data position and add to result (filteredrows)
-            result.push(this._collection.get(id, true)[1]);
+          for (const id of idResult) {
+            result.push(id);
           }
         }
-
         return this;
       }
 
@@ -677,7 +665,7 @@ export class ResultSet<T extends object = object> {
         // for now we will have to 'shim' the binary tree index's $loki ids back
         // into data array indices, ideally i would like to repurpose filteredrows to use loki ids
         for (let id of idResult) {
-          result.push(this._collection.get(id, true)[1]);
+          result.push(id);
         }
 
         return this;
@@ -691,9 +679,8 @@ export class ResultSet<T extends object = object> {
       // if our op requires 'second pass'
       if (indexedOps[operator] !== true) {
         for (let id of idResult) {
-          let pos = this._collection.get(id, true)[1];
-          if (indexedOps[operator](data[pos][property], value)) {
-            result.push(pos);
+          if (indexedOps[operator](data.get(id)[property], value)) {
+            result.push(id);
           }
         }
       }
@@ -701,7 +688,7 @@ export class ResultSet<T extends object = object> {
         // for now we will have to 'shim' the binary tree index's $loki ids back
         // into data array indices, ideally i would like to repurpose filteredrows to use loki ids
         for (let id of idResult) {
-          result.push(this._collection.get(id, true)[1]);
+          result.push(id);
         }
       }
     }
@@ -741,11 +728,9 @@ export class ResultSet<T extends object = object> {
     }
     // otherwise this is initial chained op, work against data, push into filteredRows[]
     else {
-      let k = this._collection._data.length;
-
-      while (k--) {
-        if (viewFunction(this._collection._data[k]) === true) {
-          result.push(k);
+      for (const doc of this._collection._data.values()) {
+        if (viewFunction(doc)) {
+          result.push(doc.$loki);
         }
       }
 
@@ -814,8 +799,8 @@ export class ResultSet<T extends object = object> {
         if (this._collection._cloneObjects || forceClones) {
           method = forceCloneMethod;
 
-          for (let i = 0; i < data.length; i++) {
-            obj = this._collection._defineNestedProperties(clone(data[i], method));
+          for (const doc of data.values()) {
+            obj = this._collection._defineNestedProperties(clone(doc, method));
             if (removeMeta) {
               delete obj.$loki;
               delete obj.meta;
@@ -826,7 +811,7 @@ export class ResultSet<T extends object = object> {
         }
         // otherwise we are not cloning so return sliced array with same object references
         else {
-          return data.slice();
+          return [...data.values()];
         }
       } else {
         // filteredRows must have been set manually, so use it
@@ -861,7 +846,7 @@ export class ResultSet<T extends object = object> {
   public update(updateFunction: (obj: Doc<T>) => Doc<T>): this {
     // if this has no filters applied, we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
-      this._filteredRows = this._collection._prepareFullDocIndex();
+      this._filteredRows = [...this._collection._data.keys()];
     }
 
     const len = this._filteredRows.length;
@@ -892,7 +877,7 @@ export class ResultSet<T extends object = object> {
   public remove(): this {
     // if this has no filters applied, we need to populate filteredRows first
     if (!this._filterInitialized && this._filteredRows.length === 0) {
-      this._filteredRows = this._collection._prepareFullDocIndex();
+      this._filteredRows = [...this._collection._data.keys()];
     }
     this._collection.remove(this.data());
     this._filteredRows = [];

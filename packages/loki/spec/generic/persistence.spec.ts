@@ -330,12 +330,12 @@ describe("testing destructured serialization/deserialization", () => {
 
       // assert expectations on reinflated database
       expect(cddb["_collections"].length).toEqual(2);
-      expect(cddb["_collections"][0]._data.length).toEqual(3);
-      expect(cddb["_collections"][0]._data[0]["val"]).toEqual(ddb["_collections"][0]._data[0]["val"]);
-      expect(cddb["_collections"][0]._data[0].$loki).toEqual(ddb["_collections"][0]._data[0].$loki);
-      expect(cddb["_collections"][0]._data[2].$loki).toEqual(ddb["_collections"][0]._data[2].$loki);
+      expect(cddb["_collections"][0]._data.size).toEqual(3);
+      expect(cddb["_collections"][0]._data.get(0)["val"]).toEqual(ddb["_collections"][0]._data.get(0)["val"]);
+      expect(cddb["_collections"][0]._data.get(0).$loki).toEqual(ddb["_collections"][0]._data.get(0).$loki);
+      expect(cddb["_collections"][0]._data.get(2).$loki).toEqual(ddb["_collections"][0]._data.get(2).$loki);
       expect(cddb["_collections"][1].count()).toEqual(1);
-      expect(cddb["_collections"][1]._data[0]["a"]).toEqual(ddb["_collections"][1]._data[0]["a"]);
+      expect(cddb["_collections"][1]._data.get(0)["a"]).toEqual(ddb["_collections"][1]._data.get(0)["a"]);
     }
   });
 

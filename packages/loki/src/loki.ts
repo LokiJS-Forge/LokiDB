@@ -416,7 +416,7 @@ export class Loki extends LokiEventEmitter {
     dbcopy.loadJSONObject(this);
 
     for (let idx = 0; idx < dbcopy._collections.length; idx++) {
-      dbcopy._collections[idx]._data = [];
+      dbcopy._collections[idx]._data = new Map();
     }
 
     // if we -only- wanted the db container portion, return it now

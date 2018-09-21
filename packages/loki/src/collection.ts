@@ -65,13 +65,9 @@ export class Collection<TData extends object = object, TNested extends object = 
   // the name of the collection
   public name: string;
   // the data held by the collection
-  public _data: Doc<T>[] = [];
-  // index of id
-  private _idIndex: number[] = [];
+  public _data: Map<number, Doc<T>> = new Map();
   // user defined indexes
   public _rangedIndexes: { [P in keyof T]?: Collection.RangedIndexMeta } = {};
-  // loki obj map
-  public _lokimap: { [$loki : number]: Doc<T> } = {};
   // default comparator name to use for unindexed sorting
   public _unindexedSortComparator: string = "js";
   // default LokiOperatorPackage ('default' uses fastest 'javascript' comparisons)
@@ -102,8 +98,7 @@ export class Collection<TData extends object = object, TNested extends object = 
 
   // private holder for cached data
   private _cached: {
-    index: number[];
-    data: Doc<T>[];
+    data: Map<number, Doc<T>>;
     rangedIndexes: { [name: string]: Collection.RangedIndexMeta };
   } = null;
 
@@ -291,7 +286,6 @@ export class Collection<TData extends object = object, TNested extends object = 
     };
 
     // initialize the id index
-    this._ensureId();
     let rangedIndexes: Collection.RangedIndexOptions = options.rangedIndexes || {};
     for (let ri in rangedIndexes) {
       // Todo: any way to type annotate this as typesafe generic?
@@ -313,8 +307,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       uniqueNames: Object.keys(this._constraints.unique),
       transforms: this._transforms as any,
       rangedIndexes: this._rangedIndexes as any,
-      _data: this._data,
-      idIndex: this._idIndex,
+      _data: [...this._data],
       maxId: this._maxId,
       _dirty: this._dirty,
       _nestedProperties: this._nestedProperties,
@@ -372,24 +365,16 @@ export class Collection<TData extends object = object, TNested extends object = 
     }
 
     // load each element individually
+    let loader = (doc: Doc<any>) => doc;
     if (options && options[obj.name] !== undefined) {
-      let loader = makeLoader(obj);
+      loader = makeLoader(obj);
+    }
 
-      for (let j = 0; j < obj._data.length; j++) {
-        coll._data[j] = coll._defineNestedProperties(loader(obj._data[j]));
-        // regenerate lokimap
-        coll._lokimap[coll._data[j].$loki] = coll._data[j];
-      }
-    } else {
-      for (let j = 0; j < obj._data.length; j++) {
-        coll._data[j] = coll._defineNestedProperties(obj._data[j]);
-        // regenerate lokimap
-        coll._lokimap[coll._data[j].$loki] = coll._data[j];
-      }
+    for (let j = 0; j < obj._data.length; j++) {
+      coll._data.set(coll._data[j].$loki, coll._defineNestedProperties(loader(obj._data[j])));
     }
 
     coll._maxId = (obj.maxId === undefined) ? 0 : obj.maxId;
-    coll._idIndex = obj.idIndex;
     if (obj.transforms !== undefined) {
       coll._transforms = obj.transforms;
     }
@@ -409,8 +394,6 @@ export class Collection<TData extends object = object, TNested extends object = 
       // attach class instance to our collection's ranged index's (index) instance property
       coll._rangedIndexes[ri].index = rii;
     }
-
-    coll._ensureId();
 
     // regenerate unique indexes
     if (obj.uniqueNames !== undefined) {
@@ -495,18 +478,6 @@ export class Collection<TData extends object = object, TNested extends object = 
   /*----------------------------+
    | INDEXING                   |
    +----------------------------*/
-
-  /**
-   * Create a row filter that covers all documents in the collection.
-   */
-  _prepareFullDocIndex(): number[] {
-    const indexes = new Array(this._data.length);
-    for (let i = 0; i < indexes.length; i++) {
-      indexes[i] = i;
-    }
-    return indexes;
-  }
-
   /**
    * Ensure rangedIndex of a field.
    * @param field
@@ -546,8 +517,8 @@ export class Collection<TData extends object = object, TNested extends object = 
 
     let rii = this._rangedIndexes[field].index;
 
-    for (let i = 0; i < this._data.length; i++) {
-      rii.insert(this._data[i].$loki, this._data[i][field]);
+    for (const [key, doc] of this._data) {
+      rii.insert(key, doc[field]);
     }
   }
 
@@ -556,8 +527,8 @@ export class Collection<TData extends object = object, TNested extends object = 
 
     // if index already existed, (re)loading it will likely cause collisions, rebuild always
     this._constraints.unique[field] = index;
-    for (let i = 0; i < this._data.length; i++) {
-      index.set(this._data[i].$loki, this._data[i][field]);
+    for (const [key, doc] of this._data) {
+      index.set(key, doc);
     }
     return index;
   }
@@ -569,19 +540,9 @@ export class Collection<TData extends object = object, TNested extends object = 
    */
   public count(query?: ResultSet.Query<Doc<T>>): number {
     if (!query) {
-      return this._data.length;
+      return this._data.size;
     }
     return this.chain().find(query)._filteredRows.length;
-  }
-
-  /**
-   * Rebuild idIndex
-   */
-  private _ensureId(): void {
-    this._idIndex = [];
-    for (let i = 0; i < this._data.length; i++) {
-      this._idIndex.push(this._data[i].$loki);
-    }
   }
 
   /**
@@ -772,8 +733,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {boolean} [removeIndices=false] - remove indices
    */
   public clear({removeIndices: removeIndices = false} = {}) {
-    this._data = [];
-    this._idIndex = [];
+    this._data = new Map();
     this._cached = null;
     this._maxId = 0;
     this._dynamicViews = [];
@@ -826,15 +786,10 @@ export class Collection<TData extends object = object, TNested extends object = 
 
     try {
       this.startTransaction();
-      const arr = this.get(doc.$loki, true);
 
-      if (!arr) {
+      if (!this._data.has(doc.$loki)) {
         throw new Error("Trying to update a document not in collection.");
       }
-
-      // ref to existing obj
-      let oldInternal = arr[0]; // -internal- obj ref
-      let position = arr[1]; // position in data array
 
       // ref to new internal obj
       // if configured to clone, do so now... otherwise just use same obj reference
@@ -847,13 +802,12 @@ export class Collection<TData extends object = object, TNested extends object = 
       });
 
       // operate the update
-      this._data[position] = newInternal;
-      this._lokimap[doc.$loki] = newInternal;
+      this._data.set(doc.$loki, newInternal);
 
       // now that we can efficiently determine the data[] position of newly added document,
       // submit it for all registered DynamicViews to evaluate for inclusion/exclusion
       for (let idx = 0; idx < this._dynamicViews.length; idx++) {
-        this._dynamicViews[idx]._evaluateDocument(position, false);
+        this._dynamicViews[idx]._evaluateDocument(doc.$loki, false);
       }
 
       // Notify all ranged indexes of (possible) value update
@@ -861,11 +815,9 @@ export class Collection<TData extends object = object, TNested extends object = 
         this._rangedIndexes[ri].index.update(doc.$loki, doc[ri]);
       }
 
-      this._idIndex[position] = newInternal.$loki;
-
       // FullTextSearch.
       if (this._fullTextSearch !== null) {
-        this._fullTextSearch.updateDocument(doc, position);
+        this._fullTextSearch.updateDocument(doc, doc.$loki);
       }
 
       this.commit();
@@ -876,7 +828,7 @@ export class Collection<TData extends object = object, TNested extends object = 
         this._updateMeta(newInternal);
       }
       else {
-        this._updateMetaWithChange(newInternal, oldInternal);
+        this._updateMetaWithChange(newInternal, doc);
       }
 
       let returnObj = newInternal;
@@ -885,7 +837,7 @@ export class Collection<TData extends object = object, TNested extends object = 
         returnObj = clone(newInternal, this._cloneMethod);
       }
 
-      this.emit("update", returnObj, oldInternal);
+      this.emit("update", returnObj, doc);
     } catch (err) {
       this.rollback();
       this.emit("error", err);
@@ -916,7 +868,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       this._maxId++;
 
       if (isNaN(this._maxId)) {
-        this._maxId = (this._data[this._data.length - 1].$loki + 1);
+        this._maxId = (this._data[this._data.size - 1].$loki + 1);
       }
 
       const newDoc = obj as Doc<T>;
@@ -932,15 +884,10 @@ export class Collection<TData extends object = object, TNested extends object = 
         }
       }
 
-      // add new obj id to idIndex
-      this._idIndex.push(newDoc.$loki);
-      // update lokimap
-      this._lokimap[newDoc.$loki] = newDoc;
-
       // add the object
-      this._data.push(newDoc);
+      this._data.set(newDoc.$loki, newDoc);
 
-      const addedPos = this._data.length - 1;
+      const addedPos = this._data.size - 1;
 
       // now that we can efficiently determine the data[] position of newly added document,
       // submit it for all registered DynamicViews to evaluate for inclusion/exclusion
@@ -996,59 +943,50 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {function} filterFunction - the filter function
    */
   public removeWhere(filterFunction: (obj: Doc<T>) => boolean) {
-    this.remove(this._data.filter(filterFunction));
+    this.remove([...this._data.values()].filter(filterFunction));
   }
 
   public removeDataOnly() {
-    this.remove(this._data.slice());
+    this.remove([...this._data.values()]);
   }
 
   /**
    * Remove a document from the collection
    * @param {number|object} doc - document to remove from collection
    */
-  remove(doc: number | Doc<T> | Doc<T>[]): void {
-    if (typeof doc === "number") {
-      doc = this.get(doc);
-    }
-
-    if (Array.isArray(doc)) {
-      let k = 0;
-      const len = doc.length;
-      for (k; k < len; k++) {
-        this.remove(doc[k]);
+  remove(docOrNumberOrArray: number | Doc<T> | Doc<T>[]): void {
+    let doc: Doc<T>;
+    if (typeof docOrNumberOrArray === "number") {
+      doc = this.get(docOrNumberOrArray);
+    } else if (Array.isArray(docOrNumberOrArray)) {
+      for (let i = 0; i < docOrNumberOrArray.length; i++) {
+        this.remove(docOrNumberOrArray[i]);
       }
       return;
+    } else {
+      doc = docOrNumberOrArray;
     }
+
     if (doc.$loki === undefined) {
       throw new Error("Object is not a document stored in the collection");
     }
 
     try {
       this.startTransaction();
-      const arr = this.get(doc.$loki, true);
-
-      const position = arr[1];
 
       // already converted but let's narrow to make typescript happy
-      let aDoc : Doc<T> = (typeof doc === "number") ? this.get(doc) : doc;
       Object.keys(this._constraints.unique).forEach((key) => {
-        if (key in aDoc) {
-          this._constraints.unique[key].remove(aDoc.$loki);
+        if (doc[key] !== undefined) {
+          this._constraints.unique[key].remove(doc.$loki);
         }
       });
       // now that we can efficiently determine the data[] position of newly added document,
       // submit it for all registered DynamicViews to remove
       for (let idx = 0; idx < this._dynamicViews.length; idx++) {
-        this._dynamicViews[idx]._removeDocument(position);
+        this._dynamicViews[idx]._removeDocument(doc.$loki);
       }
 
-      this._data.splice(position, 1);
-
-      // remove id from idIndex
-      this._idIndex.splice(position, 1);
-      // remove from lokimap
-      delete this._lokimap[doc.$loki];
+      this._data.delete(doc.$loki);
 
       // remove id/val kvp from binary tree index
       for (let ri in this._rangedIndexes) {
@@ -1057,17 +995,17 @@ export class Collection<TData extends object = object, TNested extends object = 
 
       // FullTextSearch.
       if (this._fullTextSearch !== null) {
-        this._fullTextSearch.removeDocument(doc, position);
+        this._fullTextSearch.removeDocument(doc, doc.$loki);
       }
 
       this.commit();
       this._dirty = true; // for autosave scenarios
 
       if (!this._disableChangesApi) {
-        this._createChange(this.name, "R", arr[0]);
+        this._createChange(this.name, "R", doc);
       }
 
-      this.emit("delete", arr[0]);
+      this.emit("delete", doc);
       delete doc.$loki;
       delete doc.meta;
     } catch (err) {
@@ -1208,44 +1146,8 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @returns {(object|array|null)} Object reference if document was found, null if not,
    *     or an array if 'returnPosition' was passed.
    */
-  public get(id: number): Doc<T>;
-  public get(id: number, returnPosition: boolean): Doc<T> | [Doc<T>, number];
-  public get(id: number, returnPosition = false) {
-    if (!returnPosition) {
-      let doc = this._lokimap[id];
-
-      if (doc === undefined) return null;
-
-      return doc;
-    }
-    const data = this._idIndex;
-    let max = data.length - 1;
-    let min = 0;
-    let mid = (min + max) >> 1;
-
-    id = typeof id === "number" ? id : parseInt(id, 10);
-
-    if (isNaN(id)) {
-      throw new TypeError("Passed id is not an integer");
-    }
-
-    while (data[min] < data[max]) {
-      mid = (min + max) >> 1;
-
-      if (data[mid] < id) {
-        min = mid + 1;
-      } else {
-        max = mid;
-      }
-    }
-
-    if (max === min && data[min] === id) {
-      if (returnPosition) {
-        return [this._data[min], min];
-      }
-      return this._data[min];
-    }
-    return null;
+  public get(id: number): Doc<T> {
+    return this._data.get(id);
   }
 
   /**
@@ -1260,9 +1162,9 @@ export class Collection<TData extends object = object, TNested extends object = 
     let lokiId = this._constraints.unique[field].get(value);
 
     if (!this._cloneObjects) {
-      return this._lokimap[lokiId];
+      return this._data.get(lokiId);
     } else {
-      return clone(this._lokimap[lokiId], this._cloneMethod);
+      return clone(this._data.get(lokiId), this._cloneMethod);
     }
   }
 
@@ -1319,12 +1221,9 @@ export class Collection<TData extends object = object, TNested extends object = 
    * Find object by unindexed field by property equal to value,
    * simply iterates and returns the first element matching the query
    */
-  public findOneUnindexed(prop: string, value: any) {
-    let i = this._data.length;
-    let doc;
-    while (i--) {
-      if (this._data[i][prop] === value) {
-        doc = this._data[i];
+  public findOneUnindexed(prop: string, value: any): Doc<T> | null {
+    for (const doc of this._data.values()) {
+      if (doc[prop] === value) {
         return doc;
       }
     }
@@ -1349,7 +1248,6 @@ export class Collection<TData extends object = object, TNested extends object = 
       }
 
       this._cached = {
-        index: this._idIndex,
         data: clone(this._data, this._cloneMethod),
         rangedIndexes: rib,
       };
@@ -1381,10 +1279,9 @@ export class Collection<TData extends object = object, TNested extends object = 
   public rollback(): void {
     if (this._transactional) {
       if (this._cached !== null) {
-        this._idIndex = this._cached.index;
         this._data = this._cached.data;
-        for (let i = 0; i < this._data.length; i++) {
-          this._data[i] = this._defineNestedProperties(this._data[i]);
+        for (const [key, doc] of this._data) {
+          this._data.set(key, this._defineNestedProperties(doc));
         }
 
         // restore ranged indexes
@@ -1431,7 +1328,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @returns {data} The result of your mapReduce operation
    */
   public mapReduce<U1, U2>(mapFunction: (value: Doc<T>, index: number, array: Doc<T>[]) => U1, reduceFunction: (array: U1[]) => U2): U2 {
-    return reduceFunction(this._data.map(mapFunction));
+    return reduceFunction([...this._data.values()].map(mapFunction));
   }
 
   /**
@@ -1505,8 +1402,8 @@ export class Collection<TData extends object = object, TNested extends object = 
    */
   public extract(field: keyof T): any[] {
     const result = [];
-    for (let i = 0; i < this._data.length; i++) {
-      result.push(this._data[i][field]);
+    for (const doc of this._data.values()) {
+      result.push(doc[field]);
     }
     return result;
   }
@@ -1540,7 +1437,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       value: 0
     };
 
-    if (this._data.length === 0) {
+    if (this._data.size === 0) {
       result.index = null;
       result.value = null;
       return result;
@@ -1548,11 +1445,11 @@ export class Collection<TData extends object = object, TNested extends object = 
 
     result.index = this._data[0].$loki;
     result.value = parseFloat(this._data[0][field] as any);
-    for (let i = 1; i < this._data.length; i++) {
-      const val = parseFloat(this._data[i][field] as any);
+    for (const [key, doc] of this._data) {
+      const val = parseFloat(doc[field] as any);
       if (result.value > val) {
         result.value = val;
-        result.index = this._data[i].$loki;
+        result.index = key;
       }
     }
     return result;
@@ -1569,7 +1466,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       value: 0
     };
 
-    if (this._data.length === 0) {
+    if (this._data.size === 0) {
       result.index = null;
       result.value = null;
       return result;
@@ -1577,11 +1474,11 @@ export class Collection<TData extends object = object, TNested extends object = 
 
     result.index = this._data[0].$loki;
     result.value = parseFloat(this._data[0][field] as any);
-    for (let i = 1; i < this._data.length; i++) {
-      const val = parseFloat(this._data[i][field] as any);
+    for (const [key, doc] of this._data) {
+      const val = parseFloat(doc[field] as any);
       if (result.value < val) {
         result.value = val;
-        result.index = this._data[i].$loki;
+        result.index = key;
       }
     }
     return result;
@@ -1717,8 +1614,7 @@ export namespace Collection {
     uniqueNames: string[];
     transforms: Dict<Transform[]>;
     rangedIndexes: RangedIndexOptions;
-    _data: Doc<any>[];
-    idIndex: number[];
+    _data: [number, Doc<any>][];
     maxId: number;
     _dirty: boolean;
     transactional: boolean;
