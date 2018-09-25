@@ -334,7 +334,7 @@ export class ResultSet<T extends object = object> {
 
     const data = this._collection._data;
     const wrappedComparer = (a: number, b: number) =>
-      this._compoundeval(properties as [keyof T, boolean][], data[a], data[b]);
+      this._compoundeval(properties as [keyof T, boolean][], data.get(a), data.get(b));
 
     this._filteredRows.sort(wrappedComparer);
 
@@ -572,7 +572,7 @@ export class ResultSet<T extends object = object> {
     // If the filteredRows[] is already initialized, use it
     if (this._filterInitialized) {
       let filter = this._filteredRows;
-
+      
       if (property === "$fts") {
         this._scoring = this._collection._fullTextSearch.search(queryObject.$fts as FullTextSearchQuery);
         const keys = Object.keys(this._scoring);
@@ -589,11 +589,11 @@ export class ResultSet<T extends object = object> {
         }
       } else {
         for (let i = 0; i < filter.length; i++) {
-          let rowIdx = filter[i];
+          let lokiId = filter[i];
 
           // calling operator as method property of operator package preserves 'this'
-          if (operatorPackage[operator](data[rowIdx][property], value)) {
-            result.push(rowIdx);
+          if (operatorPackage[operator](data.get(lokiId)[property], value)) {
+            result.push(lokiId);
           }
         }
       }
@@ -717,7 +717,7 @@ export class ResultSet<T extends object = object> {
       let j = this._filteredRows.length;
 
       while (j--) {
-        if (viewFunction(this._collection._data[this._filteredRows[j]]) === true) {
+        if (viewFunction(this._collection._data.get(this._filteredRows[j])) === true) {
           result.push(this._filteredRows[j]);
         }
       }
@@ -823,7 +823,7 @@ export class ResultSet<T extends object = object> {
     if (this._collection._cloneObjects || forceClones) {
       method = forceCloneMethod;
       for (let i = 0; i < fr.length; i++) {
-        obj = this._collection._defineNestedProperties(clone(data[fr[i]], method));
+        obj = this._collection._defineNestedProperties(clone(data.get(fr[i]), method));
         if (removeMeta) {
           delete obj.$loki;
           delete obj.meta;
@@ -832,7 +832,7 @@ export class ResultSet<T extends object = object> {
       }
     } else {
       for (let i = 0; i < fr.length; i++) {
-        result.push(data[fr[i]]);
+        result.push(data.get(fr[i]));
       }
     }
     return result;

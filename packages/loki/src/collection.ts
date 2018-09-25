@@ -307,7 +307,7 @@ export class Collection<TData extends object = object, TNested extends object = 
       uniqueNames: Object.keys(this._constraints.unique),
       transforms: this._transforms as any,
       rangedIndexes: this._rangedIndexes as any,
-      _data: [...this._data],
+      _data: [...this._data.values()],
       maxId: this._maxId,
       _dirty: this._dirty,
       _nestedProperties: this._nestedProperties,
@@ -371,7 +371,7 @@ export class Collection<TData extends object = object, TNested extends object = 
     }
 
     for (let j = 0; j < obj._data.length; j++) {
-      coll._data.set(coll._data[j].$loki, coll._defineNestedProperties(loader(obj._data[j])));
+      coll._data.set(obj._data[j].$loki, coll._defineNestedProperties(loader(obj._data[j])));
     }
 
     coll._maxId = (obj.maxId === undefined) ? 0 : obj.maxId;
@@ -523,12 +523,12 @@ export class Collection<TData extends object = object, TNested extends object = 
   }
 
   public ensureUniqueIndex(field: keyof T) {
-    let index = new UniqueIndex(field as string);
+    const index = new UniqueIndex(field as string);
 
     // if index already existed, (re)loading it will likely cause collisions, rebuild always
     this._constraints.unique[field] = index;
     for (const [key, doc] of this._data) {
-      index.set(key, doc);
+      index.set(key, doc[field]);
     }
     return index;
   }
@@ -733,7 +733,7 @@ export class Collection<TData extends object = object, TNested extends object = 
    * @param {boolean} [removeIndices=false] - remove indices
    */
   public clear({removeIndices: removeIndices = false} = {}) {
-    this._data = new Map();
+    this._data.clear();
     this._cached = null;
     this._maxId = 0;
     this._dynamicViews = [];
@@ -1614,7 +1614,7 @@ export namespace Collection {
     uniqueNames: string[];
     transforms: Dict<Transform[]>;
     rangedIndexes: RangedIndexOptions;
-    _data: [number, Doc<any>][];
+    _data: Doc<any>[];
     maxId: number;
     _dirty: boolean;
     transactional: boolean;

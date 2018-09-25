@@ -116,9 +116,12 @@ export class PartitioningAdapter implements StorageAdapter {
 
     const keyname = this._dbname + "." + partition;
     return this._adapter.loadDatabase(keyname).then((result: string) => {
-      this._dbref._collections[partition]._data = this._dbref.deserializeCollection(result, {
+      const docs = this._dbref.deserializeCollection(result, {
         delimited: true
       });
+      for (let i = 0; docs.length; i++) {
+        this._dbref._collections[partition]._data.set(docs[i].$loki, docs[i]);
+      }
 
       if (++partition < this._dbref._collections.length) {
         return this._loadNextPartition(partition);
@@ -156,7 +159,8 @@ export class PartitioningAdapter implements StorageAdapter {
 
       // convert stringified array elements to object instances and push to collection data
       for (let idx = 0; idx < dlen; idx++) {
-        this._dbref._collections[this._pageIterator.collection]._data.push(JSON.parse(data[idx]));
+        const doc = JSON.parse(data[idx]);
+        this._dbref._collections[this._pageIterator.collection]._data.set(doc.$loki, doc);
         data[idx] = null;
       }
       data = [];
@@ -247,9 +251,10 @@ export class PartitioningAdapter implements StorageAdapter {
    */
   private _saveNextPage(): Promise<void> {
     const coll = this._dbref._collections[this._pageIterator.collection];
+    const ids = [...coll._data.keys()];
     const keyname = this._dbname + "." + this._pageIterator.collection + "." + this._pageIterator.pageIndex;
     let pageLen = 0;
-    const cdlen = coll._data.length;
+    const cdlen = coll._data.size;
     const delimlen = this._delimiter.length;
     let serializedObject = "";
     let pageBuilder = "";
@@ -267,14 +272,14 @@ export class PartitioningAdapter implements StorageAdapter {
       return Promise.resolve();
     };
 
-    if (coll._data.length === 0) {
+    if (coll._data.size === 0) {
       doneWithPartition = true;
     }
 
     while (!doneWithPartition && !doneWithPage) {
       if (!doneWithPartition) {
         // serialize object
-        serializedObject = JSON.stringify(coll._data[this._pageIterator.docIndex]);
+        serializedObject = JSON.stringify(coll._data.get(ids[this._pageIterator.docIndex]));
         pageBuilder += serializedObject;
         pageLen += serializedObject.length;
 
@@ -285,7 +290,7 @@ export class PartitioningAdapter implements StorageAdapter {
       if (pageLen >= this._pageSize) doneWithPage = true;
 
       // if not done with current page, need delimiter before next item
-      // if done with partition we also want a delmiter to indicate 'end of pages' final empty row
+      // if done with partition we also want a delimiter to indicate 'end of pages' final empty row
       if (!doneWithPage || doneWithPartition) {
         pageBuilder += this._delimiter;
         pageLen += delimlen;

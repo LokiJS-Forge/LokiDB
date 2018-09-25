@@ -30,22 +30,6 @@ describe("collection", () => {
     expect(coll.count()).toEqual(1);
   });
 
-  it("lokimap works", function () {
-    const db = new Loki("test.db");
-    let coll = db.addCollection("coll");
-    coll.insert([{a: 3, b: 3}, {a: 6, b: 7}, {a: 1, b: 2}, {a: 7, b: 8}, {a: 6, b: 4}]);
-
-    expect(Object.keys(coll._lokimap).length).toEqual(5);
-
-    let result = coll.find();
-
-    for (let doc of result) {
-      let lmdoc = coll._lokimap[doc.$loki];
-      expect(lmdoc["a"]).toEqual(doc["a"]);
-      expect(lmdoc["b"]).toEqual(doc["b"]);
-    }
-  });
-
   it("collection rename works", function () {
     const db = new Loki("test.db");
     db.addCollection("coll1");
