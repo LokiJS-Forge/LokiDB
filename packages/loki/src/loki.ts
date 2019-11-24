@@ -11,7 +11,7 @@ function getENV(): Loki.Environment {
     return "NATIVESCRIPT";
   }
 
-  const isNode = global !== undefined && ({}).toString.call(global) === "[object global]";
+  const isNode = global !== undefined && ({}).toString.call(global.process) === "[object process]";
   if (isNode) {
     if (global["window"]) {
       return "NODEJS"; //node-webkit
