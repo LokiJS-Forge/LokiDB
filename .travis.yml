@@ -1,6 +1,8 @@
-language: node_js
+language: python
+python:
+  - "3.5"
 node_js:
-    - "8"
+    - "10"
 
 dist: trusty
 sudo: required
@@ -16,16 +18,14 @@ services:
 
 addons:
   chrome: stable
-  apt:
-    packages:
-      - python3
-      - python3-pip
 
 before_install:
-  - pip3 install --user mkdocs
-  - pip3 install --user mkdocs-material
+  - pip3 install mkdocs
+  - pip3 install mkdocs-material
 
 script:
+    - npm install
+    - PATH=${PATH}:\.\/node_modules\/\.bin/
     - npm run lint
     - npm test
     - codecov
