@@ -112,6 +112,24 @@ describe("Constraints", () => {
       .find({"name": "Jack"}).data().length).toBe(0);
   });
 
+  it("does not fail if no entry is found", () => {
+    const db = new Loki();
+    const coll = db.addCollection<User>("morenullusers", {
+      unique: ["username"]
+    });
+
+    expect(coll.find({username: "joe"}).length).toBe(0);
+
+    coll.insert({
+      numb: 1,
+      username: "jacky",
+      name: "Joe"
+    });
+
+    expect(coll.chain().find({numb: 1}).find({username: "joe"}).data().length).toBe(0);
+    expect(coll.find({username: "joe"}).length).toBe(0);
+  });
+
   it("should not throw an error id multiple nulls are added", () => {
     const db = new Loki();
     const coll4 = db.addCollection<User>("morenullusers", {

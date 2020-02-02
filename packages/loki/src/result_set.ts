@@ -592,10 +592,12 @@ export class ResultSet<T extends object = object> {
         }
       } else if (this._collection._constraints.unique[property] !== undefined && operator === "$eq") {
         // convert back to position for filtered rows (until we refactor filteredrows to store $loki instead of data pos)
-        let row = this._collection.get(this._collection._constraints.unique[property].get(value), true)[1];
-
-        if (filter.indexOf(row) !== -1) {
-          result.push(row);
+        const id = this._collection._constraints.unique[property].get(value);
+        if (id !== undefined) {
+          const row = this._collection.get(id, true)[1];
+          if (filter.indexOf(row) !== -1) {
+            result.push(row);
+          }
         }
       } else {
         for (let i = 0; i < filter.length; i++) {
@@ -628,7 +630,10 @@ export class ResultSet<T extends object = object> {
     // Use unique constraint for search.
     if (this._collection._constraints.unique[property] !== undefined && operator === "$eq") {
       // convert back to position for filtered rows (until we refactor filteredrows to store $loki instead of data pos)
-      result.push(this._collection.get(this._collection._constraints.unique[property].get(value), true)[1]);
+      const id = this._collection._constraints.unique[property].get(value);
+      if (id !== undefined) {
+        result.push(this._collection.get(id, true)[1]);
+      }
       return this;
     }
 
