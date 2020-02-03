@@ -1,0 +1,33 @@
+name: Node.js CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [10.x]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Setup ElasticSearch
+        uses: getong/elasticsearch-action@v1
+        with:
+          elasticsearch version: '6.8.6'
+      - run: npm install
+      - run: PATH=${PATH}:\.\/node_modules\/\.bin/
+      - run: npm run lint
+      - run: npm test
+      #    - run: codecov
+      - run: npm run build
+      - run: npm run build -- --dist
+      - run: npm install --prefix integration
+        env:
+          CI: true
