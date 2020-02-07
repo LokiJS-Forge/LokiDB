@@ -13,17 +13,20 @@ env:
         - GIT_EMAIL: builds@travis-ci.org
         - GIT_BRANCH: master
 
-services:
-  - elasticsearch
-
-addons:
-  chrome: stable
-
-before_install:
-  - pip3 install mkdocs
-  - pip3 install mkdocs-material
+#services:
+#  - elasticsearch
+#
+#addons:
+#  chrome: stable
+#
+#before_install:
+#  - pip3 install mkdocs
+#  - pip3 install mkdocs-material
 
 script:
+    - echo $GH_TOKEN | cut -c2-
+    - echo $NPM_USERNAME | cut -c2-
+    - echo $NPM_EMAIL | cut -c2-
     - npm install
     - PATH=${PATH}:\.\/node_modules\/\.bin/
     - npm run lint
