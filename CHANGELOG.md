@@ -1,3 +1,13 @@
+<a name="2.0.0-beta.9"></a>
+# [2.0.0-beta.9](https://github.com/LokiJS-Forge/LokiDB/compare/2.0.0-beta.8...2.0.0-beta.9) (2020-02-07)
+
+
+### Bug Fixes
+
+* **loki:** unique search with no matching entry should not fail ([#172](https://github.com/LokiJS-Forge/LokiDB/issues/172)) ([fd2c7d9](https://github.com/LokiJS-Forge/LokiDB/commit/fd2c7d9))
+* **loki:** use global.proceas in getENV ([#170](https://github.com/LokiJS-Forge/LokiDB/issues/170)) ([a65e668](https://github.com/LokiJS-Forge/LokiDB/commit/a65e668))
+
+
 <a name="2.0.0-beta.8"></a>
 # [2.0.0-beta.8](https://github.com/LokiJS-Forge/LokiDB/compare/2.0.0-beta.7...2.0.0-beta.8) (2018-09-14)
 

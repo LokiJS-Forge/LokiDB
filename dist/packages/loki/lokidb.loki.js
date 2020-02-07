@@ -1403,9 +1403,12 @@ class result_set_ResultSet {
             }
             else if (this._collection._constraints.unique[property] !== undefined && operator === "$eq") {
                 // convert back to position for filtered rows (until we refactor filteredrows to store $loki instead of data pos)
-                let row = this._collection.get(this._collection._constraints.unique[property].get(value), true)[1];
-                if (filter.indexOf(row) !== -1) {
-                    result.push(row);
+                const id = this._collection._constraints.unique[property].get(value);
+                if (id !== undefined) {
+                    const row = this._collection.get(id, true)[1];
+                    if (filter.indexOf(row) !== -1) {
+                        result.push(row);
+                    }
                 }
             }
             else {
@@ -1434,7 +1437,10 @@ class result_set_ResultSet {
         // Use unique constraint for search.
         if (this._collection._constraints.unique[property] !== undefined && operator === "$eq") {
             // convert back to position for filtered rows (until we refactor filteredrows to store $loki instead of data pos)
-            result.push(this._collection.get(this._collection._constraints.unique[property].get(value), true)[1]);
+            const id = this._collection._constraints.unique[property].get(value);
+            if (id !== undefined) {
+                result.push(this._collection.get(id, true)[1]);
+            }
             return this;
         }
         // if not searching by index
@@ -4811,7 +4817,7 @@ function getENV() {
     if (global !== undefined && (global["android"] || global["NSObject"])) {
         return "NATIVESCRIPT";
     }
-    const isNode = global !== undefined && ({}).toString.call(global) === "[object global]";
+    const isNode = global !== undefined && ({}).toString.call(global.process) === "[object process]";
     if (isNode) {
         if (global["window"]) {
             return "NODEJS"; //node-webkit
