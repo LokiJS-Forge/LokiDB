@@ -61,7 +61,7 @@ export class MemoryStorage implements StorageAdapter {
             resolve(this.hashStore[dbname].value);
           }
           else {
-            reject(new Error("unable to load database, " + dbname + " was not found in memory storage"));
+            reject(null);
           }
         }, this.options.asyncTimeout);
       });
@@ -71,7 +71,7 @@ export class MemoryStorage implements StorageAdapter {
         return Promise.resolve(this.hashStore[dbname].value);
       }
       else {
-        return Promise.reject(new Error("unable to load database, " + dbname + " was not found in memory storage"));
+        return Promise.reject(null);
       }
     }
   }
