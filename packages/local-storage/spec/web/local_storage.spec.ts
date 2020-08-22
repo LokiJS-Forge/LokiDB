@@ -68,4 +68,28 @@ describe("testing local storage", function () {
           });
       });
   });
+
+
+  it("auto save and auto load", function (done) {
+    const db = new Loki("myTestApp2");
+
+    db.initializePersistence({autosave: true, autoload: true})
+      .then(() => {
+        db.addCollection<Name>("myColl").insert({name: "Hello World"});
+        return db.close();
+      })
+      .then(() => {
+        const db2 = new Loki("myTestApp2");
+        return db2.initializePersistence({autosave: true, autoload: true})
+          .then(() => {
+            expect(db2.getCollection<Name>("myColl").find()[0].name).toEqual("Hello World");
+          });
+      })
+      .catch(e => {
+        fail(e);
+      })
+      .then(() => {
+        done();
+      });
+  });
 });

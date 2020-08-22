@@ -203,7 +203,7 @@ export class Loki extends LokiEventEmitter {
     // if they want to load database on loki instantiation, now is a good time to load... after adapter set and before
     // possible autosave initiation
     if (options.autoload) {
-      loaded = loaded.then(() => this.loadDatabase(options.inflate));
+      loaded = loaded.then(() => this._loadDatabase(options.inflate, true));
     }
 
     return loaded.then(() => {
@@ -855,9 +855,10 @@ export class Loki extends LokiEventEmitter {
    * Internal load logic, decoupled from throttling/contention logic
    *
    * @param {object} options - an object containing inflation options for each collection
+   * @param {boolean} ignore_not_found - does not raise an error if database is not found
    * @returns {Promise} a Promise that resolves after the database is loaded
    */
-  private _loadDatabase(options = {}) {
+  private _loadDatabase(options = {}, ignore_not_found = false) {
     // the persistenceAdapter should be present if all is ok, but check to be sure.
     if (this._persistenceAdapter === null) {
       return Promise.reject(new Error("persistenceAdapter not configured"));
@@ -868,18 +869,20 @@ export class Loki extends LokiEventEmitter {
         if (typeof (dbString) === "string") {
           this.loadJSON(dbString, options);
           this.emit("load", this);
+          // if adapter has returned a js object (other than null or error) attempt to load from JSON object
+        } else if (typeof (dbString) === "object" && dbString !== null && !(dbString instanceof Error)) {
+          this.loadJSONObject(dbString, options);
+          this.emit("load", this);
         } else {
-          dbString = dbString as object;
-          // if adapter has returned an js object (other than null or error) attempt to load from JSON object
-          if (typeof (dbString) === "object" && dbString !== null && !(dbString instanceof Error)) {
-            this.loadJSONObject(dbString, options);
-            this.emit("load", this);
-          } else {
-            if (dbString instanceof Error)
-              throw dbString;
-
-            throw new TypeError("The persistence adapter did not load a serialized DB string or object.");
-          }
+          throw dbString;
+        }
+      }).catch(e => {
+        if (e instanceof Error) {
+          throw e;
+        } else if (e != null) {
+          throw new TypeError("The persistence adapter did not load a serialized DB string or object.");
+        } else if (!ignore_not_found) {
+          throw new Error("Database not found.");
         }
       });
   }

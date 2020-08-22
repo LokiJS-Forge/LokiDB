@@ -81,10 +81,10 @@ export class IndexedStorage implements StorageAdapter {
       });
     }
     // lookup up db string in AKV db
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.catalog.getAppKey(appName, dbname, (result: ANY) => {
         if (result.id === 0) {
-          resolve();
+          reject(null);
           return;
         }
         resolve(result.val);
