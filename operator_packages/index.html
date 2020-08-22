@@ -7,16 +7,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   
+  
   <link rel="shortcut icon" href="../img/favicon.ico">
   <title>LokiOperatorPackages - LokiDB</title>
-  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
-  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
-  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
-  <link href="../css/codemirror/codemirror.css" rel="stylesheet">
-  <link href="../css/codemirror/foldgutter.css" rel="stylesheet">
-  <link href="../css/javascript_editor.css" rel="stylesheet">
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
+  <link href="../css/codemirror/codemirror.css" rel="stylesheet" />
+  <link href="../css/codemirror/foldgutter.css" rel="stylesheet" />
+  <link href="../css/javascript_editor.css" rel="stylesheet" />
   
   <script>
     // Current page data
@@ -27,7 +28,7 @@
   
   <script src="../js/jquery-2.1.1.min.js" defer></script>
   <script src="../js/modernizr-2.8.3.min.js" defer></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
   <script>hljs.initHighlightingOnLoad();</script> 
   
 </head>
@@ -38,6 +39,7 @@
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
         <a href=".." class="icon icon-home"> LokiDB</a>
         <div role="search">
@@ -48,54 +50,38 @@
       </div>
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-	<ul class="current">
-	  
-          
-            <li class="toctree-l1">
-		
-    <a class="" href="..">Home</a>
-	    </li>
-          
-            <li class="toctree-l1">
-		
-    <a class="" href="../comparators/">Loki Comparators</a>
-	    </li>
-          
-            <li class="toctree-l1 current">
-		
-    <a class="current" href="./">LokiOperatorPackages</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l2"><a href="#lokioperatorpackages">LokiOperatorPackages</a></li>
-    
-        <ul>
-        
-            <li><a class="toctree-l3" href="#overview">Overview</a></li>
-        
-            <li><a class="toctree-l3" href="#why-support-multiple-implementations-of-operators">Why support multiple implementations of operators?</a></li>
-        
-            <li><a class="toctree-l3" href="#what-are-the-lokioperatorpackages-which-lokidb-supports">What are the LokiOperatorPackages which LokiDB supports?</a></li>
-        
-            <li><a class="toctree-l3" href="#how-would-i-select-an-operator-package-to-use-for-my-collection">How would I select an operator package to use for my collection?</a></li>
-        
-            <li><a class="toctree-l3" href="#how-can-i-create-and-register-my-own-operator-package">How can I create and register my own operator package?</a></li>
-        
-            <li><a class="toctree-l3" href="#how-might-i-create-an-operator-package-based-on-comparators">How might I create an operator package based on comparators?</a></li>
-        
-        </ul>
-    
-
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../comparators/">Loki Comparators</a>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">LokiOperatorPackages</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#why-support-multiple-implementations-of-operators">Why support multiple implementations of operators?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#what-are-the-lokioperatorpackages-which-lokidb-supports">What are the LokiOperatorPackages which LokiDB supports?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#how-would-i-select-an-operator-package-to-use-for-my-collection">How would I select an operator package to use for my collection?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#how-can-i-create-and-register-my-own-operator-package">How can I create and register my own operator package?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#how-might-i-create-an-operator-package-based-on-comparators">How might I create an operator package based on comparators?</a>
+    </li>
     </ul>
-	    </li>
-          
-            <li class="toctree-l1">
-		
-    <a class="" href="../ranged_indexes/">LokiDB Ranged Indexes</a>
-	    </li>
-          
-        </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../ranged_indexes/">LokiDB Ranged Indexes</a>
+                    </li>
+                </ul>
       </div>
-      &nbsp;
+    </div>
     </nav>
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
@@ -123,6 +109,7 @@
       
     </li>
   </ul>
+  
   <hr/>
 </div>
           <div role="main">
@@ -238,7 +225,7 @@ let db = new Loki(&quot;test.db&quot;, {
     
   </div>
 
-  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
 </footer>
       
         </div>
@@ -248,7 +235,7 @@ let db = new Loki(&quot;test.db&quot;, {
 
   </div>
 
-  <div class="rst-versions" role="note" style="cursor: pointer">
+  <div class="rst-versions" role="note" aria-label="versions">
     <span class="rst-current-version" data-toggle="rst-current-version">
       
           <a href="https://github.com/LokiJS-Forge/LokiDB/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
@@ -272,6 +259,11 @@ let db = new Loki(&quot;test.db&quot;, {
       <script src="../js/codemirror/addon/edit/matchbrackets.js" defer></script>
       <script src="../js/codemirror/mode/javascript/javascript.js" defer></script>
       <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
 
 </body>
 </html>

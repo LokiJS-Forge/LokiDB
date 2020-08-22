@@ -7,16 +7,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   
+  
   <link rel="shortcut icon" href="../img/favicon.ico">
   <title>LokiDB Ranged Indexes - LokiDB</title>
-  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
-  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
-  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
-  <link href="../css/codemirror/codemirror.css" rel="stylesheet">
-  <link href="../css/codemirror/foldgutter.css" rel="stylesheet">
-  <link href="../css/javascript_editor.css" rel="stylesheet">
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
+  <link href="../css/codemirror/codemirror.css" rel="stylesheet" />
+  <link href="../css/codemirror/foldgutter.css" rel="stylesheet" />
+  <link href="../css/javascript_editor.css" rel="stylesheet" />
   
   <script>
     // Current page data
@@ -27,7 +28,7 @@
   
   <script src="../js/jquery-2.1.1.min.js" defer></script>
   <script src="../js/modernizr-2.8.3.min.js" defer></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
   <script>hljs.initHighlightingOnLoad();</script> 
   
 </head>
@@ -38,6 +39,7 @@
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
         <a href=".." class="icon icon-home"> LokiDB</a>
         <div role="search">
@@ -48,52 +50,36 @@
       </div>
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-	<ul class="current">
-	  
-          
-            <li class="toctree-l1">
-		
-    <a class="" href="..">Home</a>
-	    </li>
-          
-            <li class="toctree-l1">
-		
-    <a class="" href="../comparators/">Loki Comparators</a>
-	    </li>
-          
-            <li class="toctree-l1">
-		
-    <a class="" href="../operator_packages/">LokiOperatorPackages</a>
-	    </li>
-          
-            <li class="toctree-l1 current">
-		
-    <a class="current" href="./">LokiDB Ranged Indexes</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l2"><a href="#lokidb-ranged-indexes">LokiDB Ranged Indexes</a></li>
-    
-        <ul>
-        
-            <li><a class="toctree-l3" href="#overview">Overview</a></li>
-        
-            <li><a class="toctree-l3" href="#what-is-the-performance-of-lokidbs-avl-index-implementation">What is the performance of LokiDB's "avl" index implementation?</a></li>
-        
-            <li><a class="toctree-l3" href="#how-can-i-apply-an-avl-index-to-a-property-in-my-collection">How can I apply an avl index to a property in my collection?</a></li>
-        
-            <li><a class="toctree-l3" href="#what-other-indexes-might-i-want-to-have-an-implementation-for-in-the-future">What other indexes might I want to have an implementation for in the future?</a></li>
-        
-            <li><a class="toctree-l3" href="#if-i-implement-my-own-rangedindex-how-might-i-register-and-use-that-irangedindex-implemenation">If I implement my own RangedIndex, how might I register and use that IRangedIndex implemenation?</a></li>
-        
-        </ul>
-    
-
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../comparators/">Loki Comparators</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../operator_packages/">LokiOperatorPackages</a>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">LokiDB Ranged Indexes</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#what-is-the-performance-of-lokidbs-avl-index-implementation">What is the performance of LokiDB's "avl" index implementation?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#how-can-i-apply-an-avl-index-to-a-property-in-my-collection">How can I apply an avl index to a property in my collection?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#what-other-indexes-might-i-want-to-have-an-implementation-for-in-the-future">What other indexes might I want to have an implementation for in the future?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#if-i-implement-my-own-rangedindex-how-might-i-register-and-use-that-irangedindex-implemenation">If I implement my own RangedIndex, how might I register and use that IRangedIndex implemenation?</a>
+    </li>
     </ul>
-	    </li>
-          
-        </ul>
+                    </li>
+                </ul>
       </div>
-      &nbsp;
+    </div>
     </nav>
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
@@ -121,6 +107,7 @@
       
     </li>
   </ul>
+  
   <hr/>
 </div>
           <div role="main">
@@ -242,7 +229,7 @@ let items = db.addCollection&lt;TestUserType&gt;(&quot;users&quot;, {
     
   </div>
 
-  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
 </footer>
       
         </div>
@@ -252,7 +239,7 @@ let items = db.addCollection&lt;TestUserType&gt;(&quot;users&quot;, {
 
   </div>
 
-  <div class="rst-versions" role="note" style="cursor: pointer">
+  <div class="rst-versions" role="note" aria-label="versions">
     <span class="rst-current-version" data-toggle="rst-current-version">
       
           <a href="https://github.com/LokiJS-Forge/LokiDB/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
@@ -274,6 +261,11 @@ let items = db.addCollection&lt;TestUserType&gt;(&quot;users&quot;, {
       <script src="../js/codemirror/addon/edit/matchbrackets.js" defer></script>
       <script src="../js/codemirror/mode/javascript/javascript.js" defer></script>
       <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
 
 </body>
 </html>
