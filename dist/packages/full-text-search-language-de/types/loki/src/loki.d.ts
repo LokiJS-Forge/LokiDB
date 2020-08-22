@@ -224,9 +224,10 @@ export declare class Loki extends LokiEventEmitter {
      * Internal load logic, decoupled from throttling/contention logic
      *
      * @param {object} options - an object containing inflation options for each collection
+     * @param {boolean} ignore_not_found - does not raise an error if database is not found
      * @returns {Promise} a Promise that resolves after the database is loaded
      */
-    private _loadDatabase(options?);
+    private _loadDatabase(options?, ignore_not_found?);
     /**
      * Handles manually loading from an adapter storage (such as fs-storage)
      *    This method utilizes loki configuration options (if provided) to determine which

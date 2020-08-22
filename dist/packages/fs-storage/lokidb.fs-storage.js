@@ -203,7 +203,7 @@ class FSStorage {
                     });
                 }
                 else {
-                    reject();
+                    reject(null);
                 }
             });
         });

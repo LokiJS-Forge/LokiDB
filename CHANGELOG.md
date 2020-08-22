@@ -1,3 +1,12 @@
+<a name="2.0.0"></a>
+# [2.0.0](https://github.com/LokiJS-Forge/LokiDB/compare/2.0.0-beta.9...2.0.0) (2020-08-22)
+
+
+### Bug Fixes
+
+* **persistence:** ignore error if database is not found on autoload ([#179](https://github.com/LokiJS-Forge/LokiDB/issues/179)) ([d1703c6](https://github.com/LokiJS-Forge/LokiDB/commit/d1703c6))
+
+
 <a name="2.0.0-beta.9"></a>
 # [2.0.0-beta.9](https://github.com/LokiJS-Forge/LokiDB/compare/2.0.0-beta.8...2.0.0-beta.9) (2020-02-07)
 

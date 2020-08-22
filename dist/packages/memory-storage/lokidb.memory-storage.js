@@ -181,7 +181,7 @@ class memory_storage_MemoryStorage {
                         resolve(this.hashStore[dbname].value);
                     }
                     else {
-                        reject(new Error("unable to load database, " + dbname + " was not found in memory storage"));
+                        reject(null);
                     }
                 }, this.options.asyncTimeout);
             });
@@ -191,7 +191,7 @@ class memory_storage_MemoryStorage {
                 return Promise.resolve(this.hashStore[dbname].value);
             }
             else {
-                return Promise.reject(new Error("unable to load database, " + dbname + " was not found in memory storage"));
+                return Promise.reject(null);
             }
         }
     }
