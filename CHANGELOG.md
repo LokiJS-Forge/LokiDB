@@ -1,3 +1,12 @@
+<a name="2.1.0"></a>
+# [2.1.0](https://github.com/LokiJS-Forge/LokiDB/compare/2.0.0...2.1.0) (2020-08-23)
+
+
+### Features
+
+* **fts:** support optional, empty or number fields ([#181](https://github.com/LokiJS-Forge/LokiDB/issues/181)) ([57e2ff8](https://github.com/LokiJS-Forge/LokiDB/commit/57e2ff8))
+
+
 <a name="2.0.0"></a>
 # [2.0.0](https://github.com/LokiJS-Forge/LokiDB/compare/2.0.0-beta.9...2.0.0) (2020-08-22)
 

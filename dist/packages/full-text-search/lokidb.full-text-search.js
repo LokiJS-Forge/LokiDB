@@ -224,7 +224,8 @@ function toCodePoints(str) {
 class inverted_index_InvertedIndex {
     /**
      * @param {boolean} [options.store=true] - inverted index will be stored at serialization rather than rebuilt on load
-     * @param {boolean} [options.optimizeChanges=true] - flag to
+     * @param {boolean} [options.optimizeChanges=true] - flag to store additional metadata inside the index for better
+     *  performance if an existing field is updated or removed
      * @param {Analyzer} [options.analyzer=] - the analyzer of this inverted index
      */
     constructor(options = {}) {
@@ -249,6 +250,11 @@ class inverted_index_InvertedIndex {
         }
         // Tokenize document field.
         const fieldTokens = analyze(this.analyzer, field);
+        if (fieldTokens.length == 0) {
+            // Add empty field at least to document store for query 'exists'.
+            this.docStore.set(docId, { fieldLength: 0 });
+            return;
+        }
         this.totalFieldLength += fieldTokens.length;
         this.docCount += 1;
         this.docStore.set(docId, { fieldLength: fieldTokens.length });
@@ -303,6 +309,9 @@ class inverted_index_InvertedIndex {
         const docStore = this.docStore.get(docId);
         // Remove document.
         this.docStore.delete(docId);
+        if (docStore.fieldLength === 0) {
+            return;
+        }
         this.docCount -= 1;
         // Reduce total field length.
         this.totalFieldLength -= docStore.fieldLength;
@@ -1959,9 +1968,21 @@ class full_text_search_FullTextSearch {
     addDocument(doc, id = doc[this._id]) {
         let fieldNames = Object.keys(this._invIdxs);
         for (let i = 0, fieldName; i < fieldNames.length, fieldName = fieldNames[i]; i++) {
-            if (doc[fieldName] !== undefined) {
-                this._invIdxs[fieldName].insert(doc[fieldName], id);
+            let field = doc[fieldName];
+            // Skip null and undefined.
+            if (field === null || field === undefined) {
+                continue;
             }
+            if (typeof field !== "string") {
+                // Convert number to string.
+                if (typeof field === "number") {
+                    field = field.toString();
+                }
+                else {
+                    throw TypeError("Unsupported field type for full text search.");
+                }
+            }
+            this._invIdxs[fieldName].insert(field, id);
         }
         this._docs.add(id);
         this._idxSearcher.setDirty();
