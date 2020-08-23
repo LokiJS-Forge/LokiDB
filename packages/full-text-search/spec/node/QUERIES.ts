@@ -1316,5 +1316,19 @@ export const QUERIES: { fts: QueryTypes, es: any, empty?: boolean, focus?: boole
         }
       }
     }
-  }
+  },
+  {
+    fts: {
+      type: "wildcard",
+      field: FIELD_NAME_1,
+      value: "1?3"
+    },
+    es: {
+      wildcard: {
+        [FIELD_NAME_1]: {
+          value: "1?3"
+        }
+      }
+    }
+  },
 ];

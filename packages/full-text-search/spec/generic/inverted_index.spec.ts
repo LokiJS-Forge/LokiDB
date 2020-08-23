@@ -37,6 +37,18 @@ describe("inverted index", () => {
     ii.remove(15);
   });
 
+  it("insert and remove empty does not change document count", () => {
+    let ii = new InvertedIndex();
+    ii.insert(field1, 1);
+    expect(ii.docCount).toEqual(1);
+    ii.insert("", 2);
+    expect(ii.docCount).toEqual(1);
+    ii.remove(2);
+    expect(ii.docCount).toEqual(1);
+    ii.remove(1);
+    expect(ii.docCount).toEqual(0);
+  });
+
   it("getTermIndex", () => {
     let ii = new InvertedIndex();
     ii.insert(field1, 1);
