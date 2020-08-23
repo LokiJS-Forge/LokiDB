@@ -38,7 +38,8 @@ export class InvertedIndex {
 
   /**
    * @param {boolean} [options.store=true] - inverted index will be stored at serialization rather than rebuilt on load
-   * @param {boolean} [options.optimizeChanges=true] - flag to
+   * @param {boolean} [options.optimizeChanges=true] - flag to store additional metadata inside the index for better
+   *  performance if an existing field is updated or removed
    * @param {Analyzer} [options.analyzer=] - the analyzer of this inverted index
    */
   constructor(options: InvertedIndex.FieldOptions = {}) {
