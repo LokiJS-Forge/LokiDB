@@ -720,5 +720,24 @@ export const DATA = [
   {
     "id": 200,
     "msg": "sagittis jut dui vel nisl duis ac nibh fusce lacus purus aliquet at feugiat non pretium quis lectus suspendisse potenti in eleifend quam"
-  }
+  },
+  {
+    "id": 201,
+    "msg": ""
+  },
+  {
+    "id": 202,
+    "msg": null
+  },
+  {
+    "id": 203,
+    "msg": undefined
+  },
+  {
+    "id": 204,
+  },
+  {
+    "id": 205,
+    "msg": 123
+  },
 ];
