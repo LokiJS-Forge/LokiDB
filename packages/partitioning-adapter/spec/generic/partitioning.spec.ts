@@ -74,6 +74,9 @@ describe("partitioning adapter", () => {
       expect(db2["_collections"][1].count()).toEqual(1);
       expect(db2.getCollection<User>("items").findOne({name: "gungnir"}).owner).toEqual("odin");
       expect(db2.getCollection<AB>("another").findOne({a: 1}).b).toEqual(3);
+      // Insert still works.
+      db2.getCollection<AB>("another").insert({a: 2, b: 4});
+      expect(db2.getCollection<AB>("another").findOne({a: 2}).b).toEqual(4);
     }).then(done, done.fail);
   });
 

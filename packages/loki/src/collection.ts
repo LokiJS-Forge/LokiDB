@@ -307,48 +307,47 @@ export class Collection<TData extends object = object, TNested extends object = 
   toJSON(): Collection.Serialized {
     return {
       name: this.name,
-      unindexedSortComparator: this._unindexedSortComparator,
-      defaultLokiOperatorPackage: this._defaultLokiOperatorPackage,
+      _unindexedSortComparator: this._unindexedSortComparator,
+      _defaultLokiOperatorPackage: this._defaultLokiOperatorPackage,
       _dynamicViews: this._dynamicViews,
-      uniqueNames: Object.keys(this._constraints.unique),
-      transforms: this._transforms as any,
-      rangedIndexes: this._rangedIndexes as any,
+      _uniqueNames: Object.keys(this._constraints.unique),
+      _transforms: this._transforms as any,
+      _rangedIndexes: this._rangedIndexes as any,
       _data: this._data,
-      idIndex: this._idIndex,
-      maxId: this._maxId,
+      _idIndex: this._idIndex,
+      _maxId: this._maxId,
       _dirty: this._dirty,
       _nestedProperties: this._nestedProperties,
-      transactional: this._transactional,
-      asyncListeners: this._asyncListeners,
-      disableMeta: this._disableMeta,
-      disableChangesApi: this._disableChangesApi,
-      disableDeltaChangesApi: this._disableDeltaChangesApi,
-      cloneObjects: this._cloneObjects,
-      cloneMethod: this._cloneMethod,
-      changes: this._changes,
+      _transactional: this._transactional,
+      _asyncListeners: this._asyncListeners,
+      _disableMeta: this._disableMeta,
+      _disableChangesApi: this._disableChangesApi,
+      _disableDeltaChangesApi: this._disableDeltaChangesApi,
+      _cloneObjects: this._cloneObjects,
+      _cloneMethod: this._cloneMethod,
+      _changes: this._changes,
       _fullTextSearch: this._fullTextSearch
     };
   }
 
-  static fromJSONObject(obj: Collection.Serialized, options?: Collection.DeserializeOptions) {
+  static fromJSONObject(obj: Collection.Serialized /*| Collection */, options?: Collection.DeserializeOptions) {
     // instantiate collection with options needed by constructor
     let coll = new Collection<any>(obj.name, {
-      disableChangesApi: obj.disableChangesApi,
-      disableDeltaChangesApi: obj.disableDeltaChangesApi,
-      unindexedSortComparator: obj.unindexedSortComparator,
-      defaultLokiOperatorPackage: obj.defaultLokiOperatorPackage
+      disableChangesApi: obj._disableChangesApi,
+      disableDeltaChangesApi: obj._disableDeltaChangesApi,
+      unindexedSortComparator: obj._unindexedSortComparator,
+      defaultLokiOperatorPackage: obj._defaultLokiOperatorPackage
     });
 
-    coll._transactional = obj.transactional;
-    coll._asyncListeners = obj.asyncListeners;
-    coll._disableMeta = obj.disableMeta;
-    coll._disableChangesApi = obj.disableChangesApi;
-    coll._cloneObjects = obj.cloneObjects;
-    coll._cloneMethod = obj.cloneMethod || "deep";
-    coll._changes = obj.changes;
+    coll._transactional = obj._transactional;
+    coll._asyncListeners = obj._asyncListeners;
+    coll._disableMeta = obj._disableMeta;
+    coll._disableChangesApi = obj._disableChangesApi;
+    coll._cloneObjects = obj._cloneObjects;
+    coll._cloneMethod = obj._cloneMethod || "deep";
+    coll._changes = obj._changes;
     coll._nestedProperties = obj._nestedProperties as any[];
-    coll._rangedIndexes = obj.rangedIndexes || {};
-
+    coll._rangedIndexes = obj._rangedIndexes || {};
     coll._dirty = (options && options.retainDirtyFlags === true) ? obj._dirty : false;
 
     function makeLoader(coll: Collection.Serialized) {
@@ -388,16 +387,16 @@ export class Collection<TData extends object = object, TNested extends object = 
       }
     }
 
-    coll._maxId = (obj.maxId === undefined) ? 0 : obj.maxId;
-    coll._idIndex = obj.idIndex;
-    if (obj.transforms !== undefined) {
-      coll._transforms = obj.transforms;
+    coll._maxId = (obj._maxId === undefined) ? 0 : obj._maxId;
+    coll._idIndex = obj._idIndex;
+    if (obj._transforms !== undefined) {
+      coll._transforms = obj._transforms;
     }
 
     // inflate rangedindexes
-    for (let ri in obj.rangedIndexes) {
+    for (let ri in obj._rangedIndexes) {
       // shortcut reference to serialized meta
-      let sri = obj.rangedIndexes[ri];
+      let sri = obj._rangedIndexes[ri];
       // lookup index factory function in map based on index type name
       let rif = RangedIndexFactoryMap[sri.indexTypeName];
       // lookup comparator function in map based on comparator name
@@ -413,9 +412,15 @@ export class Collection<TData extends object = object, TNested extends object = 
     coll._ensureId();
 
     // regenerate unique indexes
-    if (obj.uniqueNames !== undefined) {
-      for (let j = 0; j < obj.uniqueNames.length; j++) {
-        coll.ensureUniqueIndex(obj.uniqueNames[j]);
+    let uniqueNames = obj._uniqueNames;
+    // Check if type is collection.
+    let maybeColl = obj as any as Collection<any>;
+    if (maybeColl._constraints && maybeColl._constraints.unique !== undefined) {
+      uniqueNames = Object.keys(maybeColl._constraints.unique);
+    }
+    if (uniqueNames) {
+      for (let j = 0; j < uniqueNames.length; j++) {
+        coll.ensureUniqueIndex(uniqueNames[j]);
       }
     }
 
@@ -1710,25 +1715,25 @@ export namespace Collection {
 
   export interface Serialized {
     name: string;
-    unindexedSortComparator: string;
-    defaultLokiOperatorPackage: string;
+    _unindexedSortComparator: string;
+    _defaultLokiOperatorPackage: string;
     _dynamicViews: DynamicView[];
     _nestedProperties: { name: string, path: string[] }[];
-    uniqueNames: string[];
-    transforms: Dict<Transform[]>;
-    rangedIndexes: RangedIndexOptions;
+    _uniqueNames: string[];
+    _transforms: Dict<Transform[]>;
+    _rangedIndexes: RangedIndexOptions;
     _data: Doc<any>[];
-    idIndex: number[];
-    maxId: number;
+    _idIndex: number[];
+    _maxId: number;
     _dirty: boolean;
-    transactional: boolean;
-    asyncListeners: boolean;
-    disableMeta: boolean;
-    disableChangesApi: boolean;
-    disableDeltaChangesApi: boolean;
-    cloneObjects: boolean;
-    cloneMethod: CloneMethod;
-    changes: any;
+    _transactional: boolean;
+    _asyncListeners: boolean;
+    _disableMeta: boolean;
+    _disableChangesApi: boolean;
+    _disableDeltaChangesApi: boolean;
+    _cloneObjects: boolean;
+    _cloneMethod: CloneMethod;
+    _changes: any;
     _fullTextSearch: FullTextSearch;
   }
 

@@ -39,8 +39,8 @@ export class Loki extends LokiEventEmitter {
 
   // persist version of code which created the database to the database.
   // could use for upgrade scenarios
-  private databaseVersion: number = 1.5; // TODO
-  private engineVersion: number = 1.5;
+  private databaseVersion: number = 1.6;
+  private engineVersion: number = 1.6;
 
   public _collections: Collection[];
 
@@ -707,16 +707,14 @@ export class Loki extends LokiEventEmitter {
    * @param {object} options - apply or override collection level settings
    * @param {boolean} options.retainDirtyFlags - whether collection dirty flags will be preserved
    */
-  public loadJSONObject(dbObject: Loki, options?: Collection.DeserializeOptions): void;
-  public loadJSONObject(dbObject: Loki.Serialized, options?: Collection.DeserializeOptions): void;
-  public loadJSONObject(dbObject: any, options: Collection.DeserializeOptions = {}): void {
+  public loadJSONObject(dbObject: Loki | Loki.Serialized, options?: Collection.DeserializeOptions): void {
     const len = dbObject._collections ? dbObject._collections.length : 0;
 
     this.filename = dbObject.filename;
     this._collections = [];
 
     for (let i = 0; i < len; ++i) {
-      this._collections.push(Collection.fromJSONObject(dbObject._collections[i], options));
+      this._collections.push(Collection.fromJSONObject(dbObject._collections[i] as any as Collection.Serialized, options));
     }
   }
 
