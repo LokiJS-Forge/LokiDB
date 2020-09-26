@@ -330,7 +330,33 @@ export class Collection<TData extends object = object, TNested extends object = 
     };
   }
 
-  static fromJSONObject(obj: Collection.Serialized /*| Collection */, options?: Collection.DeserializeOptions) {
+  static migrate(obj: Collection.Serialized /*| Collection */, migrateFromVersion: string) {
+    if (!migrateFromVersion) {
+      return;
+    }
+    if (migrateFromVersion === 1.5) {
+      let src = obj as any as Collection.Serialized_1_5;
+      obj._unindexedSortComparator = src.unindexedSortComparator;
+      obj._defaultLokiOperatorPackage = src.defaultLokiOperatorPackage;
+      obj._uniqueNames = src.uniqueNames;
+      obj._transforms = src.transforms;
+      obj._rangedIndexes = src.rangedIndexes;
+      obj._idIndex = src.idIndex;
+      obj._maxId = src.maxId;
+      obj._transactional = src.transactional;
+      obj._asyncListeners = src.asyncListeners;
+      obj._disableMeta = src.disableMeta;
+      obj._disableChangesApi = src.disableChangesApi;
+      obj._disableDeltaChangesApi = src.disableDeltaChangesApi;
+      obj._cloneObjects = src.cloneObjects;
+      obj._cloneMethod = src.cloneMethod;
+      obj._changes = src.changes;
+    }
+  }
+
+  static fromJSONObject(obj: Collection.Serialized /*| Collection */, options?: Collection.DeserializeOptions, migrateFromVersion?: string) {
+    Collection.migrate(obj, migrateFromVersion);
+
     // instantiate collection with options needed by constructor
     let coll = new Collection<any>(obj.name, {
       disableChangesApi: obj._disableChangesApi,
@@ -1734,6 +1760,30 @@ export namespace Collection {
     _cloneObjects: boolean;
     _cloneMethod: CloneMethod;
     _changes: any;
+    _fullTextSearch: FullTextSearch;
+  }
+
+  export interface Serialized_1_5 {
+    name: string;
+    unindexedSortComparator: string;
+    defaultLokiOperatorPackage: string;
+    _dynamicViews: DynamicView[];
+    _nestedProperties: { name: string, path: string[] }[];
+    uniqueNames: string[];
+    transforms: Dict<Transform[]>;
+    rangedIndexes: RangedIndexOptions;
+    _data: Doc<any>[];
+    idIndex: number[];
+    maxId: number;
+    _dirty: boolean;
+    transactional: boolean;
+    asyncListeners: boolean;
+    disableMeta: boolean;
+    disableChangesApi: boolean;
+    disableDeltaChangesApi: boolean;
+    cloneObjects: boolean;
+    cloneMethod: CloneMethod;
+    changes: any;
     _fullTextSearch: FullTextSearch;
   }
 

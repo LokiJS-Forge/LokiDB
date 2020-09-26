@@ -714,7 +714,8 @@ export class Loki extends LokiEventEmitter {
     this._collections = [];
 
     for (let i = 0; i < len; ++i) {
-      this._collections.push(Collection.fromJSONObject(dbObject._collections[i] as any as Collection.Serialized, options));
+      const migrateFromVersion = (dbObject as any).databaseVersion == this.databaseVersion ? "" : (dbObject as any).databaseVersion;
+      this._collections.push(Collection.fromJSONObject(dbObject._collections[i] as any, options, migrateFromVersion));
     }
   }
 
