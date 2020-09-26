@@ -171,7 +171,7 @@ export class Loki extends LokiEventEmitter {
     };
 
     // process the options
-    if (this._persistenceMethod !== undefined) {
+    if (options.persistenceMethod && options.persistenceMethod !== "adapter") {
       // check if the specified persistence method is known
       if (typeof(PERSISTENCE_METHODS[this._persistenceMethod]) === "function") {
         this._persistenceAdapter = new (PERSISTENCE_METHODS[this._persistenceMethod]);
