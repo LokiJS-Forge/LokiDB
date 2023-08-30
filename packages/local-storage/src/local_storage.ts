@@ -1,11 +1,14 @@
 import { PLUGINS } from "../../common/plugin";
 import { StorageAdapter } from "../../common/types";
+import { Storage } from "./types";
 
 /**
  * A loki persistence adapter which persists to web browser's local storage object
  * @constructor LocalStorageAdapter
  */
 export class LocalStorage implements StorageAdapter {
+  private storage: Storage;
+
   /**
    * Registers the local storage as plugin.
    */
@@ -21,12 +24,19 @@ export class LocalStorage implements StorageAdapter {
   }
 
   /**
+   * @param {Storage} [constructor=window.localStorage] - Application name context can be used to distinguish subdomains, "loki" by default
+   */
+  constructor(storage: Storage = window.localStorage) {
+    this.storage = storage;
+  }
+
+  /**
    * loadDatabase() - Load data from localstorage
    * @param {string} dbname - the name of the database to load
    * @returns {Promise} a Promise that resolves after the database was loaded
    */
-  loadDatabase(dbname: string) {
-    return Promise.resolve(localStorage.getItem(dbname));
+  async loadDatabase(dbname: string) {
+    return this.storage.getItem(dbname);
   }
 
   /**
@@ -35,8 +45,8 @@ export class LocalStorage implements StorageAdapter {
    * @param {string} dbname - the filename of the database to load
    * @returns {Promise} a Promise that resolves after the database was saved
    */
-  saveDatabase(dbname: string, dbstring: string) {
-    return Promise.resolve(localStorage.setItem(dbname, dbstring));
+  async saveDatabase(dbname: string, dbstring: string) {
+    return this.storage.setItem(dbname, dbstring);
   }
 
   /**
@@ -45,8 +55,8 @@ export class LocalStorage implements StorageAdapter {
    * @param {string} dbname - the filename of the database to delete
    * @returns {Promise} a Promise that resolves after the database was deleted
    */
-  deleteDatabase(dbname: string) {
-    return Promise.resolve(localStorage.removeItem(dbname));
+  async deleteDatabase(dbname: string) {
+    return this.storage.removeItem(dbname);
   }
 }
 
